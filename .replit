@@ -5,6 +5,7 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-23_05"
+packages = ["gdb"]
 
 [unitTest]
 language = "python3"
@@ -12,3 +13,15 @@ language = "python3"
 [deployment]
 run = ["python3", "main.py"]
 deploymentTarget = "cloudrun"
+
+[workflows]
+runButton = "Run Fantacalcio Assistant"
+
+[[workflows.workflow]]
+name = "Run Fantacalcio Assistant"
+author = 40913427
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python web_interface.py"
