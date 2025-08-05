@@ -76,8 +76,39 @@ class AuctionHelper:
 
 # Sample data for testing
 SAMPLE_PLAYERS = [
-    Player("Donnarumma", "PSG", "P", fantamedia=6.5, appearances=30),
-    Player("Bastoni", "Inter", "D", fantamedia=6.2, appearances=32),
-    Player("Barella", "Inter", "C", fantamedia=6.8, appearances=28),
-    Player("Osimhen", "Napoli", "A", fantamedia=7.2, appearances=25)
+    # Goalkeepers
+    Player("Donnarumma", "PSG", "P", fantamedia=6.5, appearances=30, price=25),
+    Player("Maignan", "Milan", "P", fantamedia=6.3, appearances=28, price=22),
+    Player("Szczesny", "Juventus", "P", fantamedia=6.1, appearances=32, price=20),
+    Player("Handanovic", "Inter", "P", fantamedia=5.9, appearances=25, price=18),
+    Player("Meret", "Napoli", "P", fantamedia=6.0, appearances=22, price=15),
+    
+    # Defenders
+    Player("Bastoni", "Inter", "D", fantamedia=6.2, appearances=32, price=28),
+    Player("Theo Hernandez", "Milan", "D", fantamedia=6.8, appearances=30, price=32),
+    Player("Cuadrado", "Juventus", "D", fantamedia=6.4, appearances=28, price=26),
+    Player("Di Lorenzo", "Napoli", "D", fantamedia=6.1, appearances=33, price=24),
+    Player("Spinazzola", "Roma", "D", fantamedia=6.0, appearances=20, price=22),
+    Player("Acerbi", "Inter", "D", fantamedia=6.2, appearances=29, price=20),
+    Player("Tomori", "Milan", "D", fantamedia=6.0, appearances=31, price=18),
+    
+    # Midfielders
+    Player("Barella", "Inter", "C", fantamedia=6.8, appearances=28, price=35),
+    Player("Milinkovic-Savic", "Lazio", "C", fantamedia=6.9, appearances=32, price=38),
+    Player("Tonali", "Milan", "C", fantamedia=6.3, appearances=30, price=28),
+    Player("Locatelli", "Juventus", "C", fantamedia=6.1, appearances=29, price=25),
+    Player("Pellegrini", "Roma", "C", fantamedia=6.5, appearances=26, price=30),
+    Player("Zaniolo", "Roma", "C", fantamedia=6.2, appearances=24, price=28),
+    Player("Kvaratskhelia", "Napoli", "C", fantamedia=7.1, appearances=31, price=42),
+    Player("Leao", "Milan", "C", fantamedia=6.7, appearances=30, price=38),
+    
+    # Forwards
+    Player("Osimhen", "Napoli", "A", fantamedia=7.2, appearances=25, price=45),
+    Player("Vlahovic", "Juventus", "A", fantamedia=6.8, appearances=28, price=40),
+    Player("Lautaro", "Inter", "A", fantamedia=6.9, appearances=30, price=42),
+    Player("Giroud", "Milan", "A", fantamedia=6.6, appearances=26, price=35),
+    Player("Abraham", "Roma", "A", fantamedia=6.4, appearances=24, price=32),
+    Player("Immobile", "Lazio", "A", fantamedia=6.7, appearances=29, price=38),
+    Player("Dzeko", "Inter", "A", fantamedia=6.3, appearances=27, price=30),
+    Player("Belotti", "Roma", "A", fantamedia=6.0, appearances=22, price=25)
 ]
