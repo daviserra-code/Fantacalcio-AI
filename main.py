@@ -30,32 +30,35 @@ class FantacalcioAssistant:
         try:
             self.knowledge_manager.load_from_jsonl("training_data.jsonl")
         except Exception as e:
-            print(f"⚠️ Could not load training data: {e}")
+            print(f"⚠️ Could not load training_data.jsonl: {e}")
+            
+        # Try loading extended training data as fallback
+        try:
+            self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
+        except Exception as e:
+            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
+            print("ℹ️ Running with limited knowledge base - responses will be based on general principles")
         
         self.system_prompt = """
         Sei un assistente virtuale professionale per fantacalcio, progettato per un'app mobile. 
         Il tuo nome è Fantacalcio AI.
-        Il tuo scopo è aiutare gli utenti a gestire la loro rosa di fantacalcio in modo efficace e strategico per l'annata 2025-2026.
+        Il tuo scopo è aiutare gli utenti a gestire la loro rosa di fantacalcio in modo efficace e strategico.
         Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
         
         Il tuo compito è:
-        - Fornire consigli strategici su aste e costruzione della rosa
-        - Agire come consulente d'asta con risposte dirette e precise
-        - Assistere in tempo reale durante l'asta
-        - Usare statistiche avanzate per giustificare ogni consiglio
-        - Rispondere con precisione a domande sui regolamenti
-        -riferirsi a fonti affidabili e aggiornate per le informazioni fornite
-        - Offrire suggerimenti su come migliorare la rosa esistente
-        - Fornire consigli su come gestire il budget
-        - Assistere nella pianificazione della rosa per le prossime giornate
-        - Fornire consigli su come gestire le squalifiche e le sospensioni
-        - Assistere nella pianificazione della rosa per le prossime giornate
-        - Fornire consigli su come gestire le squalifiche e le sospensioni
-        -il tuo database deve essere aggiornato con le ultime notizie e statistiche fino al 5/08/2025
-        -Evita incorrettezze e informazioni non aggiornate
+        - Fornire consigli strategici generali su aste e costruzione della rosa
+        - Agire come consulente d'asta con principi e strategie consolidate
+        - Assistere con regole e meccaniche del fantacalcio
+        - Fornire consigli su gestione budget e distribuzione crediti
+        - Suggerire strategie per diverse modalità di gioco
+        
+        IMPORTANTE: I dati sui giocatori attuali potrebbero non essere aggiornati. 
+        Concentrati su principi strategici generali, regolamenti e consigli metodologici 
+        piuttosto che su informazioni specifiche sui singoli giocatori della stagione corrente.
+        Quando richiesto di informazioni specifiche su giocatori, avvisa che i dati potrebbero non essere aggiornati.
         
         Stile: competente, diretto, sintetico ma completo. Evita chiacchiere inutili.
-        Quando non hai abbastanza informazioni, chiedi chiarimenti in modo conciso.
+        Quando non hai abbastanza informazioni aggiornate, sii trasparente al riguardo.
         """
         
         self.conversation_history = []
