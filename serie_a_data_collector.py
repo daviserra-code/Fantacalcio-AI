@@ -410,7 +410,7 @@ class SerieADataCollector:
             {
                 'text': "Kenan Yildiz della Juventus ha fantamedia 6.0 nella stagione 2024-25, giovane talento che vale 14-18 crediti. Futuro della Juve.",
                 'metadata': {'type': 'current_player', 'player': 'Kenan Yildiz', 'team': 'Juventus', 'role': 'A', 'season': '2024-25', 'price': 16}
-            }
+            },
             {
                 'text': "Marcus Thuram dell'Inter ha fantamedia 7.2 nella stagione 2024-25, uno dei migliori acquisti che vale 40-45 crediti.",
                 'metadata': {'type': 'current_player', 'player': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'season': '2024-25', 'price': 42}
