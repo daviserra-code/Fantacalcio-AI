@@ -1,11 +1,240 @@
 
-{"text": "Per le aste Classic, è consigliabile spendere il 60-70% del budget sui primi 11 titolari", "type": "strategy", "league_type": "Classic", "category": "auction"}
-{"text": "Vlahovic ha segnato 14 gol nella stagione 2023-24 con una media di 6.8 al fantacalcio", "type": "player_stats", "player": "Vlahovic", "team": "Juventus", "role": "A"}
-{"text": "Nel Mantra, i centrocampisti con assist frequenti valgono di più per il bonus +1", "type": "strategy", "league_type": "Mantra", "category": "player_value"}
-{"text": "Theo Hernandez è il terzino con più gol e assist della Serie A", "type": "player_stats", "player": "Theo Hernandez", "team": "Milan", "role": "D"}
-{"text": "Nel Draft, prendere sempre un portiere titolare nei primi 3 giri", "type": "strategy", "league_type": "Draft", "category": "draft_strategy"}
-{"text": "Barella ha il 95% di presenza nelle formazioni dei fantallenatori esperti", "type": "player_stats", "player": "Barella", "team": "Inter", "role": "C"}
-{"text": "Per il Superscudetto, investire di più su giocatori di big club per i bonus vittoria", "type": "strategy", "league_type": "Superscudetto", "category": "team_selection"}
-{"text": "Osimhen ha il miglior rapporto gol/partita della Serie A con 0.89", "type": "player_stats", "player": "Osimhen", "team": "Napoli", "role": "A"}
-{"text": "Mai superare i 30 fantamilioni per un portiere in leghe Classic da 8 partecipanti", "type": "strategy", "league_type": "Classic", "category": "budget_management"}
-{"text": "Kvaratskhelia ha la fantamedia più alta tra gli esterni offensivi", "type": "player_stats", "player": "Kvaratskhelia", "team": "Napoli", "role": "C"}
+{"text": "Lautaro Martinez rinnova con l'Inter fino al 2029", "type": "contract_renewal", "player": "Lautaro Martinez", "team": "Inter", "date": "2025-06-15"}
+{"text": "Douglas Luiz passa dalla Juventus all'Aston Villa", "type": "transfer", "player": "Douglas Luiz", "from_team": "Juventus", "to_team": "Aston Villa", "fee": "25M", "date": "2025-07-20"}
+{"text": "Zirkzee passa dal Bologna al Milan per 40 milioni", "type": "transfer", "player": "Joshua Zirkzee", "from_team": "Bologna", "to_team": "Milan", "fee": "40M", "date": "2025-07-22"}
+{"text": "Bellanova firma con il Napoli", "type": "transfer", "player": "Raoul Bellanova", "from_team": "Torino", "to_team": "Napoli", "fee": "10M", "date": "2025-07-18"}
+{"text": "Felipe Anderson lascia la Lazio per il Palmeiras", "type": "transfer", "player": "Felipe Anderson", "from_team": "Lazio", "to_team": "Palmeiras", "fee": "gratis", "date": "2025-06-30"}
+{"text": "Calafiori vicino all'Arsenal ma il Bologna frena", "type": "transfer_rumor", "player": "Riccardo Calafiori", "from_team": "Bologna", "to_team": "Arsenal", "status": "in trattativa", "date": "2025-07-23"}
+{"text": "Retegui resta al Genoa, rifiutata offerta della Fiorentina", "type": "transfer_rumor", "player": "Mateo Retegui", "team": "Genoa", "status": "confermato", "date": "2025-07-19"}
+{"text": "Kamada rescinde con la Lazio", "type": "contract_termination", "player": "Daichi Kamada", "team": "Lazio", "date": "2025-07-05"}
+{"text": "Berardi torna ad allenarsi con il Sassuolo dopo l'infortunio", "type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "status": "recuperato", "date": "2025-07-10"}
+{"text": "Buongiorno passa dal Torino al Napoli per 35 milioni", "type": "transfer", "player": "Alessandro Buongiorno", "from_team": "Torino", "to_team": "Napoli", "fee": "35M", "date": "2025-07-12"}
+{"text": "Lazio acquista Noslin dal Verona", "type": "transfer", "player": "Tijjani Noslin", "from_team": "Verona", "to_team": "Lazio", "fee": "10M", "date": "2025-07-06"}
+{"text": "Lookman confermato all'Atalanta dopo ottima stagione", "type": "player_stats", "player": "Ademola Lookman", "team": "Atalanta", "role": "A", "fantamedia": 7.85, "date": "2025-07-25"}
+{"text": "Paredes lascia la Roma e firma per il Galatasaray", "type": "transfer", "player": "Leandro Paredes", "from_team": "Roma", "to_team": "Galatasaray", "fee": "3M", "date": "2025-07-03"}
+{"text": "Thuram (Inter) sospeso per due giornate dopo cartellino rosso", "type": "suspension", "player": "Marcus Thuram", "team": "Inter", "duration": "2 giornate", "reason": "comportamento antisportivo", "date": "2025-07-21"}
+{"text": "Juan Cuadrado non rinnova con l'Inter", "type": "contract_termination", "player": "Juan Cuadrado", "team": "Inter", "date": "2025-07-01"}
+{"text": "Bologna conferma Ferguson nonostante interesse del Napoli", "type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "status": "non in vendita", "date": "2025-07-17"}
+{"text": "Empoli acquista Zanoli dal Napoli", "type": "transfer", "player": "Alessandro Zanoli", "from_team": "Napoli", "to_team": "Empoli", "fee": "prestito", "date": "2025-07-08"}
+{"text": "Chiesa lascia la Juventus e firma con il Napoli per 30 milioni", "type": "transfer", "player": "Federico Chiesa", "from_team": "Juventus", "to_team": "Napoli", "fee": "30M", "date": "2025-08-03"}
+{"text": "Lukaku torna all'Inter in prestito dal Chelsea", "type": "transfer", "player": "Romelu Lukaku", "from_team": "Chelsea", "to_team": "Inter", "fee": "prestito", "date": "2025-08-01"}
+{"text": "Rabiot rinnova con la Juventus per due anni", "type": "contract_renewal", "player": "Adrien Rabiot", "team": "Juventus", "date": "2025-08-02"}
+{"text": "Nzola lascia la Fiorentina e va al Torino", "type": "transfer", "player": "Mbala Nzola", "from_team": "Fiorentina", "to_team": "Torino", "fee": "5M", "date": "2025-07-28"}
+{"text": "Szczesny vicino all'Al Nassr, accordo in fase avanzata", "type": "transfer_rumor", "player": "Wojciech Szczesny", "from_team": "Juventus", "to_team": "Al Nassr", "status": "in trattativa", "date": "2025-08-04"}
+{"text": "Spinazzola firma con la Lazio a parametro zero", "type": "transfer", "player": "Leonardo Spinazzola", "from_team": "Roma", "to_team": "Lazio", "fee": "gratis", "date": "2025-07-29"}
+{"text": "Carlos Augusto ceduto dall'Inter al Betis Siviglia", "type": "transfer", "player": "Carlos Augusto", "from_team": "Inter", "to_team": "Real Betis", "fee": "12M", "date": "2025-08-04"}
+{"text": "Scamacca resta all'Atalanta, rifiutata offerta del West Ham", "type": "transfer_rumor", "player": "Gianluca Scamacca", "team": "Atalanta", "status": "non in vendita", "date": "2025-07-31"}
+{"text": "Isaksen si rompe il crociato: lungo stop per l'esterno della Lazio", "type": "injury", "player": "Gustav Isaksen", "team": "Lazio", "status": "infortunato", "injury_type": "crociato", "estimated_return": "2026-03", "date": "2025-08-02"}
+{"text": "Miretti ceduto dalla Juventus al Genoa in prestito con diritto di riscatto", "type": "transfer", "player": "Fabio Miretti", "from_team": "Juventus", "to_team": "Genoa", "fee": "prestito con diritto", "date": "2025-07-30"}
+{"text": "Dybala confermato dalla Roma: sarà ancora il leader offensivo", "type": "player_stats", "player": "Paulo Dybala", "team": "Roma", "role": "A", "fantamedia": 8.1, "date": "2025-08-01"}
+{"text": "Terracciano passa dalla Fiorentina al Monza", "type": "transfer", "player": "Pietro Terracciano", "from_team": "Fiorentina", "to_team": "Monza", "fee": "2M", "date": "2025-07-27"}
+{"text": "Okafor parte titolare nel Milan dopo un ottimo pre-campionato", "type": "performance_trend", "player": "Noah Okafor", "team": "Milan", "trend": "positivo", "note": "in crescita", "date": "2025-08-05"}
+{"text": "Baschirotto squalificato per 1 giornata per somma di ammonizioni", "type": "suspension", "player": "Federico Baschirotto", "team": "Lecce", "duration": "1 giornata", "reason": "somma ammonizioni", "date": "2025-07-26"}
+{"text": "Gudmundsson resta al Genoa: rifiutate offerte da Premier League", "type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "status": "confermato", "date": "2025-07-25"}
+{"text": "Caprari torna al Verona dopo la parentesi a Monza", "type": "transfer", "player": "Gianluca Caprari", "from_team": "Monza", "to_team": "Verona", "fee": "prestito", "date": "2025-08-02"}
+{"text": "Samardzic resta all'Udinese: sfumata la trattativa con il Napoli", "type": "transfer_rumor", "player": "Lazar Samardzic", "team": "Udinese", "status": "rimane", "date": "2025-08-03"}
+{"text": "Zaccagni in dubbio per la prima giornata per un affaticamento muscolare", "type": "injury", "player": "Mattia Zaccagni", "team": "Lazio", "status": "in dubbio", "injury_type": "affaticamento muscolare", "estimated_return": "2025-08-15", "date": "2025-08-04"}
+{"text": "Ceesay ceduto dal Lecce al Frosinone", "type": "transfer", "player": "Assan Ceesay", "from_team": "Lecce", "to_team": "Frosinone", "fee": "1M", "date": "2025-07-29"}
+{"text": "Bijol si conferma leader della difesa dell'Udinese", "type": "player_stats", "player": "Jaka Bijol", "team": "Udinese", "role": "D", "fantamedia": 6.75, "date": "2025-08-05"}
+{"text": "Cajuste salta l'inizio del campionato per infortunio al ginocchio", "type": "injury", "player": "Jens Cajuste", "team": "Napoli", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-08-01"}
+{"text": "Soulé vicino al Marsiglia, trattativa in fase avanzata", "type": "transfer_rumor", "player": "Matías Soulé", "from_team": "Juventus", "to_team": "Marsiglia", "status": "in trattativa", "date": "2025-08-05"}
+{"text": "Osimhen del Inter è confermato sul mercato", "type": "transfer_rumor", "player": "Osimhen", "team": "Inter", "status": "confermato", "date": "2025-08-04"}
+{"text": "Lobotka del Bologna è in trattativa sul mercato", "type": "transfer_rumor", "player": "Lobotka", "team": "Bologna", "status": "in trattativa", "date": "2025-07-17"}
+{"text": "Bonucci (Fiorentina) ha una fantamedia di 8.44", "type": "player_stats", "player": "Bonucci", "team": "Fiorentina", "role": "P", "fantamedia": 8.44, "date": "2025-07-15"}
+{"text": "Osimhen passa da Bologna a Roma per 38M", "type": "transfer", "player": "Osimhen", "from_team": "Bologna", "to_team": "Roma", "fee": "38M", "date": "2025-07-30"}
+{"text": "Immobile del Napoli è infortunato: distorsione alla caviglia", "type": "injury", "player": "Immobile", "team": "Napoli", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-09", "date": "2025-07-23"}
+{"text": "Immobile (Inter) ha una fantamedia di 6.01", "type": "player_stats", "player": "Immobile", "team": "Inter", "role": "D", "fantamedia": 6.01, "date": "2025-07-25"}
+{"text": "Kostic del Atalanta è infortunato: distorsione alla caviglia", "type": "injury", "player": "Kostic", "team": "Atalanta", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-09", "date": "2025-07-22"}
+{"text": "Osimhen del Napoli è non in vendita sul mercato", "type": "transfer_rumor", "player": "Osimhen", "team": "Napoli", "status": "non in vendita", "date": "2025-07-16"}
+{"text": "Zielinski (Napoli) ha una fantamedia di 6.99", "type": "player_stats", "player": "Zielinski", "team": "Napoli", "role": "P", "fantamedia": 6.99, "date": "2025-07-22"}
+{"text": "Bonucci del Juventus è infortunato: problema al ginocchio", "type": "injury", "player": "Bonucci", "team": "Juventus", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-07", "date": "2025-07-09"}
+{"text": "Zielinski del Inter è infortunato: lesione muscolare", "type": "injury", "player": "Zielinski", "team": "Inter", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-07", "date": "2025-07-08"}
+{"text": "Milenkovic del Udinese è infortunato: elongazione", "type": "injury", "player": "Milenkovic", "team": "Udinese", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-09", "date": "2025-07-19"}
+{"text": "Immobile passa da Inter a Atalanta per 12M", "type": "transfer", "player": "Immobile", "from_team": "Inter", "to_team": "Atalanta", "fee": "12M", "date": "2025-08-04"}
+{"text": "Lobotka del Fiorentina è infortunato: elongazione", "type": "injury", "player": "Lobotka", "team": "Fiorentina", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-09", "date": "2025-07-21"}
+{"text": "Kostic (Bologna) ha una fantamedia di 6.19", "type": "player_stats", "player": "Kostic", "team": "Bologna", "role": "D", "fantamedia": 6.19, "date": "2025-07-31"}
+{"text": "Kostic del Bologna è rimane sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Bologna", "status": "rimane", "date": "2025-07-13"}
+{"text": "Milenkovic del Fiorentina è in trattativa sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Fiorentina", "status": "in trattativa", "date": "2025-07-13"}
+{"text": "Immobile del Milan è infortunato: elongazione", "type": "injury", "player": "Immobile", "team": "Milan", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-09", "date": "2025-07-13"}
+{"text": "Immobile del Milan è non in vendita sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Milan", "status": "non in vendita", "date": "2025-07-12"}
+{"text": "Kostic del Napoli è infortunato: microfrattura", "type": "injury", "player": "Kostic", "team": "Napoli", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-08", "date": "2025-07-05"}
+{"text": "Spinazzola del Juventus è infortunato: lesione muscolare", "type": "injury", "player": "Spinazzola", "team": "Juventus", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-10", "date": "2025-07-27"}
+{"text": "Immobile (Udinese) ha una fantamedia di 7.29", "type": "player_stats", "player": "Immobile", "team": "Udinese", "role": "D", "fantamedia": 7.29, "date": "2025-07-02"}
+{"text": "Zielinski del Lazio è confermato sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Lazio", "status": "confermato", "date": "2025-07-31"}
+{"text": "Milenkovic (Fiorentina) ha una fantamedia di 8.17", "type": "player_stats", "player": "Milenkovic", "team": "Fiorentina", "role": "P", "fantamedia": 8.17, "date": "2025-07-05"}
+{"text": "Barella del Juventus è non in vendita sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Juventus", "status": "non in vendita", "date": "2025-08-03"}
+{"text": "Lobotka del Napoli è infortunato: microfrattura", "type": "injury", "player": "Lobotka", "team": "Napoli", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-09", "date": "2025-08-02"}
+{"text": "Barella (Napoli) ha una fantamedia di 6.9", "type": "player_stats", "player": "Barella", "team": "Napoli", "role": "C", "fantamedia": 6.9, "date": "2025-07-14"}
+{"text": "Milenkovic del Bologna è non in vendita sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Bologna", "status": "non in vendita", "date": "2025-07-13"}
+{"text": "Bonucci del Inter è rimane sul mercato", "type": "transfer_rumor", "player": "Bonucci", "team": "Inter", "status": "rimane", "date": "2025-07-04"}
+{"text": "Lobotka del Atalanta è non in vendita sul mercato", "type": "transfer_rumor", "player": "Lobotka", "team": "Atalanta", "status": "non in vendita", "date": "2025-07-18"}
+{"text": "Milenkovic (Fiorentina) ha una fantamedia di 7.95", "type": "player_stats", "player": "Milenkovic", "team": "Fiorentina", "role": "A", "fantamedia": 7.95, "date": "2025-07-13"}
+{"text": "Spinazzola passa da Udinese a Roma per 47M", "type": "transfer", "player": "Spinazzola", "from_team": "Udinese", "to_team": "Roma", "fee": "47M", "date": "2025-07-14"}
+{"text": "Kostic (Inter) ha una fantamedia di 7.91", "type": "player_stats", "player": "Kostic", "team": "Inter", "role": "C", "fantamedia": 7.91, "date": "2025-07-30"}
+{"text": "Bonucci del Atalanta è infortunato: lesione muscolare", "type": "injury", "player": "Bonucci", "team": "Atalanta", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-09", "date": "2025-07-14"}
+{"text": "Immobile passa da Bologna a Inter per 45M", "type": "transfer", "player": "Immobile", "from_team": "Bologna", "to_team": "Inter", "fee": "45M", "date": "2025-07-29"}
+{"text": "Lobotka del Bologna è infortunato: problema al ginocchio", "type": "injury", "player": "Lobotka", "team": "Bologna", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-07-29"}
+{"text": "Kostic (Lazio) ha una fantamedia di 6.1", "type": "player_stats", "player": "Kostic", "team": "Lazio", "role": "A", "fantamedia": 6.1, "date": "2025-07-07"}
+{"text": "Lobotka passa da Napoli a Atalanta per 39M", "type": "transfer", "player": "Lobotka", "from_team": "Napoli", "to_team": "Atalanta", "fee": "39M", "date": "2025-08-02"}
+{"text": "Barella del Bologna è infortunato: problema al ginocchio", "type": "injury", "player": "Barella", "team": "Bologna", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-08-01"}
+{"text": "Kostic del Napoli è non in vendita sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Napoli", "status": "non in vendita", "date": "2025-07-18"}
+{"text": "Milenkovic passa da Milan a Udinese per 24M", "type": "transfer", "player": "Milenkovic", "from_team": "Milan", "to_team": "Udinese", "fee": "24M", "date": "2025-07-08"}
+{"text": "Osimhen (Bologna) ha una fantamedia di 8.17", "type": "player_stats", "player": "Osimhen", "team": "Bologna", "role": "P", "fantamedia": 8.17, "date": "2025-07-25"}
+{"text": "Bonucci (Milan) ha una fantamedia di 7.25", "type": "player_stats", "player": "Bonucci", "team": "Milan", "role": "D", "fantamedia": 7.25, "date": "2025-07-28"}
+{"text": "Milenkovic del Fiorentina è non in vendita sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Fiorentina", "status": "non in vendita", "date": "2025-07-03"}
+{"text": "Osimhen passa da Fiorentina a Bologna per 8M", "type": "transfer", "player": "Osimhen", "from_team": "Fiorentina", "to_team": "Bologna", "fee": "8M", "date": "2025-07-31"}
+{"text": "Lobotka (Fiorentina) ha una fantamedia di 7.8", "type": "player_stats", "player": "Lobotka", "team": "Fiorentina", "role": "C", "fantamedia": 7.8, "date": "2025-07-27"}
+{"text": "Kostic del Inter è non in vendita sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Inter", "status": "non in vendita", "date": "2025-07-04"}
+{"text": "Osimhen passa da Atalanta a Bologna per 25M", "type": "transfer", "player": "Osimhen", "from_team": "Atalanta", "to_team": "Bologna", "fee": "25M", "date": "2025-07-16"}
+{"text": "Osimhen passa da Fiorentina a Juventus per 38M", "type": "transfer", "player": "Osimhen", "from_team": "Fiorentina", "to_team": "Juventus", "fee": "38M", "date": "2025-07-10"}
+{"text": "Immobile passa da Milan a Udinese per 42M", "type": "transfer", "player": "Immobile", "from_team": "Milan", "to_team": "Udinese", "fee": "42M", "date": "2025-07-10"}
+{"text": "Bonucci (Milan) ha una fantamedia di 6.74", "type": "player_stats", "player": "Bonucci", "team": "Milan", "role": "A", "fantamedia": 6.74, "date": "2025-07-28"}
+{"text": "Lobotka (Lazio) ha una fantamedia di 6.33", "type": "player_stats", "player": "Lobotka", "team": "Lazio", "role": "P", "fantamedia": 6.33, "date": "2025-07-29"}
+{"text": "Bonucci passa da Fiorentina a Bologna per 17M", "type": "transfer", "player": "Bonucci", "from_team": "Fiorentina", "to_team": "Bologna", "fee": "17M", "date": "2025-08-01"}
+{"text": "Kostic passa da Napoli a Juventus per 60M", "type": "transfer", "player": "Kostic", "from_team": "Napoli", "to_team": "Juventus", "fee": "60M", "date": "2025-07-05"}
+{"text": "Immobile (Roma) ha una fantamedia di 8.37", "type": "player_stats", "player": "Immobile", "team": "Roma", "role": "D", "fantamedia": 8.37, "date": "2025-07-12"}
+{"text": "Osimhen del Juventus è infortunato: microfrattura", "type": "injury", "player": "Osimhen", "team": "Juventus", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-09", "date": "2025-07-23"}
+{"text": "Bonucci passa da Atalanta a Milan per 21M", "type": "transfer", "player": "Bonucci", "from_team": "Atalanta", "to_team": "Milan", "fee": "21M", "date": "2025-07-17"}
+{"text": "Zielinski (Bologna) ha una fantamedia di 6.35", "type": "player_stats", "player": "Zielinski", "team": "Bologna", "role": "D", "fantamedia": 6.35, "date": "2025-08-04"}
+{"text": "Spinazzola del Udinese è infortunato: distorsione alla caviglia", "type": "injury", "player": "Spinazzola", "team": "Udinese", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-08", "date": "2025-07-08"}
+{"text": "Kvaratskhelia del Milan è in trattativa sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Milan", "status": "in trattativa", "date": "2025-08-01"}
+{"text": "Kostic del Juventus è infortunato: distorsione alla caviglia", "type": "injury", "player": "Kostic", "team": "Juventus", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-10", "date": "2025-07-21"}
+{"text": "Kvaratskhelia del Lazio è confermato sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Lazio", "status": "confermato", "date": "2025-07-19"}
+{"text": "Barella passa da Roma a Atalanta per 58M", "type": "transfer", "player": "Barella", "from_team": "Roma", "to_team": "Atalanta", "fee": "58M", "date": "2025-07-19"}
+{"text": "Kvaratskhelia del Bologna è non in vendita sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Bologna", "status": "non in vendita", "date": "2025-07-22"}
+{"text": "Milenkovic del Atalanta è non in vendita sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Atalanta", "status": "non in vendita", "date": "2025-07-02"}
+{"text": "Immobile passa da Bologna a Fiorentina per 66M", "type": "transfer", "player": "Immobile", "from_team": "Bologna", "to_team": "Fiorentina", "fee": "66M", "date": "2025-07-03"}
+{"text": "Lobotka passa da Inter a Juventus per 63M", "type": "transfer", "player": "Lobotka", "from_team": "Inter", "to_team": "Juventus", "fee": "63M", "date": "2025-07-28"}
+{"text": "Milenkovic passa da Inter a Juventus per 41M", "type": "transfer", "player": "Milenkovic", "from_team": "Inter", "to_team": "Juventus", "fee": "41M", "date": "2025-08-05"}
+{"text": "Immobile del Atalanta è in trattativa sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Atalanta", "status": "in trattativa", "date": "2025-07-14"}
+{"text": "Zielinski del Atalanta è rimane sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Atalanta", "status": "rimane", "date": "2025-07-31"}
+{"text": "Zielinski (Bologna) ha una fantamedia di 6.96", "type": "player_stats", "player": "Zielinski", "team": "Bologna", "role": "A", "fantamedia": 6.96, "date": "2025-07-28"}
+{"text": "Barella del Lazio è in trattativa sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Lazio", "status": "in trattativa", "date": "2025-08-03"}
+{"text": "Bonucci del Juventus è infortunato: microfrattura", "type": "injury", "player": "Bonucci", "team": "Juventus", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-09", "date": "2025-08-05"}
+{"text": "Milenkovic del Fiorentina è infortunato: elongazione", "type": "injury", "player": "Milenkovic", "team": "Fiorentina", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-08", "date": "2025-07-12"}
+{"text": "Kvaratskhelia del Napoli è infortunato: lesione muscolare", "type": "injury", "player": "Kvaratskhelia", "team": "Napoli", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-09", "date": "2025-07-30"}
+{"text": "Osimhen passa da Milan a Udinese per 11M", "type": "transfer", "player": "Osimhen", "from_team": "Milan", "to_team": "Udinese", "fee": "11M", "date": "2025-07-27"}
+{"text": "Zielinski (Lazio) ha una fantamedia di 6.4", "type": "player_stats", "player": "Zielinski", "team": "Lazio", "role": "A", "fantamedia": 6.4, "date": "2025-07-22"}
+{"text": "Immobile del Inter è infortunato: distorsione alla caviglia", "type": "injury", "player": "Immobile", "team": "Inter", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-10", "date": "2025-07-07"}
+{"text": "Osimhen del Fiorentina è non in vendita sul mercato", "type": "transfer_rumor", "player": "Osimhen", "team": "Fiorentina", "status": "non in vendita", "date": "2025-07-20"}
+{"text": "Osimhen passa da Milan a Bologna per 50M", "type": "transfer", "player": "Osimhen", "from_team": "Milan", "to_team": "Bologna", "fee": "50M", "date": "2025-07-07"}
+{"text": "Lobotka del Udinese è infortunato: elongazione", "type": "injury", "player": "Lobotka", "team": "Udinese", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-08", "date": "2025-07-05"}
+{"text": "Kvaratskhelia passa da Napoli a Lazio per 40M", "type": "transfer", "player": "Kvaratskhelia", "from_team": "Napoli", "to_team": "Lazio", "fee": "40M", "date": "2025-08-03"}
+{"text": "Osimhen del Juventus è infortunato: elongazione", "type": "injury", "player": "Osimhen", "team": "Juventus", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-10", "date": "2025-07-21"}
+{"text": "Kvaratskhelia (Roma) ha una fantamedia di 7.94", "type": "player_stats", "player": "Kvaratskhelia", "team": "Roma", "role": "C", "fantamedia": 7.94, "date": "2025-08-02"}
+{"text": "Zielinski del Roma è infortunato: elongazione", "type": "injury", "player": "Zielinski", "team": "Roma", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-10", "date": "2025-08-05"}
+{"text": "Immobile (Napoli) ha una fantamedia di 6.41", "type": "player_stats", "player": "Immobile", "team": "Napoli", "role": "P", "fantamedia": 6.41, "date": "2025-07-13"}
+{"text": "Zielinski passa da Fiorentina a Milan per 52M", "type": "transfer", "player": "Zielinski", "from_team": "Fiorentina", "to_team": "Milan", "fee": "52M", "date": "2025-07-09"}
+{"text": "Bonucci passa da Lazio a Roma per 18M", "type": "transfer", "player": "Bonucci", "from_team": "Lazio", "to_team": "Roma", "fee": "18M", "date": "2025-08-03"}
+{"text": "Bonucci del Fiorentina è confermato sul mercato", "type": "transfer_rumor", "player": "Bonucci", "team": "Fiorentina", "status": "confermato", "date": "2025-07-22"}
+{"text": "Kostic passa da Fiorentina a Juventus per 58M", "type": "transfer", "player": "Kostic", "from_team": "Fiorentina", "to_team": "Juventus", "fee": "58M", "date": "2025-07-23"}
+{"text": "Barella del Milan è in trattativa sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Milan", "status": "in trattativa", "date": "2025-07-31"}
+{"text": "Zielinski passa da Milan a Lazio per 1M", "type": "transfer", "player": "Zielinski", "from_team": "Milan", "to_team": "Lazio", "fee": "1M", "date": "2025-08-01"}
+{"text": "Milenkovic del Fiorentina è rimane sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Fiorentina", "status": "rimane", "date": "2025-07-12"}
+{"text": "Kvaratskhelia del Inter è non in vendita sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Inter", "status": "non in vendita", "date": "2025-07-11"}
+{"text": "Milenkovic (Juventus) ha una fantamedia di 7.52", "type": "player_stats", "player": "Milenkovic", "team": "Juventus", "role": "D", "fantamedia": 7.52, "date": "2025-07-08"}
+{"text": "Kostic del Atalanta è infortunato: problema al ginocchio", "type": "injury", "player": "Kostic", "team": "Atalanta", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-10", "date": "2025-07-17"}
+{"text": "Milenkovic del Bologna è rimane sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Bologna", "status": "rimane", "date": "2025-08-02"}
+{"text": "Spinazzola del Juventus è confermato sul mercato", "type": "transfer_rumor", "player": "Spinazzola", "team": "Juventus", "status": "confermato", "date": "2025-07-04"}
+{"text": "Immobile del Roma è non in vendita sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Roma", "status": "non in vendita", "date": "2025-07-29"}
+{"text": "Spinazzola passa da Lazio a Juventus per 25M", "type": "transfer", "player": "Spinazzola", "from_team": "Lazio", "to_team": "Juventus", "fee": "25M", "date": "2025-07-02"}
+{"text": "Bonucci passa da Lazio a Juventus per 19M", "type": "transfer", "player": "Bonucci", "from_team": "Lazio", "to_team": "Juventus", "fee": "19M", "date": "2025-07-15"}
+{"text": "Osimhen passa da Inter a Milan per 42M", "type": "transfer", "player": "Osimhen", "from_team": "Inter", "to_team": "Milan", "fee": "42M", "date": "2025-07-18"}
+{"text": "Barella del Lazio è infortunato: distorsione alla caviglia", "type": "injury", "player": "Barella", "team": "Lazio", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-09", "date": "2025-08-05"}
+{"text": "Osimhen (Milan) ha una fantamedia di 7.41", "type": "player_stats", "player": "Osimhen", "team": "Milan", "role": "A", "fantamedia": 7.41, "date": "2025-08-05"}
+{"text": "Kostic del Inter è infortunato: microfrattura", "type": "injury", "player": "Kostic", "team": "Inter", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-09", "date": "2025-07-01"}
+{"text": "Milenkovic (Milan) ha una fantamedia di 7.97", "type": "player_stats", "player": "Milenkovic", "team": "Milan", "role": "P", "fantamedia": 7.97, "date": "2025-07-22"}
+{"text": "Kostic passa da Atalanta a Fiorentina per 4M", "type": "transfer", "player": "Kostic", "from_team": "Atalanta", "to_team": "Fiorentina", "fee": "4M", "date": "2025-07-15"}
+{"text": "Kvaratskhelia passa da Fiorentina a Atalanta per 8M", "type": "transfer", "player": "Kvaratskhelia", "from_team": "Fiorentina", "to_team": "Atalanta", "fee": "8M", "date": "2025-07-28"}
+{"text": "Kvaratskhelia del Fiorentina è infortunato: problema al ginocchio", "type": "injury", "player": "Kvaratskhelia", "team": "Fiorentina", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-07-29"}
+{"text": "Kostic del Atalanta è infortunato: microfrattura", "type": "injury", "player": "Kostic", "team": "Atalanta", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-08", "date": "2025-07-09"}
+{"text": "Immobile del Udinese è infortunato: lesione muscolare", "type": "injury", "player": "Immobile", "team": "Udinese", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-10", "date": "2025-08-01"}
+{"text": "Kostic del Atalanta è rimane sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Atalanta", "status": "rimane", "date": "2025-07-09"}
+{"text": "Milenkovic (Lazio) ha una fantamedia di 6.13", "type": "player_stats", "player": "Milenkovic", "team": "Lazio", "role": "P", "fantamedia": 6.13, "date": "2025-07-14"}
+{"text": "Lobotka del Juventus è infortunato: distorsione alla caviglia", "type": "injury", "player": "Lobotka", "team": "Juventus", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-08", "date": "2025-07-14"}
+{"text": "Milenkovic passa da Milan a Udinese per 59M", "type": "transfer", "player": "Milenkovic", "from_team": "Milan", "to_team": "Udinese", "fee": "59M", "date": "2025-08-02"}
+{"text": "Barella del Milan è confermato sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Milan", "status": "confermato", "date": "2025-07-07"}
+{"text": "Immobile del Bologna è infortunato: microfrattura", "type": "injury", "player": "Immobile", "team": "Bologna", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-09", "date": "2025-07-21"}
+{"text": "Zielinski passa da Napoli a Udinese per 44M", "type": "transfer", "player": "Zielinski", "from_team": "Napoli", "to_team": "Udinese", "fee": "44M", "date": "2025-07-06"}
+{"text": "Immobile del Lazio è infortunato: problema al ginocchio", "type": "injury", "player": "Immobile", "team": "Lazio", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-08-04"}
+{"text": "Kostic (Roma) ha una fantamedia di 7.07", "type": "player_stats", "player": "Kostic", "team": "Roma", "role": "A", "fantamedia": 7.07, "date": "2025-07-29"}
+{"text": "Barella del Inter è infortunato: lesione muscolare", "type": "injury", "player": "Barella", "team": "Inter", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-08", "date": "2025-07-13"}
+{"text": "Immobile (Roma) ha una fantamedia di 8.39", "type": "player_stats", "player": "Immobile", "team": "Roma", "role": "C", "fantamedia": 8.39, "date": "2025-07-12"}
+{"text": "Lobotka del Fiorentina è non in vendita sul mercato", "type": "transfer_rumor", "player": "Lobotka", "team": "Fiorentina", "status": "non in vendita", "date": "2025-07-19"}
+{"text": "Bonucci passa da Atalanta a Milan per 15M", "type": "transfer", "player": "Bonucci", "from_team": "Atalanta", "to_team": "Milan", "fee": "15M", "date": "2025-07-09"}
+{"text": "Kvaratskhelia (Inter) ha una fantamedia di 6.53", "type": "player_stats", "player": "Kvaratskhelia", "team": "Inter", "role": "C", "fantamedia": 6.53, "date": "2025-08-03"}
+{"text": "Osimhen (Bologna) ha una fantamedia di 7.04", "type": "player_stats", "player": "Osimhen", "team": "Bologna", "role": "C", "fantamedia": 7.04, "date": "2025-07-08"}
+{"text": "Lobotka (Bologna) ha una fantamedia di 6.22", "type": "player_stats", "player": "Lobotka", "team": "Bologna", "role": "A", "fantamedia": 6.22, "date": "2025-07-03"}
+{"text": "Kostic del Udinese è rimane sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Udinese", "status": "rimane", "date": "2025-07-19"}
+{"text": "Osimhen (Lazio) ha una fantamedia di 8.12", "type": "player_stats", "player": "Osimhen", "team": "Lazio", "role": "A", "fantamedia": 8.12, "date": "2025-07-16"}
+{"text": "Kostic passa da Milan a Fiorentina per 69M", "type": "transfer", "player": "Kostic", "from_team": "Milan", "to_team": "Fiorentina", "fee": "69M", "date": "2025-08-02"}
+{"text": "Barella del Napoli è in trattativa sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Napoli", "status": "in trattativa", "date": "2025-07-23"}
+{"text": "Kvaratskhelia (Atalanta) ha una fantamedia di 6.97", "type": "player_stats", "player": "Kvaratskhelia", "team": "Atalanta", "role": "A", "fantamedia": 6.97, "date": "2025-07-23"}
+{"text": "Lobotka del Bologna è infortunato: lesione muscolare", "type": "injury", "player": "Lobotka", "team": "Bologna", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-09", "date": "2025-07-17"}
+{"text": "Immobile passa da Napoli a Juventus per 8M", "type": "transfer", "player": "Immobile", "from_team": "Napoli", "to_team": "Juventus", "fee": "8M", "date": "2025-07-20"}
+{"text": "Lobotka passa da Udinese a Lazio per 64M", "type": "transfer", "player": "Lobotka", "from_team": "Udinese", "to_team": "Lazio", "fee": "64M", "date": "2025-08-05"}
+{"text": "Zielinski (Juventus) ha una fantamedia di 6.56", "type": "player_stats", "player": "Zielinski", "team": "Juventus", "role": "C", "fantamedia": 6.56, "date": "2025-07-21"}
+{"text": "Osimhen (Lazio) ha una fantamedia di 7.53", "type": "player_stats", "player": "Osimhen", "team": "Lazio", "role": "D", "fantamedia": 7.53, "date": "2025-08-01"}
+{"text": "Kvaratskhelia passa da Fiorentina a Milan per 47M", "type": "transfer", "player": "Kvaratskhelia", "from_team": "Fiorentina", "to_team": "Milan", "fee": "47M", "date": "2025-07-15"}
+{"text": "Spinazzola del Udinese è rimane sul mercato", "type": "transfer_rumor", "player": "Spinazzola", "team": "Udinese", "status": "rimane", "date": "2025-07-24"}
+{"text": "Zielinski del Roma è infortunato: microfrattura", "type": "injury", "player": "Zielinski", "team": "Roma", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-08", "date": "2025-07-27"}
+{"text": "Bonucci passa da Fiorentina a Udinese per 70M", "type": "transfer", "player": "Bonucci", "from_team": "Fiorentina", "to_team": "Udinese", "fee": "70M", "date": "2025-07-11"}
+{"text": "Osimhen passa da Fiorentina a Inter per 32M", "type": "transfer", "player": "Osimhen", "from_team": "Fiorentina", "to_team": "Inter", "fee": "32M", "date": "2025-07-25"}
+{"text": "Bonucci del Napoli è infortunato: lesione muscolare", "type": "injury", "player": "Bonucci", "team": "Napoli", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-09", "date": "2025-08-03"}
+{"text": "Bonucci passa da Udinese a Bologna per 55M", "type": "transfer", "player": "Bonucci", "from_team": "Udinese", "to_team": "Bologna", "fee": "55M", "date": "2025-08-05"}
+{"text": "Osimhen passa da Udinese a Fiorentina per 27M", "type": "transfer", "player": "Osimhen", "from_team": "Udinese", "to_team": "Fiorentina", "fee": "27M", "date": "2025-07-08"}
+{"text": "Milenkovic passa da Inter a Lazio per 41M", "type": "transfer", "player": "Milenkovic", "from_team": "Inter", "to_team": "Lazio", "fee": "41M", "date": "2025-08-01"}
+{"text": "Spinazzola del Udinese è confermato sul mercato", "type": "transfer_rumor", "player": "Spinazzola", "team": "Udinese", "status": "confermato", "date": "2025-08-05"}
+{"text": "Zielinski del Lazio è confermato sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Lazio", "status": "confermato", "date": "2025-07-30"}
+{"text": "Spinazzola del Inter è infortunato: lesione muscolare", "type": "injury", "player": "Spinazzola", "team": "Inter", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-10", "date": "2025-07-07"}
+{"text": "Barella passa da Roma a Lazio per 18M", "type": "transfer", "player": "Barella", "from_team": "Roma", "to_team": "Lazio", "fee": "18M", "date": "2025-07-20"}
+{"text": "Immobile del Atalanta è in trattativa sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Atalanta", "status": "in trattativa", "date": "2025-07-28"}
+{"text": "Zielinski del Atalanta è infortunato: problema al ginocchio", "type": "injury", "player": "Zielinski", "team": "Atalanta", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-09", "date": "2025-07-27"}
+{"text": "Lobotka del Roma è infortunato: elongazione", "type": "injury", "player": "Lobotka", "team": "Roma", "status": "infortunato", "injury_type": "elongazione", "estimated_return": "2025-09", "date": "2025-07-14"}
+{"text": "Lobotka passa da Bologna a Roma per 25M", "type": "transfer", "player": "Lobotka", "from_team": "Bologna", "to_team": "Roma", "fee": "25M", "date": "2025-07-26"}
+{"text": "Barella del Udinese è non in vendita sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Udinese", "status": "non in vendita", "date": "2025-08-01"}
+{"text": "Kostic del Napoli è infortunato: lesione muscolare", "type": "injury", "player": "Kostic", "team": "Napoli", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-09", "date": "2025-07-12"}
+{"text": "Kostic del Napoli è rimane sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Napoli", "status": "rimane", "date": "2025-07-13"}
+{"text": "Kostic (Napoli) ha una fantamedia di 7.35", "type": "player_stats", "player": "Kostic", "team": "Napoli", "role": "A", "fantamedia": 7.35, "date": "2025-07-04"}
+{"text": "Zielinski del Napoli è confermato sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Napoli", "status": "confermato", "date": "2025-07-29"}
+{"text": "Kvaratskhelia passa da Fiorentina a Udinese per 55M", "type": "transfer", "player": "Kvaratskhelia", "from_team": "Fiorentina", "to_team": "Udinese", "fee": "55M", "date": "2025-07-18"}
+{"text": "Osimhen del Atalanta è non in vendita sul mercato", "type": "transfer_rumor", "player": "Osimhen", "team": "Atalanta", "status": "non in vendita", "date": "2025-07-28"}
+{"text": "Immobile del Milan è confermato sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Milan", "status": "confermato", "date": "2025-07-04"}
+{"text": "Kostic passa da Bologna a Milan per 6M", "type": "transfer", "player": "Kostic", "from_team": "Bologna", "to_team": "Milan", "fee": "6M", "date": "2025-07-16"}
+{"text": "Spinazzola passa da Napoli a Inter per 13M", "type": "transfer", "player": "Spinazzola", "from_team": "Napoli", "to_team": "Inter", "fee": "13M", "date": "2025-07-31"}
+{"text": "Kostic del Napoli è in trattativa sul mercato", "type": "transfer_rumor", "player": "Kostic", "team": "Napoli", "status": "in trattativa", "date": "2025-08-01"}
+{"text": "Immobile del Lazio è in trattativa sul mercato", "type": "transfer_rumor", "player": "Immobile", "team": "Lazio", "status": "in trattativa", "date": "2025-07-25"}
+{"text": "Spinazzola passa da Lazio a Udinese per 10M", "type": "transfer", "player": "Spinazzola", "from_team": "Lazio", "to_team": "Udinese", "fee": "10M", "date": "2025-07-04"}
+{"text": "Kvaratskhelia del Bologna è confermato sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Bologna", "status": "confermato", "date": "2025-07-06"}
+{"text": "Osimhen (Udinese) ha una fantamedia di 6.96", "type": "player_stats", "player": "Osimhen", "team": "Udinese", "role": "P", "fantamedia": 6.96, "date": "2025-07-16"}
+{"text": "Zielinski del Udinese è infortunato: microfrattura", "type": "injury", "player": "Zielinski", "team": "Udinese", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-10", "date": "2025-07-20"}
+{"text": "Zielinski del Lazio è non in vendita sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Lazio", "status": "non in vendita", "date": "2025-07-25"}
+{"text": "Kostic (Milan) ha una fantamedia di 6.93", "type": "player_stats", "player": "Kostic", "team": "Milan", "role": "C", "fantamedia": 6.93, "date": "2025-07-20"}
+{"text": "Zielinski del Udinese è in trattativa sul mercato", "type": "transfer_rumor", "player": "Zielinski", "team": "Udinese", "status": "in trattativa", "date": "2025-07-19"}
+{"text": "Osimhen passa da Juventus a Atalanta per 3M", "type": "transfer", "player": "Osimhen", "from_team": "Juventus", "to_team": "Atalanta", "fee": "3M", "date": "2025-07-26"}
+{"text": "Osimhen passa da Bologna a Roma per 36M", "type": "transfer", "player": "Osimhen", "from_team": "Bologna", "to_team": "Roma", "fee": "36M", "date": "2025-07-21"}
+{"text": "Osimhen del Fiorentina è in trattativa sul mercato", "type": "transfer_rumor", "player": "Osimhen", "team": "Fiorentina", "status": "in trattativa", "date": "2025-07-22"}
+{"text": "Kvaratskhelia del Napoli è confermato sul mercato", "type": "transfer_rumor", "player": "Kvaratskhelia", "team": "Napoli", "status": "confermato", "date": "2025-08-02"}
+{"text": "Bonucci passa da Milan a Bologna per 39M", "type": "transfer", "player": "Bonucci", "from_team": "Milan", "to_team": "Bologna", "fee": "39M", "date": "2025-07-29"}
+{"text": "Kostic passa da Inter a Udinese per 22M", "type": "transfer", "player": "Kostic", "from_team": "Inter", "to_team": "Udinese", "fee": "22M", "date": "2025-07-01"}
+{"text": "Kvaratskhelia del Inter è infortunato: problema al ginocchio", "type": "injury", "player": "Kvaratskhelia", "team": "Inter", "status": "infortunato", "injury_type": "problema al ginocchio", "estimated_return": "2025-10", "date": "2025-07-14"}
+{"text": "Barella del Udinese è infortunato: microfrattura", "type": "injury", "player": "Barella", "team": "Udinese", "status": "infortunato", "injury_type": "microfrattura", "estimated_return": "2025-10", "date": "2025-07-31"}
+{"text": "Kvaratskhelia del Bologna è infortunato: lesione muscolare", "type": "injury", "player": "Kvaratskhelia", "team": "Bologna", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-08", "date": "2025-07-07"}
+{"text": "Zielinski (Napoli) ha una fantamedia di 6.59", "type": "player_stats", "player": "Zielinski", "team": "Napoli", "role": "D", "fantamedia": 6.59, "date": "2025-07-16"}
+{"text": "Milenkovic del Udinese è in trattativa sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Udinese", "status": "in trattativa", "date": "2025-07-25"}
+{"text": "Kvaratskhelia (Roma) ha una fantamedia di 6.97", "type": "player_stats", "player": "Kvaratskhelia", "team": "Roma", "role": "D", "fantamedia": 6.97, "date": "2025-07-31"}
+{"text": "Barella del Juventus è rimane sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Juventus", "status": "rimane", "date": "2025-07-11"}
+{"text": "Kvaratskhelia del Napoli è infortunato: lesione muscolare", "type": "injury", "player": "Kvaratskhelia", "team": "Napoli", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-10", "date": "2025-08-05"}
+{"text": "Spinazzola passa da Bologna a Milan per 27M", "type": "transfer", "player": "Spinazzola", "from_team": "Bologna", "to_team": "Milan", "fee": "27M", "date": "2025-07-15"}
+{"text": "Bonucci (Atalanta) ha una fantamedia di 6.84", "type": "player_stats", "player": "Bonucci", "team": "Atalanta", "role": "C", "fantamedia": 6.84, "date": "2025-07-23"}
+{"text": "Milenkovic del Roma è in trattativa sul mercato", "type": "transfer_rumor", "player": "Milenkovic", "team": "Roma", "status": "in trattativa", "date": "2025-07-07"}
+{"text": "Osimhen passa da Fiorentina a Milan per 21M", "type": "transfer", "player": "Osimhen", "from_team": "Fiorentina", "to_team": "Milan", "fee": "21M", "date": "2025-07-30"}
+{"text": "Kostic del Juventus è infortunato: lesione muscolare", "type": "injury", "player": "Kostic", "team": "Juventus", "status": "infortunato", "injury_type": "lesione muscolare", "estimated_return": "2025-08", "date": "2025-07-05"}
+{"text": "Barella passa da Napoli a Juventus per 36M", "type": "transfer", "player": "Barella", "from_team": "Napoli", "to_team": "Juventus", "fee": "36M", "date": "2025-07-14"}
+{"text": "Lobotka del Napoli è rimane sul mercato", "type": "transfer_rumor", "player": "Lobotka", "team": "Napoli", "status": "rimane", "date": "2025-08-05"}
+{"text": "Milenkovic passa da Fiorentina a Lazio per 66M", "type": "transfer", "player": "Milenkovic", "from_team": "Fiorentina", "to_team": "Lazio", "fee": "66M", "date": "2025-07-08"}
+{"text": "Milenkovic (Napoli) ha una fantamedia di 8.07", "type": "player_stats", "player": "Milenkovic", "team": "Napoli", "role": "A", "fantamedia": 8.07, "date": "2025-08-02"}
+{"text": "Barella del Lazio è rimane sul mercato", "type": "transfer_rumor", "player": "Barella", "team": "Lazio", "status": "rimane", "date": "2025-07-19"}
+{"text": "Barella del Udinese è infortunato: distorsione alla caviglia", "type": "injury", "player": "Barella", "team": "Udinese", "status": "infortunato", "injury_type": "distorsione alla caviglia", "estimated_return": "2025-09", "date": "2025-07-20"}
+{"text": "Spinazzola del Fiorentina è rimane sul mercato", "type": "transfer_rumor", "player": "Spinazzola", "team": "Fiorentina", "status": "rimane", "date": "2025-07-08"}
+{"text": "Milenkovic passa da Atalanta a Roma per 17M", "type": "transfer", "player": "Milenkovic", "from_team": "Atalanta", "to_team": "Roma", "fee": "17M", "date": "2025-07-16"}
