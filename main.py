@@ -4,6 +4,7 @@ import os
 import sys
 import json
 from datetime import datetime
+from rag_system import FantacalcioRAGSystem
 
 openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
@@ -22,6 +23,13 @@ if not openai.api_key:
 
 class FantacalcioAssistant:
     def __init__(self):
+        # Initialize RAG system
+        self.rag_system = FantacalcioRAGSystem()
+        
+        # Load initial knowledge if JSONL file exists
+        if os.path.exists('sample_knowledge.jsonl'):
+            self.rag_system.load_jsonl_data('sample_knowledge.jsonl')
+        
         self.system_prompt = """
         Sei un assistente virtuale professionale per fantacalcio, progettato per un'app mobile. 
         Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
@@ -55,6 +63,11 @@ class FantacalcioAssistant:
         """Get AI response for fantasy football queries"""
         
         messages = [{"role": "system", "content": self.system_prompt}]
+        
+        # Get enhanced context from RAG system
+        rag_context = self.rag_system.get_enhanced_context(user_message, context)
+        if rag_context:
+            messages.append({"role": "system", "content": rag_context})
         
         # Add context if provided (league info, budget, etc.)
         if context:

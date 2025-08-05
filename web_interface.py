@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, jsonify, session
 from main import FantacalcioAssistant
 from fantacalcio_data import League, AuctionHelper, SAMPLE_PLAYERS
+from knowledge_manager import KnowledgeManager
 import json
 import os
 
@@ -132,6 +133,35 @@ def setup_league():
             'rules': league.rules
         }
     })
+
+@app.route('/api/knowledge/search', methods=['POST'])
+def search_knowledge():
+    data = request.get_json()
+    query = data.get('query', '')
+    
+    if not query:
+        return jsonify({'error': 'Query required'}), 400
+    
+    try:
+        knowledge_items = assistant.rag_system.search_knowledge(query, n_results=5)
+        return jsonify({'results': knowledge_items})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/knowledge/add', methods=['POST'])
+def add_knowledge():
+    data = request.get_json()
+    text = data.get('text', '')
+    metadata = data.get('metadata', {})
+    
+    if not text:
+        return jsonify({'error': 'Text required'}), 400
+    
+    try:
+        assistant.rag_system.add_knowledge(text, metadata)
+        return jsonify({'message': 'Knowledge added successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
