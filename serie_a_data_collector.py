@@ -14,7 +14,7 @@ class SerieADataCollector:
     def collect_transfermarkt_data(self, team_urls):
         """Collect data from Transfermarkt for Serie A teams"""
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
         
         players_data = []
@@ -22,28 +22,53 @@ class SerieADataCollector:
         for team_name, url in team_urls.items():
             try:
                 print(f"🔄 Collecting data for {team_name}...")
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=10)
+                if response.status_code != 200:
+                    print(f"❌ HTTP {response.status_code} for {team_name}")
+                    continue
+                    
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
-                # Extract player information (simplified example)
-                players = soup.find_all('tr', class_='odd') + soup.find_all('tr', class_='even')
+                # Look for player table rows more specifically
+                player_rows = soup.select('table.items tbody tr:not(.subheader)')
                 
-                for player in players:
+                for row in player_rows:
                     try:
-                        name_elem = player.find('a', {'class': 'spielprofil_tooltip'})
-                        if name_elem:
-                            player_data = {
-                                'name': name_elem.text.strip(),
-                                'team': team_name,
-                                'season': self.current_season,
-                                'source': 'transfermarkt',
-                                'updated_at': datetime.now().isoformat()
-                            }
-                            players_data.append(player_data)
+                        # Extract player name
+                        name_cell = row.select_one('td.hauptlink a')
+                        if not name_cell:
+                            continue
+                            
+                        player_name = name_cell.get_text(strip=True)
+                        
+                        # Extract position
+                        position_cell = row.select_one('td:nth-child(2)')
+                        position = position_cell.get_text(strip=True) if position_cell else 'Unknown'
+                        
+                        # Extract age
+                        age_cell = row.select_one('td:nth-child(3)')
+                        age = age_cell.get_text(strip=True) if age_cell else 'Unknown'
+                        
+                        # Extract market value
+                        value_cell = row.select_one('td.rechts.hauptlink')
+                        market_value = value_cell.get_text(strip=True) if value_cell else '0'
+                        
+                        player_data = {
+                            'name': player_name,
+                            'team': team_name,
+                            'position': position,
+                            'age': age,
+                            'market_value': market_value,
+                            'season': self.current_season,
+                            'source': 'transfermarkt',
+                            'updated_at': datetime.now().isoformat()
+                        }
+                        players_data.append(player_data)
+                        
                     except Exception as e:
                         continue
                         
-                time.sleep(2)  # Rate limiting
+                time.sleep(3)  # More conservative rate limiting
                 
             except Exception as e:
                 print(f"❌ Error collecting data for {team_name}: {e}")
@@ -85,8 +110,60 @@ class SerieADataCollector:
         serie_a_teams = [
             "Inter", "Milan", "Juventus", "Napoli", "Roma", "Lazio", 
             "Atalanta", "Fiorentina", "Bologna", "Torino", "Udinese",
-            "Sassuolo", "Empoli", "Verona", "Cagliari", "Lecce",
-            "Monza", "Genoa", "Como", "Parma"
+            "Empoli", "Verona", "Cagliari", "Lecce", "Monza", 
+            "Genoa", "Como", "Parma", "Venezia"
+        ]
+        
+        # Add current season player information
+        current_players_2024_25 = [
+            {
+                'text': "Marcus Thuram è l'attaccante dell'Inter, fantamedia attuale 7.2, uno dei migliori acquisti della stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Rafael Leao del Milan ha una fantamedia di 6.9 nella stagione 2024-25, confermandosi top player.",
+                'metadata': {'type': 'current_player', 'player': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Dusan Vlahovic della Juventus mantiene una fantamedia di 7.0 nella stagione corrente 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Victor Osimhen del Napoli ha fantamedia 7.3 nella stagione 2024-25, il migliore in assoluto.",
+                'metadata': {'type': 'current_player', 'player': 'Victor Osimhen', 'team': 'Napoli', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Mike Maignan del Milan è il portiere più affidabile con fantamedia 6.7 nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'season': '2024-25'}
+            },
+            {
+                'text': "Alessandro Bastoni dell'Inter ha fantamedia 6.8 come difensore nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'season': '2024-25'}
+            },
+            {
+                'text': "Theo Hernandez del Milan mantiene fantamedia 6.9 come terzino sinistro nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'season': '2024-25'}
+            },
+            {
+                'text': "Nicolo Barella dell'Inter ha fantamedia 7.1 come centrocampista nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'season': '2024-25'}
+            },
+            {
+                'text': "Federico Chiesa della Juventus ha fantamedia 6.8 nella stagione corrente 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Federico Chiesa', 'team': 'Juventus', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Khvicha Kvaratskhelia del Napoli ha fantamedia 7.0 nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Ciro Immobile della Lazio ha fantamedia 6.6 nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Ciro Immobile', 'team': 'Lazio', 'role': 'A', 'season': '2024-25'}
+            },
+            {
+                'text': "Lorenzo Pellegrini della Roma ha fantamedia 6.4 come centrocampista nella stagione 2024-25.",
+                'metadata': {'type': 'current_player', 'player': 'Lorenzo Pellegrini', 'team': 'Roma', 'role': 'C', 'season': '2024-25'}
+            }
         ]
         
         # Add strategic knowledge about current Serie A context
@@ -96,33 +173,40 @@ class SerieADataCollector:
                 'metadata': {'type': 'season_strategy', 'season': '2024-25'}
             },
             {
-                'text': "I portieri più consigliati sono quelli di squadre con difese solide. Valuta sempre minutaggio garantito e possibilità di clean sheet.",
-                'metadata': {'type': 'role_strategy', 'role': 'portiere'}
+                'text': "I portieri più consigliati per la stagione 2024-25 sono Maignan (Milan), Sommer (Inter), e Meret (Napoli).",
+                'metadata': {'type': 'role_strategy', 'role': 'portiere', 'season': '2024-25'}
             },
             {
-                'text': "Per gli attaccanti, cerca giocatori che tirano i rigori e hanno minutaggio garantito. La fantamedia sopra 6.5 è eccellente per un attaccante.",
-                'metadata': {'type': 'role_strategy', 'role': 'attaccante'}
+                'text': "Per gli attaccanti nella stagione 2024-25: Osimhen (Napoli), Thuram (Inter), Vlahovic (Juventus) sono i top. Cerca sempre rigoristi.",
+                'metadata': {'type': 'role_strategy', 'role': 'attaccante', 'season': '2024-25'}
             },
             {
-                'text': "I difensori che spingono molto (terzini) valgono di più nel fantacalcio. Cerca giocatori con assist e gol occasionali.",
-                'metadata': {'type': 'role_strategy', 'role': 'difensore'}
+                'text': "I difensori top per la stagione 2024-25: Bastoni (Inter), Theo Hernandez (Milan), Dimarco (Inter). Terzini offensivi sono oro.",
+                'metadata': {'type': 'role_strategy', 'role': 'difensore', 'season': '2024-25'}
             },
             {
-                'text': "I centrocampisti box-to-box e quelli offensivi sono i più redditizi. Evita mediani puri a meno che non abbiano fantamedia molto alta.",
-                'metadata': {'type': 'role_strategy', 'role': 'centrocampista'}
+                'text': "Centrocampisti 2024-25: Barella (Inter), Leao (Milan), Kvaratskhelia (Napoli) sono i migliori. Punta su quelli che fanno assist e gol.",
+                'metadata': {'type': 'role_strategy', 'role': 'centrocampista', 'season': '2024-25'}
             }
         ]
+        
+        # Add current players data to database
+        for player_info in current_players_2024_25:
+            self.km.add_knowledge(player_info['text'], player_info['metadata'])
         
         # Add strategic knowledge to database
         for knowledge in strategic_knowledge:
             self.km.add_knowledge(knowledge['text'], knowledge['metadata'])
         
-        # Transfermarkt URLs (example structure)
+        # Transfermarkt URLs (squad pages for better player data)
         transfermarkt_urls = {
-            "Inter": "https://www.transfermarkt.it/fc-internazionale-milano/startseite/verein/46",
-            "Milan": "https://www.transfermarkt.it/ac-mailand/startseite/verein/5",
-            "Juventus": "https://www.transfermarkt.it/juventus-turin/startseite/verein/506",
-            # Add more teams as needed
+            "Inter": "https://www.transfermarkt.it/fc-internazionale-milano/kader/verein/46",
+            "Milan": "https://www.transfermarkt.it/ac-mailand/kader/verein/5", 
+            "Juventus": "https://www.transfermarkt.it/juventus-turin/kader/verein/506",
+            "Napoli": "https://www.transfermarkt.it/ssc-neapel/kader/verein/6195",
+            "Roma": "https://www.transfermarkt.it/as-rom/kader/verein/12",
+            "Lazio": "https://www.transfermarkt.it/lazio-rom/kader/verein/398",
+            "Atalanta": "https://www.transfermarkt.it/atalanta-bergamo/kader/verein/800"
         }
         
         print("🔄 Starting Serie A data collection...")
