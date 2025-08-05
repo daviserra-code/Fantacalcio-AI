@@ -11,7 +11,7 @@ packages = ["gdb"]
 language = "python3"
 
 [deployment]
-run = ["sh", "-c", "python3 web_interface.py"]
+run = ["python3", "main.py"]
 deploymentTarget = "cloudrun"
 
 [workflows]
