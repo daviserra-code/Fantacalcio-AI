@@ -348,32 +348,32 @@ class SerieADataCollector:
                 'metadata': {'type': 'current_player', 'player': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'season': '2024-25', 'price': 44}
             },
             {
-                'text': "Marcus Thuram dell'Inter ha fantamedia 7.2 nella stagione 2024-25, uno dei migliori acquisti che vale 40-45 crediti. Veloce e potente.",
-                'metadata': {'type': 'current_player', 'player': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'season': '2024-25', 'price': 42}
+                'text': "Marcus Thuram dell'Inter ha fantamedia 7.3 nella stagione 2024-25, uno dei migliori attaccanti che vale 42-47 crediti. Veloce e potente, coppia perfetta con Lautaro.",
+                'metadata': {'type': 'current_player', 'player': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'season': '2024-25', 'price': 44}
             },
             {
-                'text': "Lautaro Martinez dell'Inter ha fantamedia 7.0 nella stagione 2024-25, bomber affidabile che vale 38-42 crediti. Capitano e goleador.",
-                'metadata': {'type': 'current_player', 'player': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'season': '2024-25', 'price': 40}
+                'text': "Lautaro Martinez dell'Inter ha fantamedia 7.2 nella stagione 2024-25, bomber affidabile che vale 40-45 crediti. Capitano e goleador, rigorista.",
+                'metadata': {'type': 'current_player', 'player': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'season': '2024-25', 'price': 42}
             },
             {
-                'text': "Dusan Vlahovic della Juventus mantiene fantamedia 6.9 nella stagione 2024-25, centravanti da 35-40 crediti. Sempre titolare.",
-                'metadata': {'type': 'current_player', 'player': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'season': '2024-25', 'price': 37}
+                'text': "Dusan Vlahovic della Juventus mantiene fantamedia 7.0 nella stagione 2024-25, centravanti da 37-42 crediti. Sempre titolare con Motta.",
+                'metadata': {'type': 'current_player', 'player': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'season': '2024-25', 'price': 39}
             },
             {
-                'text': "Rafael Leao del Milan ha fantamedia 6.8 nella stagione 2024-25, ala sinistra devastante che vale 33-38 crediti. Velocità e dribbling.",
-                'metadata': {'type': 'current_player', 'player': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'season': '2024-25', 'price': 35}
+                'text': "Rafael Leao del Milan ha fantamedia 6.9 nella stagione 2024-25, ala sinistra devastante che vale 35-40 crediti. Velocità e dribbling con Fonseca.",
+                'metadata': {'type': 'current_player', 'player': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'season': '2024-25', 'price': 37}
             },
             {
-                'text': "Khvicha Kvaratskhelia del Napoli ha fantamedia 7.0 nella stagione 2024-25, esterno offensivo che vale 33-37 crediti. Fantasista georgiano.",
-                'metadata': {'type': 'current_player', 'player': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'season': '2024-25', 'price': 35}
+                'text': "Khvicha Kvaratskhelia del Napoli ha fantamedia 7.1 nella stagione 2024-25, esterno offensivo che vale 35-40 crediti. Fantasista georgiano con Conte.",
+                'metadata': {'type': 'current_player', 'player': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'season': '2024-25', 'price': 37}
             },
             {
-                'text': "Ciro Immobile della Lazio ha fantamedia 6.7 nella stagione 2024-25, bomber esperto che vale 28-32 crediti. Rigorista della Lazio.",
-                'metadata': {'type': 'current_player', 'player': 'Ciro Immobile', 'team': 'Lazio', 'role': 'A', 'season': '2024-25', 'price': 30}
+                'text': "Taty Castellanos della Lazio ha fantamedia 6.8 nella stagione 2024-25, nuovo bomber che vale 30-35 crediti. Argentino prolifico.",
+                'metadata': {'type': 'current_player', 'player': 'Taty Castellanos', 'team': 'Lazio', 'role': 'A', 'season': '2024-25', 'price': 32}
             },
             {
-                'text': "Tammy Abraham del Milan ha fantamedia 6.6 nella stagione 2024-25, centravanti inglese per 26-30 crediti. Nuovo acquisto di qualità.",
-                'metadata': {'type': 'current_player', 'player': 'Tammy Abraham', 'team': 'Milan', 'role': 'A', 'season': '2024-25', 'price': 28}
+                'text': "Alvaro Morata del Milan ha fantamedia 6.7 nella stagione 2024-25, centravanti spagnolo per 28-33 crediti. Esperienza e gol.",
+                'metadata': {'type': 'current_player', 'player': 'Alvaro Morata', 'team': 'Milan', 'role': 'A', 'season': '2024-25', 'price': 30}
             },
             {
                 'text': "Paulo Dybala della Roma ha fantamedia 6.8 nella stagione 2024-25, trequartista di classe che vale 28-32 crediti. La Joya argentina.",
@@ -464,7 +464,7 @@ class SerieADataCollector:
                 'metadata': {'type': 'season_strategy', 'season': '2024-25'}
             },
             {
-                'text': "Formazione consigliata per il fantacalcio 2024-25: Portiere: Maignan (Milan). Difesa: Bastoni (Inter), Theo Hernandez (Milan), Dimarco (Inter). Centrocampo: Barella (Inter), Calhanoglu (Inter), Reijnders (Milan), Lobotka (Napoli), Pellegrini (Roma). Attacco: Osimhen (Napoli), Thuram (Inter).",
+                'text': "Formazione consigliata per il fantacalcio 2024-25: Portiere: Maignan (Milan). Difesa: Bastoni (Inter), Theo Hernandez (Milan), Dimarco (Inter). Centrocampo: Barella (Inter), Calhanoglu (Inter), Reijnders (Milan), Lobotka (Napoli), Pellegrini (Roma). Attacco: Lukaku (Napoli), Thuram (Inter).",
                 'metadata': {'type': 'formation_complete', 'season': '2024-25', 'module': '3-5-2'}
             },
             {
@@ -488,7 +488,7 @@ class SerieADataCollector:
                 'metadata': {'type': 'role_strategy', 'role': 'centrocampista', 'season': '2024-25'}
             },
             {
-                'text': "Budget 500 crediti: distribuisci 110 per attacco (Osimhen 47 + Immobile 31), 160 per centrocampo (Barella 37 + Calhanoglu 32 + Reijnders 26 + Lobotka 24), 140 per difesa (Theo 32 + Bastoni 27 + Dimarco 25 + Di Lorenzo 20 + Cambiaso 22), 70 per portieri (Maignan 22 + Sommer 19 + Provedel 13).",
+                'text': "Budget 500 crediti: distribuisci 120 per attacco (Lukaku 44 + Castellanos 32), 165 per centrocampo (Barella 39 + Calhanoglu 34 + Reijnders 28 + Lobotka 26), 145 per difesa (Theo 34 + Bastoni 29 + Dimarco 26 + Di Lorenzo 22 + Cambiaso 24), 70 per portieri (Maignan 24 + Sommer 20 + Meret 17).",
                 'metadata': {'type': 'budget_strategy', 'budget': 500, 'season': '2024-25'}
             }
         ]
