@@ -4,6 +4,7 @@ import os
 import sys
 import json
 from datetime import datetime
+from knowledge_manager import KnowledgeManager
 
 openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
@@ -22,6 +23,15 @@ if not openai.api_key:
 
 class FantacalcioAssistant:
     def __init__(self):
+        # Initialize knowledge manager for RAG
+        self.knowledge_manager = KnowledgeManager()
+        
+        # Load training data if available
+        try:
+            self.knowledge_manager.load_from_jsonl("training_data.jsonl")
+        except Exception as e:
+            print(f"⚠️ Could not load training data: {e}")
+        
         self.system_prompt = """
         Sei un assistente virtuale professionale per fantacalcio, progettato per un'app mobile. 
         Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
@@ -40,9 +50,14 @@ class FantacalcioAssistant:
         self.conversation_history = []
     
     def get_response(self, user_message, context=None):
-        """Get AI response for fantasy football queries"""
+        """Get AI response for fantasy football queries with RAG"""
         
         messages = [{"role": "system", "content": self.system_prompt}]
+        
+        # Get relevant knowledge from vector database
+        relevant_context = self.knowledge_manager.get_context_for_query(user_message)
+        if relevant_context:
+            messages.append({"role": "system", "content": relevant_context})
         
         # Add context if provided (league info, budget, etc.)
         if context:
