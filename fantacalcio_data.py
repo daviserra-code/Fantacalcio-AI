@@ -15,6 +15,66 @@ class Player:
         self.xa = 0  # Expected assists
         self.minutes_played = 0
         self.ownership_percentage = 0
+        self.injury_risk = 0  # 0-10 scale
+        self.form_trend = 0  # Recent form direction
+        self.fixtures_difficulty = 0  # Upcoming fixtures difficulty
+    
+    def value_score(self) -> float:
+        """Calculate value for money score"""
+        if self.price == 0:
+            return 0
+        return (self.fantamedia * self.appearances) / self.price
+    
+    def consistency_score(self) -> float:
+        """Calculate consistency based on appearances and fantamedia"""
+        if self.appearances == 0:
+            return 0
+        consistency = (self.appearances / 38) * (self.fantamedia / 10)
+        return min(consistency, 1.0)
+    
+    def compare_with(self, other_player) -> Dict:
+        """Detailed comparison with another player"""
+        if self.role != other_player.role:
+            return {"error": "Cannot compare players of different roles"}
+        
+        comparison = {
+            "player_a": self.name,
+            "player_b": other_player.name,
+            "role": self.role,
+            "winner": {},
+            "metrics": {}
+        }
+        
+        metrics = [
+            ("fantamedia", "Fantamedia"),
+            ("price", "Prezzo", True),  # Lower is better
+            ("appearances", "Presenze"),
+            ("value_score", "Rapporto Qualità/Prezzo"),
+            ("consistency_score", "Continuità")
+        ]
+        
+        for metric_attr, metric_name, *lower_better in metrics:
+            is_lower_better = len(lower_better) > 0
+            
+            if hasattr(self, metric_attr):
+                val_a = getattr(self, metric_attr)() if callable(getattr(self, metric_attr)) else getattr(self, metric_attr)
+                val_b = getattr(other_player, metric_attr)() if callable(getattr(other_player, metric_attr)) else getattr(other_player, metric_attr)
+            else:
+                continue
+            
+            comparison["metrics"][metric_name] = {
+                self.name: val_a,
+                other_player.name: val_b
+            }
+            
+            if is_lower_better:
+                winner = self.name if val_a < val_b else other_player.name
+            else:
+                winner = self.name if val_a > val_b else other_player.name
+            
+            comparison["winner"][metric_name] = winner
+        
+        return comparison
 
 class League:
     def __init__(self, league_type="Classic", participants=8, budget=500):

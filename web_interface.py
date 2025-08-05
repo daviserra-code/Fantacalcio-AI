@@ -81,10 +81,90 @@ def chat():
     if not message:
         return jsonify({'error': 'Message required'}), 400
     
+    # Check for quick actions
+    quick_action = detect_quick_action(message)
+    if quick_action:
+        return jsonify(quick_action)
+    
     # Add language context for AI responses
     context['language'] = lang
     response = assistant.get_response(message, context)
-    return jsonify({'response': response})
+    
+    # Add suggested follow-up questions
+    follow_ups = generate_follow_up_suggestions(message, context)
+    
+    return jsonify({
+        'response': response,
+        'follow_ups': follow_ups,
+        'context_detected': extract_context_from_message(message)
+    })
+
+def detect_quick_action(message: str) -> Dict:
+    """Detect and handle quick actions"""
+    message_lower = message.lower()
+    
+    if "confronta" in message_lower and " vs " in message_lower:
+        players = message.split(" vs ")
+        if len(players) == 2:
+            return {
+                'type': 'player_comparison',
+                'players': [p.strip() for p in players],
+                'response': f"Confronto tra {players[0].strip()} e {players[1].strip()} in preparazione..."
+            }
+    
+    if "formazione" in message_lower and any(f in message_lower for f in ["3-5-2", "4-4-2", "3-4-3"]):
+        return {
+            'type': 'formation_analysis',
+            'response': "Analizzo la formazione ottimale per la tua rosa..."
+        }
+    
+    return None
+
+def generate_follow_up_suggestions(message: str, context: Dict) -> List[str]:
+    """Generate contextual follow-up suggestions"""
+    suggestions = []
+    message_lower = message.lower()
+    
+    if any(word in message_lower for word in ["prezzo", "vale", "costa"]):
+        suggestions.extend([
+            "Mostrami alternative più economiche",
+            "Analizza il rapporto qualità/prezzo",
+            "Confronta con giocatori simili"
+        ])
+    
+    if any(word in message_lower for word in ["formazione", "modulo"]):
+        suggestions.extend([
+            "Suggerisci il capitano",
+            "Analizza i panchina",
+            "Valuta formazioni alternative"
+        ])
+    
+    if "infortunio" in message_lower:
+        suggestions.extend([
+            "Mostra alternative sicure",
+            "Analizza rischio infortuni",
+            "Suggerisci sostituzioni"
+        ])
+    
+    return suggestions[:3]  # Limit to 3 suggestions
+
+def extract_context_from_message(message: str) -> Dict:
+    """Extract context information from user message"""
+    context = {}
+    
+    # Extract player names (simple pattern matching)
+    words = message.split()
+    potential_players = [w for w in words if w[0].isupper() and len(w) > 3]
+    if potential_players:
+        context['mentioned_players'] = potential_players
+    
+    # Extract numbers (likely prices or budgets)
+    import re
+    numbers = re.findall(r'\d+', message)
+    if numbers:
+        context['mentioned_numbers'] = [int(n) for n in numbers]
+    
+    return context
 
 @app.route('/api/reset', methods=['POST'])
 def reset_chat():

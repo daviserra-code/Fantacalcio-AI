@@ -188,7 +188,55 @@
         
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,200,81,0.3);
+            box-shadow: 0 4px 12px rgba(0, 200, 81, 0.3);
+        }
+        
+        .quick-actions {
+            padding: 10px 20px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .quick-btn {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            color: #495057;
+        }
+        
+        .quick-btn:hover {
+            background: linear-gradient(45deg, #00c851, #007e33);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .follow-ups {
+            padding: 10px 20px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .follow-up-btn {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 0.75em;
+            cursor: pointer;
+            color: #1976d2;
+        }
+        
+        .follow-up-btn:hover {
+            background: #1976d2;
+            color: white,200,81,0.3);
         }
         
         .btn-secondary {
@@ -388,6 +436,13 @@
                     <br><br>
                     Modalità <strong>Classic</strong> attiva. Dimmi di cosa hai bisogno!
                 </div>
+            </div>
+            
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="sendQuickMessage('Suggeriscimi 3 acquisti sotto i 20 fantamilioni')">💰 Affari</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Analizza la mia formazione 3-5-2')">⚽ Formazione</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Chi sono i giocatori in forma?')">📈 Trend</button>
+                <button class="quick-btn" onclick="sendQuickMessage('Valuta il rischio infortuni della mia rosa')">🏥 Infortuni</button>
             </div>
             
             <div class="input-area">
