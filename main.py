@@ -91,45 +91,8 @@ class FantacalcioAssistant:
         self.conversation_history = []
         return "Conversazione resettata. Pronto per nuove domande sul fantacalcio."
 
-def main():
-    assistant = FantacalcioAssistant()
-    
-    print("🏆 ASSISTENTE FANTACALCIO PROFESSIONALE")
-    print("=" * 50)
-    print("Supporto per: Classic, Mantra, Draft, Superscudetto")
-    print("Comandi: 'reset' per resettare, 'quit' per uscire")
-    print("=" * 50)
-    
-    while True:
-        try:
-            user_input = input("\n💬 La tua domanda: ").strip()
-            
-            if user_input.lower() in ['quit', 'exit', 'esci']:
-                print("👋 Buona fortuna con il fantacalcio!")
-                break
-            
-            if user_input.lower() == 'reset':
-                print(assistant.reset_conversation())
-                continue
-            
-            if not user_input:
-                continue
-            
-            # Example context - in a real app this would come from user profile/league settings
-            context = {
-                "timestamp": datetime.now().isoformat(),
-                "session_type": "consultation"
-            }
-            
-            print("\n🤔 Elaborando risposta...")
-            response = assistant.get_response(user_input, context)
-            print(f"\n🎯 {response}")
-            
-        except KeyboardInterrupt:
-            print("\n\n👋 Sessione terminata. Buona fortuna!")
-            break
-        except Exception as e:
-            print(f"\n❌ Errore: {str(e)}")
+# Remove the main() function with input() calls for web deployment
+# The web interface in web_interface.py will handle HTTP requests instead
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    print("This module is intended for import. Use web_interface.py for web deployment.")
