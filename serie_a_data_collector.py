@@ -9,7 +9,7 @@ from datetime import datetime
 class SerieADataCollector:
     def __init__(self):
         self.km = KnowledgeManager()
-        self.current_season = "2025-26"
+        self.current_season = "2024-25"  # Updated to current season
         
     def collect_transfermarkt_data(self, team_urls):
         """Collect data from Transfermarkt for Serie A teams"""
@@ -79,15 +79,43 @@ class SerieADataCollector:
         return players_data
     
     def update_knowledge_base(self):
-        """Update knowledge base with fresh Serie A data"""
+        """Update knowledge base with current Serie A strategic knowledge"""
         
-        # Serie A teams for 2025-26
+        # Serie A teams for 2024-25 (current season)
         serie_a_teams = [
             "Inter", "Milan", "Juventus", "Napoli", "Roma", "Lazio", 
             "Atalanta", "Fiorentina", "Bologna", "Torino", "Udinese",
             "Sassuolo", "Empoli", "Verona", "Cagliari", "Lecce",
-            "Monza", "Frosinone", "Genoa", "Salernitana"
+            "Monza", "Genoa", "Como", "Parma"
         ]
+        
+        # Add strategic knowledge about current Serie A context
+        strategic_knowledge = [
+            {
+                'text': "Per la stagione 2024-25, le squadre più affidabili per il fantacalcio sono Inter, Napoli, Milan e Juventus. Atalanta è sempre un'opzione interessante per centrocampisti offensivi.",
+                'metadata': {'type': 'season_strategy', 'season': '2024-25'}
+            },
+            {
+                'text': "I portieri più consigliati sono quelli di squadre con difese solide. Valuta sempre minutaggio garantito e possibilità di clean sheet.",
+                'metadata': {'type': 'role_strategy', 'role': 'portiere'}
+            },
+            {
+                'text': "Per gli attaccanti, cerca giocatori che tirano i rigori e hanno minutaggio garantito. La fantamedia sopra 6.5 è eccellente per un attaccante.",
+                'metadata': {'type': 'role_strategy', 'role': 'attaccante'}
+            },
+            {
+                'text': "I difensori che spingono molto (terzini) valgono di più nel fantacalcio. Cerca giocatori con assist e gol occasionali.",
+                'metadata': {'type': 'role_strategy', 'role': 'difensore'}
+            },
+            {
+                'text': "I centrocampisti box-to-box e quelli offensivi sono i più redditizi. Evita mediani puri a meno che non abbiano fantamedia molto alta.",
+                'metadata': {'type': 'role_strategy', 'role': 'centrocampista'}
+            }
+        ]
+        
+        # Add strategic knowledge to database
+        for knowledge in strategic_knowledge:
+            self.km.add_knowledge(knowledge['text'], knowledge['metadata'])
         
         # Transfermarkt URLs (example structure)
         transfermarkt_urls = {
