@@ -11,7 +11,7 @@ packages = ["gdb"]
 language = "python3"
 
 [deployment]
-run = ["python3", "web_interface.py"]
+run = ["python3", "main.py"]
 deploymentTarget = "cloudrun"
 
 [workflows]
@@ -25,7 +25,3 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python web_interface.py"
-
-[[ports]]
-localPort = 5000
-externalPort = 80

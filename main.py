@@ -4,7 +4,6 @@ import os
 import sys
 import json
 from datetime import datetime
-from rag_system import FantacalcioRAGSystem
 
 openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
@@ -23,13 +22,6 @@ if not openai.api_key:
 
 class FantacalcioAssistant:
     def __init__(self):
-        # Initialize RAG system
-        self.rag_system = FantacalcioRAGSystem()
-        
-        # Load initial knowledge if JSONL file exists
-        if os.path.exists('sample_knowledge.jsonl'):
-            self.rag_system.load_jsonl_data('sample_knowledge.jsonl')
-        
         self.system_prompt = """
         Sei un assistente virtuale professionale per fantacalcio, progettato per un'app mobile. 
         Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
@@ -40,21 +32,9 @@ class FantacalcioAssistant:
         - Assistere in tempo reale durante l'asta
         - Usare statistiche avanzate per giustificare ogni consiglio
         - Rispondere con precisione a domande sui regolamenti
-        -I dati si devono riferire alla stagione 2025-2026
-        - Fornire consigli su come migliorare la squadra in base alle statistiche e alle          tendenze attuali
-        -Non considerare giocatori che non giocano in serie A
-        -Impara dalle risposte precedenti per migliorare le future risposte
         
         Stile: competente, diretto, sintetico ma completo. Evita chiacchiere inutili.
         Quando non hai abbastanza informazioni, chiedi chiarimenti in modo conciso.
-        la risposta deve essere breve e chiara, adatta per un'app mobile.
-        Non includere saluti o ringraziamenti.
-        Non includere informazioni personali o dati sensibili.
-        Non includere link o URL.
-        La valuta del fantacalcio è il fantamilione.
-        Non includere informazioni non richieste.
-        Non includere informazioni non pertinenti.
-
         """
         
         self.conversation_history = []
@@ -63,11 +43,6 @@ class FantacalcioAssistant:
         """Get AI response for fantasy football queries"""
         
         messages = [{"role": "system", "content": self.system_prompt}]
-        
-        # Get enhanced context from RAG system
-        rag_context = self.rag_system.get_enhanced_context(user_message, context)
-        if rag_context:
-            messages.append({"role": "system", "content": rag_context})
         
         # Add context if provided (league info, budget, etc.)
         if context:
@@ -104,8 +79,45 @@ class FantacalcioAssistant:
         self.conversation_history = []
         return "Conversazione resettata. Pronto per nuove domande sul fantacalcio."
 
-# Remove the main() function with input() calls for web deployment
-# The web interface in web_interface.py will handle HTTP requests instead
+def main():
+    assistant = FantacalcioAssistant()
+    
+    print("🏆 ASSISTENTE FANTACALCIO PROFESSIONALE")
+    print("=" * 50)
+    print("Supporto per: Classic, Mantra, Draft, Superscudetto")
+    print("Comandi: 'reset' per resettare, 'quit' per uscire")
+    print("=" * 50)
+    
+    while True:
+        try:
+            user_input = input("\n💬 La tua domanda: ").strip()
+            
+            if user_input.lower() in ['quit', 'exit', 'esci']:
+                print("👋 Buona fortuna con il fantacalcio!")
+                break
+            
+            if user_input.lower() == 'reset':
+                print(assistant.reset_conversation())
+                continue
+            
+            if not user_input:
+                continue
+            
+            # Example context - in a real app this would come from user profile/league settings
+            context = {
+                "timestamp": datetime.now().isoformat(),
+                "session_type": "consultation"
+            }
+            
+            print("\n🤔 Elaborando risposta...")
+            response = assistant.get_response(user_input, context)
+            print(f"\n🎯 {response}")
+            
+        except KeyboardInterrupt:
+            print("\n\n👋 Sessione terminata. Buona fortuna!")
+            break
+        except Exception as e:
+            print(f"\n❌ Errore: {str(e)}")
 
-if __name__ == '__main__':
-    print("This module is intended for import. Use web_interface.py for web deployment.")
+if __name__ == "__main__":
+    main()
