@@ -7,6 +7,7 @@ import uuid
 import hashlib
 import signal
 import sys
+from config import app_config
 
 # Configure logging
 logging.basicConfig(
