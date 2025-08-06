@@ -1074,50 +1074,7 @@
         Scorri verso l'alto per aggiornare
     </div>
 
-    <!-- Corrections Modal -->
-    <div id="correctionsModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Gestione Correzioni</h3>
-                <span class="close" onclick="closeCorrectionsModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="corrections-tabs">
-                    <button class="tab-btn active" onclick="switchCorrectionTab('view')">Visualizza</button>
-                    <button class="tab-btn" onclick="switchCorrectionTab('add')">Aggiungi</button>
-                    <button class="tab-btn" onclick="switchCorrectionTab('stats')">Statistiche</button>
-                </div>
-
-                <div id="viewTab" class="correction-tab-content">
-                    <div id="correctionsList"></div>
-                </div>
-
-                <div id="addTab" class="correction-tab-content" style="display: none;">
-                    <div class="form-group">
-                        <label>Tipo Correzione:</label>
-                        <select id="correctionType">
-                            <option value="general">Generale</option>
-                            <option value="player">Giocatore</option>
-                            <option value="team">Squadra</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Informazione Errata:</label>
-                        <textarea id="incorrectInfo" placeholder="Inserisci l'informazione errata..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Informazione Corretta:</label>
-                        <textarea id="correctInfo" placeholder="Inserisci l'informazione corretta..."></textarea>
-                    </div>
-                    <button onclick="addCorrection()" class="btn-primary">Aggiungi Correzione</button>
-                </div>
-
-                <div id="statsTab" class="correction-tab-content" style="display: none;">
-                    <div id="correctionStats"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <div class="container">
         <div class="header">
@@ -1206,9 +1163,10 @@
             <button class="quick-action-btn" onclick="showPlayerComparison()">
                 ⚖️ Confronta Giocatori
             </button>
-            <button class="quick-action-btn" onclick="openCorrectionsModal()">
-                🔧 Gestisci Correzioni
+            <button class="quick-action-btn" onclick="showCorrectionHelp()">
+                💡 Come Correggere
             </button>
+            
         </div>
 
         <!-- Charts Section -->
@@ -1892,126 +1850,7 @@
             }
         }
 
-        // Corrections modal functions
-        function openCorrectionsModal() {
-            document.getElementById('correctionsModal').style.display = 'block';
-            loadCorrections();
-        }
-
-        function closeCorrectionsModal() {
-            document.getElementById('correctionsModal').style.display = 'none';
-        }
-
-        function switchCorrectionTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.correction-tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Show selected tab
-            document.getElementById(tabName + 'Tab').style.display = 'block';
-            event.target.classList.add('active');
-
-            if (tabName === 'stats') {
-                loadCorrectionStats();
-            }
-        }
-
-        async function loadCorrections() {
-            try {
-                const response = await fetch('/api/corrections');
-                const data = await response.json();
-
-                const listDiv = document.getElementById('correctionsList');
-                if (data.corrections && data.corrections.length > 0) {
-                    listDiv.innerHTML = data.corrections.map(correction => `
-                        <div class="correction-item" style="border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
-                            <strong>Tipo:</strong> ${correction.type}<br>
-                            <strong>Da:</strong> ${correction.incorrect_info}<br>
-                            <strong>A:</strong> ${correction.correct_info}<br>
-                            <small>Applicata ${correction.times_applied || 0} volte</small>
-                        </div>
-                    `).join('');
-                } else {
-                    listDiv.innerHTML = '<p>Nessuna correzione trovata.</p>';
-                }
-            } catch (error) {
-                console.error('Error loading corrections:', error);
-                showNotification('Errore nel caricamento delle correzioni', 'error');
-            }
-        }
-
-        async function addCorrection() {
-            const type = document.getElementById('correctionType').value;
-            const incorrect = document.getElementById('incorrectInfo').value.trim();
-            const correct = document.getElementById('correctInfo').value.trim();
-
-            if (!incorrect || !correct) {
-                showNotification('Compila tutti i campi', 'warning');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/corrections', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        type: type,
-                        incorrect_info: incorrect,
-                        correct_info: correct,
-                        context: 'user_manual'
-                    })
-                });
-
-                const data = await response.json();
-                if (data.message) {
-                    showNotification('Correzione aggiunta con successo', 'success');
-                    document.getElementById('incorrectInfo').value = '';
-                    document.getElementById('correctInfo').value = '';
-                    loadCorrections();
-                } else {
-                    showNotification('Errore nell\'aggiunta della correzione', 'error');
-                }
-            } catch (error) {
-                console.error('Error adding correction:', error);
-                showNotification('Errore nell\'aggiunta della correzione', 'error');
-            }
-        }
-
-        async function loadCorrectionStats() {
-            try {
-                const response = await fetch('/api/corrections/stats');
-                const data = await response.json();
-
-                const statsDiv = document.getElementById('correctionStats');
-                if (data.error) {
-                    statsDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
-                } else {
-                    statsDiv.innerHTML = `
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <h4>Correzioni Generali</h4>
-                                <p class="stat-number">${data.total_corrections || 0}</p>
-                            </div>
-                            <div class="stat-card">
-                                <h4>Correzioni Giocatori</h4>
-                                <p class="stat-number">${data.player_corrections_count || 0}</p>
-                            </div>
-                            <div class="stat-card">
-                                <h4>Pattern Risposta</h4>
-                                <p class="stat-number">${data.response_patterns_count || 0}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading correction stats:', error);
-                document.getElementById('correctionStats').innerHTML = '<p style="color: red;">Errore nel caricamento delle statistiche</p>';
-            }
-        }
+        
 
         // Quick action functions
         async function askQuickQuestion(question) {
@@ -2442,6 +2281,19 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             });
+        }
+
+        function showCorrectionHelp() {
+            addMessage(`💡 **Come aggiungere correzioni via chat:**
+
+Per correggere informazioni errate, usa questo formato:
+**Correggi: [informazione errata] -> [informazione corretta]**
+
+Esempi:
+• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
+• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
+
+Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
         }
     </script>
 </body>
