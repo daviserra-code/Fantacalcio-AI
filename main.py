@@ -94,14 +94,14 @@ class FantacalcioAssistant:
         messages.append({"role": "user", "content": user_message})
         
         try:
-            # Use faster gpt-4o-mini for simpler queries, gpt-4 for complex ones
-            model = "gpt-4o-mini" if len(user_message) < 100 and not any(word in user_message.lower() for word in ["strategia", "formazione", "analisi", "complesso"]) else "gpt-4"
+            # Always use gpt-4o-mini for faster responses
+            model = "gpt-4o-mini"
             
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.3,
-                max_tokens=500,
+                temperature=0.1,  # Lower temperature for faster, more consistent responses
+                max_tokens=300,   # Reduced tokens for faster responses
                 stream=False
             )
             

@@ -152,19 +152,75 @@
         }
         
         .input-area {
-            padding: 15px 20px;
+            padding: 20px;
             border-top: 1px solid #eee;
             display: flex;
             gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .quick-actions {
+            padding: 10px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+        }
+        
+        .quick-btn {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 1px solid #2196f3;
+            border-radius: 15px;
+            padding: 8px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #1976d2;
+            font-weight: 500;
+        }
+        
+        .quick-btn:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .btn-voice {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+        
+        .btn-voice:hover {
+            transform: scale(1.1);
+        }
+        
+        .btn-voice.recording {
+            background: linear-gradient(45deg, #ff3838, #c0392b);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
         #messageInput {
             flex: 1;
-            padding: 12px 18px;
+            padding: 18px 22px;
             border: 2px solid #ddd;
             border-radius: 25px;
             outline: none;
             font-size: 16px;
+            min-height: 60px;
+            resize: vertical;
         }
         
         #messageInput:focus {
@@ -398,7 +454,7 @@
             </div>
             
             <div class="input-area">
-                <input type="text" id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500">
+                <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
                 <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
                 <button class="btn btn-primary" onclick="sendMessage()">{{ t.send }}</button>
             </div>
@@ -667,9 +723,100 @@
             `).join('');
         }
         
-        // Enter key support
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        // Quick action functions
+        async function askQuickQuestion(question) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = question;
+            await sendMessage('classic');
+        }
+        
+        async function showFixtures() {
+            try {
+                addMessage('📅 Caricando le partite di questa giornata...', true, 'chatContainer');
+                showLoading('chatContainer');
+                
+                const response = await fetch('/api/fixtures');
+                const data = await response.json();
+                
+                hideLoading('chatContainer');
+                
+                if (data.gameweek_recommendations) {
+                    let fixtureText = '📅 **PARTITE E CONSIGLI GIORNATA**\n\n';
+                    data.gameweek_recommendations.forEach(rec => {
+                        fixtureText += `${rec}\n`;
+                    });
+                    addMessage(fixtureText, false, 'chatContainer');
+                } else {
+                    addMessage('📅 Dati partite temporaneamente non disponibili', false, 'chatContainer');
+                }
+            } catch (error) {
+                hideLoading('chatContainer');
+                addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
+            }
+        }
+        
+        // Voice input functionality
+        let isRecording = false;
+        let recognition = null;
+        
+        function toggleVoiceInput() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Il riconoscimento vocale non è supportato su questo browser. Usa Chrome o Edge.');
+                return;
+            }
+            
+            if (!isRecording) {
+                startVoiceRecognition();
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '🔴';
+                isRecording = true;
+            } else {
+                stopVoiceRecognition();
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '🎤';
+                isRecording = false;
+            }
+        }
+        
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.lang = 'it-IT';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('messageInput').value = transcript;
+                toggleVoiceInput(); // Stop recording
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                toggleVoiceInput(); // Stop recording
+            };
+            
+            recognition.onend = function() {
+                if (isRecording) {
+                    toggleVoiceInput(); // Ensure UI is reset
+                }
+            };
+            
+            recognition.start();
+        }
+        
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+        
+        // Enter key support (Ctrl+Enter for textarea)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
                 const activeTab = document.querySelector('.tab-content.active').id;
                 if (activeTab === 'historical') {
                     searchPlayers();
@@ -677,6 +824,12 @@
                     sendMessage(activeTab);
                 }
             }
+        });
+        
+        // Auto-resize textarea
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
     </script>
 </body>

@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template, request, jsonify, session
 from fantacalcio_data import League, AuctionHelper, SAMPLE_PLAYERS
+from config import app_config
 import json
 import os
 import logging
@@ -90,12 +91,12 @@ assistant = None  # Initialize lazily when needed
 
 # Simple in-memory cache for performance
 search_cache = {}
-CACHE_EXPIRY = 300  # 5 minutes
+CACHE_EXPIRY = app_config.get('search_cache_expiry', 300)
 
 # Simple rate limiting
 rate_limit_storage = {}
-RATE_LIMIT_REQUESTS = 60  # requests per minute
-RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT_REQUESTS = app_config.get('rate_limit_requests', 60)
+RATE_LIMIT_WINDOW = app_config.get('rate_limit_window', 60)
 
 def check_rate_limit(ip_address):
     """Simple rate limiting check"""
@@ -386,6 +387,21 @@ if __name__ == '__main__':
         logger.error(f"Failed to start server: {e}")
         raise
 
+
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    """Get client-safe configuration"""
+    return jsonify({
+        'features': {
+            'voice_input': app_config.get('enable_voice_input', True),
+            'real_time_updates': app_config.get('enable_real_time_updates', True),
+            'advanced_analytics': app_config.get('enable_advanced_analytics', True)
+        },
+        'ui': {
+            'theme': app_config.get('theme', 'dark'),
+            'language': app_config.get('language', 'it')
+        }
+    })
 
 @app.route('/api/analytics', methods=['POST'])
 def track_analytics():
