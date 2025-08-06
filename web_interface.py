@@ -360,7 +360,7 @@ def get_league_recommendations(league_type, participants, budget):
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 80)) # Use port 80 for deployment or PORT env var
+        port = int(os.environ.get('PORT', 5000)) # Use port 5000 for deployment or PORT env var
         debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
 
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
