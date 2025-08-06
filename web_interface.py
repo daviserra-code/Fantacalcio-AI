@@ -1,9 +1,15 @@
 
 from flask import Flask, render_template, request, jsonify, session
-from main import FantacalcioAssistant
 from fantacalcio_data import League, AuctionHelper, SAMPLE_PLAYERS
 import json
 import os
+
+# Lazy import to avoid blocking startup
+try:
+    from main import FantacalcioAssistant
+except Exception as e:
+    print(f"Warning: Failed to import FantacalcioAssistant: {e}")
+    FantacalcioAssistant = None
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio_secret_key_2024')
@@ -60,7 +66,11 @@ TRANSLATIONS = {
     }
 }
 
-assistant = FantacalcioAssistant()
+assistant = None  # Initialize lazily when needed
+
+@app.route('/health')
+def health():
+    return {'status': 'healthy'}, 200
 
 @app.route('/')
 def index():
@@ -72,6 +82,15 @@ def index():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
+    global assistant
+    if assistant is None:
+        if FantacalcioAssistant is None:
+            return jsonify({'error': 'Assistant not available'}), 500
+        try:
+            assistant = FantacalcioAssistant()
+        except Exception as e:
+            return jsonify({'error': f'Failed to initialize assistant: {str(e)}'}), 500
+    
     data = request.get_json()
     message = data.get('message', '')
     context = data.get('context', {})
@@ -87,6 +106,9 @@ def chat():
 
 @app.route('/api/reset', methods=['POST'])
 def reset_chat():
+    global assistant
+    if assistant is None:
+        return jsonify({'message': 'Chat already reset'})
     message = assistant.reset_conversation()
     return jsonify({'message': message})
 
@@ -135,4 +157,5 @@ def setup_league():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    print(f"Starting Flask server on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
