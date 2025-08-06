@@ -32,3 +32,4 @@ args = "python web_interface.py"
 [[ports]]
 localPort = 5000
 externalPort = 80
+exposeLocalhost = false

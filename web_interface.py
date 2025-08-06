@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Lazy import to avoid blocking startup
+# Initialize FantacalcioAssistant lazily to prevent startup timeout
 try:
     from main import FantacalcioAssistant
     logger.info("FantacalcioAssistant imported successfully")

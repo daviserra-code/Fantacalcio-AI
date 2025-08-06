@@ -1553,21 +1553,31 @@
         }
 
         function updateStatus(status) {
-            const indicator = document.querySelector('.status-indicator');
-            const dot = document.querySelector('.status-dot');
-            const text = indicator.querySelector('span:last-child');
+            try {
+                const indicator = document.querySelector('.status-indicator');
+                const dot = document.querySelector('.status-dot');
+                const text = indicator.querySelector('span:last-child');
 
-            if (status === 'online') {
-                dot.className = 'status-dot online';
-                text.textContent = 'Assistente Online';
-            } else if (status === 'typing') {
-                dot.className = 'status-dot online';
-                text.textContent = 'Assistente sta scrivendo...';
-            } else if (status === 'offline') {
-                dot.className = 'status-dot offline';
-                text.textContent = 'Assistente Offline';
+                if (status === 'online') {
+                    dot.className = 'status-dot online';
+                    text.textContent = 'Assistente Online';
+                } else if (status === 'typing') {
+                    dot.className = 'status-dot online';
+                    text.textContent = 'Assistente sta scrivendo...';
+                } else if (status === 'offline') {
+                    dot.className = 'status-dot offline';
+                    text.textContent = 'Assistente Offline';
+                }
+            } catch (error) {
+                console.log('Status update error:', error);
             }
         }
+
+        // Add global error handler
+        window.addEventListener('unhandledrejection', function(event) {
+            console.log('Promise rejection handled:', event.reason);
+            event.preventDefault();
+        });
 
         function showNotification(message, type = 'info') {
             const notificationArea = document.getElementById('notificationArea');
