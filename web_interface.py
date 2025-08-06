@@ -173,86 +173,42 @@ def chat():
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
     if not check_rate_limit(client_ip):
         logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-        return jsonify({'error': 'Troppe richieste. Rallenta per favore.'}), 429
+        return jsonify({'error': 'Too many requests. Please slow down.'}), 429
     
     try:
         if assistant is None:
             if FantacalcioAssistant is None:
                 logger.error("FantacalcioAssistant not available")
-                return jsonify({'error': 'Servizio temporaneamente non disponibile. Riprova.'}), 503
+                return jsonify({'error': 'Assistant service is temporarily unavailable. Please try again later.'}), 503
             try:
                 logger.info("Initializing FantacalcioAssistant")
                 assistant = FantacalcioAssistant()
                 logger.info("FantacalcioAssistant initialized successfully")
             except Exception as e:
                 logger.error(f"Assistant initialization error: {str(e)}")
-                return jsonify({'error': 'Errore di inizializzazione. Riprova.'}), 503
+                return jsonify({'error': 'Assistant service initialization failed. Please contact support.'}), 503
         
         data = request.get_json()
         if not data:
-            return jsonify({'error': 'Dati non validi'}), 400
+            return jsonify({'error': 'Invalid JSON data'}), 400
             
         message = data.get('message', '').strip()
         context = data.get('context', {})
         lang = session.get('lang', 'it')
         
         if not message:
-            return jsonify({'error': 'Messaggio richiesto'}), 400
+            return jsonify({'error': 'Message required'}), 400
         
-        # Simplified context for better performance
+        # Enhanced context with session info
         context.update({
             'language': lang,
             'session_id': session.get('session_id', 'anonymous'),
-            'request_type': 'chat_query'
+            'timestamp': datetime.now().isoformat(),
+            'user_agent': request.headers.get('User-Agent', ''),
         })
         
-        # Simpler message processing for speed
         logger.info(f"Processing chat message: {message[:50]}...")
-        
-        # Set a timeout for the response generation using threading
-        import threading
-        import queue
-        
-        response_queue = queue.Queue()
-        exception_queue = queue.Queue()
-        
-        def get_response_with_timeout():
-            try:
-                result = assistant.get_response(message, context)
-                response_queue.put(result)
-            except Exception as e:
-                exception_queue.put(e)
-        
-        # Start the response generation in a separate thread
-        thread = threading.Thread(target=get_response_with_timeout)
-        thread.daemon = True
-        thread.start()
-        
-        # Wait for response with timeout
-        thread.join(timeout=25)
-        
-        if thread.is_alive():
-            # Thread is still running, timeout occurred
-            raise TimeoutError("Response generation timeout")
-        
-        # Check for exceptions
-        if not exception_queue.empty():
-            raise exception_queue.get()
-        
-        # Get the response
-        if not response_queue.empty():
-            response = response_queue.get()
-        else:
-            raise TimeoutError("No response generated")
-        
-        # Apply corrections if response is valid
-        if response and not any(word in response.lower() for word in ['errore', 'timeout', '❌']):
-            try:
-                response = assistant.corrections_manager.apply_corrections(response, "chat_response")
-            except Exception as e:
-                logger.warning(f"Corrections failed: {e}")
-        
-        logger.info(f"Response generated: {len(response)} characters")
+        response = assistant.get_response(message, context)
         
         # Log response time
         elapsed = (datetime.now() - start_time).total_seconds()
@@ -268,15 +224,9 @@ def chat():
             'cache_stats': cache_stats
         })
         
-    except TimeoutError:
-        logger.warning("Chat request timed out")
-        return jsonify({'error': 'Richiesta troppo lenta. Prova con una domanda più semplice.'}), 408
     except Exception as e:
         logger.error(f"Chat endpoint error: {str(e)}")
-        error_msg = 'Errore temporaneo. Riprova tra un momento.'
-        if 'timeout' in str(e).lower():
-            error_msg = 'Timeout. Prova con una domanda più specifica.'
-        return jsonify({'error': error_msg}), 500
+        return jsonify({'error': 'An unexpected error occurred. Please try again.'}), 500
 
 @app.route('/api/reset', methods=['POST'])
 def reset_chat():

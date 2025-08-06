@@ -64,74 +64,24 @@
 
         /* Mobile Optimizations */
         @media (max-width: 768px) {
-            .container {
-                margin: 5px;
-                border-radius: 10px;
-                min-height: 95vh;
+            .mobile-optimized .container {
+                padding: 0.5rem;
             }
 
-            .chat-container {
-                height: 60vh;
-                padding: 15px;
-            }
-
-            .chat-messages {
-                max-height: 40vh;
-                overflow-y: auto;
-            }
-
-            #messageInput, .chat-input {
-                font-size: 16px !important; /* Prevents zoom on iOS */
+            .mobile-optimized .chat-input {
+                font-size: 16px; /* Prevents zoom on iOS */
                 min-height: 44px; /* Touch target size */
-                padding: 12px 16px;
-                border-radius: 22px;
-                resize: none;
-                max-height: 100px;
             }
 
-            .quick-actions {
-                padding: 10px 15px;
-                gap: 8px;
-                flex-wrap: wrap;
+            .mobile-optimized .quick-actions {
+                padding: 0.5rem;
+                gap: 0.5rem;
             }
 
-            .quick-action-btn, .quick-btn {
+            .mobile-optimized .quick-action-btn {
                 min-height: 44px;
                 min-width: 44px;
-                font-size: 0.85rem;
-                padding: 8px 12px;
-                flex: 1 1 calc(50% - 4px);
-                text-align: center;
-            }
-
-            .input-wrapper {
-                flex-direction: row;
-                gap: 10px;
-                align-items: flex-end;
-            }
-
-            .input-actions {
-                flex-direction: row;
-                gap: 5px;
-            }
-
-            .btn-voice, .btn-primary {
-                min-width: 44px;
-                min-height: 44px;
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 1.1rem;
-            }
-
-            .header p {
-                font-size: 0.8rem;
-            }
-
-            .tab {
-                font-size: 0.75rem;
-                padding: 8px 4px;
+                font-size: 0.9rem;
             }
         }
 
@@ -424,28 +374,6 @@
             min-height: 90vh;
             display: flex;
             flex-direction: column;
-            position: relative;
-        }
-
-        /* Touch improvements for mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .btn, .quick-btn, .quick-action-btn {
-                min-height: 48px;
-                min-width: 48px;
-                touch-action: manipulation;
-                -webkit-tap-highlight-color: rgba(0,0,0,0.1);
-            }
-
-            .tab {
-                min-height: 44px;
-                touch-action: manipulation;
-            }
-
-            input, textarea, select {
-                -webkit-appearance: none;
-                -webkit-border-radius: 0;
-                border-radius: 8px;
-            }
         }
 
         .header {
@@ -1512,12 +1440,8 @@
             currentTab = tabName;
         }
 
-        function addMessage(content, isUser = false, containerId = 'chatContainer') {
-            const chatContainer = document.getElementById(containerId);
-            if (!chatContainer) {
-                console.error('Chat container not found:', containerId);
-                return;
-            }
+        function addMessage(content, isUser = false, container = 'chatContainer') {
+            const chatContainer = document.getElementById(container);
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
             messageDiv.innerHTML = content;
@@ -1534,14 +1458,12 @@
             }
         }
 
-        function showTypingIndicator(containerId = 'chatContainer') {
+        function showTypingIndicator() {
             const indicator = document.getElementById('typingIndicator');
             if (indicator) {
                 indicator.style.display = 'flex';
-                const chatContainer = document.getElementById(containerId);
-                if (chatContainer) {
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
 
@@ -1559,62 +1481,28 @@
             }
         }
 
-        function getInputId(containerId) {
-            if (containerId === 'chatContainerMantra') return 'messageInputMantra';
-            if (containerId === 'chatContainerDraft') return 'messageInputDraft';
-            if (containerId === 'chatContainerSuper') return 'messageInputSuper';
-            return 'messageInput';
-        }
-
-        function getLeagueContext() {
-            const selectedTab = document.querySelector('.tab.active').id;
-            let context = { leagueType: selectedTab };
-
-            if (selectedTab === 'classic') {
-                context.participants = parseInt(document.getElementById('participants')?.value || 8);
-                context.budget = parseInt(document.getElementById('budget')?.value || 500);
-            } else if (selectedTab === 'mantra') {
-                context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
-                context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
-            } else if (selectedTab === 'draft') {
-                context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
-                context.draftOrder = document.getElementById('draftOrder')?.value;
-            } else if (selectedTab === 'superscudetto') {
-                context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
-                context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
-            }
-            return context;
-        }
-
         async function sendMessage(mode = 'classic') {
+            const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
             const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-            const inputId = getInputId(containerId);
-            const input = document.getElementById(inputId);
-            const message = input.value.trim();
+
+            const messageInputEl = document.getElementById(inputId);
+            const message = messageInputEl.value.trim();
 
             if (!message) return;
 
-            // Clear input
-            input.value = '';
+            const startTime = Date.now();
 
             // Add user message
             addMessage(message, true, containerId);
+            messageInputEl.value = '';
 
             // Show typing indicator
-            showTypingIndicator(containerId);
+            showTypingIndicator();
+
+            // Update status
             updateStatus('typing');
 
-            const startTime = Date.now();
-
-            // Create AbortController for timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-            }, 30000); // 30 second timeout
-
             try {
-                const context = getLeagueContext();
-
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -1622,18 +1510,13 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        context: context
-                    }),
-                    signal: controller.signal
+                        context: getContext()
+                    })
                 });
 
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const data = await response.json();
+
+                // Hide typing indicator
                 hideTypingIndicator();
 
                 // Calculate response time
@@ -1652,20 +1535,8 @@
                 updateStatus('online');
 
             } catch (error) {
-                clearTimeout(timeoutId);
                 hideTypingIndicator();
-                console.error('Chat error:', error);
-
-                let errorMessage = '❌ Errore di connessione. Riprova.';
-                if (error.name === 'AbortError') {
-                    errorMessage = '❌ Timeout della richiesta (30s). Riprova con una domanda più semplice.';
-                } else if (error.message.includes('HTTP')) {
-                    errorMessage = `❌ Errore del server: ${error.message}`;
-                } else if (error.message.includes('Failed to fetch')) {
-                    errorMessage = '❌ Errore di rete. Controlla la connessione.';
-                }
-
-                addMessage(errorMessage, false, containerId);
+                addMessage('❌ Errore di connessione. Riprova.', false, containerId);
                 showNotification('Errore di connessione', 'error');
                 updateStatus('offline');
             }
@@ -1726,6 +1597,26 @@
             if (suggestions) {
                 suggestions.style.display = 'none';
             }
+        }
+
+        function getContext() {
+            const selectedTab = document.querySelector('.tab.active').id;
+            let context = { leagueType: selectedTab };
+
+            if (selectedTab === 'classic') {
+                context.participants = parseInt(document.getElementById('participants')?.value || 8);
+                context.budget = parseInt(document.getElementById('budget')?.value || 500);
+            } else if (selectedTab === 'mantra') {
+                context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
+            } else if (selectedTab === 'draft') {
+                context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
+                context.draftOrder = document.getElementById('draftOrder')?.value;
+            } else if (selectedTab === 'superscudetto') {
+                context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
+            }
+            return context;
         }
 
         async function resetChat() {
@@ -1949,20 +1840,11 @@
             }
         }
 
-        // Quick action functions with error handling
+        // Quick action functions
         async function askQuickQuestion(question) {
-            try {
-                const messageInput = document.getElementById('messageInput');
-                if (!messageInput) {
-                    console.error('Message input not found');
-                    return;
-                }
-                messageInput.value = question;
-                await sendMessage('classic');
-            } catch (error) {
-                console.error('Quick question error:', error);
-                showNotification('Errore nell\'invio della domanda', 'error');
-            }
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = question;
+            await sendMessage('classic');
         }
 
         async function showFixtures() {
@@ -2050,80 +1932,32 @@
             }
         }
 
-        // Enhanced event listeners with error handling
-        function setupEventListeners() {
-            // Main message input
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage('classic').catch(console.error);
-                    }
-                });
-
-                messageInput.addEventListener('input', function(e) {
-                    const value = e.target.value;
-                    if (value.length > 10) {
-                        showSuggestions();
-                    } else {
-                        hideSuggestions();
-                    }
-                });
-
-                messageInput.addEventListener('focus', function() {
-                    if (this.value.length > 10) {
-                        showSuggestions();
-                    }
-                });
-
-                messageInput.addEventListener('blur', function() {
-                    setTimeout(() => hideSuggestions(), 150);
-                });
+        // Event listeners
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage('classic');
             }
+        });
 
-            // Setup other mode inputs
-            ['Mantra', 'Draft', 'Super'].forEach(mode => {
-                const input = document.getElementById(`messageInput${mode}`);
-                if (input) {
-                    input.addEventListener('keypress', function(e) {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            sendMessage(mode.toLowerCase()).catch(console.error);
-                        }
-                    });
-                }
-            });
-
-            // Search input
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performSearch().catch(console.error);
-                    }
-                });
-
-                searchInput.addEventListener('input', function(e) {
-                    const query = e.target.value.trim();
-                    clearTimeout(searchTimeout);
-                    if (query.length >= 2) {
-                        searchTimeout = setTimeout(() => {
-                            performSearch().catch(console.error);
-                        }, 500);
-                    } else {
-                        hideSearchSuggestions();
-                    }
-                });
+        document.getElementById('messageInput').addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (value.length > 10) {
+                showSuggestions();
+            } else {
+                hideSuggestions();
             }
-        }
+        });
 
-        // Call setup when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupEventListeners);
-        } else {
-            setupEventListeners();
-        }
+        document.getElementById('messageInput').addEventListener('focus', function() {
+            if (this.value.length > 10) {
+                showSuggestions();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('blur', function() {
+            setTimeout(() => hideSuggestions(), 150);
+        });
 
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -2202,13 +2036,10 @@
 
             // Auto-resize textarea on mobile
             const textarea = document.getElementById('messageInput');
-            if (textarea) {
-                textarea.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = (this.scrollHeight) + 'px';
-                });
-            }
-
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
 
             // Pull to refresh
             document.addEventListener('touchstart', function(e) {

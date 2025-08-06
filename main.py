@@ -51,29 +51,32 @@ class FantacalcioAssistant:
         self.cache_stats = {'hits': 0, 'misses': 0}
         
         self.system_prompt = """
-        Sei un assistente virtuale ESPERTO per fantacalcio Serie A. Il tuo nome è Fantacalcio AI.
+        Sei un assistente virtuale professionale per fantacalcio Serie A, progettato per un'app mobile. 
+        Il tuo nome è Fantacalcio AI.
+        Il tuo scopo è aiutare gli utenti a gestire la loro rosa di fantacalcio per la Serie A italiana in modo efficace e strategico.
+        Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
+        Il tuo contesto è sempre la stagione 2025-26 della Serie A italiana.
+        Per ragioni di statistica e informazioni, la stagione 2024-25 è per il momento la più aggiornata disponibile.
         
-        REGOLE FONDAMENTALI:
-        1. USA SOLO dati reali dal database - NON inventare mai statistiche, prezzi o informazioni
-        2. Se non hai dati specifici, dillo chiaramente: "Non ho dati aggiornati su..."
-        3. Basati sempre sui dati della stagione 2024-25 (la più recente disponibile)
-        4. Risposte CONCISE e PRATICHE - max 300 parole
-        5. SEMPRE prezzi reali quando suggerisci giocatori
+        Il tuo compito è:
+        - Fornire consigli strategici su aste e costruzione della rosa
+        - Suggerire formazioni specifiche con nomi di giocatori
+        - Agire come consulente d'asta con raccomandazioni precise
+        - Assistere con regole e meccaniche del fantacalcio italiano
+        - Fornire consigli su gestione budget e distribuzione crediti
+        - Suggerire strategie per diverse modalità di gioco
+        - Dare consigli su ruoli, formazioni e tattiche specifiche
+        - Spiegare criteri di valutazione dei giocatori (fantamedia, bonus, rigori,goal fatti, assist,espulsioni,presenze)
+        - Consigliare giocatori specifici per ogni ruolo basandoti sui dati disponibili
+        - Fornire informazioni aggiornate su giocatori, squadre e statistiche
         
-        COMPETENZE:
-        - Consigli su aste e costruzione rosa per tutte le modalità (Classic, Mantra, Draft, Superscudetto)
-        - Formazioni specifiche con nomi reali e prezzi corretti
-        - Strategie budget e distribuzione crediti
-        - Analisi giocatori basata su: fantamedia, presenze, bonus, rigori, assist, gol
+        HAI ACCESSO A UN DATABASE COMPLETO con informazioni sui giocatori di Serie A. 
+        Quando ti vengono fornite informazioni rilevanti dal database, usale per dare consigli specifici e dettagliati.
+        Puoi e devi suggerire formazioni complete con nomi di giocatori specifici, prezzi e strategie di acquisto.
         
-        STILE RISPOSTA:
-        - Competente e diretto
-        - Sempre nomi specifici quando disponibili
-        - Prezzi esatti dai dati
-        - Giustifica le scelte con statistiche reali
-        - Se mancano dati: ammettilo e suggerisci alternative
+        Rispondi sempre con informazioni concrete e pratiche. Se hai dati sui giocatori, usali confidentemente.
         
-        IMPORTANTE: Ogni risposta deve essere verificabile coi dati reali disponibili.
+        Stile: competente, diretto, specifico. Fornisci sempre nomi di giocatori quando richiesti e disponibili nei dati.
         """
         
         self.conversation_history = []
@@ -97,45 +100,38 @@ class FantacalcioAssistant:
         
         messages = [{"role": "system", "content": self.system_prompt}]
         
-        # Get relevant knowledge from vector database (limit to prevent slow responses)
-        try:
-            relevant_context = self.knowledge_manager.get_context_for_query(user_message, max_results=3)
-            if relevant_context:
-                messages.append({"role": "system", "content": relevant_context})
-        except Exception as e:
-            print(f"Warning: Knowledge retrieval failed: {e}")
+        # Get relevant knowledge from vector database
+        relevant_context = self.knowledge_manager.get_context_for_query(user_message)
+        if relevant_context:
+            messages.append({"role": "system", "content": relevant_context})
         
         # Add context if provided (league info, budget, etc.)
         if context:
-            context_msg = f"Contesto: {json.dumps(context, ensure_ascii=False)}"
+            context_msg = f"Contesto attuale: {json.dumps(context, ensure_ascii=False)}"
             messages.append({"role": "system", "content": context_msg})
         
-        # Add conversation history (last 4 messages only for speed)
-        messages.extend(self.conversation_history[-4:])
+        # Add conversation history (last 6 messages to manage token usage)
+        messages.extend(self.conversation_history[-6:])
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         try:
-            # Use gpt-4o-mini for fastest responses
+            # Always use gpt-4o-mini for faster responses
             model = "gpt-4o-mini"
             
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.1,  # Even lower temperature for speed and consistency
-                max_tokens=200,   # Further reduced tokens for faster responses
-                timeout=20,       # Reduced timeout to 20 seconds
+                temperature=0.1,  # Lower temperature for faster, more consistent responses
+                max_tokens=300,   # Reduced tokens for faster responses
                 stream=False
             )
             
             ai_response = response.choices[0].message.content
             
             # Apply persistent corrections to response
-            try:
-                ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
-            except Exception as e:
-                print(f"Warning: Corrections failed: {e}")
+            ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
             
             # Cache response with TTL
             self.cache_stats['misses'] += 1
@@ -150,21 +146,14 @@ class FantacalcioAssistant:
             self.response_cache[cache_key] = ai_response
             self.cache_ttl[cache_key] = current_time
             
-            # Update conversation history (keep it short)
+            # Update conversation history
             self.conversation_history.append({"role": "user", "content": user_message})
             self.conversation_history.append({"role": "assistant", "content": ai_response})
-            
-            # Keep conversation history manageable
-            if len(self.conversation_history) > 8:
-                self.conversation_history = self.conversation_history[-8:]
             
             return ai_response
             
         except Exception as e:
-            error_msg = str(e)
-            if "timeout" in error_msg.lower():
-                return "⏰ Richiesta troppo lenta. Prova con una domanda più specifica."
-            return f"❌ Errore temporaneo. Riprova: {error_msg[:100]}"
+            return f"Errore nel processare la richiesta: {str(e)}"
     
     def reset_conversation(self):
         """Reset conversation history"""
