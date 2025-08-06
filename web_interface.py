@@ -171,7 +171,6 @@ def chat():
     """Main chat endpoint"""
     try:
         request_start = datetime.now()
-        log_request()
 
         if not assistant:
             return jsonify({'error': 'Assistant not available'}), 503

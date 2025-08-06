@@ -1546,9 +1546,11 @@
 
             } catch (error) {
                 hideTypingIndicator();
+                console.error('Chat request failed:', error);
                 addMessage('❌ Errore di connessione. Riprova.', false, containerId);
                 showNotification('Errore di connessione', 'error');
                 updateStatus('offline');
+                return; // Exit early to prevent further errors
             }
         }
 
@@ -1576,7 +1578,10 @@
         // Add global error handler
         window.addEventListener('unhandledrejection', function(event) {
             console.log('Promise rejection handled:', event.reason);
-            event.preventDefault();
+            // Only prevent default for network/API errors, not actual bugs
+            if (event.reason && (event.reason.name === 'TypeError' || event.reason.message?.includes('fetch'))) {
+                event.preventDefault();
+            }
         });
 
         function showNotification(message, type = 'info') {
