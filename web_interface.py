@@ -1,10 +1,12 @@
-from flask import Flask, render_template, request, jsonify, session
-from fantacalcio_data import League, AuctionHelper, SAMPLE_PLAYERS
-from config import app_config
-import json
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import os
+import json
 import logging
 from datetime import datetime
+import uuid
+import hashlib
+import signal
+import sys
 
 # Configure logging
 logging.basicConfig(
@@ -32,7 +34,7 @@ TRANSLATIONS = {
         'subtitle': 'Il tuo consulente per vincere il fantacalcio',
         'modes': {
             'classic': 'Classic',
-            'mantra': 'Mantra', 
+            'mantra': 'Mantra',
             'draft': 'Draft',
             'superscudetto': 'Superscudetto'
         },
@@ -47,7 +49,7 @@ TRANSLATIONS = {
         'filters': 'Filtri',
         'all_roles': 'Tutti i ruoli',
         'goalkeeper': 'Portieri',
-        'defender': 'Difensori', 
+        'defender': 'Difensori',
         'midfielder': 'Centrocampisti',
         'forward': 'Attaccanti'
     },
@@ -57,7 +59,7 @@ TRANSLATIONS = {
         'modes': {
             'classic': 'Classic',
             'mantra': 'Mantra',
-            'draft': 'Draft', 
+            'draft': 'Draft',
             'superscudetto': 'Superscudetto'
         },
         'historical': 'Historical Stats',
@@ -72,14 +74,17 @@ TRANSLATIONS = {
         'all_roles': 'All roles',
         'goalkeeper': 'Goalkeepers',
         'defender': 'Defenders',
-        'midfielder': 'Midfielders', 
+        'midfielder': 'Midfielders',
         'forward': 'Forwards'
     }
 }
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio_secret_key_2024')
+app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio-dev-key-2024')
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 300  # Cache static files
+app.config['JSON_SORT_KEYS'] = False  # Improve JSON performance
 
 # Add request logging middleware
 @app.before_request
@@ -118,13 +123,12 @@ def check_rate_limit(ip_address):
 
 @app.route('/health')
 def health():
-    return {
-        'status': 'healthy', 
+    """Health check endpoint for deployments"""
+    return jsonify({
+        'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'port': os.environ.get('PORT', 5000), 
-        'assistant_available': FantacalcioAssistant is not None,
-        'cache_size': len(search_cache)
-    }, 200
+        'version': '1.0.0'
+    }), 200
 
 @app.route('/metrics')
 def metrics():
@@ -163,21 +167,17 @@ def index():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    global assistant
-    start_time = datetime.now()
-
-    # Rate limiting check
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
-    if not check_rate_limit(client_ip):
-        logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-        return jsonify({'error': 'Too many requests. Please slow down.'}), 429
-
+    """Main chat endpoint"""
     try:
-        if assistant is None:
-            if FantacalcioAssistant is None:
-                logger.error("FantacalcioAssistant not available")
-                return jsonify({'error': 'Assistant service is temporarily unavailable. Please try again later.'}), 503
-        
+        request_start = datetime.now()
+        log_request()
+
+        if not assistant:
+            return jsonify({'error': 'Assistant not available'}), 503
+
+        # Add request timeout handling
+        request.environ['wsgi.url_scheme'] = 'https' if request.headers.get('X-Forwarded-Proto') == 'https' else 'http'
+
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid JSON data'}), 400
@@ -201,7 +201,7 @@ def chat():
         response = assistant.get_response(message, context)
 
         # Log response time
-        elapsed = (datetime.now() - start_time).total_seconds()
+        elapsed = (datetime.now() - request_start).total_seconds()
         logger.info(f"Chat response generated in {elapsed:.2f}s")
 
         # Get cache statistics for performance monitoring
@@ -366,19 +366,19 @@ if __name__ == '__main__':
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
-        logger.info(f"Assistant available: {FantacalcioAssistant is not None}")
+        logger.info(f"Assistant available: {assistant is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
 
-        # Set session configuration
-        app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
-
+        # Optimize for production deployment
         app.run(
-            host='0.0.0.0', 
-            port=port, 
-            debug=debug_mode, 
+            host='0.0.0.0',
+            port=port,
+            debug=debug_mode,
             threaded=True,
-            use_reloader=False  # Prevent double startup in development
+            use_reloader=False,
+            request_handler=None,  # Use default handler
+            passthrough_errors=False
         )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
@@ -731,7 +731,7 @@ def export_data():
                 writer.writerow(['Name', 'Team', 'Role', 'Fantamedia', 'Price', 'Appearances'])
 
                 for player in SAMPLE_PLAYERS:
-                    writer.writerow([player.name, player.team, player.role, 
+                    writer.writerow([player.name, player.team, player.role,
                                    player.fantamedia, player.price, player.appearances])
 
                 return jsonify({
