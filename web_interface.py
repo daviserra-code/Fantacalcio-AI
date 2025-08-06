@@ -199,16 +199,38 @@ def chat():
         if not message:
             return jsonify({'error': 'Message required'}), 400
         
-        # Enhanced context with session info
+        # Enhanced context with session info and validation
         context.update({
             'language': lang,
             'session_id': session.get('session_id', 'anonymous'),
             'timestamp': datetime.now().isoformat(),
             'user_agent': request.headers.get('User-Agent', ''),
+            'request_type': 'chat_query',
+            'validation_mode': 'strict'
         })
         
+        # Add instruction for more accurate responses
+        enhanced_message = f"""
+        Domanda dell'utente: {message}
+        
+        IMPORTANTE: 
+        - Rispondi SOLO basandoti sui dati del database disponibili
+        - Se non hai informazioni specifiche, dillo chiaramente
+        - Non inventare statistiche o prezzi
+        - Usa sempre i dati reali dei giocatori quando disponibili
+        - Se chiesti formazioni specifiche, usa nomi di giocatori reali con prezzi corretti
+        - Mantieni le risposte concise e pratiche
+        """
+        
         logger.info(f"Processing chat message: {message[:50]}...")
-        response = assistant.get_response(message, context)
+        response = assistant.get_response(enhanced_message, context)
+        
+        # Post-process response to ensure accuracy
+        if response and not response.startswith('Errore'):
+            # Remove any potential hallucinations by validating against known data
+            response = assistant.corrections_manager.apply_corrections(response, "chat_response")
+        
+        logger.info(f"Response generated: {len(response)} characters")
         
         # Log response time
         elapsed = (datetime.now() - start_time).total_seconds()
