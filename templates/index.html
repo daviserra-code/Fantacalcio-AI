@@ -1083,11 +1083,11 @@
                     <button class="tab-btn" onclick="switchCorrectionTab('add')">Aggiungi</button>
                     <button class="tab-btn" onclick="switchCorrectionTab('stats')">Statistiche</button>
                 </div>
-                
+
                 <div id="viewTab" class="correction-tab-content">
                     <div id="correctionsList"></div>
                 </div>
-                
+
                 <div id="addTab" class="correction-tab-content" style="display: none;">
                     <div class="form-group">
                         <label>Tipo Correzione:</label>
@@ -1105,9 +1105,9 @@
                         <label>Informazione Corretta:</label>
                         <textarea id="correctInfo" placeholder="Inserisci l'informazione corretta..."></textarea>
                     </div>
-                    <button onclick="addCorrection()" class="btn btn-primary">Aggiungi Correzione</button>
+                    <button onclick="addCorrection()" class="btn-primary">Aggiungi Correzione</button>
                 </div>
-                
+
                 <div id="statsTab" class="correction-tab-content" style="display: none;">
                     <div id="correctionStats"></div>
                 </div>
@@ -1906,11 +1906,11 @@
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // Show selected tab
             document.getElementById(tabName + 'Tab').style.display = 'block';
             event.target.classList.add('active');
-            
+
             if (tabName === 'stats') {
                 loadCorrectionStats();
             }
@@ -1920,7 +1920,7 @@
             try {
                 const response = await fetch('/api/corrections');
                 const data = await response.json();
-                
+
                 const listDiv = document.getElementById('correctionsList');
                 if (data.corrections && data.corrections.length > 0) {
                     listDiv.innerHTML = data.corrections.map(correction => `
@@ -1944,7 +1944,7 @@
             const type = document.getElementById('correctionType').value;
             const incorrect = document.getElementById('incorrectInfo').value.trim();
             const correct = document.getElementById('correctInfo').value.trim();
-            
+
             if (!incorrect || !correct) {
                 showNotification('Compila tutti i campi', 'warning');
                 return;
@@ -1979,34 +1979,33 @@
 
         async function loadCorrectionStats() {
             try {
-                const response = await fetch('/api/corrections');
+                const response = await fetch('/api/corrections/stats');
                 const data = await response.json();
-                
+
                 const statsDiv = document.getElementById('correctionStats');
-                const stats = data.stats || {};
-                
-                statsDiv.innerHTML = `
-                    <div class="correction-stats">
-                        <div class="stat-item">
-                            <span>Totale Correzioni:</span>
-                            <span>${stats.total_corrections || 0}</span>
+                if (data.error) {
+                    statsDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                } else {
+                    statsDiv.innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h4>Correzioni Generali</h4>
+                                <p class="stat-number">${data.total_corrections || 0}</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Correzioni Giocatori</h4>
+                                <p class="stat-number">${data.player_corrections_count || 0}</p>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Pattern Risposta</h4>
+                                <p class="stat-number">${data.response_patterns_count || 0}</p>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <span>Correzioni Applicate:</span>
-                            <span>${stats.total_applications || 0}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span>Correzioni Giocatori:</span>
-                            <span>${stats.player_corrections || 0}</span>
-                        </div>
-                        <div class="stat-item">
-                            <span>Ultima Aggiunta:</span>
-                            <span>${stats.last_created || 'N/A'}</span>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
             } catch (error) {
                 console.error('Error loading correction stats:', error);
+                document.getElementById('correctionStats').innerHTML = '<p style="color: red;">Errore nel caricamento delle statistiche</p>';
             }
         }
 
@@ -2064,7 +2063,7 @@
         function compareSelectedPlayers() {
             const player1 = document.getElementById('player1').value.trim();
             const player2 = document.getElementById('player2').value.trim();
-            
+
             if (!player1 || !player2) {
                 showNotification('Inserisci entrambi i nomi dei giocatori', 'warning');
                 return;
@@ -2092,11 +2091,11 @@
         function displayComparisonResults(data) {
             const resultsDiv = document.getElementById('comparisonResults');
             let html = '<div class="comparison-table">';
-            
+
             if (data.comparison.length >= 2) {
                 const player1 = data.comparison[0];
                 const player2 = data.comparison[1];
-                
+
                 html += `
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
@@ -2132,7 +2131,7 @@
                     </table>
                 `;
             }
-            
+
             html += '</div>';
             resultsDiv.innerHTML = html;
         }
@@ -2161,28 +2160,6 @@
                 console.error('Export error:', error);
                 showNotification('Errore nell\'esportazione', 'error');
             });
-        }
-
-        async function loadAnalyticsData() {
-            try {
-                const response = await fetch('/api/user-analytics');
-                const data = await response.json();
-                
-                const topSearches = document.getElementById('topSearches');
-                const cacheHitRate = document.getElementById('cacheHitRate');
-                
-                if (topSearches && data.most_searched_players) {
-                    topSearches.innerHTML = data.most_searched_players.map(p => 
-                        `<div>${p.name} (${p.team}) - ${p.searches} ricerche</div>`
-                    ).join('');
-                }
-                
-                if (cacheHitRate && data.performance_metrics) {
-                    cacheHitRate.textContent = data.performance_metrics.cache_hit_rate.toFixed(1);
-                }
-            } catch (error) {
-                console.error('Analytics loading error:', error);
-            }
         }
 
         // Voice input functionality
@@ -2245,175 +2222,6 @@
         }
 
         // Accessibility functions
-        function toggleAccessibilityMenu() {
-            const menu = document.getElementById('accessibilityMenu');
-            menu.classList.toggle('show');
-        }
-
-        function toggleHighContrast() {
-            document.body.classList.toggle('high-contrast');
-        }
-
-        function toggleLargeText() {
-            document.body.classList.toggle('large-text');
-        }
-
-        function toggleReduceMotion() {
-            document.body.classList.toggle('reduce-motion');
-        }
-
-        function toggleFocusIndicators() {
-            document.body.classList.toggle('focus-indicators');
-        }
-
-        function resetAccessibility() {
-            document.body.classList.remove('high-contrast', 'large-text', 'reduce-motion', 'focus-indicators');
-            // Reset checkboxes
-            document.getElementById('highContrast').checked = false;
-            document.getElementById('largeText').checked = false;
-            document.getElementById('reduceMotion').checked = false;
-            document.getElementById('focusIndicators').checked = false;
-        }
-
-        // Event listeners
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage('classic');
-            }
-        });
-
-        document.getElementById('messageInput').addEventListener('input', function(e) {
-            const value = e.target.value;
-            if (value.length > 10) {
-                showSuggestions();
-            } else {
-                hideSuggestions();
-            }
-        });
-
-        document.getElementById('messageInput').addEventListener('focus', function() {
-            if (this.value.length > 10) {
-                showSuggestions();
-            }
-        });
-
-        document.getElementById('messageInput').addEventListener('blur', function() {
-            setTimeout(() => hideSuggestions(), 150);
-        });
-
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-
-            // Clear previous timeout
-            if (searchTimeout) {
-                clearTimeout(searchTimeout);
-            }
-
-            // Show/hide clear button
-            const clearBtn = document.getElementById('clearBtn');
-            clearBtn.style.display = query ? 'block' : 'none';
-
-            // Debounced search suggestions
-            if (query.length >= 2) {
-                searchTimeout = setTimeout(() => {
-                    getSearchSuggestions(query);
-                }, 300);
-            } else {
-                hideSearchSuggestions();
-            }
-        });
-
-        document.getElementById('searchInput').addEventListener('focus', function() {
-            if (this.value.length >= 2) {
-                getSearchSuggestions(this.value);
-            }
-        });
-
-        document.getElementById('searchInput').addEventListener('blur', function() {
-            setTimeout(() => hideSearchSuggestions(), 150);
-        });
-
-        async function getSearchSuggestions(query) {
-            const suggestions = [
-                'Osimhen', 'Vlahovic', 'Lautaro', 'Barella', 'Theo Hernandez',
-                'Kvaratskhelia', 'Leao', 'Immobile', 'Bastoni', 'Calhanoglu'
-            ].filter(name => name.toLowerCase().includes(query.toLowerCase()));
-
-            showSearchSuggestions(suggestions.slice(0, 5));
-        }
-
-        // Initialize recent searches on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            updateRecentSearchesDisplay();
-
-            // Initialize live updates
-            startLiveUpdates();
-
-            // Show welcome notification
-            setTimeout(() => {
-                showNotification('Benvenuto! Assistente fantacalcio pronto.', 'success');
-            }, 1000);
-        });
-
-        function startLiveUpdates() {
-            // Simulate live updates every 30 seconds
-            setInterval(() => {
-                // Check for updates (this would connect to real-time data in production)
-                updateStatus('online');
-            }, 30000);
-        }
-
-        // Mobile optimizations
-        let isMobile = window.innerWidth <= 768;
-        let startY, endY;
-
-        if (isMobile) {
-            document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
-
-            // Auto-resize textarea on mobile
-            const textarea = document.getElementById('messageInput');
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-
-            // Pull to refresh
-            document.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-            });
-
-            document.addEventListener('touchmove', function(e) {
-                endY = e.touches[0].clientY;
-                if (window.scrollY === 0 && endY > startY + 50) {
-                    document.getElementById('swipeIndicator').classList.add('show');
-                }
-            });
-
-            document.addEventListener('touchend', function(e) {
-                if (window.scrollY === 0 && endY > startY + 100) {
-                    location.reload();
-                }
-                document.getElementById('swipeIndicator').classList.remove('show');
-            });
-
-            // Haptic feedback for iPhone
-            if (/iPhone|iPad/.test(navigator.userAgent)) {
-                window.addEventListener('click', function() {
-                    if (navigator.vibrate) {
-                        navigator.vibrate(10);
-                    }
-                });
-            }
-        }
-
-        // Accessibility Functions
         function toggleAccessibilityMenu() {
             const menu = document.getElementById('accessibilityMenu');
             menu.classList.toggle('show');

@@ -30,18 +30,8 @@ class FantacalcioAssistant:
         # Initialize corrections manager for persistent corrections
         self.corrections_manager = CorrectionsManager()
         
-        # Load training data if available
-        try:
-            self.knowledge_manager.load_from_jsonl("training_data.jsonl")
-        except Exception as e:
-            print(f"⚠️ Could not load training_data.jsonl: {e}")
-            
-        # Try loading extended training data as fallback
-        try:
-            self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
-        except Exception as e:
-            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
-            print("ℹ️ Running with limited knowledge base - responses will be based on general principles")
+        # Load training data once at startup
+        self._load_training_data()
         
         # Response cache with TTL (Time To Live)
         self.response_cache = {}
@@ -80,6 +70,30 @@ class FantacalcioAssistant:
         """
         
         self.conversation_history = []
+    
+    def _load_training_data(self):
+        """Load training data once at startup"""
+        training_loaded = False
+        
+        # Try loading main training data
+        try:
+            self.knowledge_manager.load_from_jsonl("training_data.jsonl")
+            training_loaded = True
+            print("✅ Loaded main training data")
+        except Exception as e:
+            print(f"⚠️ Could not load training_data.jsonl: {e}")
+            
+        # Try loading extended training data as fallback
+        try:
+            self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
+            if not training_loaded:
+                print("✅ Loaded extended training data as fallback")
+            else:
+                print("✅ Loaded additional extended training data")
+        except Exception as e:
+            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
+            if not training_loaded:
+                print("ℹ️ Running with limited knowledge base - responses will be based on general principles")
     
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
