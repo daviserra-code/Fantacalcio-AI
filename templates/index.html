@@ -1070,6 +1070,51 @@
         Scorri verso l'alto per aggiornare
     </div>
 
+    <!-- Corrections Management Modal -->
+    <div id="correctionsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gestione Correzioni</h3>
+                <span class="close" onclick="closeCorrectionsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="corrections-tabs">
+                    <button class="tab-btn active" onclick="switchCorrectionTab('view')">Visualizza</button>
+                    <button class="tab-btn" onclick="switchCorrectionTab('add')">Aggiungi</button>
+                    <button class="tab-btn" onclick="switchCorrectionTab('stats')">Statistiche</button>
+                </div>
+                
+                <div id="viewTab" class="correction-tab-content">
+                    <div id="correctionsList"></div>
+                </div>
+                
+                <div id="addTab" class="correction-tab-content" style="display: none;">
+                    <div class="form-group">
+                        <label>Tipo Correzione:</label>
+                        <select id="correctionType">
+                            <option value="general">Generale</option>
+                            <option value="player">Giocatore</option>
+                            <option value="team">Squadra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Informazione Errata:</label>
+                        <textarea id="incorrectInfo" placeholder="Inserisci l'informazione errata..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Informazione Corretta:</label>
+                        <textarea id="correctInfo" placeholder="Inserisci l'informazione corretta..."></textarea>
+                    </div>
+                    <button onclick="addCorrection()" class="btn btn-primary">Aggiungi Correzione</button>
+                </div>
+                
+                <div id="statsTab" class="correction-tab-content" style="display: none;">
+                    <div id="correctionStats"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <div class="lang-switcher">
@@ -1156,6 +1201,9 @@
             </button>
             <button class="quick-action-btn" onclick="showPlayerComparison()">
                 ⚖️ Confronta Giocatori
+            </button>
+            <button class="quick-action-btn" onclick="openCorrectionsModal()">
+                🔧 Gestisci Correzioni
             </button>
         </div>
 
@@ -1840,6 +1888,128 @@
             }
         }
 
+        // Corrections modal functions
+        function openCorrectionsModal() {
+            document.getElementById('correctionsModal').style.display = 'block';
+            loadCorrections();
+        }
+
+        function closeCorrectionsModal() {
+            document.getElementById('correctionsModal').style.display = 'none';
+        }
+
+        function switchCorrectionTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.correction-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            event.target.classList.add('active');
+            
+            if (tabName === 'stats') {
+                loadCorrectionStats();
+            }
+        }
+
+        async function loadCorrections() {
+            try {
+                const response = await fetch('/api/corrections');
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('correctionsList');
+                if (data.corrections && data.corrections.length > 0) {
+                    listDiv.innerHTML = data.corrections.map(correction => `
+                        <div class="correction-item" style="border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
+                            <strong>Tipo:</strong> ${correction.type}<br>
+                            <strong>Da:</strong> ${correction.incorrect_info}<br>
+                            <strong>A:</strong> ${correction.correct_info}<br>
+                            <small>Applicata ${correction.times_applied || 0} volte</small>
+                        </div>
+                    `).join('');
+                } else {
+                    listDiv.innerHTML = '<p>Nessuna correzione trovata.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading corrections:', error);
+                showNotification('Errore nel caricamento delle correzioni', 'error');
+            }
+        }
+
+        async function addCorrection() {
+            const type = document.getElementById('correctionType').value;
+            const incorrect = document.getElementById('incorrectInfo').value.trim();
+            const correct = document.getElementById('correctInfo').value.trim();
+            
+            if (!incorrect || !correct) {
+                showNotification('Compila tutti i campi', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/corrections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: type,
+                        incorrect_info: incorrect,
+                        correct_info: correct,
+                        context: 'user_manual'
+                    })
+                });
+
+                const data = await response.json();
+                if (data.message) {
+                    showNotification('Correzione aggiunta con successo', 'success');
+                    document.getElementById('incorrectInfo').value = '';
+                    document.getElementById('correctInfo').value = '';
+                    loadCorrections();
+                } else {
+                    showNotification('Errore nell\'aggiunta della correzione', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding correction:', error);
+                showNotification('Errore nell\'aggiunta della correzione', 'error');
+            }
+        }
+
+        async function loadCorrectionStats() {
+            try {
+                const response = await fetch('/api/corrections');
+                const data = await response.json();
+                
+                const statsDiv = document.getElementById('correctionStats');
+                const stats = data.stats || {};
+                
+                statsDiv.innerHTML = `
+                    <div class="correction-stats">
+                        <div class="stat-item">
+                            <span>Totale Correzioni:</span>
+                            <span>${stats.total_corrections || 0}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Correzioni Applicate:</span>
+                            <span>${stats.total_applications || 0}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Correzioni Giocatori:</span>
+                            <span>${stats.player_corrections || 0}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Ultima Aggiunta:</span>
+                            <span>${stats.last_created || 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading correction stats:', error);
+            }
+        }
+
         // Quick action functions
         async function askQuickQuestion(question) {
             const messageInput = document.getElementById('messageInput');
@@ -1870,6 +2040,148 @@
                 hideTypingIndicator();
                 addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
                 showNotification('Errore nel caricamento delle partite', 'error');
+            }
+        }
+
+        // Add missing functions
+        function showAnalytics() {
+            const analyticsGrid = document.getElementById('analyticsGrid');
+            if (analyticsGrid) {
+                analyticsGrid.style.display = analyticsGrid.style.display === 'none' ? 'block' : 'none';
+                if (analyticsGrid.style.display !== 'none') {
+                    loadAnalyticsData();
+                }
+            }
+        }
+
+        function showPlayerComparison() {
+            const comparisonSection = document.getElementById('comparisonSection');
+            if (comparisonSection) {
+                comparisonSection.style.display = comparisonSection.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function compareSelectedPlayers() {
+            const player1 = document.getElementById('player1').value.trim();
+            const player2 = document.getElementById('player2').value.trim();
+            
+            if (!player1 || !player2) {
+                showNotification('Inserisci entrambi i nomi dei giocatori', 'warning');
+                return;
+            }
+
+            fetch('/api/player-comparison', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ players: [player1, player2] })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.comparison) {
+                    displayComparisonResults(data);
+                } else {
+                    showNotification('Errore nel confronto', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Comparison error:', error);
+                showNotification('Errore nel confronto', 'error');
+            });
+        }
+
+        function displayComparisonResults(data) {
+            const resultsDiv = document.getElementById('comparisonResults');
+            let html = '<div class="comparison-table">';
+            
+            if (data.comparison.length >= 2) {
+                const player1 = data.comparison[0];
+                const player2 = data.comparison[1];
+                
+                html += `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <th></th>
+                            <th>${player1.name}</th>
+                            <th>${player2.name}</th>
+                        </tr>
+                        <tr>
+                            <td>Squadra</td>
+                            <td>${player1.team}</td>
+                            <td>${player2.team}</td>
+                        </tr>
+                        <tr>
+                            <td>Ruolo</td>
+                            <td>${player1.role}</td>
+                            <td>${player2.role}</td>
+                        </tr>
+                        <tr>
+                            <td>Fantamedia</td>
+                            <td style="color: ${player1.fantamedia > player2.fantamedia ? 'green' : 'red'}">${player1.fantamedia}</td>
+                            <td style="color: ${player2.fantamedia > player1.fantamedia ? 'green' : 'red'}">${player2.fantamedia}</td>
+                        </tr>
+                        <tr>
+                            <td>Prezzo</td>
+                            <td>${player1.price}</td>
+                            <td>${player2.price}</td>
+                        </tr>
+                        <tr>
+                            <td>Presenze</td>
+                            <td>${player1.appearances}</td>
+                            <td>${player2.appearances}</td>
+                        </tr>
+                    </table>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function exportData(format, dataType) {
+            fetch('/api/export-data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: format, data_type: dataType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.data) {
+                    const blob = new Blob([data.data], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = data.filename || 'export.csv';
+                    a.click();
+                    showNotification('Dati esportati con successo', 'success');
+                } else {
+                    showNotification('Errore nell\'esportazione', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showNotification('Errore nell\'esportazione', 'error');
+            });
+        }
+
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/api/user-analytics');
+                const data = await response.json();
+                
+                const topSearches = document.getElementById('topSearches');
+                const cacheHitRate = document.getElementById('cacheHitRate');
+                
+                if (topSearches && data.most_searched_players) {
+                    topSearches.innerHTML = data.most_searched_players.map(p => 
+                        `<div>${p.name} (${p.team}) - ${p.searches} ricerche</div>`
+                    ).join('');
+                }
+                
+                if (cacheHitRate && data.performance_metrics) {
+                    cacheHitRate.textContent = data.performance_metrics.cache_hit_rate.toFixed(1);
+                }
+            } catch (error) {
+                console.error('Analytics loading error:', error);
             }
         }
 
@@ -1930,6 +2242,37 @@
             if (recognition) {
                 recognition.stop();
             }
+        }
+
+        // Accessibility functions
+        function toggleAccessibilityMenu() {
+            const menu = document.getElementById('accessibilityMenu');
+            menu.classList.toggle('show');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+        }
+
+        function toggleReduceMotion() {
+            document.body.classList.toggle('reduce-motion');
+        }
+
+        function toggleFocusIndicators() {
+            document.body.classList.toggle('focus-indicators');
+        }
+
+        function resetAccessibility() {
+            document.body.classList.remove('high-contrast', 'large-text', 'reduce-motion', 'focus-indicators');
+            // Reset checkboxes
+            document.getElementById('highContrast').checked = false;
+            document.getElementById('largeText').checked = false;
+            document.getElementById('reduceMotion').checked = false;
+            document.getElementById('focusIndicators').checked = false;
         }
 
         // Event listeners
