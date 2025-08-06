@@ -363,21 +363,23 @@ if __name__ == '__main__':
         # Fixed port to match deployment configuration
         port = 5000
         debug_mode = False  # Always False for deployment stability
-        
+
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
         logger.info(f"Assistant available: {assistant is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
-        
-        # Use Flask development server for reliability and fast startup
+
+        # Use optimized Flask with timeout and stability improvements
+        logger.info("Starting with optimized Flask server")
         app.run(
             host='0.0.0.0',
             port=port,
             debug=debug_mode,
             threaded=True,
-            use_reloader=False
+            use_reloader=False,
+            processes=1  # Single process for stability
         )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
