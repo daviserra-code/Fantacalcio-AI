@@ -641,7 +641,7 @@ def manage_corrections():
 
     except Exception as e:
         logger.error(f"Corrections management error: {str(e)}")
-        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500</other:app>
+        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500
 
 @app.route('/api/corrections/stats', methods=['GET'])
 def get_corrections_stats():
