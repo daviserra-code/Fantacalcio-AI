@@ -209,20 +209,41 @@ def chat():
         # Simpler message processing for speed
         logger.info(f"Processing chat message: {message[:50]}...")
         
-        # Set a timeout for the response generation
-        import signal
+        # Set a timeout for the response generation using threading
+        import threading
+        import queue
         
-        def timeout_handler(signum, frame):
+        response_queue = queue.Queue()
+        exception_queue = queue.Queue()
+        
+        def get_response_with_timeout():
+            try:
+                result = assistant.get_response(message, context)
+                response_queue.put(result)
+            except Exception as e:
+                exception_queue.put(e)
+        
+        # Start the response generation in a separate thread
+        thread = threading.Thread(target=get_response_with_timeout)
+        thread.daemon = True
+        thread.start()
+        
+        # Wait for response with timeout
+        thread.join(timeout=25)
+        
+        if thread.is_alive():
+            # Thread is still running, timeout occurred
             raise TimeoutError("Response generation timeout")
         
-        # Set alarm for 25 seconds
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(25)
+        # Check for exceptions
+        if not exception_queue.empty():
+            raise exception_queue.get()
         
-        try:
-            response = assistant.get_response(message, context)
-        finally:
-            signal.alarm(0)  # Cancel the alarm
+        # Get the response
+        if not response_queue.empty():
+            response = response_queue.get()
+        else:
+            raise TimeoutError("No response generated")
         
         # Apply corrections if response is valid
         if response and not any(word in response.lower() for word in ['errore', 'timeout', '❌']):

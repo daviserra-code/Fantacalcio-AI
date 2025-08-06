@@ -123,9 +123,9 @@ class FantacalcioAssistant:
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.2,  # Lower temperature for speed
-                max_tokens=250,   # Reduced tokens for faster responses
-                timeout=25,       # 25 second timeout
+                temperature=0.1,  # Even lower temperature for speed and consistency
+                max_tokens=200,   # Further reduced tokens for faster responses
+                timeout=20,       # Reduced timeout to 20 seconds
                 stream=False
             )
             
