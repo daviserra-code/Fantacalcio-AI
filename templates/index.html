@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
@@ -12,14 +11,14 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 10px;
         }
-        
+
         .container {
             max-width: 500px;
             margin: 0 auto;
@@ -31,30 +30,30 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .header {
             background: linear-gradient(45deg, #00c851, #007e33);
             color: white;
             padding: 15px 20px;
             position: relative;
         }
-        
+
         .header h1 {
             font-size: 1.3em;
             margin-bottom: 5px;
         }
-        
+
         .header p {
             opacity: 0.9;
             font-size: 0.85em;
         }
-        
+
         .lang-switcher {
             position: absolute;
             top: 15px;
             right: 20px;
         }
-        
+
         .lang-switcher button {
             background: rgba(255,255,255,0.2);
             border: none;
@@ -65,17 +64,17 @@
             cursor: pointer;
             font-size: 0.8em;
         }
-        
+
         .lang-switcher button.active {
             background: rgba(255,255,255,0.4);
         }
-        
+
         .tabs {
             display: flex;
             background: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
         }
-        
+
         .tab {
             flex: 1;
             padding: 12px 8px;
@@ -88,24 +87,24 @@
             color: #6c757d;
             transition: all 0.3s;
         }
-        
+
         .tab.active {
             background: white;
             color: #00c851;
             border-bottom: 2px solid #00c851;
         }
-        
+
         .tab-content {
             display: none;
             flex: 1;
             overflow: hidden;
         }
-        
+
         .tab-content.active {
             display: flex;
             flex-direction: column;
         }
-        
+
         .league-setup {
             padding: 15px 20px;
             border-bottom: 1px solid #eee;
@@ -114,7 +113,7 @@
             gap: 10px;
             align-items: center;
         }
-        
+
         .league-setup select, .league-setup input {
             padding: 8px 12px;
             border: 1px solid #ddd;
@@ -123,14 +122,14 @@
             flex: 1;
             min-width: 80px;
         }
-        
+
         .chat-container {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
             min-height: 300px;
         }
-        
+
         .message {
             margin-bottom: 15px;
             padding: 12px 15px;
@@ -139,18 +138,18 @@
             font-size: 0.9em;
             line-height: 1.4;
         }
-        
+
         .user-message {
             background: linear-gradient(135deg, #e3f2fd, #bbdefb);
             margin-left: auto;
             text-align: right;
         }
-        
+
         .assistant-message {
             background: linear-gradient(135deg, #f1f8e9, #c8e6c9);
             margin-right: auto;
         }
-        
+
         .input-area {
             padding: 20px;
             border-top: 1px solid #eee;
@@ -158,7 +157,7 @@
             gap: 10px;
             align-items: flex-end;
         }
-        
+
         .quick-actions {
             padding: 10px 20px;
             border-top: 1px solid #f0f0f0;
@@ -167,7 +166,7 @@
             flex-wrap: wrap;
             background: #f8f9fa;
         }
-        
+
         .quick-btn {
             background: linear-gradient(135deg, #e3f2fd, #bbdefb);
             border: 1px solid #2196f3;
@@ -179,13 +178,13 @@
             color: #1976d2;
             font-weight: 500;
         }
-        
+
         .quick-btn:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             transform: translateY(-1px);
         }
-        
+
         .btn-voice {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
             color: white;
@@ -196,22 +195,22 @@
             cursor: pointer;
             font-size: 1.2em;
         }
-        
+
         .btn-voice:hover {
             transform: scale(1.1);
         }
-        
+
         .btn-voice.recording {
             background: linear-gradient(45deg, #ff3838, #c0392b);
             animation: pulse 1s infinite;
         }
-        
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        
+
         #messageInput {
             flex: 1;
             padding: 18px 22px;
@@ -222,11 +221,11 @@
             min-height: 60px;
             resize: vertical;
         }
-        
+
         #messageInput:focus {
             border-color: #00c851;
         }
-        
+
         .btn {
             padding: 12px 18px;
             border: none;
@@ -236,35 +235,35 @@
             transition: all 0.3s;
             font-size: 0.9em;
         }
-        
+
         .btn-primary {
             background: linear-gradient(45deg, #00c851, #007e33);
             color: white;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,200,81,0.3);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: white;
             font-size: 0.8em;
             padding: 8px 15px;
         }
-        
+
         .search-container {
             padding: 20px;
             border-bottom: 1px solid #eee;
         }
-        
+
         .search-box {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-        
+
         .search-input {
             flex: 1;
             padding: 12px 18px;
@@ -273,14 +272,14 @@
             outline: none;
             font-size: 16px;
         }
-        
+
         .filters {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 15px;
         }
-        
+
         .filter-btn {
             padding: 6px 12px;
             border: 1px solid #ddd;
@@ -290,19 +289,19 @@
             font-size: 0.8em;
             transition: all 0.3s;
         }
-        
+
         .filter-btn.active {
             background: #00c851;
             color: white;
             border-color: #00c851;
         }
-        
+
         .results-container {
             flex: 1;
             overflow-y: auto;
             padding: 10px 20px;
         }
-        
+
         .player-card {
             background: white;
             border: 1px solid #eee;
@@ -311,20 +310,20 @@
             margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
+
         .player-header {
             display: flex;
             justify-content: between;
             align-items: center;
             margin-bottom: 8px;
         }
-        
+
         .player-name {
             font-weight: 600;
             color: #333;
             font-size: 1.1em;
         }
-        
+
         .player-role {
             background: #00c851;
             color: white;
@@ -333,7 +332,7 @@
             font-size: 0.7em;
             margin-left: auto;
         }
-        
+
         .player-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -341,21 +340,21 @@
             font-size: 0.85em;
             color: #666;
         }
-        
+
         .loading {
             text-align: center;
             padding: 20px;
             color: #666;
             font-style: italic;
         }
-        
+
         .mode-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             padding: 20px;
         }
-        
+
         .mode-card {
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border: 2px solid #dee2e6;
@@ -365,46 +364,46 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
+
         .mode-card:hover, .mode-card.active {
             background: linear-gradient(135deg, #00c851, #007e33);
             color: white;
             border-color: #00c851;
             transform: translateY(-2px);
         }
-        
+
         .mode-icon {
             font-size: 2em;
             margin-bottom: 10px;
         }
-        
+
         .mode-title {
             font-weight: 600;
             font-size: 1.1em;
         }
-        
+
         @media (max-width: 480px) {
             .container {
                 margin: 5px;
                 border-radius: 10px;
             }
-            
+
             .tab {
                 font-size: 0.75em;
                 padding: 10px 5px;
             }
-            
+
             .mode-selector {
                 grid-template-columns: 1fr;
                 gap: 10px;
                 padding: 15px;
             }
-            
+
             .league-setup {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .player-details {
                 grid-template-columns: 1fr;
             }
@@ -421,7 +420,7 @@
             <h1>🏆 {{ t.title }}</h1>
             <p>{{ t.subtitle }}</p>
         </div>
-        
+
         <div class="tabs">
             <button class="tab active" onclick="switchTab('classic')">{{ t.modes.classic }}</button>
             <button class="tab" onclick="switchTab('mantra')">{{ t.modes.mantra }}</button>
@@ -429,7 +428,7 @@
             <button class="tab" onclick="switchTab('superscudetto')">{{ t.modes.superscudetto }}</button>
             <button class="tab" onclick="switchTab('historical')">{{ t.historical }}</button>
         </div>
-        
+
         <!-- Classic Mode -->
         <div class="tab-content active" id="classic">
             <div class="league-setup">
@@ -437,7 +436,7 @@
                 <input type="number" id="budget" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
+
             <div class="chat-container" id="chatContainer">
                 <div class="message assistant-message">
                     👋 {{ t.welcome }}
@@ -445,26 +444,26 @@
                     Modalità <strong>Classic</strong> attiva. Dimmi di cosa hai bisogno!
                 </div>
             </div>
-            
+
             <div class="quick-actions">
                 <button class="quick-btn" onclick="askQuickQuestion('Migliori rigoristi Serie A?')">⚽ Rigoristi</button>
                 <button class="quick-btn" onclick="askQuickQuestion('Consigli clean sheet questa giornata?')">🥅 Clean Sheet</button>
                 <button class="quick-btn" onclick="askQuickQuestion('Formazione consigliata questa giornata?')">📋 Formazione</button>
                 <button class="quick-btn" onclick="showFixtures()">📅 Partite</button>
             </div>
-            
+
             <div class="input-area">
                 <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
                 <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
-                <button class="btn btn-primary" onclick="sendMessage()">{{ t.send }}</button>
+                <button class="btn btn-primary" onclick="sendMessage('classic')">{{ t.send }}</button>
             </div>
-            
+
             <div class="player-search-widget" id="playerSearchWidget" style="display: none;">
                 <input type="text" id="quickPlayerSearch" placeholder="Cerca giocatore per analisi veloce...">
                 <div id="quickSearchResults"></div>
             </div>
         </div>
-        
+
         <!-- Mantra Mode -->
         <div class="tab-content" id="mantra">
             <div class="league-setup">
@@ -472,7 +471,7 @@
                 <input type="number" id="budgetMantra" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
+
             <div class="chat-container" id="chatContainerMantra">
                 <div class="message assistant-message">
                     👋 {{ t.welcome }}
@@ -480,13 +479,13 @@
                     Modalità <strong>Mantra</strong> attiva. Ricorda: bonus assist e clean sheet attivi!
                 </div>
             </div>
-            
+
             <div class="input-area">
                 <input type="text" id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500">
                 <button class="btn btn-primary" onclick="sendMessage('mantra')">{{ t.send }}</button>
             </div>
         </div>
-        
+
         <!-- Draft Mode -->
         <div class="tab-content" id="draft">
             <div class="league-setup">
@@ -497,7 +496,7 @@
                 </select>
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
+
             <div class="chat-container" id="chatContainerDraft">
                 <div class="message assistant-message">
                     👋 {{ t.welcome }}
@@ -505,13 +504,13 @@
                     Modalità <strong>Draft</strong> attiva. Niente budget, solo strategia di selezione!
                 </div>
             </div>
-            
+
             <div class="input-area">
                 <input type="text" id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500">
                 <button class="btn btn-primary" onclick="sendMessage('draft')">{{ t.send }}</button>
             </div>
         </div>
-        
+
         <!-- Superscudetto Mode -->
         <div class="tab-content" id="superscudetto">
             <div class="league-setup">
@@ -519,7 +518,7 @@
                 <input type="number" id="budgetSuper" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
+
             <div class="chat-container" id="chatContainerSuper">
                 <div class="message assistant-message">
                     👋 {{ t.welcome }}
@@ -527,13 +526,13 @@
                     Modalità <strong>Superscudetto</strong> attiva. Regole speciali e premi aggiuntivi!
                 </div>
             </div>
-            
+
             <div class="input-area">
                 <input type="text" id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500">
                 <button class="btn btn-primary" onclick="sendMessage('superscudetto')">{{ t.send }}</button>
             </div>
         </div>
-        
+
         <!-- Historical Mode -->
         <div class="tab-content" id="historical">
             <div class="search-container">
@@ -543,7 +542,7 @@
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-                
+
                 <div class="filters">
                     <span style="font-size: 0.9em; color: #666; margin-right: 10px;">{{ t.filters }}:</span>
                     <button class="filter-btn active" data-role="all">{{ t.all_roles }}</button>
@@ -553,7 +552,7 @@
                     <button class="filter-btn" data-role="A">{{ t.forward }}</button>
                 </div>
             </div>
-            
+
             <div class="results-container" id="resultsContainer">
                 <div style="text-align: center; color: #666; padding: 40px 20px;">
                     <i class="fas fa-search" style="font-size: 3em; margin-bottom: 15px; opacity: 0.3;"></i>
@@ -566,96 +565,128 @@
     <script>
         let currentTab = 'classic';
         let currentRole = 'all';
-        
+
         function switchLang(lang) {
             window.location.href = `/?lang=${lang}`;
         }
-        
+
         function switchTab(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
+
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Show selected tab
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
             currentTab = tabName;
         }
-        
-        function addMessage(content, isUser = false, container = 'chatContainer') {
-            const chatContainer = document.getElementById(container);
+
+        function addMessage(container, content, type, isTemp = false) {
+            const chatContainer = typeof container === 'string' ? document.getElementById(container) : container;
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+            messageDiv.className = `message ${type === 'user' ? 'user-message' : 'assistant-message'}`;
+            if (isTemp) {
+                messageDiv.id = 'loading-' + chatContainer.id;
+            }
             messageDiv.innerHTML = content.replace(/\n/g, '<br>');
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageDiv;
         }
-        
-        function showLoading(container = 'chatContainer') {
-            const chatContainer = document.getElementById(container);
+
+        function showLoading(containerId = 'chatContainer') {
+            const chatContainer = document.getElementById(containerId);
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'loading';
-            loadingDiv.id = 'loading-' + container;
+            loadingDiv.id = 'loading-' + containerId;
             loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t.loading }}';
             chatContainer.appendChild(loadingDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            return loadingDiv;
         }
-        
-        function hideLoading(container = 'chatContainer') {
-            const loading = document.getElementById('loading-' + container);
-            if (loading) loading.remove();
+
+        function hideLoading(loadingDiv) {
+            if (loadingDiv && loadingDiv.parentNode) {
+                loadingDiv.remove();
+            }
         }
-        
+
+        function getParticipants(mode) {
+            const defaultVal = 8;
+            try {
+                const input = document.getElementById(`participants${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+                return input ? parseInt(input.value || defaultVal) : defaultVal;
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+
+        function getBudget(mode) {
+            const defaultVal = 500;
+            try {
+                const input = document.getElementById(`budget${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
+                return input ? parseInt(input.value || defaultVal) : defaultVal;
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+
         async function sendMessage(mode = 'classic') {
             const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
             const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-            
-            const message = document.getElementById(inputId).value.trim();
+
+            const messageInput = document.getElementById(inputId);
+            const chatContainer = document.getElementById(containerId);
+            const message = messageInput.value.trim();
+
             if (!message) return;
-            
-            addMessage(message, true, containerId);
-            document.getElementById(inputId).value = '';
-            showLoading(containerId);
-            
+
+            // Add user message
+            addMessage(chatContainer, message, 'user');
+            messageInput.value = '';
+
+            // Show loading
+            const loadingDiv = showLoading(containerId);
+
             const context = {
                 leagueType: mode,
-                participants: parseInt(document.getElementById(mode === 'classic' ? 'participants' : `participants${mode.charAt(0).toUpperCase() + mode.slice(1)}`).value || 8),
-                budget: parseInt(document.getElementById(mode === 'classic' ? 'budget' : `budget${mode.charAt(0).toUpperCase() + mode.slice(1)}`).value || 500),
+                participants: getParticipants(mode),
+                budget: getBudget(mode),
                 mode: mode
             };
-            
+
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message, context })
                 });
-                
+
                 const data = await response.json();
-                hideLoading(containerId);
-                
+                hideLoading(loadingDiv);
+
                 if (data.error) {
-                    addMessage(`❌ Errore: ${data.error}`, false, containerId);
+                    addMessage(chatContainer, `❌ Errore: ${data.error}`, 'assistant error');
                 } else {
-                    addMessage(`🎯 ${data.response}`, false, containerId);
+                    addMessage(chatContainer, data.response, 'assistant');
                 }
             } catch (error) {
-                hideLoading(containerId);
-                addMessage('❌ Errore di connessione. Riprova.', false, containerId);
+                hideLoading(loadingDiv);
+                addMessage(chatContainer, `❌ Errore di connessione: ${error.message}`, 'assistant error');
             }
         }
-        
+
         async function resetChat() {
             try {
                 await fetch('/api/reset', { method: 'POST' });
                 const containers = ['chatContainer', 'chatContainerMantra', 'chatContainerDraft', 'chatContainerSuper'];
-                containers.forEach(container => {
-                    const chatContainer = document.getElementById(container);
+                containers.forEach(containerId => {
+                    const chatContainer = document.getElementById(containerId);
                     if (chatContainer) {
                         chatContainer.innerHTML = `
                             <div class="message assistant-message">
@@ -668,7 +699,7 @@
                 console.error('Reset error:', error);
             }
         }
-        
+
         // Historical search functionality
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -677,36 +708,36 @@
                 currentRole = this.dataset.role;
             });
         });
-        
+
         async function searchPlayers() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
-            
+
             const resultsContainer = document.getElementById('resultsContainer');
             resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cercando...</div>';
-            
+
             try {
                 const response = await fetch('/api/search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query, role: currentRole })
                 });
-                
+
                 const data = await response.json();
                 displayResults(data.results);
             } catch (error) {
                 resultsContainer.innerHTML = '<div class="loading">❌ Errore nella ricerca</div>';
             }
         }
-        
+
         function displayResults(results) {
             const container = document.getElementById('resultsContainer');
-            
+
             if (results.length === 0) {
                 container.innerHTML = '<div class="loading">😔 Nessun risultato trovato</div>';
                 return;
             }
-            
+
             container.innerHTML = results.map(player => `
                 <div class="player-card">
                     <div class="player-header">
@@ -722,51 +753,60 @@
                 </div>
             `).join('');
         }
-        
+
         // Quick action functions
         async function askQuickQuestion(question) {
-            const messageInput = document.getElementById('messageInput');
-            messageInput.value = question;
-            await sendMessage('classic');
+            const activeTabElement = document.querySelector('.tab-content.active');
+            if (!activeTabElement) return;
+
+            const mode = activeTabElement.id;
+            const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+            const messageInput = document.getElementById(inputId);
+
+            if (messageInput) {
+                messageInput.value = question;
+                await sendMessage(mode);
+            }
         }
-        
+
         async function showFixtures() {
+            const containerId = 'chatContainer'; // Assuming fixtures are relevant to classic mode chat
+            addMessage(containerId, '📅 Caricando le partite di questa giornata...', 'user');
+            showLoading(containerId);
+
             try {
-                addMessage('📅 Caricando le partite di questa giornata...', true, 'chatContainer');
-                showLoading('chatContainer');
-                
                 const response = await fetch('/api/fixtures');
                 const data = await response.json();
-                
-                hideLoading('chatContainer');
-                
+
+                hideLoading(document.getElementById(containerId).querySelector('.loading')); // Hide loading from the specific container
+
                 if (data.gameweek_recommendations) {
                     let fixtureText = '📅 **PARTITE E CONSIGLI GIORNATA**\n\n';
                     data.gameweek_recommendations.forEach(rec => {
                         fixtureText += `${rec}\n`;
                     });
-                    addMessage(fixtureText, false, 'chatContainer');
+                    addMessage(containerId, fixtureText, 'assistant');
                 } else {
-                    addMessage('📅 Dati partite temporaneamente non disponibili', false, 'chatContainer');
+                    addMessage(containerId, '📅 Dati partite temporaneamente non disponibili', 'assistant');
                 }
             } catch (error) {
-                hideLoading('chatContainer');
-                addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
+                hideLoading(document.getElementById(containerId).querySelector('.loading'));
+                addMessage(containerId, '❌ Errore nel caricamento delle partite', 'assistant error');
             }
         }
-        
+
         // Voice input functionality
         let isRecording = false;
         let recognition = null;
-        
+
         function toggleVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
-            
+
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert('Il riconoscimento vocale non è supportato su questo browser. Usa Chrome o Edge.');
                 return;
             }
-            
+
             if (!isRecording) {
                 startVoiceRecognition();
                 voiceBtn.classList.add('recording');
@@ -779,41 +819,41 @@
                 isRecording = false;
             }
         }
-        
+
         function startVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            
+
             recognition.lang = 'it-IT';
             recognition.continuous = false;
             recognition.interimResults = false;
-            
+
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('messageInput').value = transcript;
                 toggleVoiceInput(); // Stop recording
             };
-            
+
             recognition.onerror = function(event) {
                 console.error('Speech recognition error:', event.error);
                 toggleVoiceInput(); // Stop recording
             };
-            
+
             recognition.onend = function() {
                 if (isRecording) {
                     toggleVoiceInput(); // Ensure UI is reset
                 }
             };
-            
+
             recognition.start();
         }
-        
+
         function stopVoiceRecognition() {
             if (recognition) {
                 recognition.stop();
             }
         }
-        
+
         // Enter key support (Ctrl+Enter for textarea)
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && e.ctrlKey) {
@@ -825,7 +865,7 @@
                 }
             }
         });
-        
+
         // Auto-resize textarea
         document.getElementById('messageInput').addEventListener('input', function() {
             this.style.height = 'auto';
