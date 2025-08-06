@@ -708,40 +708,6 @@ def export_corrections():
         logger.error(f"Export corrections error: {str(e)}")
         return jsonify({'error': 'Export failed'}), 500
 
-@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
-def accessibility_settings():
-    """Get or update accessibility settings"""
-    try:
-        if request.method == 'GET':
-            # Return current accessibility settings
-            settings = {
-                'high_contrast': session.get('high_contrast', False),
-                'large_text': session.get('large_text', False),
-                'reduce_motion': session.get('reduce_motion', False),
-                'screen_reader': session.get('screen_reader', False),
-                'keyboard_navigation': session.get('keyboard_navigation', True),
-                'focus_indicators': session.get('focus_indicators', True),
-                'color_blind_friendly': session.get('color_blind_friendly', False)
-            }
-            return jsonify(settings)
-
-        else:  # POST
-            data = request.get_json()
-            if not data:
-                return jsonify({'error': 'No settings provided'}), 400
-
-            # Update session with new settings
-            for setting in ['high_contrast', 'large_text', 'reduce_motion', 'screen_reader', 
-                          'keyboard_navigation', 'focus_indicators', 'color_blind_friendly']:
-                if setting in data:
-                    session[setting] = bool(data[setting])
-
-            return jsonify({'message': 'Settings updated successfully'})
-
-    except Exception as e:
-        logger.error(f"Accessibility settings error: {str(e)}")
-        return jsonify({'error': 'Settings update failed'}), 500
-
 @app.route('/api/player-comparison', methods=['POST'])
 def compare_players():
     """Compare multiple players side by side"""

@@ -22,13 +22,21 @@ class KnowledgeManager:
         # Get or create collection
         try:
             self.collection = self.client.get_collection(collection_name)
-            print(f"✅ Loaded existing collection: {collection_name}")
+            # Check if collection is empty
+            count = self.collection.count()
+            if count == 0:
+                print(f"📂 Found empty collection: {collection_name}")
+                self.collection_is_empty = True
+            else:
+                print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
+                self.collection_is_empty = False
         except:
             self.collection = self.client.create_collection(
                 name=collection_name,
                 metadata={"description": "Fantacalcio knowledge base for RAG"}
             )
             print(f"🆕 Created new collection: {collection_name}")
+            self.collection_is_empty = True
     
     def add_knowledge(self, text: str, metadata: Dict[str, Any] = None, doc_id: str = None):
         """Add knowledge to the vector database"""
@@ -84,7 +92,11 @@ class KnowledgeManager:
         return formatted_results
     
     def load_from_jsonl(self, jsonl_path: str):
-        """Load knowledge from JSONL file"""
+        """Load knowledge from JSONL file only if collection is empty"""
+        if not self.collection_is_empty:
+            print(f"⏭️ Skipping {jsonl_path} - data already loaded in collection")
+            return
+            
         if not os.path.exists(jsonl_path):
             print(f"❌ JSONL file not found: {jsonl_path}")
             return
@@ -105,6 +117,7 @@ class KnowledgeManager:
                     print(f"⚠️ Error parsing line: {e}")
         
         print(f"✅ Loaded {count} knowledge entries from {jsonl_path}")
+        self.collection_is_empty = False
     
     def get_context_for_query(self, query: str, max_context_length: int = 1000) -> str:
         """Get relevant context for a query, formatted for LLM input"""
