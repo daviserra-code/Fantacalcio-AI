@@ -6,6 +6,168 @@
     <title>{{ t.title }}</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent-primary: #00ff88;
+            --accent-secondary: #0088ff;
+            --border-color: #333;
+            --shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+        }
+
+        /* High Contrast Mode */
+        .high-contrast {
+            --bg-primary: #000000;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f0f0f0;
+            --text-primary: #000000;
+            --text-secondary: #333333;
+            --accent-primary: #0066cc;
+            --accent-secondary: #cc6600;
+            --border-color: #000000;
+        }
+
+        /* Large Text Mode */
+        .large-text {
+            font-size: 1.2em;
+        }
+
+        .large-text h1 { font-size: 3rem; }
+        .large-text h2 { font-size: 2.2rem; }
+        .large-text .chat-message { font-size: 1.1rem; }
+
+        /* Reduced Motion */
+        .reduce-motion * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        /* Focus Indicators */
+        .focus-indicators button:focus,
+        .focus-indicators input:focus,
+        .focus-indicators select:focus {
+            outline: 3px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .mobile-optimized .container {
+                padding: 0.5rem;
+            }
+
+            .mobile-optimized .chat-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+                min-height: 44px; /* Touch target size */
+            }
+
+            .mobile-optimized .quick-actions {
+                padding: 0.5rem;
+                gap: 0.5rem;
+            }
+
+            .mobile-optimized .quick-action-btn {
+                min-height: 44px;
+                min-width: 44px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Touch Optimizations */
+        .touch-optimized button,
+        .touch-optimized .clickable {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 12px 16px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Analytics Dashboard */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .analytics-card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        /* Accessibility Menu */
+        .accessibility-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            display: none;
+        }
+
+        .accessibility-menu.show {
+            display: block;
+        }
+
+        .accessibility-toggle {
+            background: var(--accent-primary);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Swipe indicator for mobile */
+        .swipe-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .swipe-indicator.show {
+            opacity: 0.8;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -757,6 +919,26 @@
     </style>
 </head>
 <body>
+    <!-- Accessibility Toggle -->
+    <button class="accessibility-toggle" onclick="toggleAccessibilityMenu()" aria-label="Accessibility Options">
+        ♿
+    </button>
+
+    <!-- Accessibility Menu -->
+    <div class="accessibility-menu" id="accessibilityMenu">
+        <h3>Accessibilità</h3>
+        <label><input type="checkbox" id="highContrast" onchange="toggleHighContrast()"> Alto Contrasto</label><br>
+        <label><input type="checkbox" id="largeText" onchange="toggleLargeText()"> Testo Grande</label><br>
+        <label><input type="checkbox" id="reduceMotion" onchange="toggleReduceMotion()"> Riduci Animazioni</label><br>
+        <label><input type="checkbox" id="focusIndicators" onchange="toggleFocusIndicators()"> Indicatori Focus</label><br>
+        <button onclick="resetAccessibility()">Reset</button>
+    </div>
+
+    <!-- Swipe Indicator for Mobile -->
+    <div class="swipe-indicator" id="swipeIndicator">
+        Scorri verso l'alto per aggiornare
+    </div>
+
     <div class="container">
         <div class="header">
             <div class="lang-switcher">
@@ -765,6 +947,19 @@
             </div>
             <h1>🏆 {{ t.title }}</h1>
             <p>{{ t.subtitle }}</p>
+
+            <!-- Analytics Summary -->
+            <div class="analytics-grid" id="analyticsGrid" style="display: none;">
+                <div class="analytics-card">
+                    <h4>Giocatori Più Cercati</h4>
+                    <div id="topSearches"></div>
+                </div>
+                <div class="analytics-card">
+                    <h4>Performance Cache</h4>
+                    <div class="metric-value" id="cacheHitRate">--</div>
+                    <small>Hit Rate %</small>
+                </div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -811,12 +1006,49 @@
                     <span>L'assistente sta scrivendo...</span>
                 </div>
 
-                <div class="quick-actions">
-                    <button class="quick-btn" onclick="askQuickQuestion('Migliori rigoristi Serie A?')">⚽ Rigoristi</button>
-                    <button class="quick-btn" onclick="askQuickQuestion('Consigli clean sheet questa giornata?')">🥅 Clean Sheet</button>
-                    <button class="quick-btn" onclick="askQuickQuestion('Formazione consigliata questa giornata?')">📋 Formazione</button>
-                    <button class="quick-btn" onclick="showFixtures()">📅 Partite</button>
-                </div>
+                <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="askQuickQuestion('Migliori attaccanti per budget 150 crediti?')">
+                🎯 Top Attaccanti Budget
+            </button>
+            <button class="quick-action-btn" onclick="askQuickQuestion('Formazione 3-5-2 con budget 500 crediti?')">
+                ⚽ Formazione 3-5-2
+            </button>
+            <button class="quick-action-btn" onclick="showFixtures()">
+                📅 Prossime Partite
+            </button>
+            <button class="quick-action-btn" onclick="askQuickQuestion('Consigli per asta Classic 8 partecipanti?')">
+                🏆 Strategia Asta
+            </button>
+            <button class="quick-action-btn" onclick="showAnalytics()">
+                📊 Analytics
+            </button>
+            <button class="quick-action-btn" onclick="showPlayerComparison()">
+                ⚖️ Confronta Giocatori
+            </button>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-container" id="chartsSection" style="display: none;">
+            <h3>Visualizzazioni Dati</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <canvas id="fantamediaChart" width="400" height="200"></canvas>
+                <canvas id="priceChart" width="400" height="200"></canvas>
+                <canvas id="efficiencyChart" width="400" height="200"></canvas>
+            </div>
+            <button onclick="exportData('csv', 'players')" class="quick-action-btn">📥 Esporta Dati</button>
+        </div>
+
+        <!-- Player Comparison Section -->
+        <div id="comparisonSection" style="display: none;">
+            <h3>Confronto Giocatori</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <input type="text" id="player1" placeholder="Nome giocatore 1" class="chat-input" style="flex: 1; min-width: 200px;">
+                <input type="text" id="player2" placeholder="Nome giocatore 2" class="chat-input" style="flex: 1; min-width: 200px;">
+                <button onclick="compareSelectedPlayers()" class="send-btn">Confronta</button>
+            </div>
+            <div id="comparisonResults"></div>
+        </div>
 
                 <div class="input-area">
                     <div class="input-wrapper">
@@ -1662,6 +1894,268 @@
                 // Check for updates (this would connect to real-time data in production)
                 updateStatus('online');
             }, 30000);
+        }
+
+        // Mobile optimizations
+        let isMobile = window.innerWidth <= 768;
+        let startY, endY;
+
+        if (isMobile) {
+            document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
+
+            // Auto-resize textarea on mobile
+            const textarea = document.getElementById('messageInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Pull to refresh
+            document.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                endY = e.touches[0].clientY;
+                if (window.scrollY === 0 && endY > startY + 50) {
+                    document.getElementById('swipeIndicator').classList.add('show');
+                }
+            });
+
+            document.addEventListener('touchend', function(e) {
+                if (window.scrollY === 0 && endY > startY + 100) {
+                    location.reload();
+                }
+                document.getElementById('swipeIndicator').classList.remove('show');
+            });
+
+            // Haptic feedback for iPhone
+            if (/iPhone|iPad/.test(navigator.userAgent)) {
+                window.addEventListener('click', function() {
+                    if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                    }
+                });
+            }
+        }
+
+        // Accessibility Functions
+        function toggleAccessibilityMenu() {
+            const menu = document.getElementById('accessibilityMenu');
+            menu.classList.toggle('show');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            saveAccessibilitySetting('high_contrast', document.body.classList.contains('high-contrast'));
+        }
+
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            saveAccessibilitySetting('large_text', document.body.classList.contains('large-text'));
+        }
+
+        function toggleReduceMotion() {
+            document.body.classList.toggle('reduce-motion');
+            saveAccessibilitySetting('reduce_motion', document.body.classList.contains('reduce-motion'));
+        }
+
+        function toggleFocusIndicators() {
+            document.body.classList.toggle('focus-indicators');
+            saveAccessibilitySetting('focus_indicators', document.body.classList.contains('focus-indicators'));
+        }
+
+        function resetAccessibility() {
+            document.body.className = '';
+            if (isMobile) {
+                document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
+            }
+            ['highContrast', 'largeText', 'reduceMotion', 'focusIndicators'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+        }
+
+        function saveAccessibilitySetting(setting, value) {
+            fetch('/api/accessibility-settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[setting]: value})
+            });
+        }
+
+        // Load accessibility settings
+        fetch('/api/accessibility-settings')
+            .then(response => response.json())
+            .then(settings => {
+                if (settings.high_contrast) {
+                    document.body.classList.add('high-contrast');
+                    document.getElementById('highContrast').checked = true;
+                }
+                if (settings.large_text) {
+                    document.body.classList.add('large-text');
+                    document.getElementById('largeText').checked = true;
+                }
+                if (settings.reduce_motion) {
+                    document.body.classList.add('reduce-motion');
+                    document.getElementById('reduceMotion').checked = true;
+                }
+                if (settings.focus_indicators) {
+                    document.body.classList.add('focus-indicators');
+                    document.getElementById('focusIndicators').checked = true;
+                }
+            });
+
+        // Analytics Functions
+        function showAnalytics() {
+            const grid = document.getElementById('analyticsGrid');
+            if (grid.style.display === 'none') {
+                grid.style.display = 'grid';
+                loadAnalyticsData();
+                showCharts();
+            } else {
+                grid.style.display = 'none';
+                document.getElementById('chartsSection').style.display = 'none';
+            }
+        }
+
+        function loadAnalyticsData() {
+            fetch('/api/user-analytics')
+                .then(response => response.json())
+                .then(data => {
+                    const topSearches = document.getElementById('topSearches');
+                    topSearches.innerHTML = data.most_searched_players
+                        .slice(0, 3)
+                        .map(p => `<div>${p.name} (${p.searches})</div>`)
+                        .join('');
+
+                    document.getElementById('cacheHitRate').textContent = 
+                        data.performance_metrics.cache_hit_rate + '%';
+                });
+        }
+
+        function showCharts() {
+            document.getElementById('chartsSection').style.display = 'block';
+            loadChart('fantamedia_by_role', 'fantamediaChart');
+            loadChart('price_distribution', 'priceChart');
+            loadChart('value_efficiency', 'efficiencyChart');
+        }
+
+        function loadChart(chartType, canvasId) {
+            fetch(`/api/performance-charts/${chartType}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById(canvasId).getContext('2d');
+                    // Simple chart rendering - in production use Chart.js
+                    drawSimpleChart(ctx, data);
+                });
+        }
+
+        function drawSimpleChart(ctx, data) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = '#00ff88';
+            ctx.font = '14px Arial';
+            ctx.fillText(data.data.datasets[0].label, 10, 20);
+
+            // Simple bar chart
+            if (data.type === 'bar') {
+                const barWidth = 60;
+                const maxValue = Math.max(...data.data.datasets[0].data);
+
+                data.data.labels.forEach((label, i) => {
+                    const value = data.data.datasets[0].data[i];
+                    const height = (value / maxValue) * 150;
+                    const x = i * 80 + 10;
+                    const y = 180 - height;
+
+                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
+                    ctx.fillRect(x, y, barWidth, height);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(label, x, 195);
+                    ctx.fillText(value.toString(), x, y - 5);
+                });
+            }
+        }
+
+        // Player Comparison Functions
+        function showPlayerComparison() {
+            const section = document.getElementById('comparisonSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function compareSelectedPlayers() {
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
+
+            if (!player1 || !player2) {
+                alert('Inserisci entrambi i nomi dei giocatori');
+                return;
+            }
+
+            fetch('/api/player-comparison', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({players: [player1, player2]})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('comparisonResults').innerHTML = 
+                        `<p style="color: #ff6b6b;">${data.error}</p>`;
+                    return;
+                }
+
+                let html = '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>Metrica</th>';
+                data.comparison.forEach(player => {
+                    html += `<th>${player.name}</th>`;
+                });
+                html += '</tr>';
+
+                const metrics = ['team', 'role', 'fantamedia', 'price', 'appearances', 'value_ratio'];
+                metrics.forEach(metric => {
+                    html += '<tr>';
+                    html += `<td style="border: 1px solid #333; padding: 8px;">${metric}</td>`;
+                    data.comparison.forEach(player => {
+                        html += `<td style="border: 1px solid #333; padding: 8px;">${player[metric]}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+
+                html += '<div style="margin-top: 1rem;">';
+                html += `<p><strong>Miglior rapporto qualità/prezzo:</strong> ${data.metrics.best_value}</p>`;
+                html += `<p><strong>Fantamedia più alta:</strong> ${data.metrics.highest_fantamedia}</p>`;
+                html += `<p><strong>Più affidabile:</strong> ${data.metrics.most_reliable}</p>`;
+                html += '</div>';
+
+                document.getElementById('comparisonResults').innerHTML = html;
+            });
+        }
+
+        function exportData(format, dataType) {
+            fetch('/api/export-data', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: format, data_type: dataType})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Errore durante l\'esportazione: ' + data.error);
+                    return;
+                }
+
+                const blob = new Blob([data.data], {type: 'text/csv'});
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = data.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
         }
     </script>
 </body>

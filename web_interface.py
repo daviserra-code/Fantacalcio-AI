@@ -517,6 +517,277 @@ def get_player_fixtures(player_name, team):
         logger.error(f"Player fixtures error: {str(e)}")
         return jsonify({'error': 'Fixture analysis failed'}), 500
 
+@app.route('/api/user-analytics', methods=['GET'])
+def get_user_analytics():
+    """Get user analytics dashboard data"""
+    try:
+        session_id = session.get('session_id', 'anonymous')
+        
+        # Mock analytics data - in production this would come from database
+        analytics_data = {
+            'session_id': session_id,
+            'most_searched_players': [
+                {'name': 'Osimhen', 'searches': 15, 'team': 'Napoli'},
+                {'name': 'Vlahovic', 'searches': 12, 'team': 'Juventus'},
+                {'name': 'Lautaro', 'searches': 10, 'team': 'Inter'}
+            ],
+            'favorite_positions': [
+                {'position': 'A', 'percentage': 35},
+                {'position': 'C', 'percentage': 30},
+                {'position': 'D', 'percentage': 25},
+                {'position': 'P', 'percentage': 10}
+            ],
+            'league_preferences': {
+                'Classic': 45,
+                'Mantra': 25,
+                'Draft': 20,
+                'Superscudetto': 10
+            },
+            'budget_distribution': {
+                'low': 20,    # <400 credits
+                'medium': 60, # 400-700 credits
+                'high': 20    # >700 credits
+            },
+            'performance_metrics': {
+                'avg_response_time': 2.3,
+                'cache_hit_rate': 78.5,
+                'successful_queries': 142
+            }
+        }
+        
+        return jsonify(analytics_data)
+        
+    except Exception as e:
+        logger.error(f"User analytics error: {str(e)}")
+        return jsonify({'error': 'Analytics data unavailable'}), 500
+
+@app.route('/api/mobile-config', methods=['GET'])
+def get_mobile_config():
+    """Get mobile-optimized configuration"""
+    try:
+        user_agent = request.headers.get('User-Agent', '').lower()
+        is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone', 'ipad'])
+        
+        mobile_config = {
+            'is_mobile': is_mobile,
+            'touch_optimized': is_mobile,
+            'reduced_animations': is_mobile,
+            'compact_layout': is_mobile,
+            'swipe_gestures': is_mobile,
+            'pull_to_refresh': is_mobile,
+            'haptic_feedback': is_mobile and 'iphone' in user_agent,
+            'recommended_features': {
+                'voice_input': is_mobile,
+                'quick_actions': True,
+                'favorites': True,
+                'offline_mode': is_mobile
+            }
+        }
+        
+        return jsonify(mobile_config)
+        
+    except Exception as e:
+        logger.error(f"Mobile config error: {str(e)}")
+        return jsonify({'error': 'Mobile config failed'}), 500
+
+@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
+def accessibility_settings():
+    """Get or update accessibility settings"""
+    try:
+        if request.method == 'GET':
+            # Return current accessibility settings
+            settings = {
+                'high_contrast': session.get('high_contrast', False),
+                'large_text': session.get('large_text', False),
+                'reduce_motion': session.get('reduce_motion', False),
+                'screen_reader': session.get('screen_reader', False),
+                'keyboard_navigation': session.get('keyboard_navigation', True),
+                'focus_indicators': session.get('focus_indicators', True),
+                'color_blind_friendly': session.get('color_blind_friendly', False)
+            }
+            return jsonify(settings)
+        
+        else:  # POST
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No settings provided'}), 400
+            
+            # Update session with new settings
+            for setting in ['high_contrast', 'large_text', 'reduce_motion', 'screen_reader', 
+                          'keyboard_navigation', 'focus_indicators', 'color_blind_friendly']:
+                if setting in data:
+                    session[setting] = bool(data[setting])
+            
+            return jsonify({'message': 'Settings updated successfully'})
+            
+    except Exception as e:
+        logger.error(f"Accessibility settings error: {str(e)}")
+        return jsonify({'error': 'Settings update failed'}), 500
+
+@app.route('/api/player-comparison', methods=['POST'])
+def compare_players():
+    """Compare multiple players side by side"""
+    try:
+        data = request.get_json()
+        if not data or 'players' not in data:
+            return jsonify({'error': 'Player list required'}), 400
+        
+        player_names = data.get('players', [])
+        if len(player_names) < 2 or len(player_names) > 4:
+            return jsonify({'error': 'Compare 2-4 players only'}), 400
+        
+        from fantacalcio_data import SAMPLE_PLAYERS
+        
+        comparison_data = []
+        for name in player_names:
+            player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == name.lower()), None)
+            if player:
+                comparison_data.append({
+                    'name': player.name,
+                    'team': player.team,
+                    'role': player.role,
+                    'fantamedia': player.fantamedia,
+                    'price': player.price,
+                    'appearances': player.appearances,
+                    'value_ratio': round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0,
+                    'games_per_season': round(player.appearances / 38 * 100, 1)
+                })
+        
+        if not comparison_data:
+            return jsonify({'error': 'No valid players found'}), 404
+        
+        return jsonify({
+            'comparison': comparison_data,
+            'metrics': {
+                'best_value': max(comparison_data, key=lambda x: x['value_ratio'])['name'],
+                'highest_fantamedia': max(comparison_data, key=lambda x: x['fantamedia'])['name'],
+                'most_reliable': max(comparison_data, key=lambda x: x['appearances'])['name']
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Player comparison error: {str(e)}")
+        return jsonify({'error': 'Comparison failed'}), 500
+
+@app.route('/api/performance-charts/<chart_type>', methods=['GET'])
+def get_performance_charts(chart_type):
+    """Get chart data for data visualization"""
+    try:
+        from fantacalcio_data import SAMPLE_PLAYERS
+        
+        if chart_type == 'fantamedia_by_role':
+            role_data = {}
+            for player in SAMPLE_PLAYERS:
+                if player.role not in role_data:
+                    role_data[player.role] = []
+                role_data[player.role].append(player.fantamedia)
+            
+            chart_data = {
+                'type': 'bar',
+                'data': {
+                    'labels': list(role_data.keys()),
+                    'datasets': [{
+                        'label': 'Media Fantamedia per Ruolo',
+                        'data': [round(sum(values)/len(values), 2) for values in role_data.values()],
+                        'backgroundColor': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+                    }]
+                }
+            }
+            
+        elif chart_type == 'price_distribution':
+            price_ranges = {'0-20': 0, '21-30': 0, '31-40': 0, '40+': 0}
+            for player in SAMPLE_PLAYERS:
+                if player.price <= 20:
+                    price_ranges['0-20'] += 1
+                elif player.price <= 30:
+                    price_ranges['21-30'] += 1
+                elif player.price <= 40:
+                    price_ranges['31-40'] += 1
+                else:
+                    price_ranges['40+'] += 1
+            
+            chart_data = {
+                'type': 'pie',
+                'data': {
+                    'labels': list(price_ranges.keys()),
+                    'datasets': [{
+                        'label': 'Distribuzione Prezzi',
+                        'data': list(price_ranges.values()),
+                        'backgroundColor': ['#FF9F43', '#26de81', '#2d98da', '#a55eea']
+                    }]
+                }
+            }
+            
+        elif chart_type == 'value_efficiency':
+            efficiency_data = []
+            for player in SAMPLE_PLAYERS:
+                if player.price > 0:
+                    efficiency = player.fantamedia / player.price
+                    efficiency_data.append({
+                        'x': player.price,
+                        'y': player.fantamedia,
+                        'r': efficiency * 10,
+                        'name': player.name
+                    })
+            
+            chart_data = {
+                'type': 'bubble',
+                'data': {
+                    'datasets': [{
+                        'label': 'Efficienza Prezzo/Fantamedia',
+                        'data': efficiency_data[:20],  # Limit to top 20
+                        'backgroundColor': '#45B7D1'
+                    }]
+                }
+            }
+            
+        else:
+            return jsonify({'error': 'Invalid chart type'}), 400
+        
+        return jsonify(chart_data)
+        
+    except Exception as e:
+        logger.error(f"Chart data error: {str(e)}")
+        return jsonify({'error': 'Chart generation failed'}), 500
+
+@app.route('/api/export-data', methods=['POST'])
+def export_data():
+    """Export user data in various formats"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Export parameters required'}), 400
+        
+        export_type = data.get('type', 'csv')
+        data_type = data.get('data_type', 'players')
+        
+        if data_type == 'players':
+            from fantacalcio_data import SAMPLE_PLAYERS
+            
+            if export_type == 'csv':
+                import csv
+                import io
+                
+                output = io.StringIO()
+                writer = csv.writer(output)
+                writer.writerow(['Name', 'Team', 'Role', 'Fantamedia', 'Price', 'Appearances'])
+                
+                for player in SAMPLE_PLAYERS:
+                    writer.writerow([player.name, player.team, player.role, 
+                                   player.fantamedia, player.price, player.appearances])
+                
+                return jsonify({
+                    'format': 'csv',
+                    'data': output.getvalue(),
+                    'filename': f'fantacalcio_players_{datetime.now().strftime("%Y%m%d")}.csv'
+                })
+        
+        return jsonify({'error': 'Export type not supported'}), 400
+        
+    except Exception as e:
+        logger.error(f"Export error: {str(e)}")
+        return jsonify({'error': 'Export failed'}), 500
+
 @app.errorhandler(404)
 def not_found(error):
     logger.warning(f"404 error: {request.path}")
