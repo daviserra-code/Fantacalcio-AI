@@ -7,9 +7,12 @@ import os
 # Lazy import to avoid blocking startup
 try:
     from main import FantacalcioAssistant
+    print("FantacalcioAssistant imported successfully")
 except Exception as e:
     print(f"Warning: Failed to import FantacalcioAssistant: {e}")
     FantacalcioAssistant = None
+
+print("Flask app initialized, ready to start server")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio_secret_key_2024')
@@ -70,7 +73,11 @@ assistant = None  # Initialize lazily when needed
 
 @app.route('/health')
 def health():
-    return {'status': 'healthy'}, 200
+    return {'status': 'healthy', 'port': os.environ.get('PORT', 5000)}, 200
+
+@app.route('/ping')
+def ping():
+    return 'pong', 200
 
 @app.route('/')
 def index():
@@ -157,5 +164,6 @@ def setup_league():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print(f"Starting Flask server on port {port}")
+    print(f"Starting Flask server on host 0.0.0.0, port {port}")
+    print(f"Health check available at: http://0.0.0.0:{port}/health")
     app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
