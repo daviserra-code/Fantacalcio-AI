@@ -360,30 +360,25 @@ def get_league_recommendations(league_type, participants, budget):
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 5000)) # Use port 5000 for deployment or PORT env var
-        debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
-
+        # Fixed port to match deployment configuration
+        port = 5000
+        debug_mode = False  # Always False for deployment stability
+        
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
         logger.info(f"Assistant available: {assistant is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
-
-        # Use production WSGI server for better deployment
-        if os.environ.get('REPLIT_DEPLOYMENT'):
-            from waitress import serve
-            logger.info("Starting with Waitress WSGI server (production)")
-            serve(app, host='0.0.0.0', port=port, threads=6)
-        else:
-            # Development server
-            app.run(
-                host='0.0.0.0',
-                port=port,
-                debug=debug_mode,
-                threaded=True,
-                use_reloader=False
-            )
+        
+        # Use Flask development server for reliability and fast startup
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=debug_mode,
+            threaded=True,
+            use_reloader=False
+        )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
