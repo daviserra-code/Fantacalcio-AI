@@ -6,6 +6,11 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import hashlib
 
+import sqlite3
+import json
+from datetime import datetime
+from typing import List, Dict
+
 class CorrectionsManager:
     def __init__(self, db_path="corrections.db"):
         self.db_path = db_path

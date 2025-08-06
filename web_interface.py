@@ -907,6 +907,135 @@ def export_data():
         logger.error(f"Export error: {str(e)}")
         return jsonify({'error': 'Export failed'}), 500
 
+@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
+def accessibility_settings():
+    """Get or update accessibility settings"""
+    try:
+        if request.method == 'GET':
+            # Return current accessibility settings
+            settings = {
+                'high_contrast': session.get('high_contrast', False),
+                'large_text': session.get('large_text', False),
+                'reduce_motion': session.get('reduce_motion', False),
+                'screen_reader': session.get('screen_reader', False),
+                'keyboard_navigation': session.get('keyboard_navigation', True),
+                'focus_indicators': session.get('focus_indicators', True),
+                'color_blind_friendly': session.get('color_blind_friendly', False)
+            }
+            return jsonify(settings)
+        
+        else:  # POST
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No settings provided'}), 400
+            
+            # Update session with new settings
+            for setting in ['high_contrast', 'large_text', 'reduce_motion', 'screen_reader', 
+                          'keyboard_navigation', 'focus_indicators', 'color_blind_friendly']:
+                if setting in data:
+                    session[setting] = bool(data[setting])
+            
+            return jsonify({'message': 'Settings updated successfully'})
+            
+    except Exception as e:
+        logger.error(f"Accessibility settings error: {str(e)}")
+        return jsonify({'error': 'Settings update failed'}), 500
+
+@app.route('/api/corrections', methods=['GET', 'POST'])
+def manage_corrections():
+    """Manage corrections system"""
+    global assistant
+    
+    try:
+        # Initialize assistant if not available
+        if assistant is None:
+            if FantacalcioAssistant is None:
+                return jsonify({'error': 'Assistant service not available'}), 503
+            assistant = FantacalcioAssistant()
+        
+        if request.method == 'GET':
+            # Get all corrections data
+            if hasattr(assistant, 'corrections_manager'):
+                import sqlite3
+                conn = sqlite3.connect(assistant.corrections_manager.db_path)
+                cursor = conn.cursor()
+                
+                # Get general corrections
+                cursor.execute('SELECT * FROM corrections WHERE status = "active" ORDER BY created_at DESC LIMIT 50')
+                corrections = []
+                for row in cursor.fetchall():
+                    corrections.append({
+                        'id': row[0],
+                        'type': row[1],
+                        'incorrect_info': row[2],
+                        'correct_info': row[3],
+                        'context': row[4],
+                        'times_applied': row[7] if len(row) > 7 else 0
+                    })
+                
+                conn.close()
+                return jsonify({'corrections': corrections, 'total': len(corrections)})
+            else:
+                return jsonify({'error': 'Corrections system not available'}), 503
+        
+        else:  # POST - Add new correction
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No correction data provided'}), 400
+            
+            if hasattr(assistant, 'corrections_manager'):
+                correction_type = data.get('type', 'general')
+                incorrect_info = data.get('incorrect_info', '').strip()
+                correct_info = data.get('correct_info', '').strip()
+                
+                if not incorrect_info or not correct_info:
+                    return jsonify({'error': 'Both incorrect and correct information required'}), 400
+                
+                correction_id = assistant.add_correction(
+                    incorrect_info,
+                    correct_info,
+                    correction_type,
+                    data.get('context', 'user_manual')
+                )
+                
+                return jsonify({
+                    'message': 'Correction added successfully',
+                    'correction_id': correction_id
+                })
+            else:
+                return jsonify({'error': 'Corrections system not available'}), 503
+                
+    except Exception as e:
+        logger.error(f"Corrections management error: {str(e)}")
+        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500
+
+@app.route('/api/corrections/stats', methods=['GET'])
+def get_corrections_stats():
+    """Get corrections statistics"""
+    global assistant
+    
+    try:
+        # Initialize assistant if not available
+        if assistant is None:
+            if FantacalcioAssistant is None:
+                return jsonify({'error': 'Assistant service not available'}), 503
+            assistant = FantacalcioAssistant()
+        
+        if hasattr(assistant, 'corrections_manager'):
+            summary = assistant.get_corrections_summary()
+            return jsonify({
+                'general_corrections': summary.get('general_corrections', []),
+                'player_corrections_count': summary.get('player_corrections_count', 0),
+                'response_patterns_count': summary.get('response_patterns_count', 0),
+                'total_corrections': summary.get('total_corrections', 0)
+            })
+        else:
+            return jsonify({'error': 'Corrections system not available'}), 503
+            
+    except Exception as e:
+        logger.error(f"Corrections stats error: {str(e)}")
+        return jsonify({'error': 'Failed to get statistics'}), 500
+
 @app.errorhandler(404)
 def not_found(error):
     logger.warning(f"404 error: {request.path}")
