@@ -12,6 +12,9 @@ except Exception as e:
     print(f"Warning: Failed to import FantacalcioAssistant: {e}")
     FantacalcioAssistant = None
 
+# Ensure Flask app can start even without FantacalcioAssistant
+assistant = None
+
 print("Flask app initialized, ready to start server")
 
 app = Flask(__name__)
@@ -73,7 +76,7 @@ assistant = None  # Initialize lazily when needed
 
 @app.route('/health')
 def health():
-    return {'status': 'healthy', 'port': os.environ.get('PORT', 5000)}, 200
+    return {'status': 'healthy', 'port': os.environ.get('PORT', 5000), 'assistant_available': FantacalcioAssistant is not None}, 200
 
 @app.route('/ping')
 def ping():
@@ -92,11 +95,12 @@ def chat():
     global assistant
     if assistant is None:
         if FantacalcioAssistant is None:
-            return jsonify({'error': 'Assistant not available'}), 500
+            return jsonify({'error': 'Assistant service is temporarily unavailable. Please try again later.'}), 503
         try:
             assistant = FantacalcioAssistant()
         except Exception as e:
-            return jsonify({'error': f'Failed to initialize assistant: {str(e)}'}), 500
+            print(f"Assistant initialization error: {str(e)}")
+            return jsonify({'error': 'Assistant service initialization failed. Please contact support.'}), 503
     
     data = request.get_json()
     message = data.get('message', '')
