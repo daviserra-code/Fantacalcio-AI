@@ -30,6 +30,9 @@ task = "shell.exec"
 args = "python web_interface.py"
 
 [[ports]]
+localPort = 80
+externalPort = 3000
+
+[[ports]]
 localPort = 5000
 externalPort = 80
-exposeLocalhost = false
