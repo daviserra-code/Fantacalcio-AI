@@ -101,44 +101,6 @@ rate_limit_storage = {}
 RATE_LIMIT_REQUESTS = app_config.get('rate_limit_requests', 60)
 RATE_LIMIT_WINDOW = app_config.get('rate_limit_window', 60)
 
-# Sample data for missing functionality
-class Player:
-    def __init__(self, name, team, role, fantamedia, price, appearances):
-        self.name = name
-        self.team = team
-        self.role = role
-        self.fantamedia = fantamedia
-        self.price = price
-        self.appearances = appearances
-
-SAMPLE_PLAYERS = [
-    Player("Osimhen", "Napoli", "A", 7.5, 45, 30),
-    Player("Vlahovic", "Juventus", "A", 7.2, 42, 32),
-    Player("Lautaro", "Inter", "A", 7.8, 40, 35),
-    Player("Lukaku", "Napoli", "A", 7.0, 35, 28),
-    Player("Barella", "Inter", "C", 6.8, 35, 34),
-    Player("Calhanoglu", "Inter", "C", 6.9, 32, 33),
-    Player("Theo Hernandez", "Milan", "D", 6.5, 30, 31),
-    Player("Bastoni", "Inter", "D", 6.7, 28, 32),
-    Player("Maignan", "Milan", "P", 6.2, 25, 30)
-]
-
-class League:
-    def __init__(self, league_type, participants, budget):
-        self.league_type = league_type
-        self.participants = participants
-        self.budget = budget
-        self.rules = self._get_rules(league_type)
-    
-    def _get_rules(self, league_type):
-        if league_type == "Classic":
-            return {"type": "classic", "bonus_rules": "standard"}
-        elif league_type == "Mantra":
-            return {"type": "mantra", "bonus_rules": "assist_bonus"}
-        elif league_type == "Draft":
-            return {"type": "draft", "bonus_rules": "no_budget"}
-        return {"type": "custom"}
-
 def check_rate_limit(ip_address):
     """Simple rate limiting check"""
     now = datetime.now().timestamp()
@@ -587,28 +549,6 @@ def get_user_analytics():
     except Exception as e:
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
-
-@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
-def accessibility_settings():
-    """Get or update accessibility settings"""
-    try:
-        if request.method == 'POST':
-            # Save accessibility settings
-            data = request.get_json() or {}
-            session['accessibility'] = data
-            return jsonify({'status': 'saved'}), 200
-        else:
-            # Get accessibility settings
-            return jsonify(session.get('accessibility', {
-                'high_contrast': False,
-                'large_text': False,
-                'screen_reader': False,
-                'keyboard_navigation': True,
-                'reduced_motion': False
-            }))
-    except Exception as e:
-        logger.error(f"Accessibility settings error: {str(e)}")
-        return jsonify({'error': 'Settings unavailable'}), 500
 
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
