@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
@@ -12,14 +11,66 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 10px;
+            color: #333;
+            overflow-x: hidden;
         }
-        
+
+        /* Loading Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Skeleton Loading */
+        .skeleton-item {
+            height: 60px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Enhanced Buttons */
+        .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
         .container {
             max-width: 500px;
             margin: 0 auto;
@@ -31,30 +82,30 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .header {
             background: linear-gradient(45deg, #00c851, #007e33);
             color: white;
             padding: 15px 20px;
             position: relative;
         }
-        
+
         .header h1 {
             font-size: 1.3em;
             margin-bottom: 5px;
         }
-        
+
         .header p {
             opacity: 0.9;
             font-size: 0.85em;
         }
-        
+
         .lang-switcher {
             position: absolute;
             top: 15px;
             right: 20px;
         }
-        
+
         .lang-switcher button {
             background: rgba(255,255,255,0.2);
             border: none;
@@ -65,17 +116,17 @@
             cursor: pointer;
             font-size: 0.8em;
         }
-        
+
         .lang-switcher button.active {
             background: rgba(255,255,255,0.4);
         }
-        
+
         .tabs {
             display: flex;
             background: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
         }
-        
+
         .tab {
             flex: 1;
             padding: 12px 8px;
@@ -88,24 +139,24 @@
             color: #6c757d;
             transition: all 0.3s;
         }
-        
+
         .tab.active {
             background: white;
             color: #00c851;
             border-bottom: 2px solid #00c851;
         }
-        
+
         .tab-content {
             display: none;
             flex: 1;
             overflow: hidden;
         }
-        
+
         .tab-content.active {
             display: flex;
             flex-direction: column;
         }
-        
+
         .league-setup {
             padding: 15px 20px;
             border-bottom: 1px solid #eee;
@@ -114,7 +165,7 @@
             gap: 10px;
             align-items: center;
         }
-        
+
         .league-setup select, .league-setup input {
             padding: 8px 12px;
             border: 1px solid #ddd;
@@ -123,42 +174,198 @@
             flex: 1;
             min-width: 80px;
         }
-        
+
         .chat-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.6s ease-out;
+            position: relative;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+            animation: none;
+        }
+
+        .chat-stats {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            min-height: 300px;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            scroll-behavior: smooth;
         }
-        
+
         .message {
             margin-bottom: 15px;
-            padding: 12px 15px;
+            padding: 12px 18px;
             border-radius: 18px;
-            max-width: 85%;
-            font-size: 0.9em;
-            line-height: 1.4;
+            max-width: 80%;
+            animation: messageSlide 0.3s ease-out;
+            position: relative;
         }
-        
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .user-message {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            background: #667eea;
+            color: white;
             margin-left: auto;
-            text-align: right;
+            border-bottom-right-radius: 5px;
         }
-        
+
         .assistant-message {
-            background: linear-gradient(135deg, #f1f8e9, #c8e6c9);
-            margin-right: auto;
+            background: #f1f3f4;
+            color: #333;
+            border-bottom-left-radius: 5px;
         }
-        
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            background: #f1f3f4;
+            border-radius: 18px;
+            max-width: 200px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.5s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
         .input-area {
-            padding: 20px;
-            border-top: 1px solid #eee;
+            position: relative;
+        }
+
+        .input-wrapper {
             display: flex;
             gap: 10px;
             align-items: flex-end;
         }
-        
+
+        .input-wrapper textarea {
+            flex: 1;
+            resize: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper textarea:focus {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-suggestions {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 5px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification-area {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            max-width: 300px;
+        }
+
+        .notification {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+        }
+
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .notification.warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+
         .quick-actions {
             padding: 10px 20px;
             border-top: 1px solid #f0f0f0;
@@ -167,7 +374,7 @@
             flex-wrap: wrap;
             background: #f8f9fa;
         }
-        
+
         .quick-btn {
             background: linear-gradient(135deg, #e3f2fd, #bbdefb);
             border: 1px solid #2196f3;
@@ -179,13 +386,13 @@
             color: #1976d2;
             font-weight: 500;
         }
-        
+
         .quick-btn:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             transform: translateY(-1px);
         }
-        
+
         .btn-voice {
             background: linear-gradient(45deg, #ff6b6b, #ee5a24);
             color: white;
@@ -196,22 +403,22 @@
             cursor: pointer;
             font-size: 1.2em;
         }
-        
+
         .btn-voice:hover {
             transform: scale(1.1);
         }
-        
+
         .btn-voice.recording {
             background: linear-gradient(45deg, #ff3838, #c0392b);
             animation: pulse 1s infinite;
         }
-        
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
-        
+
         #messageInput {
             flex: 1;
             padding: 18px 22px;
@@ -222,11 +429,11 @@
             min-height: 60px;
             resize: vertical;
         }
-        
+
         #messageInput:focus {
             border-color: #00c851;
         }
-        
+
         .btn {
             padding: 12px 18px;
             border: none;
@@ -236,51 +443,140 @@
             transition: all 0.3s;
             font-size: 0.9em;
         }
-        
+
         .btn-primary {
             background: linear-gradient(45deg, #00c851, #007e33);
             color: white;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,200,81,0.3);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: white;
             font-size: 0.8em;
             padding: 8px 15px;
         }
-        
+
         .search-container {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            animation: fadeIn 0.6s ease-out;
         }
-        
-        .search-box {
-            display: flex;
-            gap: 10px;
+
+        .search-header {
+            position: relative;
             margin-bottom: 15px;
         }
-        
-        .search-input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 2px solid #ddd;
-            border-radius: 25px;
-            outline: none;
-            font-size: 16px;
+
+        .search-input-wrapper {
+            display: flex;
+            gap: 10px;
+            position: relative;
         }
-        
+
+        .search-header input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-header input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .advanced-filters {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto;
+            gap: 15px;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .recent-searches {
+            margin-bottom: 15px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .recent-searches h4 {
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        #recentSearchList {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .recent-search-item {
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .recent-search-item:hover {
+            background: #667eea;
+            color: white;
+        }
+
         .filters {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 15px;
+            padding: 0 20px;
         }
-        
+
         .filter-btn {
             padding: 6px 12px;
             border: 1px solid #ddd;
@@ -290,19 +586,19 @@
             font-size: 0.8em;
             transition: all 0.3s;
         }
-        
+
         .filter-btn.active {
             background: #00c851;
             color: white;
             border-color: #00c851;
         }
-        
+
         .results-container {
             flex: 1;
             overflow-y: auto;
             padding: 10px 20px;
         }
-        
+
         .player-card {
             background: white;
             border: 1px solid #eee;
@@ -311,20 +607,20 @@
             margin-bottom: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
+
         .player-header {
             display: flex;
             justify-content: between;
             align-items: center;
             margin-bottom: 8px;
         }
-        
+
         .player-name {
             font-weight: 600;
             color: #333;
             font-size: 1.1em;
         }
-        
+
         .player-role {
             background: #00c851;
             color: white;
@@ -333,7 +629,7 @@
             font-size: 0.7em;
             margin-left: auto;
         }
-        
+
         .player-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -341,21 +637,21 @@
             font-size: 0.85em;
             color: #666;
         }
-        
+
         .loading {
             text-align: center;
             padding: 20px;
             color: #666;
             font-style: italic;
         }
-        
+
         .mode-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             padding: 20px;
         }
-        
+
         .mode-card {
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border: 2px solid #dee2e6;
@@ -365,48 +661,97 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
+
         .mode-card:hover, .mode-card.active {
             background: linear-gradient(135deg, #00c851, #007e33);
             color: white;
             border-color: #00c851;
             transform: translateY(-2px);
         }
-        
+
         .mode-icon {
             font-size: 2em;
             margin-bottom: 10px;
         }
-        
+
         .mode-title {
             font-weight: 600;
             font-size: 1.1em;
         }
-        
+
+        .search-results {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 20px;
+        }
+
+        .loading-skeleton {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error {
+            text-align: center;
+            color: #dc3545;
+            padding: 20px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px 20px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 margin: 5px;
                 border-radius: 10px;
             }
-            
+
             .tab {
                 font-size: 0.75em;
                 padding: 10px 5px;
             }
-            
+
             .mode-selector {
                 grid-template-columns: 1fr;
                 gap: 10px;
                 padding: 15px;
             }
-            
+
             .league-setup {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .player-details {
                 grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-btn, .quick-btn {
+                width: 100%;
+            }
+
+            .advanced-filters {
+                grid-template-columns: 1fr;
+                padding: 10px;
+            }
+            .input-wrapper {
+                flex-direction: column;
+            }
+            .input-actions {
+                width: 100%;
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+            .btn-voice {
+                width: 40px;
+                height: 40px;
+                font-size: 1em;
             }
         }
     </style>
@@ -421,7 +766,7 @@
             <h1>🏆 {{ t.title }}</h1>
             <p>{{ t.subtitle }}</p>
         </div>
-        
+
         <div class="tabs">
             <button class="tab active" onclick="switchTab('classic')">{{ t.modes.classic }}</button>
             <button class="tab" onclick="switchTab('mantra')">{{ t.modes.mantra }}</button>
@@ -429,7 +774,7 @@
             <button class="tab" onclick="switchTab('superscudetto')">{{ t.modes.superscudetto }}</button>
             <button class="tab" onclick="switchTab('historical')">{{ t.historical }}</button>
         </div>
-        
+
         <!-- Classic Mode -->
         <div class="tab-content active" id="classic">
             <div class="league-setup">
@@ -437,34 +782,66 @@
                 <input type="number" id="budget" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
-            <div class="chat-container" id="chatContainer">
-                <div class="message assistant-message">
-                    👋 {{ t.welcome }}
-                    <br><br>
-                    Modalità <strong>Classic</strong> attiva. Dimmi di cosa hai bisogno!
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot online"></span>
+                        <span>Assistente Online</span>
+                    </div>
+                    <div class="chat-stats" id="chatStats">
+                        <span id="responseTime"></span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="quick-actions">
-                <button class="quick-btn" onclick="askQuickQuestion('Migliori rigoristi Serie A?')">⚽ Rigoristi</button>
-                <button class="quick-btn" onclick="askQuickQuestion('Consigli clean sheet questa giornata?')">🥅 Clean Sheet</button>
-                <button class="quick-btn" onclick="askQuickQuestion('Formazione consigliata questa giornata?')">📋 Formazione</button>
-                <button class="quick-btn" onclick="showFixtures()">📅 Partite</button>
-            </div>
-            
-            <div class="input-area">
-                <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
-                <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
-                <button class="btn btn-primary" onclick="sendMessage()">{{ t.send }}</button>
-            </div>
-            
-            <div class="player-search-widget" id="playerSearchWidget" style="display: none;">
-                <input type="text" id="quickPlayerSearch" placeholder="Cerca giocatore per analisi veloce...">
-                <div id="quickSearchResults"></div>
+
+                <div class="chat-messages" id="chatContainer">
+                    <div class="message assistant-message">
+                        👋 {{ t.welcome }}
+                        <br><br>
+                        Modalità <strong>Classic</strong> attiva. Dimmi di cosa hai bisogno!
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="askQuickQuestion('Migliori rigoristi Serie A?')">⚽ Rigoristi</button>
+                    <button class="quick-btn" onclick="askQuickQuestion('Consigli clean sheet questa giornata?')">🥅 Clean Sheet</button>
+                    <button class="quick-btn" onclick="askQuickQuestion('Formazione consigliata questa giornata?')">📋 Formazione</button>
+                    <button class="quick-btn" onclick="showFixtures()">📅 Partite</button>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
+                        <div class="input-actions">
+                            <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
+                            <button class="btn btn-primary" onclick="sendMessage()" id="sendBtn">{{ t.send }}</button>
+                        </div>
+                    </div>
+                    <div class="input-suggestions" id="inputSuggestions" style="display: none;">
+                        <div class="suggestion-item" onclick="applySuggestion('Chi è il miglior centrocampista?')">Chi è il miglior centrocampista?</div>
+                        <div class="suggestion-item" onclick="applySuggestion('Formazione economica per 300 crediti')">Formazione economica per 300 crediti</div>
+                        <div class="suggestion-item" onclick="applySuggestion('Migliori attaccanti per questa giornata')">Migliori attaccanti per questa giornata</div>
+                    </div>
+                </div>
+
+                <div class="player-search-widget" id="playerSearchWidget" style="display: none;">
+                    <input type="text" id="quickPlayerSearch" placeholder="Cerca giocatore per analisi veloce...">
+                    <div id="quickSearchResults"></div>
+                </div>
+
+                <div class="notification-area" id="notificationArea"></div>
             </div>
         </div>
-        
+
         <!-- Mantra Mode -->
         <div class="tab-content" id="mantra">
             <div class="league-setup">
@@ -472,21 +849,48 @@
                 <input type="number" id="budgetMantra" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
-            <div class="chat-container" id="chatContainerMantra">
-                <div class="message assistant-message">
-                    👋 {{ t.welcome }}
-                    <br><br>
-                    Modalità <strong>Mantra</strong> attiva. Ricorda: bonus assist e clean sheet attivi!
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot online"></span>
+                        <span>Assistente Online</span>
+                    </div>
+                    <div class="chat-stats" id="chatStats">
+                        <span id="responseTime"></span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="input-area">
-                <input type="text" id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500">
-                <button class="btn btn-primary" onclick="sendMessage('mantra')">{{ t.send }}</button>
+
+                <div class="chat-messages" id="chatContainerMantra">
+                    <div class="message assistant-message">
+                        👋 {{ t.welcome }}
+                        <br><br>
+                        Modalità <strong>Mantra</strong> attiva. Ricorda: bonus assist e clean sheet attivi!
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500">
+                        <div class="input-actions">
+                            <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
+                            <button class="btn btn-primary" onclick="sendMessage('mantra')" id="sendBtn">{{ t.send }}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="notification-area" id="notificationArea"></div>
             </div>
         </div>
-        
+
         <!-- Draft Mode -->
         <div class="tab-content" id="draft">
             <div class="league-setup">
@@ -497,21 +901,48 @@
                 </select>
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
-            <div class="chat-container" id="chatContainerDraft">
-                <div class="message assistant-message">
-                    👋 {{ t.welcome }}
-                    <br><br>
-                    Modalità <strong>Draft</strong> attiva. Niente budget, solo strategia di selezione!
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot online"></span>
+                        <span>Assistente Online</span>
+                    </div>
+                    <div class="chat-stats" id="chatStats">
+                        <span id="responseTime"></span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="input-area">
-                <input type="text" id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500">
-                <button class="btn btn-primary" onclick="sendMessage('draft')">{{ t.send }}</button>
+
+                <div class="chat-messages" id="chatContainerDraft">
+                    <div class="message assistant-message">
+                        👋 {{ t.welcome }}
+                        <br><br>
+                        Modalità <strong>Draft</strong> attiva. Niente budget, solo strategia di selezione!
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500">
+                        <div class="input-actions">
+                            <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
+                            <button class="btn btn-primary" onclick="sendMessage('draft')" id="sendBtn">{{ t.send }}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="notification-area" id="notificationArea"></div>
             </div>
         </div>
-        
+
         <!-- Superscudetto Mode -->
         <div class="tab-content" id="superscudetto">
             <div class="league-setup">
@@ -519,45 +950,98 @@
                 <input type="number" id="budgetSuper" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
-            
-            <div class="chat-container" id="chatContainerSuper">
-                <div class="message assistant-message">
-                    👋 {{ t.welcome }}
-                    <br><br>
-                    Modalità <strong>Superscudetto</strong> attiva. Regole speciali e premi aggiuntivi!
+
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot online"></span>
+                        <span>Assistente Online</span>
+                    </div>
+                    <div class="chat-stats" id="chatStats">
+                        <span id="responseTime"></span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="input-area">
-                <input type="text" id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500">
-                <button class="btn btn-primary" onclick="sendMessage('superscudetto')">{{ t.send }}</button>
+
+                <div class="chat-messages" id="chatContainerSuper">
+                    <div class="message assistant-message">
+                        👋 {{ t.welcome }}
+                        <br><br>
+                        Modalità <strong>Superscudetto</strong> attiva. Regole speciali e premi aggiuntivi!
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500">
+                        <div class="input-actions">
+                            <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
+                            <button class="btn btn-primary" onclick="sendMessage('superscudetto')" id="sendBtn">{{ t.send }}</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="notification-area" id="notificationArea"></div>
             </div>
         </div>
-        
+
         <!-- Historical Mode -->
         <div class="tab-content" id="historical">
             <div class="search-container">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="{{ t.search_placeholder }}">
-                    <button class="btn btn-primary" onclick="searchPlayers()">
-                        <i class="fas fa-search"></i>
-                    </button>
+                <div class="search-header">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="searchInput" placeholder="{{ t.search_placeholder }}" maxlength="100" autocomplete="off">
+                        <button onclick="performSearch()" class="btn btn-primary">🔍</button>
+                        <button onclick="clearSearch()" class="btn btn-secondary" id="clearBtn" style="display: none;">✖</button>
+                    </div>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
                 </div>
-                
+
                 <div class="filters">
-                    <span style="font-size: 0.9em; color: #666; margin-right: 10px;">{{ t.filters }}:</span>
-                    <button class="filter-btn active" data-role="all">{{ t.all_roles }}</button>
-                    <button class="filter-btn" data-role="P">{{ t.goalkeeper }}</button>
-                    <button class="filter-btn" data-role="D">{{ t.defender }}</button>
-                    <button class="filter-btn" data-role="C">{{ t.midfielder }}</button>
-                    <button class="filter-btn" data-role="A">{{ t.forward }}</button>
+                    <label>{{ t.filters }}:</label>
+                    <select id="roleFilter" onchange="performSearch()">
+                        <option value="all">{{ t.all_roles }}</option>
+                        <option value="P">{{ t.goalkeeper }}</option>
+                        <option value="D">{{ t.defender }}</option>
+                        <option value="C">{{ t.midfielder }}</option>
+                        <option value="A">{{ t.forward }}</option>
+                    </select>
+                    <select id="sortFilter" onchange="performSearch()">
+                        <option value="fantamedia">Fantamedia</option>
+                        <option value="price">Prezzo</option>
+                        <option value="name">Nome</option>
+                    </select>
+                    <div class="advanced-filters" id="advancedFilters" style="display: none;">
+                        <input type="range" id="priceRange" min="0" max="50" step="1" onchange="updatePriceFilter()">
+                        <span id="priceDisplay">Prezzo: Tutti</span>
+                        <input type="range" id="fantamediaRange" min="5.0" max="8.0" step="0.1" onchange="updateFantamediaFilter()">
+                        <span id="fantamediaDisplay">Fantamedia: Tutti</span>
+                    </div>
+                    <button onclick="toggleAdvancedFilters()" class="btn btn-secondary">⚙️ Filtri Avanzati</button>
                 </div>
-            </div>
-            
-            <div class="results-container" id="resultsContainer">
-                <div style="text-align: center; color: #666; padding: 40px 20px;">
-                    <i class="fas fa-search" style="font-size: 3em; margin-bottom: 15px; opacity: 0.3;"></i>
-                    <p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p>
+
+                <div class="recent-searches" id="recentSearches" style="display: none;">
+                    <h4>Ricerche Recenti:</h4>
+                    <div id="recentSearchList"></div>
+                </div>
+
+                <div id="searchResults" class="search-results">
+                    <div class="loading-skeleton" id="searchLoading" style="display: none;">
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                    </div>
+                    <div class="no-results" id="noResults">
+                        <i class="icon-search" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -566,90 +1050,212 @@
     <script>
         let currentTab = 'classic';
         let currentRole = 'all';
-        
+
+        // Enhanced variables for better UX
+        let recentSearches = JSON.parse(localStorage.getItem('recentSearches')) || [];
+        let searchTimeout;
+        let isTyping = false;
+        let lastSearchTime = 0;
+
         function switchLang(lang) {
             window.location.href = `/?lang=${lang}`;
         }
-        
+
         function switchTab(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            
+
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Show selected tab
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
             currentTab = tabName;
         }
-        
+
         function addMessage(content, isUser = false, container = 'chatContainer') {
             const chatContainer = document.getElementById(container);
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
-            messageDiv.innerHTML = content.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = content;
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Add timestamp to messages
+            if (!isUser) {
+                const timestamp = new Date().toLocaleTimeString('it-IT', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                messageDiv.setAttribute('data-timestamp', timestamp);
+            }
         }
-        
-        function showLoading(container = 'chatContainer') {
-            const chatContainer = document.getElementById(container);
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading';
-            loadingDiv.id = 'loading-' + container;
-            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t.loading }}';
-            chatContainer.appendChild(loadingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'flex';
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
         }
-        
-        function hideLoading(container = 'chatContainer') {
-            const loading = document.getElementById('loading-' + container);
-            if (loading) loading.remove();
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
         }
-        
+
+        function updateResponseTime(responseTime) {
+            const statsEl = document.getElementById('chatStats');
+            if (statsEl && responseTime) {
+                statsEl.innerHTML = `Risposta in ${responseTime.toFixed(1)}s`;
+            }
+        }
+
         async function sendMessage(mode = 'classic') {
             const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
             const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-            
-            const message = document.getElementById(inputId).value.trim();
+
+            const messageInputEl = document.getElementById(inputId);
+            const message = messageInputEl.value.trim();
+
             if (!message) return;
-            
+
+            const startTime = Date.now();
+
+            // Add user message
             addMessage(message, true, containerId);
-            document.getElementById(inputId).value = '';
-            showLoading(containerId);
-            
-            const context = {
-                leagueType: mode,
-                participants: parseInt(document.getElementById(mode === 'classic' ? 'participants' : `participants${mode.charAt(0).toUpperCase() + mode.slice(1)}`).value || 8),
-                budget: parseInt(document.getElementById(mode === 'classic' ? 'budget' : `budget${mode.charAt(0).toUpperCase() + mode.slice(1)}`).value || 500),
-                mode: mode
-            };
-            
+            messageInputEl.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Update status
+            updateStatus('typing');
+
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message, context })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: getContext()
+                    })
                 });
-                
+
                 const data = await response.json();
-                hideLoading(containerId);
-                
+
+                // Hide typing indicator
+                hideTypingIndicator();
+
+                // Calculate response time
+                const responseTime = (Date.now() - startTime) / 1000;
+                updateResponseTime(responseTime);
+
                 if (data.error) {
                     addMessage(`❌ Errore: ${data.error}`, false, containerId);
+                    showNotification('Errore nella risposta', 'error');
                 } else {
-                    addMessage(`🎯 ${data.response}`, false, containerId);
+                    addMessage(data.response, false, containerId);
+                    showNotification('Risposta ricevuta', 'success');
                 }
+
+                // Update status
+                updateStatus('online');
+
             } catch (error) {
-                hideLoading(containerId);
+                hideTypingIndicator();
                 addMessage('❌ Errore di connessione. Riprova.', false, containerId);
+                showNotification('Errore di connessione', 'error');
+                updateStatus('offline');
             }
         }
-        
+
+        function updateStatus(status) {
+            const indicator = document.querySelector('.status-indicator');
+            const dot = document.querySelector('.status-dot');
+            const text = indicator.querySelector('span:last-child');
+
+            if (status === 'online') {
+                dot.className = 'status-dot online';
+                text.textContent = 'Assistente Online';
+            } else if (status === 'typing') {
+                dot.className = 'status-dot online';
+                text.textContent = 'Assistente sta scrivendo...';
+            } else if (status === 'offline') {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Assistente Offline';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notificationArea = document.getElementById('notificationArea');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div>${message}</div>
+                <button onclick="this.parentElement.remove()" style="position: absolute; top: 5px; right: 8px; border: none; background: none; cursor: pointer;">×</button>
+            `;
+
+            notificationArea.appendChild(notification);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        function applySuggestion(suggestion) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = suggestion;
+            hideSuggestions();
+            messageInput.focus();
+        }
+
+        function showSuggestions() {
+            const suggestions = document.getElementById('inputSuggestions');
+            if (suggestions) {
+                suggestions.style.display = 'block';
+            }
+        }
+
+        function hideSuggestions() {
+            const suggestions = document.getElementById('inputSuggestions');
+            if (suggestions) {
+                suggestions.style.display = 'none';
+            }
+        }
+
+        function getContext() {
+            const selectedTab = document.querySelector('.tab.active').id;
+            let context = { leagueType: selectedTab };
+
+            if (selectedTab === 'classic') {
+                context.participants = parseInt(document.getElementById('participants')?.value || 8);
+                context.budget = parseInt(document.getElementById('budget')?.value || 500);
+            } else if (selectedTab === 'mantra') {
+                context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
+            } else if (selectedTab === 'draft') {
+                context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
+                context.draftOrder = document.getElementById('draftOrder')?.value;
+            } else if (selectedTab === 'superscudetto') {
+                context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
+            }
+            return context;
+        }
+
         async function resetChat() {
             try {
                 await fetch('/api/reset', { method: 'POST' });
@@ -664,82 +1270,230 @@
                         `;
                     }
                 });
+                hideTypingIndicator();
+                updateStatus('online');
             } catch (error) {
                 console.error('Reset error:', error);
+                showNotification('Errore nel reset della chat', 'error');
             }
         }
-        
+
         // Historical search functionality
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentRole = this.dataset.role;
+                performSearch(); // Trigger search on filter change
             });
         });
-        
-        async function searchPlayers() {
+
+        async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-            
-            const resultsContainer = document.getElementById('resultsContainer');
-            resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cercando...</div>';
-            
+            const role = document.getElementById('roleFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            // Show/hide clear button
+            const clearBtn = document.getElementById('clearBtn');
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            if (!query) {
+                document.getElementById('searchResults').innerHTML = `
+                    <div class="no-results" id="noResults">
+                        <i class="icon-search" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p>Inserisci un termine di ricerca</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show loading skeleton
+            showSearchLoading();
+
+            // Add to recent searches
+            addToRecentSearches(query);
+
             try {
                 const response = await fetch('/api/search', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query, role: currentRole })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        role: role,
+                        sort: sort,
+                        priceRange: getPriceRange(),
+                        fantamediaRange: getFantamediaRange()
+                    })
                 });
-                
+
                 const data = await response.json();
-                displayResults(data.results);
+
+                // Add small delay for better UX
+                setTimeout(() => {
+                    hideSearchLoading();
+                    displaySearchResults(data);
+                }, 300);
+
             } catch (error) {
-                resultsContainer.innerHTML = '<div class="loading">❌ Errore nella ricerca</div>';
+                hideSearchLoading();
+                document.getElementById('searchResults').innerHTML = `
+                    <div class="error">
+                        <p>❌ Errore nella ricerca. Riprova.</p>
+                    </div>
+                `;
+                showNotification('Errore nella ricerca', 'error');
             }
         }
-        
-        function displayResults(results) {
-            const container = document.getElementById('resultsContainer');
-            
-            if (results.length === 0) {
-                container.innerHTML = '<div class="loading">😔 Nessun risultato trovato</div>';
-                return;
-            }
-            
-            container.innerHTML = results.map(player => `
-                <div class="player-card">
-                    <div class="player-header">
-                        <div class="player-name">${player.name}</div>
-                        <div class="player-role">${player.role}</div>
-                    </div>
-                    <div class="player-details">
-                        <div><strong>Squadra:</strong> ${player.team}</div>
-                        <div><strong>Fantamedia:</strong> ${player.fantamedia}</div>
-                        <div><strong>Presenze:</strong> ${player.appearances}</div>
-                        <div><strong>Prezzo:</strong> ${player.price || 'N/A'}</div>
-                    </div>
+
+        function showSearchLoading() {
+            document.getElementById('searchLoading').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+        }
+
+        function hideSearchLoading() {
+            document.getElementById('searchLoading').style.display = 'none';
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('searchResults').innerHTML = `
+                <div class="no-results" id="noResults">
+                    <i class="icon-search" style="font-size: 48px; opacity: 0.3;"></i>
+                    <p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p>
                 </div>
-            `).join('');
+            `;
+            hideSearchSuggestions();
         }
-        
+
+        function addToRecentSearches(query) {
+            if (!recentSearches.includes(query)) {
+                recentSearches.unshift(query);
+                recentSearches = recentSearches.slice(0, 5); // Keep only last 5
+                localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+                updateRecentSearchesDisplay();
+            }
+        }
+
+        function updateRecentSearchesDisplay() {
+            const recentSearchContainer = document.getElementById('recentSearches');
+            const recentSearchList = document.getElementById('recentSearchList');
+
+            if (recentSearches.length > 0) {
+                recentSearchContainer.style.display = 'block';
+                recentSearchList.innerHTML = recentSearches.map(search =>
+                    `<span class="recent-search-item" onclick="performRecentSearch('${search}')">${search}</span>`
+                ).join('');
+            } else {
+                recentSearchContainer.style.display = 'none';
+            }
+        }
+
+        function performRecentSearch(query) {
+            document.getElementById('searchInput').value = query;
+            performSearch();
+        }
+
+        function toggleAdvancedFilters() {
+            const filters = document.getElementById('advancedFilters');
+            const isVisible = filters.style.display !== 'none';
+            filters.style.display = isVisible ? 'none' : 'block';
+        }
+
+        function updatePriceFilter() {
+            const range = document.getElementById('priceRange');
+            const display = document.getElementById('priceDisplay');
+            display.textContent = range.value == 0 ? 'Prezzo: Tutti' : `Prezzo: fino a ${range.value}`;
+            performSearch();
+        }
+
+        function updateFantamediaFilter() {
+            const range = document.getElementById('fantamediaRange');
+            const display = document.getElementById('fantamediaDisplay');
+            display.textContent = range.value == 5.0 ? 'Fantamedia: Tutti' : `Fantamedia: min ${range.value}`;
+            performSearch();
+        }
+
+        function getPriceRange() {
+            const range = document.getElementById('priceRange');
+            return range ? range.value : 50;
+        }
+
+        function getFantamediaRange() {
+            const range = document.getElementById('fantamediaRange');
+            return range ? range.value : 5.0;
+        }
+
+        function showSearchSuggestions(suggestions) {
+            const container = document.getElementById('searchSuggestions');
+            if (suggestions && suggestions.length > 0) {
+                container.innerHTML = suggestions.map(suggestion =>
+                    `<div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`
+                ).join('');
+                container.style.display = 'block';
+            } else {
+                hideSearchSuggestions();
+            }
+        }
+
+        function hideSearchSuggestions() {
+            const container = document.getElementById('searchSuggestions');
+            container.style.display = 'none';
+        }
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('searchInput').value = suggestion;
+            hideSearchSuggestions();
+            performSearch();
+        }
+
+        function displaySearchResults(data) {
+            const container = document.getElementById('searchResults');
+
+            if (data.results && data.results.length > 0) {
+                container.innerHTML = data.results.map(player => `
+                    <div class="player-card">
+                        <div class="player-header">
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-role">${player.role}</div>
+                        </div>
+                        <div class="player-details">
+                            <div><strong>Squadra:</strong> ${player.team}</div>
+                            <div><strong>Fantamedia:</strong> ${player.fantamedia}</div>
+                            <div><strong>Presenze:</strong> ${player.appearances}</div>
+                            <div><strong>Prezzo:</strong> ${player.price || 'N/A'}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `
+                    <div class="no-results" id="noResults">
+                        <i class="icon-search" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p>Nessun risultato trovato per la tua ricerca.</p>
+                    </div>
+                `;
+            }
+        }
+
         // Quick action functions
         async function askQuickQuestion(question) {
             const messageInput = document.getElementById('messageInput');
             messageInput.value = question;
             await sendMessage('classic');
         }
-        
+
         async function showFixtures() {
             try {
                 addMessage('📅 Caricando le partite di questa giornata...', true, 'chatContainer');
-                showLoading('chatContainer');
-                
+                showTypingIndicator();
+
                 const response = await fetch('/api/fixtures');
                 const data = await response.json();
-                
-                hideLoading('chatContainer');
-                
+
+                hideTypingIndicator();
+
                 if (data.gameweek_recommendations) {
                     let fixtureText = '📅 **PARTITE E CONSIGLI GIORNATA**\n\n';
                     data.gameweek_recommendations.forEach(rec => {
@@ -750,23 +1504,24 @@
                     addMessage('📅 Dati partite temporaneamente non disponibili', false, 'chatContainer');
                 }
             } catch (error) {
-                hideLoading('chatContainer');
+                hideTypingIndicator();
                 addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
+                showNotification('Errore nel caricamento delle partite', 'error');
             }
         }
-        
+
         // Voice input functionality
         let isRecording = false;
         let recognition = null;
-        
+
         function toggleVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
-            
+
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert('Il riconoscimento vocale non è supportato su questo browser. Usa Chrome o Edge.');
                 return;
             }
-            
+
             if (!isRecording) {
                 startVoiceRecognition();
                 voiceBtn.classList.add('recording');
@@ -779,58 +1534,135 @@
                 isRecording = false;
             }
         }
-        
+
         function startVoiceRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            
+
             recognition.lang = 'it-IT';
             recognition.continuous = false;
             recognition.interimResults = false;
-            
+
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('messageInput').value = transcript;
                 toggleVoiceInput(); // Stop recording
             };
-            
+
             recognition.onerror = function(event) {
                 console.error('Speech recognition error:', event.error);
                 toggleVoiceInput(); // Stop recording
             };
-            
+
             recognition.onend = function() {
                 if (isRecording) {
                     toggleVoiceInput(); // Ensure UI is reset
                 }
             };
-            
+
             recognition.start();
         }
-        
+
         function stopVoiceRecognition() {
             if (recognition) {
                 recognition.stop();
             }
         }
-        
-        // Enter key support (Ctrl+Enter for textarea)
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                const activeTab = document.querySelector('.tab-content.active').id;
-                if (activeTab === 'historical') {
-                    searchPlayers();
-                } else {
-                    sendMessage(activeTab);
-                }
+
+        // Event listeners
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage('classic');
             }
         });
-        
-        // Auto-resize textarea
-        document.getElementById('messageInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+
+        document.getElementById('messageInput').addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (value.length > 10) {
+                showSuggestions();
+            } else {
+                hideSuggestions();
+            }
         });
+
+        document.getElementById('messageInput').addEventListener('focus', function() {
+            if (this.value.length > 10) {
+                showSuggestions();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('blur', function() {
+            setTimeout(() => hideSuggestions(), 150);
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            // Show/hide clear button
+            const clearBtn = document.getElementById('clearBtn');
+            clearBtn.style.display = query ? 'block' : 'none';
+
+            // Debounced search suggestions
+            if (query.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    getSearchSuggestions(query);
+                }, 300);
+            } else {
+                hideSearchSuggestions();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('focus', function() {
+            if (this.value.length >= 2) {
+                getSearchSuggestions(this.value);
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('blur', function() {
+            setTimeout(() => hideSearchSuggestions(), 150);
+        });
+
+        async function getSearchSuggestions(query) {
+            const suggestions = [
+                'Osimhen', 'Vlahovic', 'Lautaro', 'Barella', 'Theo Hernandez',
+                'Kvaratskhelia', 'Leao', 'Immobile', 'Bastoni', 'Calhanoglu'
+            ].filter(name => name.toLowerCase().includes(query.toLowerCase()));
+
+            showSearchSuggestions(suggestions.slice(0, 5));
+        }
+
+        // Initialize recent searches on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRecentSearchesDisplay();
+
+            // Initialize live updates
+            startLiveUpdates();
+
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification('Benvenuto! Assistente fantacalcio pronto.', 'success');
+            }, 1000);
+        });
+
+        function startLiveUpdates() {
+            // Simulate live updates every 30 seconds
+            setInterval(() => {
+                // Check for updates (this would connect to real-time data in production)
+                updateStatus('online');
+            }, 30000);
+        }
     </script>
 </body>
 </html>
