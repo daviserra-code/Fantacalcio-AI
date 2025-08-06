@@ -132,11 +132,14 @@ def health():
 @app.route('/metrics')
 def metrics():
     """Basic metrics endpoint for monitoring"""
+    cache_stats = assistant.get_cache_stats() if assistant else {}
+    
     return {
         'uptime': 'running',
         'assistant_status': 'available' if assistant else 'not_initialized',
-        'cache_entries': len(search_cache),
-        'sample_players_count': len(SAMPLE_PLAYERS)
+        'search_cache_entries': len(search_cache),
+        'sample_players_count': len(SAMPLE_PLAYERS),
+        'assistant_cache_stats': cache_stats
     }, 200
 
 @app.route('/ping')
@@ -211,10 +214,14 @@ def chat():
         elapsed = (datetime.now() - start_time).total_seconds()
         logger.info(f"Chat response generated in {elapsed:.2f}s")
         
+        # Get cache statistics for performance monitoring
+        cache_stats = assistant.get_cache_stats() if assistant else {}
+        
         return jsonify({
             'response': response,
             'response_time': elapsed,
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'cache_stats': cache_stats
         })
         
     except Exception as e:

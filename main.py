@@ -39,6 +39,13 @@ class FantacalcioAssistant:
             print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
             print("ℹ️ Running with limited knowledge base - responses will be based on general principles")
         
+        # Response cache with TTL (Time To Live)
+        self.response_cache = {}
+        self.cache_ttl = {}
+        self.cache_max_size = 100
+        self.cache_duration = 300  # 5 minutes
+        self.cache_stats = {'hits': 0, 'misses': 0}
+        
         self.system_prompt = """
         Sei un assistente virtuale professionale per fantacalcio Serie A, progettato per un'app mobile. 
         Il tuo nome è Fantacalcio AI.
@@ -73,10 +80,19 @@ class FantacalcioAssistant:
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
         
-        # Simple response cache for common questions
+        # TTL-based response cache for better performance
         cache_key = f"{user_message.lower().strip()}_{json.dumps(context, sort_keys=True) if context else ''}"
-        if hasattr(self, '_response_cache') and cache_key in self._response_cache:
-            return self._response_cache[cache_key]
+        current_time = datetime.now().timestamp()
+        
+        # Check if cache entry exists and is still valid
+        if cache_key in self.response_cache and cache_key in self.cache_ttl:
+            if current_time - self.cache_ttl[cache_key] < self.cache_duration:
+                self.cache_stats['hits'] += 1
+                return self.response_cache[cache_key]
+            else:
+                # Cache expired, remove it
+                del self.response_cache[cache_key]
+                del self.cache_ttl[cache_key]
         
         messages = [{"role": "system", "content": self.system_prompt}]
         
@@ -110,11 +126,18 @@ class FantacalcioAssistant:
             
             ai_response = response.choices[0].message.content
             
-            # Cache common responses
-            if not hasattr(self, '_response_cache'):
-                self._response_cache = {}
-            if len(self._response_cache) < 50:  # Limit cache size
-                self._response_cache[cache_key] = ai_response
+            # Cache response with TTL
+            self.cache_stats['misses'] += 1
+            
+            # Manage cache size - remove oldest entries if cache is full
+            if len(self.response_cache) >= self.cache_max_size:
+                oldest_key = min(self.cache_ttl.keys(), key=lambda k: self.cache_ttl[k])
+                del self.response_cache[oldest_key]
+                del self.cache_ttl[oldest_key]
+            
+            # Store in cache with timestamp
+            self.response_cache[cache_key] = ai_response
+            self.cache_ttl[cache_key] = current_time
             
             # Update conversation history
             self.conversation_history.append({"role": "user", "content": user_message})
@@ -129,6 +152,19 @@ class FantacalcioAssistant:
         """Reset conversation history"""
         self.conversation_history = []
         return "Conversazione resettata. Pronto per nuove domande sul fantacalcio."
+    
+    def get_cache_stats(self):
+        """Get cache performance statistics"""
+        total_requests = self.cache_stats['hits'] + self.cache_stats['misses']
+        hit_rate = (self.cache_stats['hits'] / total_requests * 100) if total_requests > 0 else 0
+        
+        return {
+            'cache_hits': self.cache_stats['hits'],
+            'cache_misses': self.cache_stats['misses'],
+            'hit_rate_percentage': round(hit_rate, 2),
+            'cache_size': len(self.response_cache),
+            'max_cache_size': self.cache_max_size
+        }
 
 def main():
     assistant = FantacalcioAssistant()
