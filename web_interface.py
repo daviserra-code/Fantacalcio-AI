@@ -371,16 +371,20 @@ if __name__ == '__main__':
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
 
-        # Optimize for production deployment
-        app.run(
-            host='0.0.0.0',
-            port=port,
-            debug=debug_mode,
-            threaded=True,
-            use_reloader=False,
-            request_handler=None,  # Use default handler
-            passthrough_errors=False
-        )
+        # Use production WSGI server for better deployment
+        if os.environ.get('REPLIT_DEPLOYMENT'):
+            from waitress import serve
+            logger.info("Starting with Waitress WSGI server (production)")
+            serve(app, host='0.0.0.0', port=port, threads=6)
+        else:
+            # Development server
+            app.run(
+                host='0.0.0.0',
+                port=port,
+                debug=debug_mode,
+                threaded=True,
+                use_reloader=False
+            )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
@@ -756,3 +760,11 @@ def not_found(error):
 def internal_error(error):
     logger.error(f"500 error: {str(error)}")
     return jsonify({'error': 'Internal server error'}), 500
+
+@app.after_request
+def after_request(response):
+    """Add CORS and security headers"""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
