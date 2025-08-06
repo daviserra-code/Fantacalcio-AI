@@ -13,26 +13,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize FantacalcioAssistant lazily to prevent startup timeout
+# Initialize FantacalcioAssistant at startup
 try:
     from main import FantacalcioAssistant
     logger.info("FantacalcioAssistant imported successfully")
+    # Initialize assistant immediately
+    assistant = FantacalcioAssistant()
+    logger.info("FantacalcioAssistant initialized successfully at startup")
 except Exception as e:
-    logger.warning(f"Failed to import FantacalcioAssistant: {e}")
+    logger.warning(f"Failed to import/initialize FantacalcioAssistant: {e}")
     FantacalcioAssistant = None
-
-# Ensure Flask app can start even without FantacalcioAssistant
-assistant = None
-
-logger.info("Flask app initialized, ready to start server")
-
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio_secret_key_2024')
-
-# Add request logging middleware
-@app.before_request
-def log_request_info():
-    logger.info(f"Request: {request.method} {request.path} from {request.remote_addr}")
+    assistant = None
 
 # Multilingual support
 TRANSLATIONS = {
@@ -85,8 +76,6 @@ TRANSLATIONS = {
         'forward': 'Forwards'
     }
 }
-
-assistant = None  # Initialize lazily when needed
 
 # Simple in-memory cache for performance
 search_cache = {}
@@ -179,14 +168,7 @@ def chat():
             if FantacalcioAssistant is None:
                 logger.error("FantacalcioAssistant not available")
                 return jsonify({'error': 'Assistant service is temporarily unavailable. Please try again later.'}), 503
-            try:
-                logger.info("Initializing FantacalcioAssistant")
-                assistant = FantacalcioAssistant()
-                logger.info("FantacalcioAssistant initialized successfully")
-            except Exception as e:
-                logger.error(f"Assistant initialization error: {str(e)}")
-                return jsonify({'error': 'Assistant service initialization failed. Please contact support.'}), 503
-
+        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid JSON data'}), 400
@@ -369,7 +351,7 @@ def get_league_recommendations(league_type, participants, budget):
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 5000))
+        port = int(os.environ.get('PORT', 80)) # Use port 80 for deployment or PORT env var
         debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
 
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
