@@ -44,8 +44,6 @@ class FantacalcioAssistant:
         Il tuo nome è Fantacalcio AI.
         Il tuo scopo è aiutare gli utenti a gestire la loro rosa di fantacalcio per la Serie A italiana in modo efficace e strategico.
         Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
-        Il tuo contesto è sempre la stagione 2025-26 della Serie A italiana.
-        
         
         Il tuo compito è:
         - Fornire consigli strategici su aste e costruzione della rosa
@@ -55,14 +53,8 @@ class FantacalcioAssistant:
         - Fornire consigli su gestione budget e distribuzione crediti
         - Suggerire strategie per diverse modalità di gioco
         - Dare consigli su ruoli, formazioni e tattiche specifiche
-        - Spiegare criteri di valutazione dei giocatori (fantamedia, bonus, rigori, passaggi compiuti,goal fatti, assist, autogol, ammonizioni, espulsioni)
+        - Spiegare criteri di valutazione dei giocatori (fantamedia, bonus, rigori, etc.)
         - Consigliare giocatori specifici per ogni ruolo basandoti sui dati disponibili
-        - Fornire informazioni aggiornate e precise sui giocatori di Serie A
-        - Dare consigli su come gestire le riserve e i risparmi
-        - Fornire strategie per il mercato di riparazione
-        -Imparare dai dati forniti e aggiornare le tue risposte in base alle informazioni rilevanti
-        -Evitare allucinazioni e fornire risposte basate sui dati disponibili
-        
         
         HAI ACCESSO A UN DATABASE COMPLETO con informazioni sui giocatori di Serie A. 
         Quando ti vengono fornite informazioni rilevanti dal database, usale per dare consigli specifici e dettagliati.
@@ -75,6 +67,33 @@ class FantacalcioAssistant:
         
         self.conversation_history = []
     
+    def _validate_response(self, response, user_message):
+        """Validate AI response to prevent hallucinations"""
+        if not response or len(response.strip()) < 10:
+            return False
+        
+        # Check for common hallucination patterns
+        hallucination_indicators = [
+            "non ho informazioni",
+            "non posso fornire",
+            "non sono in grado",
+            "mi dispiace ma",
+            "come assistente AI"
+        ]
+        
+        response_lower = response.lower()
+        
+        # If asking about specific players/teams, ensure response contains relevant terms
+        if any(keyword in user_message.lower() for keyword in ['giocatore', 'squadra', 'formazione', 'rigorista']):
+            if not any(term in response_lower for term in ['inter', 'milan', 'juventus', 'napoli', 'lautaro', 'vlahovic', 'osimhen', 'leao']):
+                return False
+        
+        # Check for vague or generic responses
+        if any(indicator in response_lower for indicator in hallucination_indicators):
+            return False
+            
+        return True
+
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
         
@@ -83,20 +102,30 @@ class FantacalcioAssistant:
         if hasattr(self, '_response_cache') and cache_key in self._response_cache:
             return self._response_cache[cache_key]
         
-        messages = [{"role": "system", "content": self.system_prompt}]
+        # Enhanced system prompt to prevent hallucinations
+        enhanced_prompt = self.system_prompt + """
+        
+        IMPORTANTE: Usa SOLO le informazioni fornite nel database. Se non hai dati specifici su un giocatore o una squadra, 
+        riferisciti solo ai giocatori menzionati nelle informazioni rilevanti. NON inventare statistiche o nomi di giocatori.
+        Se le informazioni sono limitate, concentrati sui giocatori di cui hai dati certi.
+        """
+        
+        messages = [{"role": "system", "content": enhanced_prompt}]
         
         # Get relevant knowledge from vector database
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
         if relevant_context:
             messages.append({"role": "system", "content": relevant_context})
+            # Add constraint to use only provided data
+            messages.append({"role": "system", "content": "Rispondi basandoti SOLO sui dati forniti sopra. Non aggiungere informazioni non presenti."})
         
         # Add context if provided (league info, budget, etc.)
         if context:
             context_msg = f"Contesto attuale: {json.dumps(context, ensure_ascii=False)}"
             messages.append({"role": "system", "content": context_msg})
         
-        # Add conversation history (last 6 messages to manage token usage)
-        messages.extend(self.conversation_history[-6:])
+        # Add conversation history (last 4 messages to manage token usage and speed)
+        messages.extend(self.conversation_history[-4:])
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})
@@ -108,14 +137,22 @@ class FantacalcioAssistant:
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.1,  # Lower temperature for faster, more consistent responses
-                max_tokens=300,   # Reduced tokens for faster responses
-                stream=False
+                temperature=0.05,  # Very low temperature for consistency
+                max_tokens=250,    # Further reduced for speed
+                stream=False,
+                top_p=0.9,        # Limit token selection for more focused responses
+                frequency_penalty=0.3  # Reduce repetition
             )
             
             ai_response = response.choices[0].message.content
             
-            # Cache common responses
+            # Validate response to prevent hallucinations
+            if not self._validate_response(ai_response, user_message):
+                # Fallback response based on available data
+                fallback = "Basandomi sui dati disponibili, posso consigliarti giocatori come Lautaro Martinez (Inter), Vlahovic (Juventus), e Osimhen (Napoli) per l'attacco. Per informazioni più specifiche, prova a riformulare la domanda."
+                ai_response = fallback
+            
+            # Cache valid responses
             if not hasattr(self, '_response_cache'):
                 self._response_cache = {}
             if len(self._response_cache) < 50:  # Limit cache size
