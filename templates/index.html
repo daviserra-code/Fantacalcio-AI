@@ -16,6 +16,10 @@
             --accent-secondary: #0088ff;
             --border-color: #333;
             --shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+            --surface-color: #ffffff; /* Default surface color */
+            --input-bg: #f8f9fa; /* Default input background */
+            --hover-color: #f1f3f4; /* Default hover color */
+            --accent-color: var(--accent-primary); /* Use accent-primary as default accent */
         }
 
         /* High Contrast Mode */
@@ -28,6 +32,10 @@
             --accent-primary: #0066cc;
             --accent-secondary: #cc6600;
             --border-color: #000000;
+            --surface-color: #f8f9fa;
+            --input-bg: #ffffff;
+            --hover-color: #e9ecef;
+            --accent-color: var(--accent-primary);
         }
 
         /* Large Text Mode */
@@ -98,8 +106,131 @@
         .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .modal-content {
+            background-color: var(--surface-color);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .close {
+            color: var(--text-secondary);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: var(--accent-color);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .corrections-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .correction-tab-content {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .correction-stats {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background: var(--hover-color);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .analytics-card {

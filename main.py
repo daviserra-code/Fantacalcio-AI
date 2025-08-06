@@ -5,6 +5,7 @@ import sys
 import json
 from datetime import datetime
 from knowledge_manager import KnowledgeManager
+from corrections_manager import CorrectionsManager
 
 openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
@@ -25,6 +26,9 @@ class FantacalcioAssistant:
     def __init__(self):
         # Initialize knowledge manager for RAG
         self.knowledge_manager = KnowledgeManager()
+        
+        # Initialize corrections manager for persistent corrections
+        self.corrections_manager = CorrectionsManager()
         
         # Load training data if available
         try:
@@ -126,6 +130,9 @@ class FantacalcioAssistant:
             
             ai_response = response.choices[0].message.content
             
+            # Apply persistent corrections to response
+            ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
+            
             # Cache response with TTL
             self.cache_stats['misses'] += 1
             
@@ -165,6 +172,24 @@ class FantacalcioAssistant:
             'cache_size': len(self.response_cache),
             'max_cache_size': self.cache_max_size
         }
+    
+    def add_correction(self, incorrect_info: str, correct_info: str, 
+                      correction_type: str = "general", context: str = None):
+        """Add a new correction to the persistent system"""
+        return self.corrections_manager.add_correction(
+            correction_type, incorrect_info, correct_info, context
+        )
+    
+    def add_player_correction(self, player_name: str, field_name: str, 
+                            old_value: str, new_value: str, reason: str = None):
+        """Add a player data correction"""
+        return self.corrections_manager.add_player_correction(
+            player_name, field_name, old_value, new_value, reason
+        )
+    
+    def get_corrections_summary(self):
+        """Get corrections system summary"""
+        return self.corrections_manager.get_corrections_summary()
 
 def main():
     assistant = FantacalcioAssistant()

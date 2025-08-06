@@ -590,6 +590,80 @@ def get_mobile_config():
         logger.error(f"Mobile config error: {str(e)}")
         return jsonify({'error': 'Mobile config failed'}), 500
 
+@app.route('/api/corrections', methods=['GET', 'POST'])
+def manage_corrections():
+    """Manage corrections system"""
+    global assistant
+    
+    try:
+        if request.method == 'GET':
+            # Get corrections summary
+            if assistant and hasattr(assistant, 'corrections_manager'):
+                summary = assistant.get_corrections_summary()
+                return jsonify(summary)
+            else:
+                return jsonify({'error': 'Corrections system not available'}), 503
+        
+        else:  # POST - Add new correction
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No correction data provided'}), 400
+            
+            if assistant and hasattr(assistant, 'corrections_manager'):
+                correction_type = data.get('type', 'general')
+                
+                if correction_type == 'player':
+                    correction_id = assistant.add_player_correction(
+                        data.get('player_name'),
+                        data.get('field_name'), 
+                        data.get('old_value'),
+                        data.get('new_value'),
+                        data.get('reason')
+                    )
+                else:
+                    correction_id = assistant.add_correction(
+                        data.get('incorrect_info'),
+                        data.get('correct_info'),
+                        correction_type,
+                        data.get('context')
+                    )
+                
+                return jsonify({
+                    'message': 'Correction added successfully',
+                    'correction_id': correction_id
+                })
+            else:
+                return jsonify({'error': 'Corrections system not available'}), 503
+                
+    except Exception as e:
+        logger.error(f"Corrections management error: {str(e)}")
+        return jsonify({'error': 'Failed to manage corrections'}), 500
+
+@app.route('/api/corrections/export', methods=['GET'])
+def export_corrections():
+    """Export corrections to JSON"""
+    global assistant
+    
+    try:
+        if assistant and hasattr(assistant, 'corrections_manager'):
+            export_path = f"corrections_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            assistant.corrections_manager.export_corrections(export_path)
+            
+            # Read the file and return as response
+            with open(export_path, 'r', encoding='utf-8') as f:
+                export_data = json.load(f)
+            
+            # Clean up the file
+            os.remove(export_path)
+            
+            return jsonify(export_data)
+        else:
+            return jsonify({'error': 'Corrections system not available'}), 503
+            
+    except Exception as e:
+        logger.error(f"Export corrections error: {str(e)}")
+        return jsonify({'error': 'Export failed'}), 500
+
 @app.route('/api/accessibility-settings', methods=['GET', 'POST'])
 def accessibility_settings():
     """Get or update accessibility settings"""
