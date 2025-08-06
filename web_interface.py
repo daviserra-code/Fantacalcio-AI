@@ -403,6 +403,97 @@ def track_analytics():
         logger.error(f"Analytics error: {str(e)}")
         return jsonify({'error': 'Tracking failed'}), 500
 
+@app.route('/api/player-analysis/<player_name>', methods=['GET'])
+def get_player_analysis(player_name):
+    """Get detailed player analysis"""
+    try:
+        from player_analytics import PlayerAnalytics
+        from fantacalcio_data import SAMPLE_PLAYERS
+        
+        # Find player
+        player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == player_name.lower()), None)
+        if not player:
+            return jsonify({'error': 'Player not found'}), 404
+        
+        analytics = PlayerAnalytics()
+        
+        analysis = {
+            'player': {
+                'name': player.name,
+                'team': player.team,
+                'role': player.role,
+                'fantamedia': player.fantamedia,
+                'price': player.price,
+                'appearances': player.appearances
+            },
+            'efficiency_score': analytics.get_player_efficiency_score(player),
+            'injury_risk': analytics.get_injury_risk_analysis(player),
+            'role_comparison': analytics.get_role_statistics(player.role)
+        }
+        
+        return jsonify(analysis)
+        
+    except Exception as e:
+        logger.error(f"Player analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+@app.route('/api/formation-optimizer', methods=['POST'])
+def optimize_formation():
+    """Get optimal formation suggestions"""
+    try:
+        from player_analytics import PlayerAnalytics
+        
+        data = request.get_json()
+        budget = data.get('budget', 500)
+        league_type = data.get('league_type', 'Classic')
+        
+        analytics = PlayerAnalytics()
+        suggestions = analytics.suggest_formation_optimization(budget, league_type)
+        
+        return jsonify({
+            'budget': budget,
+            'league_type': league_type,
+            'suggestions': suggestions,
+            'total_budget_used': sum(s['budget'] for s in suggestions.values())
+        })
+        
+    except Exception as e:
+        logger.error(f"Formation optimization error: {str(e)}")
+        return jsonify({'error': 'Optimization failed'}), 500
+
+@app.route('/api/fixtures', methods=['GET'])
+def get_fixtures():
+    """Get upcoming fixtures and recommendations"""
+    try:
+        from match_tracker import MatchTracker
+        
+        tracker = MatchTracker()
+        recommendations = tracker.get_gameweek_recommendations()
+        
+        return jsonify({
+            'gameweek_recommendations': recommendations,
+            'updated_at': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Fixtures error: {str(e)}")
+        return jsonify({'error': 'Fixtures data unavailable'}), 500
+
+@app.route('/api/player-fixtures/<player_name>/<team>', methods=['GET'])
+def get_player_fixtures(player_name, team):
+    """Get fixture analysis for a specific player"""
+    try:
+        from match_tracker import MatchTracker
+        
+        tracker = MatchTracker()
+        analysis = tracker.get_player_fixture_analysis(player_name, team)
+        
+        return jsonify(analysis)
+        
+    except Exception as e:
+        logger.error(f"Player fixtures error: {str(e)}")
+        return jsonify({'error': 'Fixture analysis failed'}), 500
+
 @app.errorhandler(404)
 def not_found(error):
     logger.warning(f"404 error: {request.path}")

@@ -70,6 +70,11 @@ class FantacalcioAssistant:
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
         
+        # Simple response cache for common questions
+        cache_key = f"{user_message.lower().strip()}_{json.dumps(context, sort_keys=True) if context else ''}"
+        if hasattr(self, '_response_cache') and cache_key in self._response_cache:
+            return self._response_cache[cache_key]
+        
         messages = [{"role": "system", "content": self.system_prompt}]
         
         # Get relevant knowledge from vector database
@@ -82,21 +87,31 @@ class FantacalcioAssistant:
             context_msg = f"Contesto attuale: {json.dumps(context, ensure_ascii=False)}"
             messages.append({"role": "system", "content": context_msg})
         
-        # Add conversation history (last 5 messages to manage token usage)
-        messages.extend(self.conversation_history[-10:])
+        # Add conversation history (last 6 messages to manage token usage)
+        messages.extend(self.conversation_history[-6:])
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         try:
+            # Use faster gpt-4o-mini for simpler queries, gpt-4 for complex ones
+            model = "gpt-4o-mini" if len(user_message) < 100 and not any(word in user_message.lower() for word in ["strategia", "formazione", "analisi", "complesso"]) else "gpt-4"
+            
             response = openai.chat.completions.create(
-                model="gpt-4",
+                model=model,
                 messages=messages,
-                temperature=0.3,  # Lower temperature for more consistent advice
-                max_tokens=500    # Optimized for mobile responses
+                temperature=0.3,
+                max_tokens=500,
+                stream=False
             )
             
             ai_response = response.choices[0].message.content
+            
+            # Cache common responses
+            if not hasattr(self, '_response_cache'):
+                self._response_cache = {}
+            if len(self._response_cache) < 50:  # Limit cache size
+                self._response_cache[cache_key] = ai_response
             
             # Update conversation history
             self.conversation_history.append({"role": "user", "content": user_message})

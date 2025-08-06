@@ -390,9 +390,22 @@
                 </div>
             </div>
             
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="askQuickQuestion('Migliori rigoristi Serie A?')">⚽ Rigoristi</button>
+                <button class="quick-btn" onclick="askQuickQuestion('Consigli clean sheet questa giornata?')">🥅 Clean Sheet</button>
+                <button class="quick-btn" onclick="askQuickQuestion('Formazione consigliata questa giornata?')">📋 Formazione</button>
+                <button class="quick-btn" onclick="showFixtures()">📅 Partite</button>
+            </div>
+            
             <div class="input-area">
                 <input type="text" id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500">
+                <button class="btn btn-voice" onclick="toggleVoiceInput()" id="voiceBtn">🎤</button>
                 <button class="btn btn-primary" onclick="sendMessage()">{{ t.send }}</button>
+            </div>
+            
+            <div class="player-search-widget" id="playerSearchWidget" style="display: none;">
+                <input type="text" id="quickPlayerSearch" placeholder="Cerca giocatore per analisi veloce...">
+                <div id="quickSearchResults"></div>
             </div>
         </div>
         
