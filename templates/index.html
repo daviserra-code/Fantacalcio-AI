@@ -1074,7 +1074,7 @@
         Scorri verso l'alto per aggiornare
     </div>
 
-    <!-- Corrections Management Modal -->
+    <!-- Corrections Modal -->
     <div id="correctionsModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -2050,7 +2050,7 @@
         function showAnalytics() {
             const analyticsGrid = document.getElementById('analyticsGrid');
             if (analyticsGrid) {
-                analyticsGrid.style.display = analyticsGrid.style.display === 'none' ? 'block' : 'none';
+                analyticsGrid.style.display = analyticsGrid.style.display === 'none' ? 'grid' : 'none';
                 if (analyticsGrid.style.display !== 'none') {
                     loadAnalyticsData();
                 }

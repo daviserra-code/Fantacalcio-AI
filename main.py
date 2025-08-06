@@ -27,8 +27,8 @@ class FantacalcioAssistant:
         # Initialize knowledge manager for RAG
         self.knowledge_manager = KnowledgeManager()
         
-        # Initialize corrections manager for persistent corrections
-        self.corrections_manager = CorrectionsManager()
+        # Initialize corrections manager (using ChromaDB)
+        self.corrections_manager = KnowledgeManager(collection_name="corrections")
         
         # Load training data once at startup
         self._load_training_data()
@@ -98,6 +98,10 @@ class FantacalcioAssistant:
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
         
+        # Check if this is a correction command
+        if user_message.lower().startswith("correggi:") or user_message.lower().startswith("correzione:"):
+            return self._handle_correction_command(user_message)
+        
         # TTL-based response cache for better performance
         cache_key = f"{user_message.lower().strip()}_{json.dumps(context, sort_keys=True) if context else ''}"
         current_time = datetime.now().timestamp()
@@ -138,14 +142,14 @@ class FantacalcioAssistant:
                 model=model,
                 messages=messages,
                 temperature=0.1,  # Lower temperature for faster, more consistent responses
-                max_tokens=300,   # Reduced tokens for faster responses
+                max_tokens=800,   # Increased tokens for longer responses
                 stream=False
             )
             
             ai_response = response.choices[0].message.content
             
-            # Apply persistent corrections to response
-            ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
+            # Apply corrections from ChromaDB
+            ai_response = self._apply_corrections_from_chromadb(ai_response)
             
             # Cache response with TTL
             self.cache_stats['misses'] += 1
@@ -201,9 +205,76 @@ class FantacalcioAssistant:
             player_name, field_name, old_value, new_value, reason
         )
     
+    def _handle_correction_command(self, message):
+        """Handle correction commands from chat"""
+        # Format: "Correggi: [wrong info] -> [correct info]"
+        try:
+            if "->" in message:
+                parts = message.split(":", 1)[1].split("->")
+                if len(parts) == 2:
+                    wrong_info = parts[0].strip()
+                    correct_info = parts[1].strip()
+                    
+                    # Store correction in ChromaDB
+                    correction_text = f"CORREZIONE: Sostituisci '{wrong_info}' con '{correct_info}'"
+                    correction_id = self.corrections_manager.add_knowledge(
+                        correction_text,
+                        {
+                            "type": "correction",
+                            "wrong": wrong_info,
+                            "correct": correct_info,
+                            "created_at": datetime.now().isoformat()
+                        }
+                    )
+                    
+                    return f"✅ Correzione aggiunta con successo! ID: {correction_id[:8]}...\nDa ora in poi sostituirò '{wrong_info}' con '{correct_info}'"
+            
+            return "❌ Formato correzione non valido. Usa: 'Correggi: [info errata] -> [info corretta]'"
+            
+        except Exception as e:
+            return f"❌ Errore nell'aggiungere la correzione: {str(e)}"
+    
+    def _apply_corrections_from_chromadb(self, text):
+        """Apply corrections stored in ChromaDB"""
+        try:
+            # Search for relevant corrections
+            corrections = self.corrections_manager.search_knowledge("CORREZIONE", n_results=10)
+            
+            corrected_text = text
+            applied_count = 0
+            
+            for correction in corrections:
+                if correction['metadata'].get('type') == 'correction':
+                    wrong = correction['metadata'].get('wrong', '')
+                    correct = correction['metadata'].get('correct', '')
+                    
+                    if wrong and correct and wrong.lower() in corrected_text.lower():
+                        # Case insensitive replacement
+                        import re
+                        corrected_text = re.sub(re.escape(wrong), correct, corrected_text, flags=re.IGNORECASE)
+                        applied_count += 1
+            
+            if applied_count > 0:
+                print(f"📝 Applied {applied_count} corrections to response")
+            
+            return corrected_text
+            
+        except Exception as e:
+            print(f"⚠️ Error applying corrections: {e}")
+            return text
+    
     def get_corrections_summary(self):
         """Get corrections system summary"""
-        return self.corrections_manager.get_corrections_summary()
+        try:
+            corrections = self.corrections_manager.search_knowledge("CORREZIONE", n_results=50)
+            correction_corrections = [c for c in corrections if c['metadata'].get('type') == 'correction']
+            
+            return {
+                'total_corrections': len(correction_corrections),
+                'corrections': correction_corrections[:10]  # Return first 10
+            }
+        except:
+            return {'total_corrections': 0, 'corrections': []}
 
 def main():
     assistant = FantacalcioAssistant()

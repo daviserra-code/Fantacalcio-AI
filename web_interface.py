@@ -591,7 +591,7 @@ def get_mobile_config():
 
 @app.route('/api/corrections', methods=['GET', 'POST'])
 def manage_corrections():
-    """Manage corrections system"""
+    """Manage corrections system using ChromaDB"""
     global assistant
 
     try:
@@ -602,59 +602,46 @@ def manage_corrections():
             assistant = FantacalcioAssistant()
 
         if request.method == 'GET':
-            # Get all corrections data
-            if hasattr(assistant, 'corrections_manager'):
-                conn = assistant.corrections_manager.conn = assistant.corrections_manager.__dict__.get('conn') or __import__('sqlite3').connect(assistant.corrections_manager.db_path)
-                cursor = conn.cursor()
+            # Get corrections from ChromaDB
+            summary = assistant.get_corrections_summary()
+            corrections_list = []
+            
+            for correction in summary.get('corrections', []):
+                corrections_list.append({
+                    'incorrect_info': correction['metadata'].get('wrong', ''),
+                    'correct_info': correction['metadata'].get('correct', ''),
+                    'created_at': correction['metadata'].get('created_at', ''),
+                    'relevance_score': correction.get('relevance_score', 0)
+                })
+            
+            return jsonify({
+                'corrections': corrections_list, 
+                'total': summary.get('total_corrections', 0)
+            })
 
-                # Get general corrections
-                cursor.execute('SELECT * FROM corrections WHERE status = "active" ORDER BY created_at DESC LIMIT 50')
-                corrections = []
-                for row in cursor.fetchall():
-                    corrections.append({
-                        'id': row[0],
-                        'type': row[1],
-                        'incorrect_info': row[2],
-                        'correct_info': row[3],
-                        'context': row[4],
-                        'times_applied': row[7] if len(row) > 7 else 0
-                    })
-
-                conn.close()
-                return jsonify({'corrections': corrections, 'total': len(corrections)})
-            else:
-                return jsonify({'error': 'Corrections system not available'}), 503
-
-        else:  # POST - Add new correction
+        else:  # POST - Add new correction via ChromaDB
             data = request.get_json()
             if not data:
                 return jsonify({'error': 'No correction data provided'}), 400
 
-            if hasattr(assistant, 'corrections_manager'):
-                correction_type = data.get('type', 'general')
-                incorrect_info = data.get('incorrect_info', '').strip()
-                correct_info = data.get('correct_info', '').strip()
+            incorrect_info = data.get('incorrect_info', '').strip()
+            correct_info = data.get('correct_info', '').strip()
 
-                if not incorrect_info or not correct_info:
-                    return jsonify({'error': 'Both incorrect and correct information required'}), 400
+            if not incorrect_info or not correct_info:
+                return jsonify({'error': 'Both incorrect and correct information required'}), 400
 
-                correction_id = assistant.add_correction(
-                    incorrect_info,
-                    correct_info,
-                    correction_type,
-                    data.get('context', 'user_manual')
-                )
+            # Add correction via the chat system approach
+            correction_message = f"Correggi: {incorrect_info} -> {correct_info}"
+            result = assistant._handle_correction_command(correction_message)
 
-                return jsonify({
-                    'message': 'Correction added successfully',
-                    'correction_id': correction_id
-                })
-            else:
-                return jsonify({'error': 'Corrections system not available'}), 503
+            return jsonify({
+                'message': result,
+                'success': '✅' in result
+            })
 
     except Exception as e:
         logger.error(f"Corrections management error: {str(e)}")
-        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500</other:app>
 
 @app.route('/api/corrections/stats', methods=['GET'])
 def get_corrections_stats():
@@ -668,16 +655,11 @@ def get_corrections_stats():
                 return jsonify({'error': 'Assistant service not available'}), 503
             assistant = FantacalcioAssistant()
 
-        if hasattr(assistant, 'corrections_manager'):
-            summary = assistant.get_corrections_summary()
-            return jsonify({
-                'general_corrections': summary.get('general_corrections', []),
-                'player_corrections_count': summary.get('player_corrections_count', 0),
-                'response_patterns_count': summary.get('response_patterns_count', 0),
-                'total_corrections': summary.get('total_corrections', 0)
-            })
-        else:
-            return jsonify({'error': 'Corrections system not available'}), 503
+        summary = assistant.get_corrections_summary()
+        return jsonify({
+            'total_corrections': summary.get('total_corrections', 0),
+            'corrections_preview': summary.get('corrections', [])[:5]  # Show first 5
+        })
 
     except Exception as e:
         logger.error(f"Corrections stats error: {str(e)}")
@@ -689,16 +671,13 @@ def export_corrections():
     global assistant
 
     try:
-        if assistant and hasattr(assistant, 'corrections_manager'):
-            export_path = f"corrections_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            assistant.corrections_manager.export_corrections(export_path)
-
-            # Read the file and return as response
-            with open(export_path, 'r', encoding='utf-8') as f:
-                export_data = json.load(f)
-
-            # Clean up the file
-            os.remove(export_path)
+        if assistant:
+            summary = assistant.get_corrections_summary()
+            export_data = {
+                'exported_at': datetime.now().isoformat(),
+                'total_corrections': summary.get('total_corrections', 0),
+                'corrections': summary.get('corrections', [])
+            }
 
             return jsonify(export_data)
         else:
