@@ -97,38 +97,45 @@ class FantacalcioAssistant:
         
         messages = [{"role": "system", "content": self.system_prompt}]
         
-        # Get relevant knowledge from vector database
-        relevant_context = self.knowledge_manager.get_context_for_query(user_message)
-        if relevant_context:
-            messages.append({"role": "system", "content": relevant_context})
+        # Get relevant knowledge from vector database (limit to prevent slow responses)
+        try:
+            relevant_context = self.knowledge_manager.get_context_for_query(user_message, max_results=3)
+            if relevant_context:
+                messages.append({"role": "system", "content": relevant_context})
+        except Exception as e:
+            print(f"Warning: Knowledge retrieval failed: {e}")
         
         # Add context if provided (league info, budget, etc.)
         if context:
-            context_msg = f"Contesto attuale: {json.dumps(context, ensure_ascii=False)}"
+            context_msg = f"Contesto: {json.dumps(context, ensure_ascii=False)}"
             messages.append({"role": "system", "content": context_msg})
         
-        # Add conversation history (last 6 messages to manage token usage)
-        messages.extend(self.conversation_history[-6:])
+        # Add conversation history (last 4 messages only for speed)
+        messages.extend(self.conversation_history[-4:])
         
         # Add current user message
         messages.append({"role": "user", "content": user_message})
         
         try:
-            # Always use gpt-4o-mini for faster responses
+            # Use gpt-4o-mini for fastest responses
             model = "gpt-4o-mini"
             
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.1,  # Lower temperature for faster, more consistent responses
-                max_tokens=300,   # Reduced tokens for faster responses
+                temperature=0.2,  # Lower temperature for speed
+                max_tokens=250,   # Reduced tokens for faster responses
+                timeout=25,       # 25 second timeout
                 stream=False
             )
             
             ai_response = response.choices[0].message.content
             
             # Apply persistent corrections to response
-            ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
+            try:
+                ai_response = self.corrections_manager.apply_corrections(ai_response, "chat_response")
+            except Exception as e:
+                print(f"Warning: Corrections failed: {e}")
             
             # Cache response with TTL
             self.cache_stats['misses'] += 1
@@ -143,14 +150,21 @@ class FantacalcioAssistant:
             self.response_cache[cache_key] = ai_response
             self.cache_ttl[cache_key] = current_time
             
-            # Update conversation history
+            # Update conversation history (keep it short)
             self.conversation_history.append({"role": "user", "content": user_message})
             self.conversation_history.append({"role": "assistant", "content": ai_response})
+            
+            # Keep conversation history manageable
+            if len(self.conversation_history) > 8:
+                self.conversation_history = self.conversation_history[-8:]
             
             return ai_response
             
         except Exception as e:
-            return f"Errore nel processare la richiesta: {str(e)}"
+            error_msg = str(e)
+            if "timeout" in error_msg.lower():
+                return "⏰ Richiesta troppo lenta. Prova con una domanda più specifica."
+            return f"❌ Errore temporaneo. Riprova: {error_msg[:100]}"
     
     def reset_conversation(self):
         """Reset conversation history"""

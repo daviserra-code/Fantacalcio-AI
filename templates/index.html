@@ -435,12 +435,12 @@
                 touch-action: manipulation;
                 -webkit-tap-highlight-color: rgba(0,0,0,0.1);
             }
-            
+
             .tab {
                 min-height: 44px;
                 touch-action: manipulation;
             }
-            
+
             input, textarea, select {
                 -webkit-appearance: none;
                 -webkit-border-radius: 0;
@@ -1512,8 +1512,12 @@
             currentTab = tabName;
         }
 
-        function addMessage(content, isUser = false, container = 'chatContainer') {
-            const chatContainer = document.getElementById(container);
+        function addMessage(content, isUser = false, containerId = 'chatContainer') {
+            const chatContainer = document.getElementById(containerId);
+            if (!chatContainer) {
+                console.error('Chat container not found:', containerId);
+                return;
+            }
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
             messageDiv.innerHTML = content;
@@ -1530,12 +1534,14 @@
             }
         }
 
-        function showTypingIndicator() {
+        function showTypingIndicator(containerId = 'chatContainer') {
             const indicator = document.getElementById('typingIndicator');
             if (indicator) {
                 indicator.style.display = 'flex';
-                const chatContainer = document.getElementById('chatContainer');
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+                const chatContainer = document.getElementById(containerId);
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
             }
         }
 
@@ -1553,34 +1559,61 @@
             }
         }
 
-        async function sendMessage(mode = 'classic') {
-            const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-            const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        function getInputId(containerId) {
+            if (containerId === 'chatContainerMantra') return 'messageInputMantra';
+            if (containerId === 'chatContainerDraft') return 'messageInputDraft';
+            if (containerId === 'chatContainerSuper') return 'messageInputSuper';
+            return 'messageInput';
+        }
 
-            const messageInputEl = document.getElementById(inputId);
-            if (!messageInputEl) {
-                console.error('Message input element not found:', inputId);
-                return;
+        function getLeagueContext() {
+            const selectedTab = document.querySelector('.tab.active').id;
+            let context = { leagueType: selectedTab };
+
+            if (selectedTab === 'classic') {
+                context.participants = parseInt(document.getElementById('participants')?.value || 8);
+                context.budget = parseInt(document.getElementById('budget')?.value || 500);
+            } else if (selectedTab === 'mantra') {
+                context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
+            } else if (selectedTab === 'draft') {
+                context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
+                context.draftOrder = document.getElementById('draftOrder')?.value;
+            } else if (selectedTab === 'superscudetto') {
+                context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
+                context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
             }
+            return context;
+        }
 
-            const message = messageInputEl.value.trim();
+        async function sendMessage(mode = 'classic') {
+            const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+            const inputId = getInputId(containerId);
+            const input = document.getElementById(inputId);
+            const message = input.value.trim();
+
             if (!message) return;
 
-            const startTime = Date.now();
+            // Clear input
+            input.value = '';
 
             // Add user message
             addMessage(message, true, containerId);
-            messageInputEl.value = '';
 
             // Show typing indicator
-            showTypingIndicator();
-
-            // Update status
+            showTypingIndicator(containerId);
             updateStatus('typing');
 
+            const startTime = Date.now();
+
+            // Create AbortController for timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+            }, 30000); // 30 second timeout
+
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                const context = getLeagueContext();
 
                 const response = await fetch('/api/chat', {
                     method: 'POST',
@@ -1589,12 +1622,9 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        context: getContext()
+                        context: context
                     }),
                     signal: controller.signal
-                }).catch(error => {
-                    clearTimeout(timeoutId);
-                    throw error;
                 });
 
                 clearTimeout(timeoutId);
@@ -1604,8 +1634,6 @@
                 }
 
                 const data = await response.json();
-
-                // Hide typing indicator
                 hideTypingIndicator();
 
                 // Calculate response time
@@ -1624,16 +1652,19 @@
                 updateStatus('online');
 
             } catch (error) {
+                clearTimeout(timeoutId);
                 hideTypingIndicator();
                 console.error('Chat error:', error);
-                
+
                 let errorMessage = '❌ Errore di connessione. Riprova.';
                 if (error.name === 'AbortError') {
-                    errorMessage = '❌ Timeout della richiesta. Riprova.';
+                    errorMessage = '❌ Timeout della richiesta (30s). Riprova con una domanda più semplice.';
                 } else if (error.message.includes('HTTP')) {
                     errorMessage = `❌ Errore del server: ${error.message}`;
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '❌ Errore di rete. Controlla la connessione.';
                 }
-                
+
                 addMessage(errorMessage, false, containerId);
                 showNotification('Errore di connessione', 'error');
                 updateStatus('offline');
@@ -1695,26 +1726,6 @@
             if (suggestions) {
                 suggestions.style.display = 'none';
             }
-        }
-
-        function getContext() {
-            const selectedTab = document.querySelector('.tab.active').id;
-            let context = { leagueType: selectedTab };
-
-            if (selectedTab === 'classic') {
-                context.participants = parseInt(document.getElementById('participants')?.value || 8);
-                context.budget = parseInt(document.getElementById('budget')?.value || 500);
-            } else if (selectedTab === 'mantra') {
-                context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
-                context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
-            } else if (selectedTab === 'draft') {
-                context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
-                context.draftOrder = document.getElementById('draftOrder')?.value;
-            } else if (selectedTab === 'superscudetto') {
-                context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
-                context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
-            }
-            return context;
         }
 
         async function resetChat() {
@@ -2100,6 +2111,8 @@
                         searchTimeout = setTimeout(() => {
                             performSearch().catch(console.error);
                         }, 500);
+                    } else {
+                        hideSearchSuggestions();
                     }
                 });
             }
@@ -2189,10 +2202,13 @@
 
             // Auto-resize textarea on mobile
             const textarea = document.getElementById('messageInput');
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+
 
             // Pull to refresh
             document.addEventListener('touchstart', function(e) {
