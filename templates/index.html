@@ -610,7 +610,8 @@
             </div>
             
             <div class="input-area">
-                <input type="text" id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500">
+                <textarea id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
+                <button class="btn btn-voice" onclick="toggleVoiceInput('mantra')" id="voiceBtnMantra">🎤</button>
                 <button class="btn btn-primary" onclick="sendMessage('mantra')">{{ t.send }}</button>
             </div>
         </div>
@@ -635,7 +636,8 @@
             </div>
             
             <div class="input-area">
-                <input type="text" id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500">
+                <textarea id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
+                <button class="btn btn-voice" onclick="toggleVoiceInput('draft')" id="voiceBtnDraft">🎤</button>
                 <button class="btn btn-primary" onclick="sendMessage('draft')">{{ t.send }}</button>
             </div>
         </div>
@@ -657,7 +659,8 @@
             </div>
             
             <div class="input-area">
-                <input type="text" id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500">
+                <textarea id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500" rows="2"></textarea>
+                <button class="btn btn-voice" onclick="toggleVoiceInput('superscudetto')" id="voiceBtnSuper">🎤</button>
                 <button class="btn btn-primary" onclick="sendMessage('superscudetto')">{{ t.send }}</button>
             </div>
         </div>
@@ -1067,19 +1070,41 @@
         // Enter key support with better handling
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
+                const activeTab = document.querySelector('.tab-content.active').id;
+                
+                // Handle textarea (allow new lines with shift+enter, send with just enter)
+                if (e.target.id === 'messageInput') {
+                    if (!e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage('classic');
+                    }
+                    return;
+                }
+                
+                // Handle other input fields
+                if (e.target.type === 'text' || e.target.tagName === 'INPUT') {
+                    e.preventDefault();
+                    
+                    if (activeTab === 'historical') {
+                        if (e.target.id === 'searchInput' || e.target.classList.contains('search-input')) {
+                            searchPlayers();
+                        }
+                    } else {
+                        // Send message for chat inputs
+                        if (e.target.id.includes('messageInput')) {
+                            const mode = activeTab;
+                            sendMessage(mode);
+                        }
+                    }
+                }
+                
+                // Handle Ctrl+Enter for force send
                 if (e.ctrlKey) {
-                    const activeTab = document.querySelector('.tab-content.active').id;
+                    e.preventDefault();
                     if (activeTab === 'historical') {
                         searchPlayers();
                     } else {
                         sendMessage(activeTab);
-                    }
-                } else if (e.target.id !== 'messageInput') { // Don't interfere with textarea
-                    const activeTab = document.querySelector('.tab-content.active').id;
-                    if (activeTab !== 'historical') {
-                        sendMessage(activeTab);
-                    } else {
-                        searchPlayers();
                     }
                 }
             }
@@ -1099,6 +1124,30 @@
             } else {
                 this.style.borderColor = '#ddd';
             }
+        });
+        
+        // Add enter key handlers for all input fields
+        function addEnterKeyHandler(inputId, callback) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        callback();
+                    }
+                });
+            }
+        }
+        
+        // Set up enter key handlers for all modes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            addEnterKeyHandler('searchInput', searchPlayers);
+            
+            // Chat inputs for each mode
+            addEnterKeyHandler('messageInputMantra', () => sendMessage('mantra'));
+            addEnterKeyHandler('messageInputDraft', () => sendMessage('draft'));
+            addEnterKeyHandler('messageInputSuper', () => sendMessage('superscudetto'));
         });
         
         // Add input validation for league setup
