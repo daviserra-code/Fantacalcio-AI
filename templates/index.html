@@ -1560,9 +1560,12 @@
 
         // Add global error handler
         window.addEventListener('unhandledrejection', function(event) {
-            console.log('Promise rejection handled:', event.reason);
-            // Only prevent default for network/API errors, not actual bugs
-            if (event.reason && (event.reason.name === 'TypeError' || event.reason.message?.includes('fetch'))) {
+            // Prevent console spam from expected API failures
+            if (event.reason && 
+                (event.reason.message?.includes('404') || 
+                 event.reason.message?.includes('Failed to fetch') ||
+                 event.reason.message?.includes('accessibility') ||
+                 event.reason.message?.includes('corrections'))) {
                 event.preventDefault();
             }
         });
@@ -2126,26 +2129,34 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
         function loadAccessibilitySettings() {
             return fetch('/api/accessibility-settings')
                 .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
+                    if (!response.ok) return {};
                     return response.json();
                 })
                 .then(settings => {
                     if (settings.high_contrast) {
                         document.body.classList.add('high-contrast');
-                        document.getElementById('highContrast').checked = true;
+                        const checkbox = document.getElementById('highContrast');
+                        if (checkbox) checkbox.checked = true;
                     }
                     if (settings.large_text) {
                         document.body.classList.add('large-text');
-                        document.getElementById('largeText').checked = true;
+                        const checkbox = document.getElementById('largeText');
+                        if (checkbox) checkbox.checked = true;
                     }
                     if (settings.reduce_motion) {
                         document.body.classList.add('reduce-motion');
-                        document.getElementById('reduceMotion').checked = true;
+                        const checkbox = document.getElementById('reduceMotion');
+                        if (checkbox) checkbox.checked = true;
                     }
                     if (settings.focus_indicators) {
                         document.body.classList.add('focus-indicators');
-                        document.getElementById('focusIndicators').checked = true;
+                        const checkbox = document.getElementById('focusIndicators');
+                        if (checkbox) checkbox.checked = true;
                     }
+                })
+                .catch(error => {
+                    // Silently handle accessibility loading errors
+                    console.log('Accessibility settings not available');
                 });
         }
 
@@ -2156,26 +2167,38 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
         }
 
         function setupEventListeners() {
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.addEventListener('input', () => {
-                    messageInput.style.height = 'auto';
-                    messageInput.style.height = (messageInput.scrollHeight) + 'px';
-                    if (messageInput.value.trim().length > 0) {
-                        showSuggestions();
-                    } else {
-                        hideSuggestions();
+            // Setup for all message inputs
+            const messageInputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
+            
+            messageInputs.forEach(inputId => {
+                const messageInput = document.getElementById(inputId);
+                if (messageInput) {
+                    messageInput.addEventListener('input', () => {
+                        if (messageInput.tagName === 'TEXTAREA') {
+                            messageInput.style.height = 'auto';
+                            messageInput.style.height = (messageInput.scrollHeight) + 'px';
+                        }
+                        if (messageInput.value.trim().length > 0) {
+                            showSuggestions();
+                        } else {
+                            hideSuggestions();
+                        }
+                    });
+                    
+                    messageInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const mode = inputId.replace('messageInput', '').toLowerCase() || 'classic';
+                            sendMessage(mode === 'classic' ? null : mode);
+                        }
+                    });
+                    
+                    if (inputId === 'messageInput') {
+                        messageInput.addEventListener('focus', showSuggestions);
+                        messageInput.addEventListener('blur', () => setTimeout(hideSuggestions, 100));
                     }
-                });
-                messageInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                    }
-                });
-                messageInput.addEventListener('focus', showSuggestions);
-                messageInput.addEventListener('blur', () => setTimeout(hideSuggestions, 100)); // Delay to allow clicks on suggestions
-            }
+                }
+            });
 
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -2211,15 +2234,13 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
 
         // Placeholder for loading corrections and stats
         function loadCorrections() {
-            // Simulate fetching corrections
             console.log("Loading corrections...");
-            return Promise.resolve(); // Replace with actual fetch call
+            return Promise.resolve(); // No actual correction system in demo
         }
 
         function loadCorrectionStats() {
-            // Simulate fetching correction stats
             console.log("Loading correction stats...");
-            return Promise.resolve(); // Replace with actual fetch call
+            return Promise.resolve(); // No actual correction system in demo
         }
 
         // Analytics Functions
