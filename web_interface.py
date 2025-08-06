@@ -77,6 +77,15 @@ TRANSLATIONS = {
     }
 }
 
+# Initialize Flask app
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio_secret_key_2024')
+
+# Add request logging middleware
+@app.before_request
+def log_request_info():
+    logger.info(f"Request: {request.method} {request.path} from {request.remote_addr}")
+
 # Simple in-memory cache for performance
 search_cache = {}
 CACHE_EXPIRY = app_config.get('search_cache_expiry', 300)
