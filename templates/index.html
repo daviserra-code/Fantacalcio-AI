@@ -1074,7 +1074,7 @@
         Scorri verso l'alto per aggiornare
     </div>
 
-    
+
 
     <div class="container">
         <div class="header">
@@ -1166,7 +1166,7 @@
             <button class="quick-action-btn" onclick="showCorrectionHelp()">
                 💡 Come Correggere
             </button>
-            
+
         </div>
 
         <!-- Charts Section -->
@@ -1491,28 +1491,21 @@
             }
         }
 
-        async function sendMessage(mode = 'classic') {
-            const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-            const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-
-            const messageInputEl = document.getElementById(inputId);
-            const message = messageInputEl.value.trim();
+        async function sendMessage(mode = null) {
+            const currentMode = mode || getCurrentMode();
+            const input = document.getElementById(getInputId(currentMode));
+            const message = input.value.trim();
 
             if (!message) return;
 
-            const startTime = Date.now();
+            const chatContainer = document.getElementById(getChatContainerId(currentMode));
 
-            // Add user message
-            addMessage(message, true, containerId);
-            messageInputEl.value = '';
-
-            // Show typing indicator
+            addMessage(message, 'user', chatContainer);
+            input.value = '';
             showTypingIndicator();
 
-            // Update status
-            updateStatus('typing');
-
             try {
+                const context = getContext(currentMode);
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: {
@@ -1520,37 +1513,27 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        context: getContext()
+                        context: context
                     })
                 });
 
-                const data = await response.json();
-
-                // Hide typing indicator
-                hideTypingIndicator();
-
-                // Calculate response time
-                const responseTime = (Date.now() - startTime) / 1000;
-                updateResponseTime(responseTime);
-
-                if (data.error) {
-                    addMessage(`❌ Errore: ${data.error}`, false, containerId);
-                    showNotification('Errore nella risposta', 'error');
-                } else {
-                    addMessage(data.response, false, containerId);
-                    showNotification('Risposta ricevuta', 'success');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Update status
-                updateStatus('online');
-
-            } catch (error) {
+                const data = await response.json();
                 hideTypingIndicator();
-                console.error('Chat request failed:', error);
-                addMessage('❌ Errore di connessione. Riprova.', false, containerId);
-                showNotification('Errore di connessione', 'error');
-                updateStatus('offline');
-                return; // Exit early to prevent further errors
+
+                if (data.error) {
+                    addMessage('❌ ' + data.error, 'assistant error', chatContainer);
+                } else {
+                    addMessage(data.response, 'assistant', chatContainer);
+                    updateResponseTime(data.response_time);
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                hideTypingIndicator();
+                addMessage('❌ Errore di connessione. Riprova.', 'assistant error', chatContainer);
             }
         }
 
@@ -1624,20 +1607,20 @@
             }
         }
 
-        function getContext() {
-            const selectedTab = document.querySelector('.tab.active').id;
-            let context = { leagueType: selectedTab };
+        function getContext(mode = null) {
+            const currentMode = mode || getCurrentMode();
+            let context = { leagueType: currentMode };
 
-            if (selectedTab === 'classic') {
+            if (currentMode === 'classic') {
                 context.participants = parseInt(document.getElementById('participants')?.value || 8);
                 context.budget = parseInt(document.getElementById('budget')?.value || 500);
-            } else if (selectedTab === 'mantra') {
+            } else if (currentMode === 'mantra') {
                 context.participants = parseInt(document.getElementById('participantsMantra')?.value || 8);
                 context.budget = parseInt(document.getElementById('budgetMantra')?.value || 500);
-            } else if (selectedTab === 'draft') {
+            } else if (currentMode === 'draft') {
                 context.participants = parseInt(document.getElementById('participantsDraft')?.value || 8);
                 context.draftOrder = document.getElementById('draftOrder')?.value;
-            } else if (selectedTab === 'superscudetto') {
+            } else if (currentMode === 'superscudetto') {
                 context.participants = parseInt(document.getElementById('participantsSuper')?.value || 8);
                 context.budget = parseInt(document.getElementById('budgetSuper')?.value || 500);
             }
@@ -1715,6 +1698,10 @@
                         fantamediaRange: getFantamediaRange()
                     })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const data = await response.json();
 
@@ -1865,7 +1852,7 @@
             }
         }
 
-        
+
 
         // Quick action functions
         async function askQuickQuestion(question) {
@@ -1880,6 +1867,9 @@
                 showTypingIndicator();
 
                 const response = await fetch('/api/fixtures');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
 
                 hideTypingIndicator();
@@ -1894,6 +1884,7 @@
                     addMessage('📅 Dati partite temporaneamente non disponibili', false, 'chatContainer');
                 }
             } catch (error) {
+                console.error('Fixtures error:', error);
                 hideTypingIndicator();
                 addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
                 showNotification('Errore nel caricamento delle partite', 'error');
@@ -1907,6 +1898,9 @@
                 analyticsGrid.style.display = analyticsGrid.style.display === 'none' ? 'grid' : 'none';
                 if (analyticsGrid.style.display !== 'none') {
                     loadAnalyticsData();
+                    showCharts();
+                } else {
+                    document.getElementById('chartsSection').style.display = 'none';
                 }
             }
         }
@@ -1934,10 +1928,14 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.comparison) {
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    return;
+                }
+                if (data.comparison && data.comparison.length > 0) {
                     displayComparisonResults(data);
                 } else {
-                    showNotification('Errore nel confronto', 'error');
+                    showNotification('Nessun dato di confronto trovato.', 'warning');
                 }
             })
             .catch(error => {
@@ -1988,6 +1986,8 @@
                         </tr>
                     </table>
                 `;
+            } else {
+                 html += `<p>Dati non sufficienti per il confronto.</p>`;
             }
 
             html += '</div>';
@@ -1997,27 +1997,316 @@
         function exportData(format, dataType) {
             fetch('/api/export-data', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: format, data_type: dataType })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: format, data_type: dataType})
             })
             .then(response => response.json())
             .then(data => {
-                if (data.data) {
-                    const blob = new Blob([data.data], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = data.filename || 'export.csv';
-                    a.click();
-                    showNotification('Dati esportati con successo', 'success');
-                } else {
-                    showNotification('Errore nell\'esportazione', 'error');
+                if (data.error) {
+                    showNotification('Errore nell\'esportazione: ' + data.error, 'error');
+                    return;
                 }
+
+                const blob = new Blob([data.data], {type: 'text/csv'});
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = data.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showNotification('Dati esportati con successo', 'success');
             })
             .catch(error => {
                 console.error('Export error:', error);
                 showNotification('Errore nell\'esportazione', 'error');
             });
+        }
+
+        function showCorrectionHelp() {
+            addMessage(`💡 **Come aggiungere correzioni via chat:**
+
+Per correggere informazioni errate, usa questo formato:
+**Correggi: [informazione errata] -> [informazione corretta]**
+
+Esempi:
+• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
+• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
+
+Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
+        }
+
+        // Helper functions for chat modes
+        function getCurrentMode() {
+            return currentTab;
+        }
+
+        function getInputId(mode) {
+            if (mode === 'mantra') return 'messageInputMantra';
+            if (mode === 'draft') return 'messageInputDraft';
+            if (mode === 'superscudetto') return 'messageInputSuper';
+            return 'messageInput';
+        }
+
+        function getChatContainerId(mode) {
+            if (mode === 'mantra') return 'chatContainerMantra';
+            if (mode === 'draft') return 'chatContainerDraft';
+            if (mode === 'superscudetto') return 'chatContainerSuper';
+            return 'chatContainer';
+        }
+
+        // Accessibility functions
+        function toggleAccessibilityMenu() {
+            const menu = document.getElementById('accessibilityMenu');
+            menu.classList.toggle('show');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            saveAccessibilitySetting('high_contrast', document.body.classList.contains('high-contrast'));
+        }
+
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            saveAccessibilitySetting('large_text', document.body.classList.contains('large-text'));
+        }
+
+        function toggleReduceMotion() {
+            document.body.classList.toggle('reduce-motion');
+            saveAccessibilitySetting('reduce_motion', document.body.classList.contains('reduce-motion'));
+        }
+
+        function toggleFocusIndicators() {
+            document.body.classList.toggle('focus-indicators');
+            saveAccessibilitySetting('focus_indicators', document.body.classList.contains('focus-indicators'));
+        }
+
+        function resetAccessibility() {
+            document.body.className = ''; // Reset all body classes
+            // Add back essential mobile classes if needed
+            if (typeof isMobile !== 'undefined' && isMobile) {
+                document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
+            }
+            ['highContrast', 'largeText', 'reduceMotion', 'focusIndicators'].forEach(id => {
+                const checkbox = document.getElementById(id);
+                if (checkbox) checkbox.checked = false;
+            });
+            // Also clear any inline styles added by accessibility settings if necessary
+            // e.g., document.documentElement.style.fontSize = '';
+            saveAccessibilitySettings({}); // Clear settings on the server
+        }
+
+        function saveAccessibilitySetting(setting, value) {
+            fetch('/api/accessibility-settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[setting]: value})
+            }).catch(error => console.error('Failed to save accessibility setting:', error));
+        }
+
+        function saveAccessibilitySettings(settings) {
+            fetch('/api/accessibility-settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(settings)
+            }).catch(error => console.error('Failed to save accessibility settings:', error));
+        }
+
+
+        // Load accessibility settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+            loadAccessibilitySettings().catch(e => console.log('Accessibility settings not available'));
+            loadCorrections().catch(e => console.log('Corrections not available'));
+            loadCorrectionStats().catch(e => console.log('Correction stats not available'));
+        });
+
+        function loadAccessibilitySettings() {
+            return fetch('/api/accessibility-settings')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(settings => {
+                    if (settings.high_contrast) {
+                        document.body.classList.add('high-contrast');
+                        document.getElementById('highContrast').checked = true;
+                    }
+                    if (settings.large_text) {
+                        document.body.classList.add('large-text');
+                        document.getElementById('largeText').checked = true;
+                    }
+                    if (settings.reduce_motion) {
+                        document.body.classList.add('reduce-motion');
+                        document.getElementById('reduceMotion').checked = true;
+                    }
+                    if (settings.focus_indicators) {
+                        document.body.classList.add('focus-indicators');
+                        document.getElementById('focusIndicators').checked = true;
+                    }
+                });
+        }
+
+        // Placeholder for actual initialization and event listeners
+        function initializeApp() {
+            // Any initial setup for the app
+            updateRecentSearchesDisplay(); // Ensure recent searches are shown on load
+        }
+
+        function setupEventListeners() {
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('input', () => {
+                    messageInput.style.height = 'auto';
+                    messageInput.style.height = (messageInput.scrollHeight) + 'px';
+                    if (messageInput.value.trim().length > 0) {
+                        showSuggestions();
+                    } else {
+                        hideSuggestions();
+                    }
+                });
+                messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+                messageInput.addEventListener('focus', showSuggestions);
+                messageInput.addEventListener('blur', () => setTimeout(hideSuggestions, 100)); // Delay to allow clicks on suggestions
+            }
+
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(performSearch, 500); // Debounce search input
+                });
+                searchInput.addEventListener('focus', () => {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        // Re-fetch suggestions if input is already present
+                        fetch('/api/search-suggestions', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({query: query})
+                        })
+                        .then(res => res.json())
+                        .then(data => showSearchSuggestions(data.suggestions))
+                        .catch(error => console.error('Suggestion fetch error:', error));
+                    }
+                    document.getElementById('recentSearches').style.display = 'block'; // Show recent searches on focus
+                });
+                 searchInput.addEventListener('blur', () => {
+                    // Delay hiding recent searches to allow clicks on suggestion items
+                    setTimeout(() => {
+                        if (!searchInput.matches(':focus')) { // Only hide if search input itself isn't focused
+                            document.getElementById('recentSearches').style.display = 'none';
+                        }
+                    }, 150);
+                });
+            }
+        }
+
+        // Placeholder for loading corrections and stats
+        function loadCorrections() {
+            // Simulate fetching corrections
+            console.log("Loading corrections...");
+            return Promise.resolve(); // Replace with actual fetch call
+        }
+
+        function loadCorrectionStats() {
+            // Simulate fetching correction stats
+            console.log("Loading correction stats...");
+            return Promise.resolve(); // Replace with actual fetch call
+        }
+
+        // Analytics Functions
+        function loadAnalyticsData() {
+            fetch('/api/user-analytics')
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const topSearches = document.getElementById('topSearches');
+                    if (topSearches && data.most_searched_players) {
+                        topSearches.innerHTML = data.most_searched_players
+                            .slice(0, 3)
+                            .map(p => `<div>${p.name} (${p.searches})</div>`)
+                            .join('');
+                    }
+
+                    const cacheHitRateEl = document.getElementById('cacheHitRate');
+                    if (cacheHitRateEl && data.performance_metrics) {
+                        cacheHitRateEl.textContent = data.performance_metrics.cache_hit_rate + '%';
+                    }
+                })
+                .catch(error => console.error('Failed to load analytics data:', error));
+        }
+
+        function showCharts() {
+            const chartsSection = document.getElementById('chartsSection');
+            if (chartsSection) {
+                chartsSection.style.display = 'block';
+                loadChart('fantamedia_by_role', 'fantamediaChart');
+                loadChart('price_distribution', 'priceChart');
+                loadChart('value_efficiency', 'efficiencyChart');
+            }
+        }
+
+        function loadChart(chartType, canvasId) {
+            fetch(`/api/performance-charts/${chartType}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const canvas = document.getElementById(canvasId);
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        // Simple chart rendering - in production use Chart.js
+                        drawSimpleChart(ctx, data);
+                    }
+                })
+                .catch(error => console.error(`Failed to load chart ${chartType}:`, error));
+        }
+
+        function drawSimpleChart(ctx, data) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = '#00ff88'; // Default color
+            ctx.font = '14px Arial';
+            
+            if (data.data && data.data.labels && data.data.datasets) {
+                 ctx.fillText(data.data.datasets[0].label || 'Data', 10, 20);
+
+                // Simple bar chart example
+                if (data.type === 'bar') {
+                    const barWidth = 60;
+                    const maxValue = Math.max(0, ...data.data.datasets[0].data); // Ensure maxValue is not negative
+                    const chartHeight = 150; // Max height for bars
+
+                    data.data.labels.forEach((label, i) => {
+                        const value = data.data.datasets[0].data[i] || 0; // Default to 0 if data is missing
+                        const height = maxValue === 0 ? 0 : (value / maxValue) * chartHeight;
+                        const x = i * (barWidth + 20) + 10; // Spacing between bars
+                        const y = 180 - height; // Position from bottom
+
+                        ctx.fillStyle = data.data.datasets[0].backgroundColor?.[i] || '#00ff88'; // Use specific color if provided
+                        ctx.fillRect(x, y, barWidth, height);
+
+                        ctx.fillStyle = '#ffffff'; // Text color for labels and values
+                        ctx.fillText(label, x, 195); // Label below the bar
+                        if (height > 15) { // Only draw value if bar is tall enough
+                            ctx.fillText(value.toString(), x + (barWidth / 2) - (ctx.measureText(value.toString()).width / 2), y - 5);
+                        }
+                    });
+                }
+            } else {
+                ctx.fillStyle = '#ff6b6b'; // Error color
+                ctx.fillText('Dati grafici non disponibili', 10, 50);
+            }
         }
 
         // Voice input functionality
@@ -2055,260 +2344,49 @@
 
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
-                document.getElementById('messageInput').value = transcript;
+                const currentInputId = document.activeElement.id; // Get the ID of the currently focused input
+                if (currentInputId) {
+                    document.getElementById(currentInputId).value = transcript;
+                }
                 toggleVoiceInput(); // Stop recording
             };
 
             recognition.onerror = function(event) {
                 console.error('Speech recognition error:', event.error);
+                // Provide user feedback for common errors
+                if (event.error === 'no-speech') {
+                    showNotification('Nessun parlato rilevato.', 'warning');
+                } else if (event.error === 'audio-capture') {
+                    showNotification('Errore nell\'accesso al microfono.', 'error');
+                } else {
+                    showNotification('Errore nel riconoscimento vocale.', 'error');
+                }
                 toggleVoiceInput(); // Stop recording
             };
 
             recognition.onend = function() {
+                // Reset button state if recording was stopped by the browser (e.g., timeout)
                 if (isRecording) {
-                    toggleVoiceInput(); // Ensure UI is reset
+                    const voiceBtn = document.getElementById('voiceBtn');
+                    voiceBtn.classList.remove('recording');
+                    voiceBtn.innerHTML = '🎤';
+                    isRecording = false;
                 }
             };
 
-            recognition.start();
+            try {
+                 recognition.start();
+            } catch (error) {
+                console.error("Failed to start speech recognition:", error);
+                showNotification("Impossibile avviare il riconoscimento vocale.", "error");
+                toggleVoiceInput(); // Ensure UI is reset
+            }
         }
 
         function stopVoiceRecognition() {
             if (recognition) {
                 recognition.stop();
             }
-        }
-
-        // Accessibility functions
-        function toggleAccessibilityMenu() {
-            const menu = document.getElementById('accessibilityMenu');
-            menu.classList.toggle('show');
-        }
-
-        function toggleHighContrast() {
-            document.body.classList.toggle('high-contrast');
-            saveAccessibilitySetting('high_contrast', document.body.classList.contains('high-contrast'));
-        }
-
-        function toggleLargeText() {
-            document.body.classList.toggle('large-text');
-            saveAccessibilitySetting('large_text', document.body.classList.contains('large-text'));
-        }
-
-        function toggleReduceMotion() {
-            document.body.classList.toggle('reduce-motion');
-            saveAccessibilitySetting('reduce_motion', document.body.classList.contains('reduce-motion'));
-        }
-
-        function toggleFocusIndicators() {
-            document.body.classList.toggle('focus-indicators');
-            saveAccessibilitySetting('focus_indicators', document.body.classList.contains('focus-indicators'));
-        }
-
-        function resetAccessibility() {
-            document.body.className = '';
-            if (isMobile) {
-                document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
-            }
-            ['highContrast', 'largeText', 'reduceMotion', 'focusIndicators'].forEach(id => {
-                document.getElementById(id).checked = false;
-            });
-        }
-
-        function saveAccessibilitySetting(setting, value) {
-            fetch('/api/accessibility-settings', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({[setting]: value})
-            });
-        }
-
-        // Load accessibility settings
-        fetch('/api/accessibility-settings')
-            .then(response => response.json())
-            .then(settings => {
-                if (settings.high_contrast) {
-                    document.body.classList.add('high-contrast');
-                    document.getElementById('highContrast').checked = true;
-                }
-                if (settings.large_text) {
-                    document.body.classList.add('large-text');
-                    document.getElementById('largeText').checked = true;
-                }
-                if (settings.reduce_motion) {
-                    document.body.classList.add('reduce-motion');
-                    document.getElementById('reduceMotion').checked = true;
-                }
-                if (settings.focus_indicators) {
-                    document.body.classList.add('focus-indicators');
-                    document.getElementById('focusIndicators').checked = true;
-                }
-            });
-
-        // Analytics Functions
-        function showAnalytics() {
-            const grid = document.getElementById('analyticsGrid');
-            if (grid.style.display === 'none') {
-                grid.style.display = 'grid';
-                loadAnalyticsData();
-                showCharts();
-            } else {
-                grid.style.display = 'none';
-                document.getElementById('chartsSection').style.display = 'none';
-            }
-        }
-
-        function loadAnalyticsData() {
-            fetch('/api/user-analytics')
-                .then(response => response.json())
-                .then(data => {
-                    const topSearches = document.getElementById('topSearches');
-                    topSearches.innerHTML = data.most_searched_players
-                        .slice(0, 3)
-                        .map(p => `<div>${p.name} (${p.searches})</div>`)
-                        .join('');
-
-                    document.getElementById('cacheHitRate').textContent = 
-                        data.performance_metrics.cache_hit_rate + '%';
-                });
-        }
-
-        function showCharts() {
-            document.getElementById('chartsSection').style.display = 'block';
-            loadChart('fantamedia_by_role', 'fantamediaChart');
-            loadChart('price_distribution', 'priceChart');
-            loadChart('value_efficiency', 'efficiencyChart');
-        }
-
-        function loadChart(chartType, canvasId) {
-            fetch(`/api/performance-charts/${chartType}`)
-                .then(response => response.json())
-                .then(data => {
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    // Simple chart rendering - in production use Chart.js
-                    drawSimpleChart(ctx, data);
-                });
-        }
-
-        function drawSimpleChart(ctx, data) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ctx.fillStyle = '#00ff88';
-            ctx.font = '14px Arial';
-            ctx.fillText(data.data.datasets[0].label, 10, 20);
-
-            // Simple bar chart
-            if (data.type === 'bar') {
-                const barWidth = 60;
-                const maxValue = Math.max(...data.data.datasets[0].data);
-
-                data.data.labels.forEach((label, i) => {
-                    const value = data.data.datasets[0].data[i];
-                    const height = (value / maxValue) * 150;
-                    const x = i * 80 + 10;
-                    const y = 180 - height;
-
-                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
-                    ctx.fillRect(x, y, barWidth, height);
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText(label, x, 195);
-                    ctx.fillText(value.toString(), x, y - 5);
-                });
-            }
-        }
-
-        // Player Comparison Functions
-        function showPlayerComparison() {
-            const section = document.getElementById('comparisonSection');
-            section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function compareSelectedPlayers() {
-            const player1 = document.getElementById('player1').value;
-            const player2 = document.getElementById('player2').value;
-
-            if (!player1 || !player2) {
-                alert('Inserisci entrambi i nomi dei giocatori');
-                return;
-            }
-
-            fetch('/api/player-comparison', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({players: [player1, player2]})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('comparisonResults').innerHTML = 
-                        `<p style="color: #ff6b6b;">${data.error}</p>`;
-                    return;
-                }
-
-                let html = '<table style="width: 100%; border-collapse: collapse;">';
-                html += '<tr><th>Metrica</th>';
-                data.comparison.forEach(player => {
-                    html += `<th>${player.name}</th>`;
-                });
-                html += '</tr>';
-
-                const metrics = ['team', 'role', 'fantamedia', 'price', 'appearances', 'value_ratio'];
-                metrics.forEach(metric => {
-                    html += '<tr>';
-                    html += `<td style="border: 1px solid #333; padding: 8px;">${metric}</td>`;
-                    data.comparison.forEach(player => {
-                        html += `<td style="border: 1px solid #333; padding: 8px;">${player[metric]}</td>`;
-                    });
-                    html += '</tr>';
-                });
-                html += '</table>';
-
-                html += '<div style="margin-top: 1rem;">';
-                html += `<p><strong>Miglior rapporto qualità/prezzo:</strong> ${data.metrics.best_value}</p>`;
-                html += `<p><strong>Fantamedia più alta:</strong> ${data.metrics.highest_fantamedia}</p>`;
-                html += `<p><strong>Più affidabile:</strong> ${data.metrics.most_reliable}</p>`;
-                html += '</div>';
-
-                document.getElementById('comparisonResults').innerHTML = html;
-            });
-        }
-
-        function exportData(format, dataType) {
-            fetch('/api/export-data', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type: format, data_type: dataType})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Errore durante l\'esportazione: ' + data.error);
-                    return;
-                }
-
-                const blob = new Blob([data.data], {type: 'text/csv'});
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = data.filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            });
-        }
-
-        function showCorrectionHelp() {
-            addMessage(`💡 **Come aggiungere correzioni via chat:**
-
-Per correggere informazioni errate, usa questo formato:
-**Correggi: [informazione errata] -> [informazione corretta]**
-
-Esempi:
-• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
-• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
-
-Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
         }
     </script>
 </body>

@@ -550,6 +550,21 @@ def get_user_analytics():
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
+@app.route('/api/accessibility-settings', methods=['GET'])
+def get_accessibility_settings():
+    """Get accessibility settings"""
+    try:
+        return jsonify({
+            'high_contrast': False,
+            'large_text': False,
+            'screen_reader': False,
+            'keyboard_navigation': True,
+            'reduced_motion': False
+        })
+    except Exception as e:
+        logger.error(f"Accessibility settings error: {str(e)}")
+        return jsonify({'error': 'Settings unavailable'}), 500
+
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
     """Get mobile-optimized configuration"""
