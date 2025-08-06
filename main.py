@@ -114,7 +114,7 @@ class FantacalcioAssistant:
         
         messages = [{"role": "system", "content": self.system_prompt}]
         
-        # Get relevant knowledge from vector database
+        # Get relevant knowledge from vector database (data already loaded at startup)
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
         if relevant_context:
             messages.append({"role": "system", "content": relevant_context})

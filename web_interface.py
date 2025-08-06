@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, jsonify, session
 from fantacalcio_data import League, AuctionHelper, SAMPLE_PLAYERS
 from config import app_config
@@ -101,20 +100,20 @@ RATE_LIMIT_WINDOW = app_config.get('rate_limit_window', 60)
 def check_rate_limit(ip_address):
     """Simple rate limiting check"""
     now = datetime.now().timestamp()
-    
+
     if ip_address not in rate_limit_storage:
         rate_limit_storage[ip_address] = []
-    
+
     # Clean old requests
     rate_limit_storage[ip_address] = [
         req_time for req_time in rate_limit_storage[ip_address]
         if now - req_time < RATE_LIMIT_WINDOW
     ]
-    
+
     # Check if under limit
     if len(rate_limit_storage[ip_address]) >= RATE_LIMIT_REQUESTS:
         return False
-    
+
     # Add current request
     rate_limit_storage[ip_address].append(now)
     return True
@@ -133,7 +132,7 @@ def health():
 def metrics():
     """Basic metrics endpoint for monitoring"""
     cache_stats = assistant.get_cache_stats() if assistant else {}
-    
+
     return {
         'uptime': 'running',
         'assistant_status': 'available' if assistant else 'not_initialized',
@@ -153,28 +152,28 @@ def index():
         session['session_id'] = os.urandom(16).hex()
         session.permanent = True
         logger.info(f"New session created: {session['session_id']}")
-    
+
     lang = request.args.get('lang', 'it')
     if lang not in TRANSLATIONS:
         lang = 'it'
     session['lang'] = lang
-    
+
     # Track page view
     logger.info(f"Page view: {session['session_id']}, lang: {lang}")
-    
+
     return render_template('index.html', lang=lang, t=TRANSLATIONS[lang])
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
     global assistant
     start_time = datetime.now()
-    
+
     # Rate limiting check
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr)
     if not check_rate_limit(client_ip):
         logger.warning(f"Rate limit exceeded for IP: {client_ip}")
         return jsonify({'error': 'Too many requests. Please slow down.'}), 429
-    
+
     try:
         if assistant is None:
             if FantacalcioAssistant is None:
@@ -187,18 +186,18 @@ def chat():
             except Exception as e:
                 logger.error(f"Assistant initialization error: {str(e)}")
                 return jsonify({'error': 'Assistant service initialization failed. Please contact support.'}), 503
-        
+
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid JSON data'}), 400
-            
+
         message = data.get('message', '').strip()
         context = data.get('context', {})
         lang = session.get('lang', 'it')
-        
+
         if not message:
             return jsonify({'error': 'Message required'}), 400
-        
+
         # Enhanced context with session info
         context.update({
             'language': lang,
@@ -206,24 +205,24 @@ def chat():
             'timestamp': datetime.now().isoformat(),
             'user_agent': request.headers.get('User-Agent', ''),
         })
-        
+
         logger.info(f"Processing chat message: {message[:50]}...")
         response = assistant.get_response(message, context)
-        
+
         # Log response time
         elapsed = (datetime.now() - start_time).total_seconds()
         logger.info(f"Chat response generated in {elapsed:.2f}s")
-        
+
         # Get cache statistics for performance monitoring
         cache_stats = assistant.get_cache_stats() if assistant else {}
-        
+
         return jsonify({
             'response': response,
             'response_time': elapsed,
             'timestamp': datetime.now().isoformat(),
             'cache_stats': cache_stats
         })
-        
+
     except Exception as e:
         logger.error(f"Chat endpoint error: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred. Please try again.'}), 500
@@ -242,31 +241,31 @@ def search_players():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid JSON data'}), 400
-            
+
         query = data.get('query', '').lower().strip()
         role_filter = data.get('role', 'all')
         sort_by = data.get('sort', 'fantamedia')  # fantamedia, price, name
-        
+
         if not query:
             return jsonify({'results': [], 'total': 0}), 200
-        
+
         # Check cache first
         cache_key = f"{query}_{role_filter}_{sort_by}"
         now = datetime.now().timestamp()
-        
+
         if cache_key in search_cache:
             cached_result, cached_time = search_cache[cache_key]
             if now - cached_time < CACHE_EXPIRY:
                 logger.info(f"Returning cached search result for: {query}")
                 return jsonify(cached_result)
-        
+
         # Filter players based on search query and role
         results = []
         for player in SAMPLE_PLAYERS:
             match_name = query in player.name.lower()
             match_team = query in player.team.lower()
             match_role = role_filter == 'all' or player.role == role_filter
-            
+
             if (match_name or match_team) and match_role:
                 results.append({
                     'name': player.name,
@@ -276,7 +275,7 @@ def search_players():
                     'appearances': player.appearances,
                     'price': player.price
                 })
-        
+
         # Sort results
         if sort_by == 'fantamedia':
             results.sort(key=lambda x: x['fantamedia'], reverse=True)
@@ -284,20 +283,20 @@ def search_players():
             results.sort(key=lambda x: x['price'], reverse=True)
         elif sort_by == 'name':
             results.sort(key=lambda x: x['name'])
-        
+
         response_data = {
             'results': results[:20],  # Limit to top 20 results
             'total': len(results),
             'query': query,
             'cached': False
         }
-        
+
         # Cache the result
         search_cache[cache_key] = (response_data, now)
-        
+
         logger.info(f"Search completed: {query} - {len(results)} results")
         return jsonify(response_data)
-        
+
     except Exception as e:
         logger.error(f"Search error: {str(e)}")
         return jsonify({'error': 'Search failed. Please try again.'}), 500
@@ -308,22 +307,22 @@ def setup_league():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Invalid JSON data'}), 400
-            
+
         league_type = data.get('type', 'Classic')
         participants = int(data.get('participants', 8))
         budget = int(data.get('budget', 500))
-        
+
         # Validate inputs
         if participants < 4 or participants > 20:
             return jsonify({'error': 'Participants must be between 4 and 20'}), 400
         if budget < 100 or budget > 2000:
             return jsonify({'error': 'Budget must be between 100 and 2000 credits'}), 400
-        
+
         league = League(league_type, participants, budget)
-        
+
         # Add strategic recommendations based on league setup
         recommendations = get_league_recommendations(league_type, participants, budget)
-        
+
         response_data = {
             'league': {
                 'type': league.league_type,
@@ -334,10 +333,10 @@ def setup_league():
             'recommendations': recommendations,
             'setup_timestamp': datetime.now().isoformat()
         }
-        
+
         logger.info(f"League setup: {league_type} with {participants} participants and {budget} budget")
         return jsonify(response_data)
-        
+
     except Exception as e:
         logger.error(f"League setup error: {str(e)}")
         return jsonify({'error': 'League setup failed. Please check your inputs.'}), 500
@@ -345,44 +344,44 @@ def setup_league():
 def get_league_recommendations(league_type, participants, budget):
     """Generate strategic recommendations based on league configuration"""
     recommendations = []
-    
+
     if league_type == "Classic":
         recommendations.append("Focus on consistent players with high fantamedia")
         recommendations.append("Prioritize penalty takers and clean sheet defenders")
-    
+
     elif league_type == "Mantra":
         recommendations.append("Invest heavily in creative midfielders for assist bonuses")
         recommendations.append("Defensive midfielders from strong teams get clean sheet bonuses")
-    
+
     elif league_type == "Draft":
         recommendations.append("Take the best available player regardless of position early")
         recommendations.append("Stream defenses and goalkeepers based on fixtures")
-    
+
     if budget >= 750:
         recommendations.append("High budget allows for premium players in every position")
     elif budget <= 400:
         recommendations.append("Focus on value picks and avoid the most expensive stars")
-    
+
     if participants >= 12:
         recommendations.append("Deep leagues require more research on backup players")
-    
+
     return recommendations
 
 if __name__ == '__main__':
     try:
         port = int(os.environ.get('PORT', 5000))
         debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
-        
+
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
         logger.info(f"Assistant available: {FantacalcioAssistant is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
-        
+
         # Set session configuration
         app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
-        
+
         app.run(
             host='0.0.0.0', 
             port=port, 
@@ -417,10 +416,10 @@ def track_analytics():
         data = request.get_json()
         event_type = data.get('event', 'page_view')
         event_data = data.get('data', {})
-        
+
         # Log analytics event
         logger.info(f"Analytics: {event_type} - {json.dumps(event_data)}")
-        
+
         return jsonify({'status': 'tracked'}), 200
     except Exception as e:
         logger.error(f"Analytics error: {str(e)}")
@@ -432,14 +431,14 @@ def get_player_analysis(player_name):
     try:
         from player_analytics import PlayerAnalytics
         from fantacalcio_data import SAMPLE_PLAYERS
-        
+
         # Find player
         player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == player_name.lower()), None)
         if not player:
             return jsonify({'error': 'Player not found'}), 404
-        
+
         analytics = PlayerAnalytics()
-        
+
         analysis = {
             'player': {
                 'name': player.name,
@@ -453,9 +452,9 @@ def get_player_analysis(player_name):
             'injury_risk': analytics.get_injury_risk_analysis(player),
             'role_comparison': analytics.get_role_statistics(player.role)
         }
-        
+
         return jsonify(analysis)
-        
+
     except Exception as e:
         logger.error(f"Player analysis error: {str(e)}")
         return jsonify({'error': 'Analysis failed'}), 500
@@ -465,21 +464,21 @@ def optimize_formation():
     """Get optimal formation suggestions"""
     try:
         from player_analytics import PlayerAnalytics
-        
+
         data = request.get_json()
         budget = data.get('budget', 500)
         league_type = data.get('league_type', 'Classic')
-        
+
         analytics = PlayerAnalytics()
         suggestions = analytics.suggest_formation_optimization(budget, league_type)
-        
+
         return jsonify({
             'budget': budget,
             'league_type': league_type,
             'suggestions': suggestions,
             'total_budget_used': sum(s['budget'] for s in suggestions.values())
         })
-        
+
     except Exception as e:
         logger.error(f"Formation optimization error: {str(e)}")
         return jsonify({'error': 'Optimization failed'}), 500
@@ -489,15 +488,15 @@ def get_fixtures():
     """Get upcoming fixtures and recommendations"""
     try:
         from match_tracker import MatchTracker
-        
+
         tracker = MatchTracker()
         recommendations = tracker.get_gameweek_recommendations()
-        
+
         return jsonify({
             'gameweek_recommendations': recommendations,
             'updated_at': datetime.now().isoformat()
         })
-        
+
     except Exception as e:
         logger.error(f"Fixtures error: {str(e)}")
         return jsonify({'error': 'Fixtures data unavailable'}), 500
@@ -507,12 +506,12 @@ def get_player_fixtures(player_name, team):
     """Get fixture analysis for a specific player"""
     try:
         from match_tracker import MatchTracker
-        
+
         tracker = MatchTracker()
         analysis = tracker.get_player_fixture_analysis(player_name, team)
-        
+
         return jsonify(analysis)
-        
+
     except Exception as e:
         logger.error(f"Player fixtures error: {str(e)}")
         return jsonify({'error': 'Fixture analysis failed'}), 500
@@ -522,7 +521,7 @@ def get_user_analytics():
     """Get user analytics dashboard data"""
     try:
         session_id = session.get('session_id', 'anonymous')
-        
+
         # Mock analytics data - in production this would come from database
         analytics_data = {
             'session_id': session_id,
@@ -554,9 +553,9 @@ def get_user_analytics():
                 'successful_queries': 142
             }
         }
-        
+
         return jsonify(analytics_data)
-        
+
     except Exception as e:
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
@@ -567,7 +566,7 @@ def get_mobile_config():
     try:
         user_agent = request.headers.get('User-Agent', '').lower()
         is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone', 'ipad'])
-        
+
         mobile_config = {
             'is_mobile': is_mobile,
             'touch_optimized': is_mobile,
@@ -583,9 +582,9 @@ def get_mobile_config():
                 'offline_mode': is_mobile
             }
         }
-        
+
         return jsonify(mobile_config)
-        
+
     except Exception as e:
         logger.error(f"Mobile config error: {str(e)}")
         return jsonify({'error': 'Mobile config failed'}), 500
@@ -594,20 +593,20 @@ def get_mobile_config():
 def manage_corrections():
     """Manage corrections system"""
     global assistant
-    
+
     try:
         # Initialize assistant if not available
         if assistant is None:
             if FantacalcioAssistant is None:
                 return jsonify({'error': 'Assistant service not available'}), 503
             assistant = FantacalcioAssistant()
-        
+
         if request.method == 'GET':
             # Get all corrections data
             if hasattr(assistant, 'corrections_manager'):
                 conn = assistant.corrections_manager.conn = assistant.corrections_manager.__dict__.get('conn') or __import__('sqlite3').connect(assistant.corrections_manager.db_path)
                 cursor = conn.cursor()
-                
+
                 # Get general corrections
                 cursor.execute('SELECT * FROM corrections WHERE status = "active" ORDER BY created_at DESC LIMIT 50')
                 corrections = []
@@ -620,39 +619,39 @@ def manage_corrections():
                         'context': row[4],
                         'times_applied': row[7] if len(row) > 7 else 0
                     })
-                
+
                 conn.close()
                 return jsonify({'corrections': corrections, 'total': len(corrections)})
             else:
                 return jsonify({'error': 'Corrections system not available'}), 503
-        
+
         else:  # POST - Add new correction
             data = request.get_json()
             if not data:
                 return jsonify({'error': 'No correction data provided'}), 400
-            
+
             if hasattr(assistant, 'corrections_manager'):
                 correction_type = data.get('type', 'general')
                 incorrect_info = data.get('incorrect_info', '').strip()
                 correct_info = data.get('correct_info', '').strip()
-                
+
                 if not incorrect_info or not correct_info:
                     return jsonify({'error': 'Both incorrect and correct information required'}), 400
-                
+
                 correction_id = assistant.add_correction(
                     incorrect_info,
                     correct_info,
                     correction_type,
                     data.get('context', 'user_manual')
                 )
-                
+
                 return jsonify({
                     'message': 'Correction added successfully',
                     'correction_id': correction_id
                 })
             else:
                 return jsonify({'error': 'Corrections system not available'}), 503
-                
+
     except Exception as e:
         logger.error(f"Corrections management error: {str(e)}")
         return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500
@@ -661,14 +660,14 @@ def manage_corrections():
 def get_corrections_stats():
     """Get corrections statistics"""
     global assistant
-    
+
     try:
         # Initialize assistant if not available
         if assistant is None:
             if FantacalcioAssistant is None:
                 return jsonify({'error': 'Assistant service not available'}), 503
             assistant = FantacalcioAssistant()
-        
+
         if hasattr(assistant, 'corrections_manager'):
             summary = assistant.get_corrections_summary()
             return jsonify({
@@ -679,7 +678,7 @@ def get_corrections_stats():
             })
         else:
             return jsonify({'error': 'Corrections system not available'}), 503
-            
+
     except Exception as e:
         logger.error(f"Corrections stats error: {str(e)}")
         return jsonify({'error': 'Failed to get statistics'}), 500
@@ -688,23 +687,23 @@ def get_corrections_stats():
 def export_corrections():
     """Export corrections to JSON"""
     global assistant
-    
+
     try:
         if assistant and hasattr(assistant, 'corrections_manager'):
             export_path = f"corrections_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             assistant.corrections_manager.export_corrections(export_path)
-            
+
             # Read the file and return as response
             with open(export_path, 'r', encoding='utf-8') as f:
                 export_data = json.load(f)
-            
+
             # Clean up the file
             os.remove(export_path)
-            
+
             return jsonify(export_data)
         else:
             return jsonify({'error': 'Corrections system not available'}), 503
-            
+
     except Exception as e:
         logger.error(f"Export corrections error: {str(e)}")
         return jsonify({'error': 'Export failed'}), 500
@@ -725,20 +724,20 @@ def accessibility_settings():
                 'color_blind_friendly': session.get('color_blind_friendly', False)
             }
             return jsonify(settings)
-        
+
         else:  # POST
             data = request.get_json()
             if not data:
                 return jsonify({'error': 'No settings provided'}), 400
-            
+
             # Update session with new settings
             for setting in ['high_contrast', 'large_text', 'reduce_motion', 'screen_reader', 
                           'keyboard_navigation', 'focus_indicators', 'color_blind_friendly']:
                 if setting in data:
                     session[setting] = bool(data[setting])
-            
+
             return jsonify({'message': 'Settings updated successfully'})
-            
+
     except Exception as e:
         logger.error(f"Accessibility settings error: {str(e)}")
         return jsonify({'error': 'Settings update failed'}), 500
@@ -750,13 +749,13 @@ def compare_players():
         data = request.get_json()
         if not data or 'players' not in data:
             return jsonify({'error': 'Player list required'}), 400
-        
+
         player_names = data.get('players', [])
         if len(player_names) < 2 or len(player_names) > 4:
             return jsonify({'error': 'Compare 2-4 players only'}), 400
-        
+
         from fantacalcio_data import SAMPLE_PLAYERS
-        
+
         comparison_data = []
         for name in player_names:
             player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == name.lower()), None)
@@ -771,10 +770,10 @@ def compare_players():
                     'value_ratio': round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0,
                     'games_per_season': round(player.appearances / 38 * 100, 1)
                 })
-        
+
         if not comparison_data:
             return jsonify({'error': 'No valid players found'}), 404
-        
+
         return jsonify({
             'comparison': comparison_data,
             'metrics': {
@@ -783,7 +782,7 @@ def compare_players():
                 'most_reliable': max(comparison_data, key=lambda x: x['appearances'])['name']
             }
         })
-        
+
     except Exception as e:
         logger.error(f"Player comparison error: {str(e)}")
         return jsonify({'error': 'Comparison failed'}), 500
@@ -793,14 +792,14 @@ def get_performance_charts(chart_type):
     """Get chart data for data visualization"""
     try:
         from fantacalcio_data import SAMPLE_PLAYERS
-        
+
         if chart_type == 'fantamedia_by_role':
             role_data = {}
             for player in SAMPLE_PLAYERS:
                 if player.role not in role_data:
                     role_data[player.role] = []
                 role_data[player.role].append(player.fantamedia)
-            
+
             chart_data = {
                 'type': 'bar',
                 'data': {
@@ -812,7 +811,7 @@ def get_performance_charts(chart_type):
                     }]
                 }
             }
-            
+
         elif chart_type == 'price_distribution':
             price_ranges = {'0-20': 0, '21-30': 0, '31-40': 0, '40+': 0}
             for player in SAMPLE_PLAYERS:
@@ -824,7 +823,7 @@ def get_performance_charts(chart_type):
                     price_ranges['31-40'] += 1
                 else:
                     price_ranges['40+'] += 1
-            
+
             chart_data = {
                 'type': 'pie',
                 'data': {
@@ -836,7 +835,7 @@ def get_performance_charts(chart_type):
                     }]
                 }
             }
-            
+
         elif chart_type == 'value_efficiency':
             efficiency_data = []
             for player in SAMPLE_PLAYERS:
@@ -848,7 +847,7 @@ def get_performance_charts(chart_type):
                         'r': efficiency * 10,
                         'name': player.name
                     })
-            
+
             chart_data = {
                 'type': 'bubble',
                 'data': {
@@ -859,12 +858,12 @@ def get_performance_charts(chart_type):
                     }]
                 }
             }
-            
+
         else:
             return jsonify({'error': 'Invalid chart type'}), 400
-        
+
         return jsonify(chart_data)
-        
+
     except Exception as e:
         logger.error(f"Chart data error: {str(e)}")
         return jsonify({'error': 'Chart generation failed'}), 500
@@ -876,165 +875,36 @@ def export_data():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Export parameters required'}), 400
-        
+
         export_type = data.get('type', 'csv')
         data_type = data.get('data_type', 'players')
-        
+
         if data_type == 'players':
             from fantacalcio_data import SAMPLE_PLAYERS
-            
+
             if export_type == 'csv':
                 import csv
                 import io
-                
+
                 output = io.StringIO()
                 writer = csv.writer(output)
                 writer.writerow(['Name', 'Team', 'Role', 'Fantamedia', 'Price', 'Appearances'])
-                
+
                 for player in SAMPLE_PLAYERS:
                     writer.writerow([player.name, player.team, player.role, 
                                    player.fantamedia, player.price, player.appearances])
-                
+
                 return jsonify({
                     'format': 'csv',
                     'data': output.getvalue(),
                     'filename': f'fantacalcio_players_{datetime.now().strftime("%Y%m%d")}.csv'
                 })
-        
+
         return jsonify({'error': 'Export type not supported'}), 400
-        
+
     except Exception as e:
         logger.error(f"Export error: {str(e)}")
         return jsonify({'error': 'Export failed'}), 500
-
-@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
-def accessibility_settings():
-    """Get or update accessibility settings"""
-    try:
-        if request.method == 'GET':
-            # Return current accessibility settings
-            settings = {
-                'high_contrast': session.get('high_contrast', False),
-                'large_text': session.get('large_text', False),
-                'reduce_motion': session.get('reduce_motion', False),
-                'screen_reader': session.get('screen_reader', False),
-                'keyboard_navigation': session.get('keyboard_navigation', True),
-                'focus_indicators': session.get('focus_indicators', True),
-                'color_blind_friendly': session.get('color_blind_friendly', False)
-            }
-            return jsonify(settings)
-        
-        else:  # POST
-            data = request.get_json()
-            if not data:
-                return jsonify({'error': 'No settings provided'}), 400
-            
-            # Update session with new settings
-            for setting in ['high_contrast', 'large_text', 'reduce_motion', 'screen_reader', 
-                          'keyboard_navigation', 'focus_indicators', 'color_blind_friendly']:
-                if setting in data:
-                    session[setting] = bool(data[setting])
-            
-            return jsonify({'message': 'Settings updated successfully'})
-            
-    except Exception as e:
-        logger.error(f"Accessibility settings error: {str(e)}")
-        return jsonify({'error': 'Settings update failed'}), 500
-
-@app.route('/api/corrections', methods=['GET', 'POST'])
-def manage_corrections():
-    """Manage corrections system"""
-    global assistant
-    
-    try:
-        # Initialize assistant if not available
-        if assistant is None:
-            if FantacalcioAssistant is None:
-                return jsonify({'error': 'Assistant service not available'}), 503
-            assistant = FantacalcioAssistant()
-        
-        if request.method == 'GET':
-            # Get all corrections data
-            if hasattr(assistant, 'corrections_manager'):
-                import sqlite3
-                conn = sqlite3.connect(assistant.corrections_manager.db_path)
-                cursor = conn.cursor()
-                
-                # Get general corrections
-                cursor.execute('SELECT * FROM corrections WHERE status = "active" ORDER BY created_at DESC LIMIT 50')
-                corrections = []
-                for row in cursor.fetchall():
-                    corrections.append({
-                        'id': row[0],
-                        'type': row[1],
-                        'incorrect_info': row[2],
-                        'correct_info': row[3],
-                        'context': row[4],
-                        'times_applied': row[7] if len(row) > 7 else 0
-                    })
-                
-                conn.close()
-                return jsonify({'corrections': corrections, 'total': len(corrections)})
-            else:
-                return jsonify({'error': 'Corrections system not available'}), 503
-        
-        else:  # POST - Add new correction
-            data = request.get_json()
-            if not data:
-                return jsonify({'error': 'No correction data provided'}), 400
-            
-            if hasattr(assistant, 'corrections_manager'):
-                correction_type = data.get('type', 'general')
-                incorrect_info = data.get('incorrect_info', '').strip()
-                correct_info = data.get('correct_info', '').strip()
-                
-                if not incorrect_info or not correct_info:
-                    return jsonify({'error': 'Both incorrect and correct information required'}), 400
-                
-                correction_id = assistant.add_correction(
-                    incorrect_info,
-                    correct_info,
-                    correction_type,
-                    data.get('context', 'user_manual')
-                )
-                
-                return jsonify({
-                    'message': 'Correction added successfully',
-                    'correction_id': correction_id
-                })
-            else:
-                return jsonify({'error': 'Corrections system not available'}), 503
-                
-    except Exception as e:
-        logger.error(f"Corrections management error: {str(e)}")
-        return jsonify({'error': f'Failed to manage corrections: {str(e)}'}), 500
-
-@app.route('/api/corrections/stats', methods=['GET'])
-def get_corrections_stats():
-    """Get corrections statistics"""
-    global assistant
-    
-    try:
-        # Initialize assistant if not available
-        if assistant is None:
-            if FantacalcioAssistant is None:
-                return jsonify({'error': 'Assistant service not available'}), 503
-            assistant = FantacalcioAssistant()
-        
-        if hasattr(assistant, 'corrections_manager'):
-            summary = assistant.get_corrections_summary()
-            return jsonify({
-                'general_corrections': summary.get('general_corrections', []),
-                'player_corrections_count': summary.get('player_corrections_count', 0),
-                'response_patterns_count': summary.get('response_patterns_count', 0),
-                'total_corrections': summary.get('total_corrections', 0)
-            })
-        else:
-            return jsonify({'error': 'Corrections system not available'}), 503
-            
-    except Exception as e:
-        logger.error(f"Corrections stats error: {str(e)}")
-        return jsonify({'error': 'Failed to get statistics'}), 500
 
 @app.errorhandler(404)
 def not_found(error):
@@ -1045,4 +915,3 @@ def not_found(error):
 def internal_error(error):
     logger.error(f"500 error: {str(error)}")
     return jsonify({'error': 'Internal server error'}), 500
-
