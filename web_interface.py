@@ -269,6 +269,119 @@ def reset_chat():
     message = assistant.reset_conversation()
     return jsonify({'message': message})
 
+@app.route('/api/inline-correction', methods=['POST'])
+def submit_inline_correction():
+    """Handle inline corrections from the chat interface"""
+    try:
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({'error': 'Assistant not available'}), 503
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid JSON data'}), 400
+
+        incorrect_text = data.get('incorrect', '').strip()
+        correct_text = data.get('correct', '').strip()
+        context = data.get('context', '')
+        correction_type = data.get('type', 'user_correction')
+
+        if not incorrect_text or not correct_text:
+            return jsonify({'error': 'Both incorrect and correct text are required'}), 400
+
+        # Store correction using ChromaDB through the assistant
+        correction_result = assistant._handle_correction_command(f"Correggi: {incorrect_text} -> {correct_text}")
+
+        # Track the correction for analytics
+        logger.info(f"Inline correction submitted: '{incorrect_text}' -> '{correct_text}' by session {session.get('session_id', 'anonymous')}")
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Correzione salvata con successo! La userò per le prossime risposte.',
+            'correction_applied': True,
+            'details': correction_result
+        })
+
+    except Exception as e:
+        logger.error(f"Inline correction error: {str(e)}")
+        return jsonify({'error': 'Failed to save correction. Please try again.'}), 500
+
+@app.route('/api/correction-suggestions', methods=['POST'])
+def get_correction_suggestions():
+    """Proactively suggest corrections when confidence is low"""
+    try:
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({'suggestions': []})
+
+        data = request.get_json()
+        response_text = data.get('response', '')
+        user_query = data.get('query', '')
+
+        # Simple heuristics for suggesting corrections
+        suggestions = []
+
+        # Check for uncertainty phrases
+        uncertainty_phrases = [
+            "non ho informazioni aggiornate",
+            "secondo le ultime informazioni",
+            "potrebbe essere",
+            "non sono sicuro"
+        ]
+
+        for phrase in uncertainty_phrases:
+            if phrase.lower() in response_text.lower():
+                suggestions.append({
+                    'type': 'uncertainty',
+                    'message': 'Ho notato incertezza nella risposta. Conosci informazioni più aggiornate?',
+                    'highlight_text': phrase,
+                    'suggestion_prompt': 'Fornisci informazioni corrette:'
+                })
+
+        # Check for specific player/team mentions that might need updates
+        if any(word in user_query.lower() for word in ['trasferimento', 'squadra', 'prezzo']):
+            suggestions.append({
+                'type': 'transfer_info',
+                'message': 'Le informazioni sui trasferimenti cambiano rapidamente. Sono corrette?',
+                'suggestion_prompt': 'Correzioni sui trasferimenti:'
+            })
+
+        return jsonify({'suggestions': suggestions[:2]})  # Limit to 2 suggestions
+
+    except Exception as e:
+        logger.error(f"Correction suggestions error: {str(e)}")
+        return jsonify({'suggestions': []})
+
+@app.route('/api/corrections/recent', methods=['GET'])
+def get_recent_corrections():
+    """Get recently applied corrections for transparency"""
+    try:
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({'corrections': []})
+
+        corrections_summary = assistant.get_corrections_summary()
+        recent_corrections = corrections_summary.get('corrections', [])[:5]  # Latest 5
+
+        formatted_corrections = []
+        for correction in recent_corrections:
+            if correction.get('metadata', {}).get('type') == 'correction':
+                formatted_corrections.append({
+                    'wrong': correction['metadata'].get('wrong', ''),
+                    'correct': correction['metadata'].get('correct', ''),
+                    'created_at': correction['metadata'].get('created_at', ''),
+                    'id': correction.get('id', '')[:8]
+                })
+
+        return jsonify({
+            'recent_corrections': formatted_corrections,
+            'total_corrections': corrections_summary.get('total_corrections', 0)
+        })
+
+    except Exception as e:
+        logger.error(f"Recent corrections error: {str(e)}")
+        return jsonify({'corrections': [], 'total_corrections': 0})
+
 @app.route('/api/accessibility-settings', methods=['GET'])
 def get_accessibility_settings():
     """Get accessibility settings for the UI"""
