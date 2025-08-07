@@ -31,6 +31,10 @@ class FantacalcioAssistant:
 
         # Load training data once at startup
         self._load_training_data()
+        
+        # Verify embedding consistency
+        print("\n🔍 VERIFYING EMBEDDING CONSISTENCY...")
+        self.knowledge_manager.verify_embedding_consistency()
 
         # Response cache with TTL (Time To Live) - cleared on startup
         self.response_cache = {}
