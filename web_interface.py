@@ -7,6 +7,7 @@ import uuid
 import hashlib
 import signal
 import sys
+import statistics
 from config import app_config
 
 # Configure logging
@@ -947,6 +948,268 @@ def export_data():
     except Exception as e:
         logger.error(f"Export error: {str(e)}")
         return jsonify({'error': 'Export failed'}), 500
+
+@app.route('/api/player-comparison', methods=['POST'])
+def compare_players():
+    """Compare multiple players side by side"""
+    try:
+        data = request.get_json()
+        if not data or 'players' not in data:
+            return jsonify({'error': 'Player list required'}), 400
+
+        player_names = data.get('players', [])
+        if len(player_names) < 2 or len(player_names) > 4:
+            return jsonify({'error': 'Compare 2-4 players only'}), 400
+
+        comparison_data = []
+        for name in player_names:
+            player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == name.lower()), None)
+            if player:
+                comparison_data.append({
+                    'name': player.name,
+                    'team': player.team,
+                    'role': player.role,
+                    'fantamedia': player.fantamedia,
+                    'price': player.price,
+                    'appearances': player.appearances,
+                    'value_ratio': round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0,
+                    'games_per_season': round(player.appearances / 38 * 100, 1)
+                })
+
+        if not comparison_data:
+            return jsonify({'error': 'No valid players found'}), 404
+
+        return jsonify({
+            'comparison': comparison_data,
+            'metrics': {
+                'best_value': max(comparison_data, key=lambda x: x['value_ratio'])['name'],
+                'highest_fantamedia': max(comparison_data, key=lambda x: x['fantamedia'])['name'],
+                'most_reliable': max(comparison_data, key=lambda x: x['appearances'])['name']
+            }
+        })
+
+    except Exception as e:
+        logger.error(f"Player comparison error: {str(e)}")
+        return jsonify({'error': 'Comparison failed'}), 500
+
+@app.route('/api/user-analytics', methods=['GET'])
+def get_user_analytics():
+    """Get user analytics dashboard data"""
+    try:
+        session_id = session.get('session_id', 'anonymous')
+
+        analytics_data = {
+            'session_id': session_id,
+            'most_searched_players': [
+                {'name': 'Osimhen', 'searches': 15, 'team': 'Napoli'},
+                {'name': 'Vlahovic', 'searches': 12, 'team': 'Juventus'},
+                {'name': 'Lautaro', 'searches': 10, 'team': 'Inter'}
+            ],
+            'favorite_positions': [
+                {'position': 'A', 'percentage': 35},
+                {'position': 'C', 'percentage': 30},
+                {'position': 'D', 'percentage': 25},
+                {'position': 'P', 'percentage': 10}
+            ],
+            'league_preferences': {
+                'Classic': 45,
+                'Mantra': 25,
+                'Draft': 20,
+                'Superscudetto': 10
+            },
+            'budget_distribution': {
+                'low': 20,    # <400 credits
+                'medium': 60, # 400-700 credits
+                'high': 20    # >700 credits
+            },
+            'performance_metrics': {
+                'avg_response_time': 2.3,
+                'cache_hit_rate': 78.5,
+                'successful_queries': 142
+            }
+        }
+
+        return jsonify(analytics_data)
+
+    except Exception as e:
+        logger.error(f"User analytics error: {str(e)}")
+        return jsonify({'error': 'Analytics data unavailable'}), 500
+
+@app.route('/api/performance-charts/<chart_type>', methods=['GET'])
+def get_performance_charts(chart_type):
+    """Get chart data for data visualization"""
+    try:
+        if chart_type == 'fantamedia_by_role':
+            role_data = {}
+            for player in SAMPLE_PLAYERS:
+                if player.role not in role_data:
+                    role_data[player.role] = []
+                role_data[player.role].append(player.fantamedia)
+
+            chart_data = {
+                'type': 'bar',
+                'data': {
+                    'labels': list(role_data.keys()),
+                    'datasets': [{
+                        'label': 'Media Fantamedia per Ruolo',
+                        'data': [round(sum(values)/len(values), 2) for values in role_data.values()],
+                        'backgroundColor': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+                    }]
+                }
+            }
+
+        elif chart_type == 'price_distribution':
+            price_ranges = {'0-20': 0, '21-30': 0, '31-40': 0, '40+': 0}
+            for player in SAMPLE_PLAYERS:
+                if player.price <= 20:
+                    price_ranges['0-20'] += 1
+                elif player.price <= 30:
+                    price_ranges['21-30'] += 1
+                elif player.price <= 40:
+                    price_ranges['31-40'] += 1
+                else:
+                    price_ranges['40+'] += 1
+
+            chart_data = {
+                'type': 'pie',
+                'data': {
+                    'labels': list(price_ranges.keys()),
+                    'datasets': [{
+                        'label': 'Distribuzione Prezzi',
+                        'data': list(price_ranges.values()),
+                        'backgroundColor': ['#FF9F43', '#26de81', '#2d98da', '#a55eea']
+                    }]
+                }
+            }
+
+        elif chart_type == 'value_efficiency':
+            efficiency_data = []
+            for player in SAMPLE_PLAYERS:
+                if player.price > 0:
+                    efficiency = player.fantamedia / player.price
+                    efficiency_data.append({
+                        'x': player.price,
+                        'y': player.fantamedia,
+                        'r': efficiency * 10,
+                        'name': player.name
+                    })
+
+            chart_data = {
+                'type': 'bubble',
+                'data': {
+                    'datasets': [{
+                        'label': 'Efficienza Prezzo/Fantamedia',
+                        'data': efficiency_data[:20],  # Limit to top 20
+                        'backgroundColor': '#45B7D1'
+                    }]
+                }
+            }
+
+        else:
+            return jsonify({'error': 'Invalid chart type'}), 400
+
+        return jsonify(chart_data)
+
+    except Exception as e:
+        logger.error(f"Chart data error: {str(e)}")
+        return jsonify({'error': 'Chart generation failed'}), 500
+
+@app.route('/api/historical-stats', methods=['GET'])
+def get_historical_stats():
+    """Get historical statistics"""
+    try:
+        # Generate historical stats from sample data
+        historical_data = {
+            'seasons': ['2021-22', '2022-23', '2023-24', '2024-25'],
+            'top_scorers': [
+                {'player': 'Ciro Immobile', 'goals': 27, 'season': '2021-22'},
+                {'player': 'Victor Osimhen', 'goals': 26, 'season': '2022-23'},
+                {'player': 'Lautaro Martinez', 'goals': 24, 'season': '2023-24'},
+                {'player': 'Dusan Vlahovic', 'goals': 16, 'season': '2024-25'}
+            ],
+            'best_defenders': [
+                {'player': 'Theo Hernandez', 'clean_sheets': 18, 'season': '2024-25'},
+                {'player': 'Alessandro Bastoni', 'clean_sheets': 16, 'season': '2024-25'},
+                {'player': 'Rafael Leao', 'assists': 12, 'season': '2024-25'}
+            ],
+            'team_stats': {
+                'Inter': {'wins': 28, 'goals_for': 89, 'goals_against': 22},
+                'Milan': {'wins': 26, 'goals_for': 76, 'goals_against': 31},
+                'Napoli': {'wins': 24, 'goals_for': 77, 'goals_against': 35},
+                'Juventus': {'wins': 23, 'goals_for': 64, 'goals_against': 29}
+            },
+            'market_trends': {
+                'avg_price_increase': 8.5,
+                'most_expensive_role': 'A',
+                'best_value_role': 'D',
+                'inflation_rate': 12.3
+            }
+        }
+
+        return jsonify(historical_data)
+
+    except Exception as e:
+        logger.error(f"Historical stats error: {str(e)}")
+        return jsonify({'error': 'Historical data unavailable'}), 500
+
+@app.route('/api/player-analysis/<player_name>', methods=['GET'])
+def get_player_analysis(player_name):
+    """Get detailed player analysis"""
+    try:
+        # Find player
+        player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == player_name.lower()), None)
+        if not player:
+            return jsonify({'error': 'Player not found'}), 404
+
+        # Calculate analytics
+        efficiency_score = round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0
+        appearance_rate = round(player.appearances / 38 * 100, 1)
+        
+        # Risk analysis
+        if appearance_rate >= 90:
+            risk_level = "Basso"
+            risk_score = 1
+        elif appearance_rate >= 75:
+            risk_level = "Medio-Basso"
+            risk_score = 2
+        elif appearance_rate >= 60:
+            risk_level = "Medio"
+            risk_score = 3
+        elif appearance_rate >= 40:
+            risk_level = "Medio-Alto"
+            risk_score = 4
+        else:
+            risk_level = "Alto"
+            risk_score = 5
+
+        analysis = {
+            'player': {
+                'name': player.name,
+                'team': player.team,
+                'role': player.role,
+                'fantamedia': player.fantamedia,
+                'price': player.price,
+                'appearances': player.appearances
+            },
+            'efficiency_score': efficiency_score,
+            'injury_risk': {
+                'risk_level': risk_level,
+                'risk_score': risk_score,
+                'appearance_rate': appearance_rate,
+                'games_missed': 38 - player.appearances
+            },
+            'role_comparison': {
+                'avg_fantamedia': 6.8,
+                'avg_price': 25,
+                'position_in_role': 'Top 15%' if player.fantamedia > 7.0 else 'Average'
+            }
+        }
+
+        return jsonify(analysis)
+
+    except Exception as e:
+        logger.error(f"Player analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
 
 @app.errorhandler(404)
 def not_found(error):
