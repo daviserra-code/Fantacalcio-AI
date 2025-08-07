@@ -32,10 +32,7 @@ class FantacalcioAssistant:
         # Load training data once at startup
         self._load_training_data()
         
-        # Skip expensive verification in production deployment
-        # Verify both managers use the same model (lightweight check)
-        knowledge_model = getattr(self.knowledge_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
-        corrections_model = getattr(self.corrections_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
+        # Skip model verification in production for faster startup
         
         # Response cache with TTL (Time To Live)
         self.response_cache = {}
@@ -85,21 +82,16 @@ class FantacalcioAssistant:
         try:
             self.knowledge_manager.load_from_jsonl("training_data.jsonl")
             training_loaded = True
-            print("✅ Loaded main training data")
         except Exception as e:
-            print(f"⚠️ Could not load training_data.jsonl: {e}")
+            logger.warning(f"Could not load training_data.jsonl: {e}")
 
         # Try loading extended training data as fallback
         try:
             self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
-            if not training_loaded:
-                print("✅ Loaded extended training data as fallback")
-            else:
-                print("✅ Loaded additional extended training data")
         except Exception as e:
-            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
+            logger.warning(f"Could not load extended_training_data.jsonl: {e}")
             if not training_loaded:
-                print("ℹ️ Running with limited knowledge base - responses will be based on general principles")
+                logger.info("Running with limited knowledge base")
 
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
@@ -128,18 +120,7 @@ class FantacalcioAssistant:
         print(f"\n🔍 QUERY: {user_message}")
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
         
-        # Log the raw retrieval results for debugging
-        raw_results = self.knowledge_manager.search_knowledge(user_message, n_results=8)
-        print(f"\n📊 RAW CHROMADB RESULTS ({len(raw_results)} found):")
-        for i, result in enumerate(raw_results):
-            print(f"  {i+1}. Score: {result['relevance_score']:.3f} | Text: {result['text'][:100]}...")
-            print(f"     Metadata: {result['metadata']}")
-        
         if relevant_context:
-            print(f"\n✅ CONTEXT BEING SENT TO MODEL:")
-            print(f"Length: {len(relevant_context)} characters")
-            print(f"Preview: {relevant_context[:200]}...")
-            
             # Provide context but allow strategic reasoning
             validated_context = f"""
             INFORMAZIONI DISPONIBILI DAL DATABASE:
@@ -152,7 +133,6 @@ class FantacalcioAssistant:
             """
             messages.append({"role": "system", "content": validated_context})
         else:
-            print(f"\n❌ NO CONTEXT RETRIEVED - Using fallback mode")
             # Even without specific data, provide helpful strategic advice
             fallback_context = """
             MODALITÀ STRATEGICA: Non hai dati specifici dal database per questa query.

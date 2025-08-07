@@ -28,7 +28,9 @@ def get_assistant():
         try:
             # Import and initialize only when needed
             from main import FantacalcioAssistant
+            logger.info("Initializing FantacalcioAssistant...")
             assistant_instance = FantacalcioAssistant()
+            logger.info("FantacalcioAssistant initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize FantacalcioAssistant: {e}")
             assistant_instance = False
@@ -167,13 +169,8 @@ def check_rate_limit(ip_address):
 
 @app.route('/health')
 def health():
-    """Health check endpoint for deployments - responds immediately"""
-    return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.now().isoformat(),
-        'version': '1.0.0',
-        'ready': True
-    }), 200
+    """Health check endpoint for deployments - responds immediately without any dependencies"""
+    return {'status': 'healthy'}, 200
 
 @app.route('/metrics')
 def metrics():
@@ -426,13 +423,10 @@ if __name__ == '__main__':
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
 
-        # Start background preloading after server is ready
+        # Start background preloading immediately after server starts
         import threading
-        import time
         
         def preload_assistant_background():
-            # Wait a few seconds for server to be fully ready
-            time.sleep(5)
             try:
                 logger.info("Background: Starting assistant preload...")
                 get_assistant()
@@ -440,7 +434,7 @@ if __name__ == '__main__':
             except Exception as e:
                 logger.error(f"Background assistant preload failed: {e}")
         
-        # Start preloading in background thread
+        # Start preloading in background thread (no delay)
         preload_thread = threading.Thread(target=preload_assistant_background, daemon=True)
         preload_thread.start()
 
