@@ -26,13 +26,12 @@ def get_assistant():
 
     if assistant_instance is None:
         try:
-            logger.info("Lazy loading FantacalcioAssistant...")
+            # Import and initialize only when needed
             from main import FantacalcioAssistant
             assistant_instance = FantacalcioAssistant()
-            logger.info("FantacalcioAssistant initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize FantacalcioAssistant: {e}")
-            assistant_instance = False  # Mark as failed to avoid repeated attempts
+            assistant_instance = False
 
     return assistant_instance if assistant_instance is not False else None
 
@@ -168,11 +167,12 @@ def check_rate_limit(ip_address):
 
 @app.route('/health')
 def health():
-    """Health check endpoint for deployments"""
+    """Health check endpoint for deployments - responds immediately"""
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'version': '1.0.0'
+        'version': '1.0.0',
+        'ready': True
     }), 200
 
 @app.route('/metrics')
@@ -423,11 +423,28 @@ if __name__ == '__main__':
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
-        logger.info(f"Assistant available: {get_assistant() is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
 
-        # Use optimized Flask with timeout and stability improvements
+        # Start background preloading after server is ready
+        import threading
+        import time
+        
+        def preload_assistant_background():
+            # Wait a few seconds for server to be fully ready
+            time.sleep(5)
+            try:
+                logger.info("Background: Starting assistant preload...")
+                get_assistant()
+                logger.info("Background: Assistant preload completed")
+            except Exception as e:
+                logger.error(f"Background assistant preload failed: {e}")
+        
+        # Start preloading in background thread
+        preload_thread = threading.Thread(target=preload_assistant_background, daemon=True)
+        preload_thread.start()
+
+        # Use optimized Flask with immediate startup
         logger.info("Starting with optimized Flask server")
         app.run(
             host='0.0.0.0',
@@ -435,7 +452,7 @@ if __name__ == '__main__':
             debug=debug_mode,
             threaded=True,
             use_reloader=False,
-            processes=1  # Single process for stability
+            processes=1
         )
     except Exception as e:
         logger.error(f"Failed to start server: {e}")

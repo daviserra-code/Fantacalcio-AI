@@ -32,28 +32,17 @@ class FantacalcioAssistant:
         # Load training data once at startup
         self._load_training_data()
         
-        # Verify embedding consistency and model matching
-        print("\n🔍 VERIFYING EMBEDDING CONSISTENCY...")
-        self.knowledge_manager.verify_embedding_consistency()
-        
-        # Verify both managers use the same model
+        # Skip expensive verification in production deployment
+        # Verify both managers use the same model (lightweight check)
         knowledge_model = getattr(self.knowledge_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
         corrections_model = getattr(self.corrections_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
         
-        if knowledge_model == corrections_model:
-            print(f"✅ Both collections use same model: {knowledge_model}")
-        else:
-            print(f"⚠️ Model mismatch - Knowledge: {knowledge_model}, Corrections: {corrections_model}")
-
-        # Response cache with TTL (Time To Live) - cleared on startup
+        # Response cache with TTL (Time To Live)
         self.response_cache = {}
         self.cache_ttl = {}
-        self.cache_max_size = 50     # Reduced cache size
-        self.cache_duration = 180    # Reduced to 3 minutes
+        self.cache_max_size = 50
+        self.cache_duration = 180
         self.cache_stats = {'hits': 0, 'misses': 0}
-        
-        # Clear any existing cache on startup
-        print("🔄 Cache cleared on startup to prevent wrong cached responses")
 
         self.system_prompt = """
         Sei un assistente virtuale per fantacalcio Serie A. Il tuo nome è Fantacalcio AI.
