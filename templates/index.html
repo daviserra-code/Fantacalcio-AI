@@ -1106,10 +1106,24 @@
             padding: 15px;
             border-radius: 8px;
             margin-top: 10px;
+            border-left: 3px solid var(--accent-primary);
         }
 
         .correction-form.active {
             display: block;
+        }
+
+        .correction-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .correction-buttons button {
+            font-size: 12px;
+            padding: 6px 12px;
         }
 
         .correction-input-group {
@@ -2498,6 +2512,7 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
         function addCorrectionSuggestion(messageElement, suggestion) {
             const correctionContainer = document.createElement('div');
             correctionContainer.className = 'inline-correction-container';
+            correctionContainer.dataset.correctionCount = '0';
             correctionContainer.innerHTML = `
                 <div class="correction-suggestion ${document.body.className.includes('dark') ? 'dark' : ''}">
                     <span>💡</span>
@@ -2507,6 +2522,9 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
                     </button>
                 </div>
                 <div class="correction-form">
+                    <div style="margin-bottom: 10px; font-size: 12px; color: var(--text-secondary);">
+                        💡 Puoi aggiungere più correzioni per questo messaggio
+                    </div>
                     <div class="correction-input-group">
                         <label style="min-width: 80px; font-size: 12px;">Scorretto:</label>
                         <input type="text" class="correction-input" name="incorrect" placeholder="Testo da correggere...">
@@ -2520,7 +2538,10 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
                             Salva Correzione
                         </button>
                         <button class="btn-correction secondary" onclick="hideCorrectionForm(this)">
-                            Annulla
+                            Chiudi
+                        </button>
+                        <button class="btn-correction secondary" onclick="addAnotherCorrection(this)" style="background: var(--accent-secondary);">
+                            + Altra Correzione
                         </button>
                     </div>
                 </div>
@@ -2543,6 +2564,35 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
 
             form.classList.remove('active');
             suggestionButton.style.display = 'inline-block';
+        }
+
+        function addAnotherCorrection(button) {
+            const container = button.closest('.inline-correction-container');
+            const incorrectInput = container.querySelector('input[name="incorrect"]');
+            const correctInput = container.querySelector('input[name="correct"]');
+            
+            // Clear the inputs for next correction
+            incorrectInput.value = '';
+            correctInput.value = '';
+            incorrectInput.focus();
+            
+            // Show a brief hint
+            const hint = document.createElement('div');
+            hint.className = 'correction-status';
+            hint.style.background = 'rgba(0, 136, 255, 0.1)';
+            hint.style.color = '#0088ff';
+            hint.style.marginTop = '10px';
+            hint.innerHTML = '🔄 Pronto per la prossima correzione...';
+            
+            const form = container.querySelector('.correction-form');
+            form.appendChild(hint);
+            
+            // Remove hint after 2 seconds
+            setTimeout(() => {
+                if (hint.parentElement) {
+                    hint.remove();
+                }
+            }, 2000);
         }
 
         async function submitInlineCorrection(button) {
@@ -2583,14 +2633,35 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
                     statusDiv.className = `correction-status success ${document.body.className.includes('dark') ? 'dark' : ''}`;
                     statusDiv.innerHTML = '✅ Correzione salvata! La userò per le prossime risposte.';
 
-                    container.appendChild(statusDiv);
-
-                    // Hide the form
+                    // Clear the form inputs but keep form visible for additional corrections
+                    incorrectInput.value = '';
+                    correctInput.value = '';
+                    
+                    // Add success message above the form
                     const form = container.querySelector('.correction-form');
-                    form.style.display = 'none';
+                    if (!container.querySelector('.correction-status.success')) {
+                        form.parentNode.insertBefore(statusDiv, form);
+                    }
+
+                    // Keep correction counter
+                    let correctionCount = parseInt(container.dataset.correctionCount || '0') + 1;
+                    container.dataset.correctionCount = correctionCount;
+                    
+                    // Update button text to show multiple corrections capability
+                    const suggestionButton = container.querySelector('.correction-suggestion button');
+                    if (suggestionButton) {
+                        suggestionButton.innerHTML = `Correggi (${correctionCount} applicate)`;
+                    }
 
                     // Update recent corrections
                     loadRecentCorrections();
+
+                    // Auto-remove success message after 3 seconds
+                    setTimeout(() => {
+                        if (statusDiv.parentElement) {
+                            statusDiv.remove();
+                        }
+                    }, 3000);
 
                 } else {
                     alert('Errore nel salvare la correzione: ' + (result.error || 'Errore sconosciuto'));
