@@ -169,7 +169,11 @@ class KnowledgeManager:
     def verify_embedding_consistency(self):
         """Verify that embeddings are consistent and high quality"""
         print(f"🔬 EMBEDDING VERIFICATION:")
-        print(f"   Model: {self.encoder.model_name}")
+        try:
+            model_name = getattr(self.encoder, 'model_name', 'all-MiniLM-L6-v2')
+            print(f"   Model: {model_name}")
+        except:
+            print(f"   Model: all-MiniLM-L6-v2")
         print(f"   Collection: {self.collection_name}")
         print(f"   Total documents: {self.collection.count()}")
 
@@ -190,3 +194,67 @@ class KnowledgeManager:
             print(f"   Best match: '{results[0]['text'][:50]}...'")
 
         return len(results) > 0
+
+    def reset_database(self):
+        """Reset the entire ChromaDB database and rebuild from scratch"""
+        print(f"🗑️ RESETTING DATABASE...")
+        
+        try:
+            # Reset the entire ChromaDB client (clears all collections)
+            self.client.reset()
+            print("✅ ChromaDB reset complete - all collections cleared")
+            
+            # Recreate the collection
+            self.collection = self.client.create_collection(
+                name=self.collection_name,
+                metadata={"description": "Fantacalcio knowledge base for RAG"}
+            )
+            print(f"✅ Recreated collection: {self.collection_name}")
+            
+            # Mark collection as empty so data will be reloaded
+            self.collection_is_empty = True
+            
+            # Clear query cache
+            self.query_cache = {}
+            print("✅ Query cache cleared")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error resetting database: {e}")
+            return False
+
+    def rebuild_database_from_jsonl(self, jsonl_files):
+        """Rebuild database from JSONL files after reset"""
+        print(f"🔄 REBUILDING DATABASE...")
+        
+        total_loaded = 0
+        for jsonl_file in jsonl_files:
+            if os.path.exists(jsonl_file):
+                count = 0
+                try:
+                    with open(jsonl_file, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            try:
+                                data = json.loads(line.strip())
+                                text = data.get('text', '')
+                                metadata = data.get('metadata', {})
+                                doc_id = data.get('id')
+
+                                if text:
+                                    self.add_knowledge(text, metadata, doc_id)
+                                    count += 1
+                            except json.JSONDecodeError as e:
+                                print(f"⚠️ Error parsing line in {jsonl_file}: {e}")
+                    
+                    print(f"✅ Loaded {count} entries from {jsonl_file}")
+                    total_loaded += count
+                    
+                except Exception as e:
+                    print(f"❌ Error loading {jsonl_file}: {e}")
+            else:
+                print(f"⚠️ File not found: {jsonl_file}")
+        
+        self.collection_is_empty = False
+        print(f"🎉 Database rebuild complete! Total entries loaded: {total_loaded}")
+        return total_loaded

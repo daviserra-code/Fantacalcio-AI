@@ -321,6 +321,28 @@ class FantacalcioAssistant:
         except:
             return {'total_corrections': 0, 'corrections': []}
 
+    def reset_and_rebuild_database(self):
+        """Reset ChromaDB and rebuild from JSONL files"""
+        print("🔄 STARTING DATABASE RESET AND REBUILD...")
+        
+        # Reset main knowledge database
+        if self.knowledge_manager.reset_database():
+            # Rebuild from JSONL files
+            jsonl_files = ["training_data.jsonl", "extended_training_data.jsonl"]
+            total_loaded = self.knowledge_manager.rebuild_database_from_jsonl(jsonl_files)
+            
+            # Reset corrections database
+            if self.corrections_manager.reset_database():
+                print("✅ Corrections database also reset")
+            
+            # Verify the rebuild worked
+            print("\n🔍 VERIFYING REBUILD...")
+            self.knowledge_manager.verify_embedding_consistency()
+            
+            return f"✅ Database reset and rebuild complete! Loaded {total_loaded} entries from JSONL files."
+        else:
+            return "❌ Database reset failed"
+
 def main():
     assistant = FantacalcioAssistant()
 
@@ -340,6 +362,10 @@ def main():
 
             if user_input.lower() == 'reset':
                 print(assistant.reset_conversation())
+                continue
+
+            if user_input.lower() == 'reset-db':
+                print(assistant.reset_and_rebuild_database())
                 continue
 
             if not user_input:
