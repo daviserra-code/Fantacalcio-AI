@@ -45,16 +45,16 @@ def create_mock_assistant():
         def __init__(self):
             self.knowledge_manager = None
             self.corrections_manager = None
-            
+
         def get_response(self, message, context=None):
             return "⚠️ Servizio temporaneamente non disponibile. Riprova più tardi."
-            
+
         def reset_conversation(self):
             return "Conversazione resettata (modalità limitata)."
-            
+
         def get_cache_stats(self):
             return {'hits': 0, 'misses': 0, 'hit_rate_percentage': 0, 'cache_size': 0, 'max_cache_size': 0}
-    
+
     return MockAssistant()
 
 # Add missing sample data for the application to work
@@ -109,11 +109,11 @@ def get_real_players():
     assistant = get_assistant()
     if not assistant or not assistant.knowledge_manager:
         return STATIC_PLAYERS_DATA
-    
+
     try:
         # Query real player data from knowledge manager
         search_results = assistant.knowledge_manager.search_knowledge("fantamedia stagione 2024-25", n_results=50)
-        
+
         real_players = []
         for result in search_results:
             metadata = result.get('metadata', {})
@@ -126,9 +126,9 @@ def get_real_players():
                     'price': metadata.get('price', 20),
                     'appearances': metadata.get('appearances', 30)
                 })
-        
+
         return real_players if real_players else STATIC_PLAYERS_DATA
-        
+
     except Exception as e:
         logger.error(f"Failed to get real players data: {e}")
         return STATIC_PLAYERS_DATA
@@ -993,7 +993,7 @@ def get_historical_stats():
     """Get historical statistics with comprehensive team and player data"""
     try:
         query = request.args.get('query', '').strip()
-        
+
         # Expanded team and player database
         comprehensive_data = {
             'juventus': {
@@ -1109,7 +1109,7 @@ def get_historical_stats():
                 if team.lower() in query.lower():
                     team_key = team
                     break
-            
+
             if team_key:
                 team_data = comprehensive_data[team_key]
                 return jsonify({

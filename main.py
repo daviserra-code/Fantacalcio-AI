@@ -35,14 +35,16 @@ class FantacalcioAssistant:
 
             # Initialize corrections manager (using ChromaDB)
             print("🔄 Initializing corrections manager...")
-            self.corrections_manager = KnowledgeManager(collection_name="corrections")
+            from corrections_manager import CorrectionsManager
+            self.corrections_manager = CorrectionsManager(self.knowledge_manager)
             print("✅ Corrections manager initialized")
         except Exception as e:
             print(f"❌ Failed to initialize managers: {e}")
             print("🔄 Running in degraded mode without vector search")
             # Create minimal fallback managers
             self.knowledge_manager = None
-            self.corrections_manager = None
+            from corrections_manager import CorrectionsManager
+            self.corrections_manager = CorrectionsManager(None)
 
         # Load training data once at startup
         self._load_training_data()
