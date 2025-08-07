@@ -539,7 +539,7 @@ if __name__ == '__main__':
 
         # Start background preloading immediately after server starts
         import threading
-        
+
         def preload_assistant_background():
             try:
                 logger.info("Background: Starting assistant preload...")
@@ -547,7 +547,7 @@ if __name__ == '__main__':
                 logger.info("Background: Assistant preload completed")
             except Exception as e:
                 logger.error(f"Background assistant preload failed: {e}")
-        
+
         # Start preloading in background thread (no delay)
         preload_thread = threading.Thread(target=preload_assistant_background, daemon=True)
         preload_thread.start()
@@ -776,7 +776,7 @@ def get_player_analysis(player_name):
         # Calculate analytics
         efficiency_score = round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0
         appearance_rate = round(player.appearances / 38 * 100, 1)
-        
+
         # Risk analysis
         if appearance_rate >= 90:
             risk_level = "Basso"
@@ -880,52 +880,6 @@ def get_player_fixtures(player_name, team):
         logger.error(f"Player fixtures error: {str(e)}")
         return jsonify({'error': 'Fixture analysis failed'}), 500
 
-@app.route('/api/user-analytics', methods=['GET'])
-def get_user_analytics():
-    """Get user analytics dashboard data"""
-    try:
-        session_id = session.get('session_id', 'anonymous')
-
-        # Mock analytics data - in production this would come from database
-        analytics_data = {
-            'session_id': session_id,
-            'most_searched_players': [
-                {'name': 'Osimhen', 'searches': 15, 'team': 'Napoli'},
-                {'name': 'Vlahovic', 'searches': 12, 'team': 'Juventus'},
-                {'name': 'Lautaro', 'searches': 10, 'team': 'Inter'}
-            ],
-            'favorite_positions': [
-                {'position': 'A', 'percentage': 35},
-                {'position': 'C', 'percentage': 30},
-                {'position': 'D', 'percentage': 25},
-                {'position': 'P', 'percentage': 10}
-            ],
-            'league_preferences': {
-                'Classic': 45,
-                'Mantra': 25,
-                'Draft': 20,
-                'Superscudetto': 10
-            },
-            'budget_distribution': {
-                'low': 20,    # <400 credits
-                'medium': 60, # 400-700 credits
-                'high': 20    # >700 credits
-            },
-            'performance_metrics': {
-                'avg_response_time': 2.3,
-                'cache_hit_rate': 78.5,
-                'successful_queries': 142
-            }
-        }
-
-        return jsonify(analytics_data)
-
-    except Exception as e:
-        logger.error(f"User analytics error: {str(e)}")
-        return jsonify({'error': 'Analytics data unavailable'}), 500
-
-
-
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
     """Get mobile-optimized configuration"""
@@ -966,13 +920,13 @@ def get_historical_stats():
         # Check if we should fetch fresh data
         query = request.args.get('query', '').strip()
         force_refresh = request.args.get('refresh', 'false').lower() == 'true'
-        
+
         if query and len(query) > 2:
             # Try to fetch real data from external sources
             try:
                 from serie_a_data_collector import SerieADataCollector
                 collector = SerieADataCollector()
-                
+
                 # Search for team or player specific data
                 team_searches = ['juventus', 'inter', 'milan', 'napoli', 'roma', 'lazio', 'atalanta']
                 found_team = None
@@ -980,11 +934,11 @@ def get_historical_stats():
                     if team.lower() in query.lower():
                         found_team = team.capitalize()
                         break
-                
+
                 if found_team:
                     # Fetch Wikipedia data for the team
                     wikipedia_data = collector.collect_wikipedia_data([found_team])
-                    
+
                     # If we found real data, format it nicely
                     if wikipedia_data:
                         team_info = wikipedia_data[0]
@@ -999,12 +953,12 @@ def get_historical_stats():
                                 p for p in SAMPLE_PLAYERS if found_team.lower() in p.team.lower()
                             ][:10]
                         }
-                        
+
                         return jsonify(historical_data)
-                
+
             except Exception as e:
                 logger.warning(f"External data fetch failed: {e}")
-        
+
         # Fallback to comprehensive local data when no specific query or external fetch fails
         historical_data = {
             'seasons': ['2021-22', '2022-23', '2023-24', '2024-25'],

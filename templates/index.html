@@ -2071,6 +2071,7 @@
                 analyticsGrid.style.display = analyticsGrid.style.display === 'none' ? 'grid' : 'none';
                 if (analyticsGrid.style.display !== 'none') {
                     loadAnalyticsData();
+                    showCharts();
                 }
             }
         }
@@ -2197,294 +2198,6 @@ Esempi:
 Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
         }
 
-        // Voice input functionality
-        function toggleVoiceInput() {
-            const voiceBtn = document.getElementById('voiceBtn');
-
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                alert('Il riconoscimento vocale non è supportato su questo browser. Usa Chrome o Edge.');
-                return;
-            }
-
-            if (!isRecording) {
-                startVoiceRecognition();
-                voiceBtn.classList.add('recording');
-                voiceBtn.innerHTML = '🔴';
-                isRecording = true;
-            } else {
-                stopVoiceRecognition();
-                voiceBtn.classList.remove('recording');
-                voiceBtn.innerHTML = '🎤';
-                isRecording = false;
-            }
-        }
-
-        function startVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-
-            recognition.lang = 'it-IT';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('messageInput').value = transcript;
-                toggleVoiceInput(); // Stop recording
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                toggleVoiceInput(); // Stop recording
-            };
-
-            recognition.onend = function() {
-                if (isRecording) {
-                    toggleVoiceInput(); // Ensure UI is reset
-                }
-            };
-
-            recognition.start();
-        }
-
-        function stopVoiceRecognition() {
-            if (recognition) {
-                recognition.stop();
-            }
-        }
-
-        // Accessibility functions
-        function toggleAccessibilityMenu() {
-            const menu = document.getElementById('accessibilityMenu');
-            menu.classList.toggle('show');
-        }
-
-        function toggleHighContrast() {
-            document.body.classList.toggle('high-contrast');
-            saveAccessibilitySetting('high_contrast', document.body.classList.contains('high-contrast'));
-        }
-
-        function toggleLargeText() {
-            document.body.classList.toggle('large-text');
-            saveAccessibilitySetting('large_text', document.body.classList.contains('large-text'));
-        }
-
-        function toggleReduceMotion() {
-            document.body.classList.toggle('reduce-motion');
-            saveAccessibilitySetting('reduce_motion', document.body.classList.contains('reduce-motion'));
-        }
-
-        function toggleFocusIndicators() {
-            document.body.classList.toggle('focus-indicators');
-            saveAccessibilitySetting('focus_indicators', document.body.classList.contains('focus-indicators'));
-        }
-
-        function resetAccessibility() {
-            document.body.className = '';
-            if (isMobile) {
-                document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
-            }
-            ['highContrast', 'largeText', 'reduceMotion', 'focusIndicators'].forEach(id => {
-                document.getElementById(id).checked = false;
-            });
-        }
-
-        function saveAccessibilitySetting(setting, value) {
-            fetch('/api/accessibility-settings', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({[setting]: value})
-            });
-        }
-
-        // Load accessibility settings
-        fetch('/api/accessibility-settings')
-            .then(response => response.json())
-            .then(settings => {
-                if (settings.high_contrast) {
-                    document.body.classList.add('high-contrast');
-                    document.getElementById('highContrast').checked = true;
-                }
-                if (settings.large_text) {
-                    document.body.classList.add('large-text');
-                    document.getElementById('largeText').checked = true;
-                }
-                if (settings.reduce_motion) {
-                    document.body.classList.add('reduce-motion');
-                    document.getElementById('reduceMotion').checked = true;
-                }
-                if (settings.focus_indicators) {
-                    document.body.classList.add('focus-indicators');
-                    document.getElementById('focusIndicators').checked = true;
-                }
-            });
-
-        // Analytics Functions
-        function showAnalytics() {
-            const grid = document.getElementById('analyticsGrid');
-            if (grid.style.display === 'none') {
-                grid.style.display = 'grid';
-                loadAnalyticsData();
-                showCharts();
-            } else {
-                grid.style.display = 'none';
-                document.getElementById('chartsSection').style.display = 'none';
-            }
-        }
-
-        function loadAnalyticsData() {
-            fetch('/api/user-analytics')
-                .then(response => response.json())
-                .then(data => {
-                    const topSearches = document.getElementById('topSearches');
-                    topSearches.innerHTML = data.most_searched_players
-                        .slice(0, 3)
-                        .map(p => `<div>${p.name} (${p.searches})</div>`)
-                        .join('');
-
-                    document.getElementById('cacheHitRate').textContent =
-                        data.performance_metrics.cache_hit_rate + '%';
-                });
-        }
-
-        function showCharts() {
-            document.getElementById('chartsSection').style.display = 'block';
-            loadChart('fantamedia_by_role', 'fantamediaChart');
-            loadChart('price_distribution', 'priceChart');
-            loadChart('value_efficiency', 'efficiencyChart');
-        }
-
-        function loadChart(chartType, canvasId) {
-            fetch(`/api/performance-charts/${chartType}`)
-                .then(response => response.json())
-                .then(data => {
-                    const ctx = document.getElementById(canvasId).getContext('2d');
-                    // Simple chart rendering - in production use Chart.js
-                    drawSimpleChart(ctx, data);
-                });
-        }
-
-        function drawSimpleChart(ctx, data) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ctx.fillStyle = '#00ff88';
-            ctx.font = '14px Arial';
-            ctx.fillText(data.data.datasets[0].label, 10, 20);
-
-            // Simple bar chart
-            if (data.type === 'bar') {
-                const barWidth = 60;
-                const maxValue = Math.max(...data.data.datasets[0].data);
-
-                data.data.labels.forEach((label, i) => {
-                    const value = data.data.datasets[0].data[i];
-                    const height = (value / maxValue) * 150;
-                    const x = i * 80 + 10;
-                    const y = 180 - height;
-
-                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
-                    ctx.fillRect(x, y, barWidth, height);
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText(label, x, 195);
-                    ctx.fillText(value.toString(), x, y - 5);
-                });
-            }
-        }
-
-        // Player Comparison Functions
-        function showPlayerComparison() {
-            const section = document.getElementById('comparisonSection');
-            section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function compareSelectedPlayers() {
-            const player1 = document.getElementById('player1').value;
-            const player2 = document.getElementById('player2').value;
-
-            if (!player1 || !player2) {
-                alert('Inserisci entrambi i nomi dei giocatori');
-                return;
-            }
-
-            fetch('/api/player-comparison', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({players: [player1, player2]})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('comparisonResults').innerHTML =
-                        `<p style="color: #ff6b6b;">${data.error}</p>`;
-                    return;
-                }
-
-                let html = '<table style="width: 100%; border-collapse: collapse;">';
-                html += '<tr><th>Metrica</th>';
-                data.comparison.forEach(player => {
-                    html += `<th>${player.name}</th>`;
-                });
-                html += '</tr>';
-
-                const metrics = ['team', 'role', 'fantamedia', 'price', 'appearances', 'value_ratio'];
-                metrics.forEach(metric => {
-                    html += '<tr>';
-                    html += `<td style="border: 1px solid #333; padding: 8px;">${metric}</td>`;
-                    data.comparison.forEach(player => {
-                        html += `<td style="border: 1px solid #333; padding: 8px;">${player[metric]}</td>`;
-                    });
-                    html += '</tr>';
-                });
-                html += '</table>';
-
-                html += '<div style="margin-top: 1rem;">';
-                html += `<p><strong>Miglior rapporto qualità/prezzo:</strong> ${data.metrics.best_value}</p>`;
-                html += `<p><strong>Fantamedia più alta:</strong> ${data.metrics.highest_fantamedia}</p>`;
-                html += `<p><strong>Più affidabile:</strong> ${data.metrics.most_reliable}</p>`;
-                html += '</div>';
-
-                document.getElementById('comparisonResults').innerHTML = html;
-            });
-        }
-
-        function exportData(format, dataType) {
-            fetch('/api/export-data', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({type: format, data_type: dataType})
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('Errore durante l\'esportazione: ' + data.error);
-                    return;
-                }
-
-                const blob = new Blob([data.data], {type: 'text/csv'});
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = data.filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            });
-        }
-
-        function showCorrectionHelp() {
-            addMessage(`💡 **Come aggiungere correzioni via chat:**
-
-Per correggere informazioni errate, usa questo formato:
-**Correggi: [informazione errata] -> [informazione corretta]**
-
-Esempi:
-• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
-• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
-
-Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
-        }
-
         // Inline Correction Functions
         async function checkForCorrectionSuggestions(response, query, messageElement) {
             try {
@@ -2570,12 +2283,12 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
             const container = button.closest('.inline-correction-container');
             const incorrectInput = container.querySelector('input[name="incorrect"]');
             const correctInput = container.querySelector('input[name="correct"]');
-            
+
             // Clear the inputs for next correction
             incorrectInput.value = '';
             correctInput.value = '';
             incorrectInput.focus();
-            
+
             // Show a brief hint
             const hint = document.createElement('div');
             hint.className = 'correction-status';
@@ -2583,10 +2296,10 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
             hint.style.color = '#0088ff';
             hint.style.marginTop = '10px';
             hint.innerHTML = '🔄 Pronto per la prossima correzione...';
-            
+
             const form = container.querySelector('.correction-form');
             form.appendChild(hint);
-            
+
             // Remove hint after 2 seconds
             setTimeout(() => {
                 if (hint.parentElement) {
@@ -2636,7 +2349,7 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
                     // Clear the form inputs but keep form visible for additional corrections
                     incorrectInput.value = '';
                     correctInput.value = '';
-                    
+
                     // Add success message above the form
                     const form = container.querySelector('.correction-form');
                     if (!container.querySelector('.correction-status.success')) {
@@ -2646,7 +2359,7 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
                     // Keep correction counter
                     let correctionCount = parseInt(container.dataset.correctionCount || '0') + 1;
                     container.dataset.correctionCount = correctionCount;
-                    
+
                     // Update button text to show multiple corrections capability
                     const suggestionButton = container.querySelector('.correction-suggestion button');
                     if (suggestionButton) {
@@ -2714,6 +2427,922 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
 
         // Load recent corrections on page load
         document.addEventListener('DOMContentLoaded', loadRecentCorrections);
+
+        // Analytics Functions
+        function updateAnalyticsDashboard(data) {
+            const topSearches = document.getElementById('topSearches');
+            if (topSearches && data.most_searched_players) {
+                topSearches.innerHTML = data.most_searched_players
+                    .slice(0, 3)
+                    .map(p => `<div>${p.name} (${p.searches})</div>`)
+                    .join('');
+            }
+
+            const cacheHitRate = document.getElementById('cacheHitRate');
+            if (cacheHitRate && data.performance_metrics) {
+                cacheHitRate.textContent = data.performance_metrics.cache_hit_rate + '%';
+            }
+        }
+
+        function loadAnalyticsData() {
+            fetch('/api/user-analytics')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateAnalyticsDashboard(data);
+                })
+                .catch(error => {
+                    console.error('Failed to load analytics:', error);
+                    showNotification('Errore nel caricamento delle analytics', 'error');
+                });
+        }
+
+        function showCharts() {
+            const chartsSection = document.getElementById('chartsSection');
+            if (chartsSection) {
+                chartsSection.style.display = 'block';
+            }
+            loadChartData();
+        }
+
+        function loadChartData() {
+            const chartTypes = ['fantamedia_by_role', 'price_distribution', 'value_efficiency'];
+
+            chartTypes.forEach(chartType => {
+                fetch(`/api/performance-charts/${chartType}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        createChart(chartType, data);
+                    })
+                    .catch(error => {
+                        console.error(`Failed to load chart ${chartType}:`, error);
+                        // Show placeholder message in chart container
+                        const container = document.getElementById(`chart-${chartType}`);
+                        if (container) {
+                            container.innerHTML = `<p>Errore caricamento grafico ${chartType}</p>`;
+                        }
+                    });
+            });
+        }
+
+        // Placeholder for actual chart creation logic (e.g., using Chart.js)
+        function createChart(chartType, data) {
+            // In a real application, you would use a charting library here.
+            // For demonstration, we'll just log the data.
+            console.log(`Rendering chart: ${chartType}`, data);
+
+            // Example of how you might render a simple bar chart:
+            const canvas = document.getElementById(`${chartType.replace('_', '')}Chart`); // e.g., fantamediaChart
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous chart
+
+            // Simple drawing for demonstration
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.fillText(`Chart data for ${chartType}:`, 10, 20);
+
+            if (data && data.data && data.data.labels && data.data.datasets) {
+                const bars = data.data.datasets[0].data;
+                const labels = data.data.labels;
+                const barWidth = canvas.width / (bars.length * 2);
+                const maxValue = Math.max(...bars);
+                const scale = (canvas.height - 40) / maxValue; // Reserve space for labels
+
+                bars.forEach((value, i) => {
+                    const barHeight = value * scale;
+                    const x = i * (barWidth * 2) + barWidth / 2;
+                    const y = canvas.height - 40 - barHeight;
+
+                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
+                    ctx.fillRect(x, y, barWidth, barHeight);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(labels[i], x - (ctx.measureText(labels[i]).width / 2), canvas.height - 20);
+                    ctx.fillText(value.toString(), x - (ctx.measureText(value.toString()).width / 2), y - 5);
+                });
+            } else {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillText('No data available for this chart.', 10, 50);
+            }
+        }
+
+        // Player Comparison Functions (already present, no changes needed based on instructions)
+        function showPlayerComparison() {
+            const section = document.getElementById('comparisonSection');
+            if (section) {
+                section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function compareSelectedPlayers() {
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
+
+            if (!player1 || !player2) {
+                alert('Inserisci entrambi i nomi dei giocatori');
+                return;
+            }
+
+            fetch('/api/player-comparison', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({players: [player1, player2]})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('comparisonResults').innerHTML =
+                        `<p style="color: #ff6b6b;">${data.error}</p>`;
+                    return;
+                }
+
+                let html = '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>Metrica</th>';
+                data.comparison.forEach(player => {
+                    html += `<th>${player.name}</th>`;
+                });
+                html += '</tr>';
+
+                const metrics = ['team', 'role', 'fantamedia', 'price', 'appearances', 'value_ratio'];
+                metrics.forEach(metric => {
+                    html += '<tr>';
+                    html += `<td style="border: 1px solid #333; padding: 8px;">${metric}</td>`;
+                    data.comparison.forEach(player => {
+                        html += `<td style="border: 1px solid #333; padding: 8px;">${player[metric]}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+
+                html += '<div style="margin-top: 1rem;">';
+                html += `<p><strong>Miglior rapporto qualità/prezzo:</strong> ${data.metrics.best_value}</p>`;
+                html += `<p><strong>Fantamedia più alta:</strong> ${data.metrics.highest_fantamedia}</p>`;
+                html += `<p><strong>Più affidabile:</strong> ${data.metrics.most_reliable}</p>`;
+                html += '</div>';
+
+                document.getElementById('comparisonResults').innerHTML = html;
+            });
+        }
+
+        // Export Data Function (already present, no changes needed based on instructions)
+        function exportData(format, dataType) {
+            fetch('/api/export-data', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: format, data_type: dataType})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Errore durante l\'esportazione: ' + data.error);
+                    return;
+                }
+
+                const blob = new Blob([data.data], {type: 'text/csv'});
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = data.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+        }
+
+        // Show Correction Help Function (already present, no changes needed based on instructions)
+        function showCorrectionHelp() {
+            addMessage(`💡 **Come aggiungere correzioni via chat:**
+
+Per correggere informazioni errate, usa questo formato:
+**Correggi: [informazione errata] -> [informazione corretta]**
+
+Esempi:
+• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
+• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
+
+Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
+        }
+
+        // Inline Correction Functions (already present, no changes needed based on instructions)
+        async function checkForCorrectionSuggestions(response, query, messageElement) {
+            try {
+                const result = await fetch('/api/correction-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        response: response,
+                        query: query
+                    })
+                });
+
+                const data = await result.json();
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    addCorrectionSuggestion(messageElement, data.suggestions[0]);
+                }
+            } catch (error) {
+                console.warn('Failed to check correction suggestions:', error);
+            }
+        }
+
+        function addCorrectionSuggestion(messageElement, suggestion) {
+            const correctionContainer = document.createElement('div');
+            correctionContainer.className = 'inline-correction-container';
+            correctionContainer.dataset.correctionCount = '0';
+            correctionContainer.innerHTML = `
+                <div class="correction-suggestion ${document.body.className.includes('dark') ? 'dark' : ''}">
+                    <span>💡</span>
+                    <span>${suggestion.message}</span>
+                    <button class="btn-correction secondary" onclick="showCorrectionForm(this)">
+                        Correggi
+                    </button>
+                </div>
+                <div class="correction-form">
+                    <div style="margin-bottom: 10px; font-size: 12px; color: var(--text-secondary);">
+                        💡 Puoi aggiungere più correzioni per questo messaggio
+                    </div>
+                    <div class="correction-input-group">
+                        <label style="min-width: 80px; font-size: 12px;">Scorretto:</label>
+                        <input type="text" class="correction-input" name="incorrect" placeholder="Testo da correggere...">
+                    </div>
+                    <div class="correction-input-group">
+                        <label style="min-width: 80px; font-size: 12px;">Corretto:</label>
+                        <input type="text" class="correction-input" name="correct" placeholder="Testo corretto...">
+                    </div>
+                    <div class="correction-buttons">
+                        <button class="btn-correction primary" onclick="submitInlineCorrection(this)">
+                            Salva Correzione
+                        </button>
+                        <button class="btn-correction secondary" onclick="hideCorrectionForm(this)">
+                            Chiudi
+                        </button>
+                        <button class="btn-correction secondary" onclick="addAnotherCorrection(this)" style="background: var(--accent-secondary);">
+                            + Altra Correzione
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            messageElement.appendChild(correctionContainer);
+        }
+
+        function showCorrectionForm(button) {
+            const container = button.closest('.inline-correction-container');
+            const form = container.querySelector('.correction-form');
+            form.classList.add('active');
+            button.style.display = 'none';
+        }
+
+        function hideCorrectionForm(button) {
+            const container = button.closest('.inline-correction-container');
+            const form = container.querySelector('.correction-form');
+            const suggestionButton = container.querySelector('.correction-suggestion button');
+
+            form.classList.remove('active');
+            suggestionButton.style.display = 'inline-block';
+        }
+
+        function addAnotherCorrection(button) {
+            const container = button.closest('.inline-correction-container');
+            const incorrectInput = container.querySelector('input[name="incorrect"]');
+            const correctInput = container.querySelector('input[name="correct"]');
+
+            // Clear the inputs for next correction
+            incorrectInput.value = '';
+            correctInput.value = '';
+            incorrectInput.focus();
+
+            // Show a brief hint
+            const hint = document.createElement('div');
+            hint.className = 'correction-status';
+            hint.style.background = 'rgba(0, 136, 255, 0.1)';
+            hint.style.color = '#0088ff';
+            hint.style.marginTop = '10px';
+            hint.innerHTML = '🔄 Pronto per la prossima correzione...';
+
+            const form = container.querySelector('.correction-form');
+            form.appendChild(hint);
+
+            // Remove hint after 2 seconds
+            setTimeout(() => {
+                if (hint.parentElement) {
+                    hint.remove();
+                }
+            }, 2000);
+        }
+
+        async function submitInlineCorrection(button) {
+            const container = button.closest('.inline-correction-container');
+            const incorrectInput = container.querySelector('input[name="incorrect"]');
+            const correctInput = container.querySelector('input[name="correct"]');
+
+            const incorrectText = incorrectInput.value.trim();
+            const correctText = correctInput.value.trim();
+
+            if (!incorrectText || !correctText) {
+                alert('Inserisci sia il testo scorretto che quello corretto');
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                button.textContent = 'Salvando...';
+
+                const response = await fetch('/api/inline-correction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        incorrect: incorrectText,
+                        correct: correctText,
+                        context: 'inline_chat_correction',
+                        type: 'user_correction'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = `correction-status success ${document.body.className.includes('dark') ? 'dark' : ''}`;
+                    statusDiv.innerHTML = '✅ Correzione salvata! La userò per le prossime risposte.';
+
+                    // Clear the form inputs but keep form visible for additional corrections
+                    incorrectInput.value = '';
+                    correctInput.value = '';
+
+                    // Add success message above the form
+                    const form = container.querySelector('.correction-form');
+                    if (!container.querySelector('.correction-status.success')) {
+                        form.parentNode.insertBefore(statusDiv, form);
+                    }
+
+                    // Keep correction counter
+                    let correctionCount = parseInt(container.dataset.correctionCount || '0') + 1;
+                    container.dataset.correctionCount = correctionCount;
+
+                    // Update button text to show multiple corrections capability
+                    const suggestionButton = container.querySelector('.correction-suggestion button');
+                    if (suggestionButton) {
+                        suggestionButton.innerHTML = `Correggi (${correctionCount} applicate)`;
+                    }
+
+                    // Update recent corrections
+                    loadRecentCorrections();
+
+                    // Auto-remove success message after 3 seconds
+                    setTimeout(() => {
+                        if (statusDiv.parentElement) {
+                            statusDiv.remove();
+                        }
+                    }, 3000);
+
+                } else {
+                    alert('Errore nel salvare la correzione: ' + (result.error || 'Errore sconosciuto'));
+                }
+            } catch (error) {
+                console.error('Error submitting correction:', error);
+                alert('Errore di rete. Riprova.');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Salva Correzione';
+            }
+        }
+
+        // Voice input functionality (already present, no changes needed based on instructions)
+        function toggleVoiceInput() {
+            const voiceBtn = document.getElementById('voiceBtn');
+
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Il riconoscimento vocale non è supportato su questo browser. Usa Chrome o Edge.');
+                return;
+            }
+
+            if (!isRecording) {
+                startVoiceRecognition();
+                voiceBtn.classList.add('recording');
+                voiceBtn.innerHTML = '🔴';
+                isRecording = true;
+            } else {
+                stopVoiceRecognition();
+                voiceBtn.classList.remove('recording');
+                voiceBtn.innerHTML = '🎤';
+                isRecording = false;
+            }
+        }
+
+        function startVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+
+            recognition.lang = 'it-IT';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('messageInput').value = transcript;
+                toggleVoiceInput(); // Stop recording
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                toggleVoiceInput(); // Stop recording
+            };
+
+            recognition.onend = function() {
+                if (isRecording) {
+                    toggleVoiceInput(); // Ensure UI is reset
+                }
+            };
+
+            recognition.start();
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+
+        // Accessibility functions (already present, no changes needed based on instructions)
+        function toggleAccessibilityMenu() {
+            const menu = document.getElementById('accessibilityMenu');
+            menu.classList.toggle('show');
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            saveAccessibilitySetting('high_contrast', document.body.classList.contains('high-contrast'));
+        }
+
+        function toggleLargeText() {
+            document.body.classList.toggle('large-text');
+            saveAccessibilitySetting('large_text', document.body.classList.contains('large-text'));
+        }
+
+        function toggleReduceMotion() {
+            document.body.classList.toggle('reduce-motion');
+            saveAccessibilitySetting('reduce_motion', document.body.classList.contains('reduce-motion'));
+        }
+
+        function toggleFocusIndicators() {
+            document.body.classList.toggle('focus-indicators');
+            saveAccessibilitySetting('focus_indicators', document.body.classList.contains('focus-indicators'));
+        }
+
+        function resetAccessibility() {
+            document.body.className = '';
+            if (isMobile) {
+                document.body.classList.add('mobile', 'mobile-optimized', 'touch-optimized');
+            }
+            ['highContrast', 'largeText', 'reduceMotion', 'focusIndicators'].forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+        }
+
+        function saveAccessibilitySetting(setting, value) {
+            fetch('/api/accessibility-settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({[setting]: value})
+            });
+        }
+
+        // Load accessibility settings
+        fetch('/api/accessibility-settings')
+            .then(response => response.json())
+            .then(settings => {
+                if (settings.high_contrast) {
+                    document.body.classList.add('high-contrast');
+                    document.getElementById('highContrast').checked = true;
+                }
+                if (settings.large_text) {
+                    document.body.classList.add('large-text');
+                    document.getElementById('largeText').checked = true;
+                }
+                if (settings.reduce_motion) {
+                    document.body.classList.add('reduce-motion');
+                    document.getElementById('reduceMotion').checked = true;
+                }
+                if (settings.focus_indicators) {
+                    document.body.classList.add('focus-indicators');
+                    document.getElementById('focusIndicators').checked = true;
+                }
+            });
+
+        // Analytics Functions
+        function updateAnalyticsDashboard(data) {
+            const topSearches = document.getElementById('topSearches');
+            if (topSearches && data.most_searched_players) {
+                topSearches.innerHTML = data.most_searched_players
+                    .slice(0, 3)
+                    .map(p => `<div>${p.name} (${p.searches})</div>`)
+                    .join('');
+            }
+
+            const cacheHitRate = document.getElementById('cacheHitRate');
+            if (cacheHitRate && data.performance_metrics) {
+                cacheHitRate.textContent = data.performance_metrics.cache_hit_rate + '%';
+            }
+        }
+
+        function loadAnalyticsData() {
+            fetch('/api/user-analytics')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    updateAnalyticsDashboard(data);
+                })
+                .catch(error => {
+                    console.error('Failed to load analytics:', error);
+                    showNotification('Errore nel caricamento delle analytics', 'error');
+                });
+        }
+
+        function showCharts() {
+            const chartsSection = document.getElementById('chartsSection');
+            if (chartsSection) {
+                chartsSection.style.display = 'block';
+            }
+            loadChartData();
+        }
+
+        function loadChartData() {
+            const chartTypes = ['fantamedia_by_role', 'price_distribution', 'value_efficiency'];
+
+            chartTypes.forEach(chartType => {
+                fetch(`/api/performance-charts/${chartType}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        createChart(chartType, data);
+                    })
+                    .catch(error => {
+                        console.error(`Failed to load chart ${chartType}:`, error);
+                        // Show placeholder message in chart container
+                        const container = document.getElementById(`chart-${chartType}`);
+                        if (container) {
+                            container.innerHTML = `<p>Errore caricamento grafico ${chartType}</p>`;
+                        }
+                    });
+            });
+        }
+
+        // Placeholder for actual chart creation logic (e.g., using Chart.js)
+        function createChart(chartType, data) {
+            // In a real application, you would use a charting library here.
+            // For demonstration, we'll just log the data.
+            console.log(`Rendering chart: ${chartType}`, data);
+
+            // Example of how you might render a simple bar chart:
+            const canvas = document.getElementById(`${chartType.replace('_', '')}Chart`); // e.g., fantamediaChart
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous chart
+
+            // Simple drawing for demonstration
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Arial';
+            ctx.fillText(`Chart data for ${chartType}:`, 10, 20);
+
+            if (data && data.data && data.data.labels && data.data.datasets) {
+                const bars = data.data.datasets[0].data;
+                const labels = data.data.labels;
+                const barWidth = canvas.width / (bars.length * 2);
+                const maxValue = Math.max(...bars);
+                const scale = (canvas.height - 40) / maxValue; // Reserve space for labels
+
+                bars.forEach((value, i) => {
+                    const barHeight = value * scale;
+                    const x = i * (barWidth * 2) + barWidth / 2;
+                    const y = canvas.height - 40 - barHeight;
+
+                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
+                    ctx.fillRect(x, y, barWidth, barHeight);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(labels[i], x - (ctx.measureText(labels[i]).width / 2), canvas.height - 20);
+                    ctx.fillText(value.toString(), x - (ctx.measureText(value.toString()).width / 2), y - 5);
+                });
+            } else {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillText('No data available for this chart.', 10, 50);
+            }
+        }
+
+        // Player Comparison Functions (already present, no changes needed based on instructions)
+        function showPlayerComparison() {
+            const section = document.getElementById('comparisonSection');
+            if (section) {
+                section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        function compareSelectedPlayers() {
+            const player1 = document.getElementById('player1').value;
+            const player2 = document.getElementById('player2').value;
+
+            if (!player1 || !player2) {
+                alert('Inserisci entrambi i nomi dei giocatori');
+                return;
+            }
+
+            fetch('/api/player-comparison', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({players: [player1, player2]})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('comparisonResults').innerHTML =
+                        `<p style="color: #ff6b6b;">${data.error}</p>`;
+                    return;
+                }
+
+                let html = '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr><th>Metrica</th>';
+                data.comparison.forEach(player => {
+                    html += `<th>${player.name}</th>`;
+                });
+                html += '</tr>';
+
+                const metrics = ['team', 'role', 'fantamedia', 'price', 'appearances', 'value_ratio'];
+                metrics.forEach(metric => {
+                    html += '<tr>';
+                    html += `<td style="border: 1px solid #333; padding: 8px;">${metric}</td>`;
+                    data.comparison.forEach(player => {
+                        html += `<td style="border: 1px solid #333; padding: 8px;">${player[metric]}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                html += '</table>';
+
+                html += '<div style="margin-top: 1rem;">';
+                html += `<p><strong>Miglior rapporto qualità/prezzo:</strong> ${data.metrics.best_value}</p>`;
+                html += `<p><strong>Fantamedia più alta:</strong> ${data.metrics.highest_fantamedia}</p>`;
+                html += `<p><strong>Più affidabile:</strong> ${data.metrics.most_reliable}</p>`;
+                html += '</div>';
+
+                document.getElementById('comparisonResults').innerHTML = html;
+            });
+        }
+
+        // Export Data Function (already present, no changes needed based on instructions)
+        function exportData(format, dataType) {
+            fetch('/api/export-data', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: format, data_type: dataType})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Errore durante l\'esportazione: ' + data.error);
+                    return;
+                }
+
+                const blob = new Blob([data.data], {type: 'text/csv'});
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = data.filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            });
+        }
+
+        // Show Correction Help Function (already present, no changes needed based on instructions)
+        function showCorrectionHelp() {
+            addMessage(`💡 **Come aggiungere correzioni via chat:**
+
+Per correggere informazioni errate, usa questo formato:
+**Correggi: [informazione errata] -> [informazione corretta]**
+
+Esempi:
+• Correggi: Belotti gioca ancora alla Torino -> Belotti non gioca più in Serie A
+• Correzione: Vlahovic costa 35 crediti -> Vlahovic costa 42 crediti
+
+Le correzioni verranno salvate automaticamente e applicate alle future risposte! ✅`, false, 'chatContainer');
+        }
+
+        // Inline Correction Functions (already present, no changes needed based on instructions)
+        async function checkForCorrectionSuggestions(response, query, messageElement) {
+            try {
+                const result = await fetch('/api/correction-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        response: response,
+                        query: query
+                    })
+                });
+
+                const data = await result.json();
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    addCorrectionSuggestion(messageElement, data.suggestions[0]);
+                }
+            } catch (error) {
+                console.warn('Failed to check correction suggestions:', error);
+            }
+        }
+
+        function addCorrectionSuggestion(messageElement, suggestion) {
+            const correctionContainer = document.createElement('div');
+            correctionContainer.className = 'inline-correction-container';
+            correctionContainer.dataset.correctionCount = '0';
+            correctionContainer.innerHTML = `
+                <div class="correction-suggestion ${document.body.className.includes('dark') ? 'dark' : ''}">
+                    <span>💡</span>
+                    <span>${suggestion.message}</span>
+                    <button class="btn-correction secondary" onclick="showCorrectionForm(this)">
+                        Correggi
+                    </button>
+                </div>
+                <div class="correction-form">
+                    <div style="margin-bottom: 10px; font-size: 12px; color: var(--text-secondary);">
+                        💡 Puoi aggiungere più correzioni per questo messaggio
+                    </div>
+                    <div class="correction-input-group">
+                        <label style="min-width: 80px; font-size: 12px;">Scorretto:</label>
+                        <input type="text" class="correction-input" name="incorrect" placeholder="Testo da correggere...">
+                    </div>
+                    <div class="correction-input-group">
+                        <label style="min-width: 80px; font-size: 12px;">Corretto:</label>
+                        <input type="text" class="correction-input" name="correct" placeholder="Testo corretto...">
+                    </div>
+                    <div class="correction-buttons">
+                        <button class="btn-correction primary" onclick="submitInlineCorrection(this)">
+                            Salva Correzione
+                        </button>
+                        <button class="btn-correction secondary" onclick="hideCorrectionForm(this)">
+                            Chiudi
+                        </button>
+                        <button class="btn-correction secondary" onclick="addAnotherCorrection(this)" style="background: var(--accent-secondary);">
+                            + Altra Correzione
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            messageElement.appendChild(correctionContainer);
+        }
+
+        function showCorrectionForm(button) {
+            const container = button.closest('.inline-correction-container');
+            const form = container.querySelector('.correction-form');
+            form.classList.add('active');
+            button.style.display = 'none';
+        }
+
+        function hideCorrectionForm(button) {
+            const container = button.closest('.inline-correction-container');
+            const form = container.querySelector('.correction-form');
+            const suggestionButton = container.querySelector('.correction-suggestion button');
+
+            form.classList.remove('active');
+            suggestionButton.style.display = 'inline-block';
+        }
+
+        function addAnotherCorrection(button) {
+            const container = button.closest('.inline-correction-container');
+            const incorrectInput = container.querySelector('input[name="incorrect"]');
+            const correctInput = container.querySelector('input[name="correct"]');
+
+            // Clear the inputs for next correction
+            incorrectInput.value = '';
+            correctInput.value = '';
+            incorrectInput.focus();
+
+            // Show a brief hint
+            const hint = document.createElement('div');
+            hint.className = 'correction-status';
+            hint.style.background = 'rgba(0, 136, 255, 0.1)';
+            hint.style.color = '#0088ff';
+            hint.style.marginTop = '10px';
+            hint.innerHTML = '🔄 Pronto per la prossima correzione...';
+
+            const form = container.querySelector('.correction-form');
+            form.appendChild(hint);
+
+            // Remove hint after 2 seconds
+            setTimeout(() => {
+                if (hint.parentElement) {
+                    hint.remove();
+                }
+            }, 2000);
+        }
+
+        async function submitInlineCorrection(button) {
+            const container = button.closest('.inline-correction-container');
+            const incorrectInput = container.querySelector('input[name="incorrect"]');
+            const correctInput = container.querySelector('input[name="correct"]');
+
+            const incorrectText = incorrectInput.value.trim();
+            const correctText = correctInput.value.trim();
+
+            if (!incorrectText || !correctText) {
+                alert('Inserisci sia il testo scorretto che quello corretto');
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                button.textContent = 'Salvando...';
+
+                const response = await fetch('/api/inline-correction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        incorrect: incorrectText,
+                        correct: correctText,
+                        context: 'inline_chat_correction',
+                        type: 'user_correction'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    const statusDiv = document.createElement('div');
+                    statusDiv.className = `correction-status success ${document.body.className.includes('dark') ? 'dark' : ''}`;
+                    statusDiv.innerHTML = '✅ Correzione salvata! La userò per le prossime risposte.';
+
+                    // Clear the form inputs but keep form visible for additional corrections
+                    incorrectInput.value = '';
+                    correctInput.value = '';
+
+                    // Add success message above the form
+                    const form = container.querySelector('.correction-form');
+                    if (!container.querySelector('.correction-status.success')) {
+                        form.parentNode.insertBefore(statusDiv, form);
+                    }
+
+                    // Keep correction counter
+                    let correctionCount = parseInt(container.dataset.correctionCount || '0') + 1;
+                    container.dataset.correctionCount = correctionCount;
+
+                    // Update button text to show multiple corrections capability
+                    const suggestionButton = container.querySelector('.correction-suggestion button');
+                    if (suggestionButton) {
+                        suggestionButton.innerHTML = `Correggi (${correctionCount} applicate)`;
+                    }
+
+                    // Update recent corrections
+                    loadRecentCorrections();
+
+                    // Auto-remove success message after 3 seconds
+                    setTimeout(() => {
+                        if (statusDiv.parentElement) {
+                            statusDiv.remove();
+                        }
+                    }, 3000);
+
+                } else {
+                    alert('Errore nel salvare la correzione: ' + (result.error || 'Errore sconosciuto'));
+                }
+            } catch (error) {
+                console.error('Error submitting correction:', error);
+                alert('Errore di rete. Riprova.');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Salva Correzione';
+            }
+        }
     </script>
 </body>
 </html>
