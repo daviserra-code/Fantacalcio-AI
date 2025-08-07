@@ -1765,10 +1765,238 @@
             }
         });
 
+        // Core chat functionality
+        async function sendMessage(mode) {
+            const inputId = mode === 'classic' ? 'messageInput' : 
+                          mode === 'mantra' ? 'messageInputMantra' :
+                          mode === 'draft' ? 'messageInputDraft' : 'messageInputSuper';
+            const containerId = mode === 'classic' ? 'chatContainer' : 
+                              mode === 'mantra' ? 'chatContainerMantra' :
+                              mode === 'draft' ? 'chatContainerDraft' : 'chatContainerSuper';
+            
+            const messageInput = document.getElementById(inputId);
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true, containerId);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: {
+                            mode: mode,
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                hideTypingIndicator();
+
+                if (response.ok) {
+                    addMessage(data.response, false, containerId);
+                    updateStatus('online');
+                } else {
+                    addMessage('❌ ' + (data.error || 'Errore del server'), false, containerId);
+                    showNotification('Errore nella risposta', 'error');
+                }
+
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Chat request failed:', error);
+                addMessage('❌ Errore di connessione. Riprova.', false, containerId);
+                showNotification('Errore di connessione', 'error');
+                updateStatus('offline');
+                return; // Exit early to prevent further errors
+            }
+        }
+
+        function addMessage(text, isUser, containerId) {
+            const container = document.getElementById(containerId);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = isUser ? 'message user-message' : 'message assistant-message';
+            
+            if (isUser) {
+                messageDiv.textContent = text;
+            } else {
+                // Support markdown-like formatting
+                const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                        .replace(/\n/g, '<br>');
+                messageDiv.innerHTML = formattedText;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'flex';
+            }
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.style.display = 'none';
+            }
+        }
+
+        function updateStatus(status) {
+            const statusElements = document.querySelectorAll('.status-indicator');
+            statusElements.forEach(element => {
+                element.className = 'status-indicator ' + status;
+                if (status === 'online') {
+                    element.textContent = 'Online';
+                } else if (status === 'offline') {
+                    element.textContent = 'Offline';
+                } else {
+                    element.textContent = 'Assistente Offline';
+                }
+            });
+        }
+
+        // Quick action functions
+        async function askQuickQuestion(question) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = question;
+            await sendMessage('classic');
+        }
+
+        async function showFixtures() {
+            try {
+                addMessage('📅 Caricando le partite di questa giornata...', true, 'chatContainer');
+                showTypingIndicator();
+
+                const response = await fetch('/api/fixtures');
+                const data = await response.json();
+
+                hideTypingIndicator();
+
+                if (data.gameweek_recommendations) {
+                    let fixtureText = '📅 **PARTITE E CONSIGLI GIORNATA**\n\n';
+                    data.gameweek_recommendations.forEach(rec => {
+                        fixtureText += `${rec}\n`;
+                    });
+                    addMessage(fixtureText, false, 'chatContainer');
+                } else {
+                    addMessage('📅 Dati partite temporaneamente non disponibili', false, 'chatContainer');
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('❌ Errore nel caricamento delle partite', false, 'chatContainer');
+                showNotification('Errore nel caricamento', 'error');
+            }
+        }
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => tab.style.display = 'none');
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked button
+            const selectedButton = document.querySelector(`[onclick*="${tabName}"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show classic tab by default
+            switchTab('classic');
+            
+            // Add enter key listeners to all input fields
+            const inputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
+            inputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            const mode = inputId.includes('Mantra') ? 'mantra' :
+                                        inputId.includes('Draft') ? 'draft' :
+                                        inputId.includes('Super') ? 'superscudetto' : 'classic';
+                            sendMessage(mode);
+                        }
+                    });
+                }
+            });
+            
+            // Initial status check
+            updateStatus('online');
+        });
+
         function showNotification(message, type = 'info') {
             const notificationArea = document.getElementById('notificationArea');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notificationArea.appendChild(notification);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // Reset chat functionality
+        async function resetChat() {
+            try {
+                const response = await fetch('/api/reset-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Clear all chat containers
+                    const containers = ['chatContainer', 'chatContainerMantra', 'chatContainerDraft', 'chatContainerSuper'];
+                    containers.forEach(containerId => {
+                        const container = document.getElementById(containerId);
+                        if (container) {
+                            container.innerHTML = '<div class="message assistant-message">👋 Ciao! Sono il tuo assistente fantacalcio professionale. Come posso aiutarti oggi?</div>';
+                        }
+                    });
+                    
+                    showNotification('Chat resettata!', 'success');
+                } else {
+                    showNotification('Errore nel reset', 'error');
+                }
+            } catch (error) {
+                showNotification('Errore di connessione', 'error');
+            }
+        }
+    </script>cation.className = `notification ${type}`;
             notification.innerHTML = `
                 <div>${message}</div>
                 <button onclick="this.parentElement.remove()" style="position: absolute; top: 5px; right: 8px; border: none; background: none; cursor: pointer;">×</button>
