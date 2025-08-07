@@ -16,17 +16,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize FantacalcioAssistant at startup
-try:
-    from main import FantacalcioAssistant
-    logger.info("FantacalcioAssistant imported successfully")
-    # Initialize assistant immediately
-    assistant = FantacalcioAssistant()
-    logger.info("FantacalcioAssistant initialized successfully at startup")
-except Exception as e:
-    logger.warning(f"Failed to import/initialize FantacalcioAssistant: {e}")
-    FantacalcioAssistant = None
-    assistant = None
+# Lazy loading globals
+FantacalcioAssistant = None
+assistant_instance = None
+
+def get_assistant():
+    """Lazy load and return the FantacalcioAssistant instance."""
+    global FantacalcioAssistant, assistant_instance
+
+    if assistant_instance is None:
+        try:
+            logger.info("Lazy loading FantacalcioAssistant...")
+            from main import FantacalcioAssistant
+            assistant_instance = FantacalcioAssistant()
+            logger.info("FantacalcioAssistant initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize FantacalcioAssistant: {e}")
+            assistant_instance = False  # Mark as failed to avoid repeated attempts
+
+    return assistant_instance if assistant_instance is not False else None
 
 # Add missing sample data for the application to work
 class Player:
@@ -170,11 +178,11 @@ def health():
 @app.route('/metrics')
 def metrics():
     """Basic metrics endpoint for monitoring"""
-    cache_stats = assistant.get_cache_stats() if assistant else {}
+    cache_stats = get_assistant().get_cache_stats() if get_assistant() else {}
 
     return {
         'uptime': 'running',
-        'assistant_status': 'available' if assistant else 'not_initialized',
+        'assistant_status': 'available' if get_assistant() else 'not_initialized',
         'search_cache_entries': len(search_cache),
         'sample_players_count': len(SAMPLE_PLAYERS),
         'assistant_cache_stats': cache_stats
@@ -208,6 +216,7 @@ def chat():
     try:
         request_start = datetime.now()
 
+        assistant = get_assistant()
         if not assistant:
             return jsonify({'error': 'Assistant not available'}), 503
 
@@ -256,7 +265,8 @@ def chat():
 
 @app.route('/api/reset-chat', methods=['POST'])
 def reset_chat():
-    global assistant
+    global assistant_instance
+    assistant = get_assistant()
     if assistant is None:
         return jsonify({'message': 'Assistant not available, but chat is reset'})
     message = assistant.reset_conversation()
@@ -413,7 +423,7 @@ if __name__ == '__main__':
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
-        logger.info(f"Assistant available: {assistant is not None}")
+        logger.info(f"Assistant available: {get_assistant() is not None}")
         logger.info(f"Health check: http://0.0.0.0:{port}/health")
         logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
 
