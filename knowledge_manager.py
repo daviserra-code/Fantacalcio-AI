@@ -121,13 +121,19 @@ class KnowledgeManager:
     
     def get_context_for_query(self, query: str, max_context_length: int = 1000) -> str:
         """Get relevant context for a query, formatted for LLM input"""
-        results = self.search_knowledge(query, n_results=5)
+        results = self.search_knowledge(query, n_results=8)
         
-        # Filter results by relevance score (only high-quality matches)
-        high_quality_results = [r for r in results if r['relevance_score'] > 0.7]
+        # Use more flexible relevance thresholds - accept more results
+        high_quality_results = [r for r in results if r['relevance_score'] > 0.5]
+        medium_quality_results = [r for r in results if 0.3 < r['relevance_score'] <= 0.5]
         
-        if not high_quality_results:
-            return ""
+        # If no high quality, try medium quality results
+        if not high_quality_results and medium_quality_results:
+            high_quality_results = medium_quality_results[:3]
+        
+        # If still no results, take top 2 regardless of score for general context
+        if not high_quality_results and results:
+            high_quality_results = results[:2]
         
         context_parts = []
         current_length = 0

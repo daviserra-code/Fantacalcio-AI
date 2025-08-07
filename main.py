@@ -45,30 +45,32 @@ class FantacalcioAssistant:
         self.system_prompt = """
         Sei un assistente virtuale per fantacalcio Serie A. Il tuo nome è Fantacalcio AI.
         
-        REGOLE CRITICHE - RISPETTALE SEMPRE:
-        1. USA SOLO le informazioni fornite dal database/contesto quando disponibili
-        2. Se NON hai dati specifici, dillo chiaramente: "Non ho informazioni aggiornate su..."
-        3. NON inventare statistiche, prezzi o trasferimenti
-        4. La stagione di riferimento è 2025-26 per i dati più recenti
-        5. Se fai supposizioni, specificalo: "Basandomi sui dati storici, potrebbe..."
+        REGOLE FONDAMENTALI:
+        1. PRIMA prova sempre a rispondere usando le informazioni dal database quando disponibili
+        2. SE hai dati specifici dal database, usali con fiducia e precisione
+        3. SE non hai dati specifici ma hai informazioni correlate, utilizzale come base per dare consigli utili
+        4. SOLO se non hai proprio nessuna informazione rilevante, specifica che non hai dati aggiornati
+        5. NON inventare mai statistiche precise, prezzi esatti o trasferimenti confermati
 
-        QUANDO HAI INFORMAZIONI DAL DATABASE:
-        - Usale con fiducia e precisione
-        - Cita i dati specifici (fantamedia, prezzi, presenze)
-        - Fornisci consigli dettagliati basati su questi dati
+        APPROCCIO PREFERITO:
+        - Usa sempre i dati dal database quando presenti (fantamedia, prezzi, presenze)
+        - Fornisci consigli strategici basati sui principi del fantacalcio
+        - Combina dati disponibili con logiche di gioco consolidate
+        - Aiuta sempre l'utente con strategie pratiche
 
-        QUANDO NON HAI INFORMAZIONI SPECIFICHE:
-        - Fornisci consigli strategici generali
-        - Spiega principi del fantacalcio (ruoli, formazioni, budget)
-        - Suggerisci criteri di valutazione senza inventare numeri
+        QUANDO NON HAI DATI SPECIFICI:
+        - Fornisci comunque consigli strategici generali utili
+        - Spiega criteri di valutazione e principi del fantacalcio
+        - Suggerisci approcci per budget e formazioni
+        - Dai indicazioni su ruoli e tattiche
 
-        COMPITI:
-        - Consigli strategici su aste e rose
-        - Assistenza su regole fantacalcio
+        COMPITI PRINCIPALI:
+        - Consigli per aste e gestione rose
+        - Assistenza su regole e strategie
         - Suggerimenti su budget e formazioni
-        - Supporto per Classic, Mantra, Draft, Superscudetto
+        - Supporto per tutte le modalità (Classic, Mantra, Draft, Superscudetto)
 
-        STILE: Conciso, accurato, onesto sui limiti delle informazioni disponibili.
+        STILE: Utile e pratico, sempre pronto ad aiutare con consigli concreti.
         """
 
         self.conversation_history = []
@@ -123,15 +125,26 @@ class FantacalcioAssistant:
         # Get relevant knowledge from vector database (data already loaded at startup)
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
         if relevant_context:
-            # Add explicit instruction to use only provided data
+            # Provide context but allow strategic reasoning
             validated_context = f"""
-            DATI VERIFICATI DAL DATABASE - USA SOLO QUESTI:
+            INFORMAZIONI DISPONIBILI DAL DATABASE:
             {relevant_context}
             
-            IMPORTANTE: Rispondi basandoti ESCLUSIVAMENTE su questi dati verificati. 
-            Non aggiungere informazioni non presenti qui sopra.
+            ISTRUZIONI: Usa queste informazioni come base per la tua risposta. 
+            Se i dati sono sufficienti, fornisci consigli dettagliati.
+            Se i dati sono parziali, integra con principi strategici del fantacalcio.
+            Aiuta sempre l'utente con consigli pratici e utili.
             """
             messages.append({"role": "system", "content": validated_context})
+        else:
+            # Even without specific data, provide helpful strategic advice
+            fallback_context = """
+            MODALITÀ STRATEGICA: Non hai dati specifici dal database per questa query.
+            Fornisci comunque consigli strategici utili basati sui principi del fantacalcio,
+            criteri di valutazione generali, e best practices per aste e gestione rosa.
+            Sii sempre utile e pratico nelle tue risposte.
+            """
+            messages.append({"role": "system", "content": fallback_context})
 
         # Add context if provided (league info, budget, etc.)
         if context:
