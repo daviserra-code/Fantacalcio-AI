@@ -44,7 +44,7 @@ class League:
         self.participants = participants
         self.budget = budget
         self.rules = self._get_rules()
-    
+
     def _get_rules(self):
         rules = {
             'Classic': ['1 Portiere', '3 Difensori', '4 Centrocampisti', '3 Attaccanti'],
@@ -254,13 +254,23 @@ def chat():
         logger.error(f"Chat endpoint error: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred. Please try again.'}), 500
 
-@app.route('/api/reset', methods=['POST'])
+@app.route('/api/reset-chat', methods=['POST'])
 def reset_chat():
     global assistant
     if assistant is None:
-        return jsonify({'message': 'Chat already reset'})
+        return jsonify({'message': 'Assistant not available, but chat is reset'})
     message = assistant.reset_conversation()
     return jsonify({'message': message})
+
+@app.route('/api/accessibility-settings', methods=['GET'])
+def get_accessibility_settings():
+    """Get accessibility settings for the UI"""
+    return jsonify({
+        'high_contrast': False,
+        'large_text': False,
+        'reduced_motion': False,
+        'screen_reader': False
+    })
 
 @app.route('/api/search', methods=['POST'])
 def search_players():

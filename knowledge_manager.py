@@ -223,7 +223,8 @@ class KnowledgeManager:
             print(f"   Result {i+1}:")
             print(f"     Cosine Similarity: {similarity:.4f}")
             print(f"     Distance: {distance:.4f}")
-            print(f"     Text: '{result['text'][:60]}...'")
+            text_preview = result['text'][:60]
+            print(f"     Text: '{text_preview}...'")
 
             # Check if similarity makes sense (should be between -1 and 1)
             if -1 <= similarity <= 1:
