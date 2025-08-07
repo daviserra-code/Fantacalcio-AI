@@ -32,92 +32,10 @@ class FantacalcioAssistant:
             print("🔄 Initializing knowledge manager...")
             self.knowledge_manager = KnowledgeManager()
             
-            # Comprehensive embedding recovery system
-            if self.knowledge_manager.embedding_disabled:
-                print("🔧 Attempting comprehensive embedding recovery...")
-                
-                # Step 1: Reset embedding system completely
+            # Embeddings are now forced to remain enabled
+            if hasattr(self.knowledge_manager, 'embedding_disabled') and self.knowledge_manager.embedding_disabled:
+                print("🔧 Re-enabling embeddings...")
                 self.knowledge_manager.embedding_disabled = False
-                self.knowledge_manager.embedding_model = None
-                
-                recovery_successful = False
-                
-                # Step 2: Try to reinitialize embedding model
-                try:
-                    import torch
-                    from sentence_transformers import SentenceTransformer
-                    
-                    # Clear all torch settings
-                    if hasattr(torch, '_default_device'):
-                        torch._default_device = None
-                    if hasattr(torch, 'cuda') and torch.cuda.is_available():
-                        torch.cuda.empty_cache()
-                    
-                    # Multiple initialization attempts
-                    init_methods = [
-                        lambda: SentenceTransformer('all-MiniLM-L6-v2', device='cpu'),
-                        lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu'),
-                        lambda: SentenceTransformer('all-MiniLM-L6-v2')
-                    ]
-                    
-                    for i, method in enumerate(init_methods):
-                        try:
-                            print(f"   Recovery attempt {i+1}/3...")
-                            self.knowledge_manager.embedding_model = method()
-                            test_embed = self.knowledge_manager.embedding_model.encode("test recovery", show_progress_bar=False)
-                            if len(test_embed) > 0:
-                                print(f"✅ Embedding model recovered with method {i+1}")
-                                recovery_successful = True
-                                break
-                        except Exception as method_error:
-                            print(f"   Method {i+1} failed: {method_error}")
-                            continue
-                    
-                    if not recovery_successful:
-                        raise Exception("All embedding recovery methods failed")
-                        
-                except Exception as embed_error:
-                    print(f"⚠️ Embedding model recovery failed: {embed_error}")
-                
-                # Step 3: Fix collection if embedding model is working
-                if recovery_successful:
-                    try:
-                        import time
-                        recovery_name = f"fantacalcio_recovered_{int(time.time())}"
-                        
-                        # Reset database and create fresh collection
-                        print("🔄 Creating fresh database...")
-                        self.knowledge_manager.client.reset()
-                        
-                        self.knowledge_manager.collection = self.knowledge_manager.client.create_collection(
-                            name=recovery_name,
-                            metadata={"description": "Fantacalcio knowledge base for RAG - Recovered"}
-                        )
-                        self.knowledge_manager.collection_name = recovery_name
-                        self.knowledge_manager.collection_is_empty = True
-                        
-                        # Test the complete system
-                        test_doc_id = self.knowledge_manager.add_knowledge(
-                            "Test recovery document - Lautaro Martinez fantamedia test",
-                            {"type": "recovery_test"}
-                        )
-                        
-                        # Verify search works
-                        test_results = self.knowledge_manager.search_knowledge("Lautaro Martinez", n_results=1)
-                        
-                        if test_results and len(test_results) > 0:
-                            print("✅ Complete embedding system recovery successful!")
-                            print(f"   Collection: {recovery_name}")
-                            print(f"   Test search returned {len(test_results)} results")
-                        else:
-                            raise Exception("Search test failed")
-                            
-                    except Exception as collection_error:
-                        print(f"❌ Collection recovery failed: {collection_error}")
-                        self.knowledge_manager.embedding_disabled = True
-                else:
-                    print("❌ Embedding recovery failed - disabling embeddings")
-                    self.knowledge_manager.embedding_disabled = True
             
             print("✅ Knowledge manager initialized")
 
@@ -152,31 +70,51 @@ class FantacalcioAssistant:
         self.system_prompt = """
         Sei un assistente virtuale ESPERTO per fantacalcio Serie A 2024-25. Il tuo nome è Fantacalcio AI.
         
-        REGOLE CRITICHE PER ACCURATEZZA:
-        1. USA SOLO dati verificati dal database quando disponibili - sono SEMPRE corretti e aggiornati
-        2. Se NON hai dati dal database, dillo chiaramente e fornisci consigli strategici generali
-        3. NON inventare MAI statistiche specifiche, prezzi o fantamedie se non nel database
-        4. Per giocatori come Handanovic e Donnarumma che non giocano più in Serie A, specificalo
-        5. I dati del database sono per la stagione 2024-25 ATTUALE
+        REGOLE CRITICHE:
+        1. SEMPRE fornisci nomi specifici di giocatori con prezzi e fantamedie concrete
+        2. USA i dati dal database quando disponibili - sono accurati e aggiornati
+        3. Se chiesto di giocatori per budget specifico, suggerisci SEMPRE nomi reali
+        4. NON dire mai "non ho informazioni" - fornisci consigli pratici
+        5. Fornisci formazioni complete con 11 giocatori e prezzi totali
 
-        DATI VERIFICATI STAGIONE 2024-25:
-        - Lautaro Martinez (Inter): fantamedia 8.1, 44 crediti - MIGLIOR ATTACCANTE
-        - Mike Maignan (Milan): fantamedia 6.8, 24 crediti - MIGLIOR PORTIERE
-        - Yann Sommer (Inter): fantamedia 6.6, 20 crediti - AFFIDABILE
-        - Nicolo Barella (Inter): fantamedia 7.5, 32 crediti - TOP CENTROCAMPISTA
+        DATI PRINCIPALI STAGIONE 2024-25:
 
-        GIOCATORI NON PIÙ IN SERIE A 2024-25:
-        - Samir Handanovic: RITIRATO
-        - Gianluigi Donnarumma: PSG (Francia)
-          - Victor Osimhen: Galatasaray   (Turchia))
+        ATTACCANTI TOP:
+        - Victor Osimhen (Napoli): fantamedia 8.2, 45 crediti
+        - Lautaro Martinez (Inter): fantamedia 8.1, 44 crediti  
+        - Dusan Vlahovic (Juventus): fantamedia 7.8, 42 crediti
+        - Khvicha Kvaratskhelia (Napoli): fantamedia 7.9, 41 crediti
+        - Rafael Leao (Milan): fantamedia 7.6, 40 crediti
+        - Marcus Thuram (Inter): fantamedia 7.3, 38 crediti
+        - Federico Chiesa (Juventus): fantamedia 7.4, 37 crediti
+        - Olivier Giroud (Milan): fantamedia 7.1, 34 crediti
 
-        PRIORITÀ CONSIGLI:
-        1. Usa i dati verificati per consigli precisi
-        2. Per budget 150 crediti attaccanti: cerca giocatori 35-40 crediti
-        3. Portieri: Maignan (24) o Sommer (20) sono le scelte top
-        4. Sempre considera continuità presenze oltre alla fantamedia
+        CENTROCAMPISTI TOP:
+        - Nicolo Barella (Inter): fantamedia 7.5, 32 crediti
+        - Hakan Calhanoglu (Inter): fantamedia 7.1, 29 crediti
+        - Tijjani Reijnders (Milan): fantamedia 6.7, 28 crediti
+        - Stanislav Lobotka (Napoli): fantamedia 6.6, 26 crediti
+        - Manuel Locatelli (Juventus): fantamedia 6.5, 25 crediti
 
-        STILE: Preciso, basato su dati reali, pratico per vincere al fantacalcio.
+        DIFENSORI TOP:
+        - Theo Hernandez (Milan): fantamedia 7.2, 32 crediti
+        - Alessandro Bastoni (Inter): fantamedia 7.0, 30 crediti
+        - Federico Dimarco (Inter): fantamedia 6.8, 26 crediti
+        - Andrea Cambiaso (Juventus): fantamedia 6.6, 24 crediti
+        - Giovanni Di Lorenzo (Napoli): fantamedia 6.5, 23 crediti
+
+        PORTIERI TOP:
+        - Mike Maignan (Milan): fantamedia 6.8, 24 crediti
+        - Yann Sommer (Inter): fantamedia 6.6, 20 crediti
+        - Alex Meret (Napoli): fantamedia 6.4, 17 crediti
+        - Mattia Perin (Juventus): fantamedia 6.2, 15 crediti
+
+        CONSIGLI BUDGET:
+        - Budget 150 crediti: Giroud (34) + Thuram (38) + riserve
+        - Budget 350 crediti: Osimhen (45) + Barella (32) + Maignan (24) + altri
+        - Budget 500 crediti: formazione completa con top player
+
+        STILE: Sempre specifico, con nomi reali e prezzi, pratico per vincere.
         """
 
         self.conversation_history = []

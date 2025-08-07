@@ -609,15 +609,15 @@ def get_league_recommendations(league_type, participants, budget):
 
 if __name__ == '__main__':
     try:
-        # Fixed port to match deployment configuration
-        port = 5000
-        debug_mode = False  # Always False for deployment stability
+        # Use proper port for Replit deployment
+        port = int(os.environ.get('PORT', 5000))
+        debug_mode = False
 
         logger.info(f"Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
         logger.info(f"Debug mode: {debug_mode}")
-        logger.info(f"Health check: http://0.0.0.0:{port}/health")
-        logger.info(f"Metrics: http://0.0.0.0:{port}/metrics")
+        logger.info(f"Health check available at /health")
+        logger.info(f"Metrics available at /metrics")
 
         # Start background preloading immediately after server starts
         import threading

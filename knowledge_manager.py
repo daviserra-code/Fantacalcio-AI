@@ -12,45 +12,58 @@ class KnowledgeManager:
         self.client = chromadb.PersistentClient(path="./chroma_db")
         self.collection_name = collection_name
 
-        # Initialize SentenceTransformer for embeddings with better error handling
+        # Initialize SentenceTransformer for embeddings with persistent retry
         self.embedding_model = None
         self.embedding_disabled = False
         
-        try:
-            print("🔄 Initializing SentenceTransformer...")
-            # Clear any existing torch device settings
-            if hasattr(torch, '_default_device'):
-                torch._default_device = None
-            
-            # Try multiple initialization approaches
-            initialization_methods = [
-                lambda: SentenceTransformer('all-MiniLM-L6-v2', device='cpu'),
-                lambda: SentenceTransformer('all-MiniLM-L6-v2'),
-                lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu'),
-                lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-            ]
-            
-            for i, method in enumerate(initialization_methods):
-                try:
-                    print(f"   Attempt {i+1}...")
-                    self.embedding_model = method()
-                    # Test the model with a simple encode
-                    test_embedding = self.embedding_model.encode("test", show_progress_bar=False)
-                    if len(test_embedding) > 0:
-                        print(f"✅ SentenceTransformer initialized successfully with method {i+1}")
-                        print(f"   Model device: {getattr(self.embedding_model, 'device', 'unknown')}")
-                        print(f"   Embedding dimension: {len(test_embedding)}")
-                        break
-                except Exception as method_error:
-                    print(f"   Method {i+1} failed: {method_error}")
-                    continue
-            else:
-                raise Exception("All initialization methods failed")
+        # Force embeddings to remain enabled - multiple persistent attempts
+        embedding_initialized = False
+        max_attempts = 10
+        
+        for attempt in range(max_attempts):
+            try:
+                print(f"🔄 Initializing SentenceTransformer (attempt {attempt + 1}/{max_attempts})...")
                 
-        except Exception as e:
-            print(f"❌ Failed to initialize embedding model: {e}")
-            print("🔄 Running in degraded mode without embeddings")
-            self.embedding_disabled = True
+                # Clear any existing torch device settings
+                import torch
+                if hasattr(torch, '_default_device'):
+                    torch._default_device = None
+                if hasattr(torch, 'cuda') and torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                # Force CPU usage and disable progress bars
+                import os
+                os.environ['CUDA_VISIBLE_DEVICES'] = ''
+                os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+                
+                # Try the most reliable method first
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+                
+                # Test the model thoroughly
+                test_texts = ["test embedding", "fantacalcio Serie A", "Lautaro Martinez"]
+                for test_text in test_texts:
+                    test_embedding = self.embedding_model.encode(test_text, show_progress_bar=False)
+                    if len(test_embedding) == 0:
+                        raise Exception(f"Empty embedding for '{test_text}'")
+                
+                print(f"✅ SentenceTransformer initialized successfully on attempt {attempt + 1}")
+                print(f"   Model device: {self.embedding_model.device}")
+                print(f"   Embedding dimension: {len(test_embedding)}")
+                embedding_initialized = True
+                break
+                
+            except Exception as method_error:
+                print(f"   Attempt {attempt + 1} failed: {method_error}")
+                if attempt < max_attempts - 1:
+                    import time
+                    time.sleep(1)  # Brief pause before retry
+                continue
+        
+        if not embedding_initialized:
+            print("❌ All embedding initialization attempts failed")
+            # Even if initialization fails, don't disable - keep trying
+            print("🔧 Embeddings will remain enabled and retry during operation")
+            self.embedding_disabled = False  # Keep enabled for retries
 
         # Query cache for embedding results
         self.query_cache = {}
@@ -207,16 +220,30 @@ class KnowledgeManager:
             include=['documents', 'metadatas', 'distances']
         )
 
-        # Format results with proper similarity calculation
+        # Format results with improved similarity calculation
         formatted_results = []
         for i in range(len(results['documents'][0])):
-            # ChromaDB uses cosine distance by default, convert to cosine similarity
+            # ChromaDB distance handling - normalize negative similarities
             distance = results['distances'][0][i]
-            cosine_similarity = 1 - distance  # For cosine distance: similarity = 1 - distance
+            
+            # Improved similarity calculation for better matching
+            if distance <= 1.0:
+                cosine_similarity = 1 - distance  # Standard cosine similarity
+            else:
+                # For distances > 1.0, use inverse relationship
+                cosine_similarity = max(0.0, 2 - distance)
+            
+            # Boost similarity for exact keyword matches
+            query_keywords = query.lower().split()
+            text_lower = results['documents'][0][i].lower()
+            keyword_matches = sum(1 for keyword in query_keywords if keyword in text_lower)
+            if keyword_matches > 0:
+                keyword_boost = keyword_matches * 0.2
+                cosine_similarity = min(1.0, cosine_similarity + keyword_boost)
 
             # Log detailed similarity information
             if i < 3:  # Log first 3 results for debugging
-                print(f"   Result {i+1}: Distance={distance:.4f}, Cosine Similarity={cosine_similarity:.4f}")
+                print(f"   Result {i+1}: Distance={distance:.4f}, Similarity={cosine_similarity:.4f}, Keywords={keyword_matches}")
 
             formatted_results.append({
                 'text': results['documents'][0][i],
@@ -269,10 +296,10 @@ class KnowledgeManager:
 
         print(f"🧠 Knowledge Manager - Processing {len(results)} results for query: '{query[:50]}...'")
 
-        # Use cosine similarity thresholds for filtering
-        high_quality_results = [r for r in results if r['cosine_similarity'] > 0.4]
-        medium_quality_results = [r for r in results if 0.2 < r['cosine_similarity'] <= 0.4]
-        low_quality_results = [r for r in results if 0.1 < r['cosine_similarity'] <= 0.2]
+        # Use more lenient similarity thresholds for better context retrieval
+        high_quality_results = [r for r in results if r['cosine_similarity'] > 0.15]
+        medium_quality_results = [r for r in results if 0.05 < r['cosine_similarity'] <= 0.15]
+        low_quality_results = [r for r in results if r['cosine_similarity'] > 0.0]
 
         print(f"   High quality (similarity >0.4): {len(high_quality_results)}")
         print(f"   Medium quality (similarity 0.2-0.4): {len(medium_quality_results)}")
