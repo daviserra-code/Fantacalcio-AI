@@ -123,18 +123,30 @@ class KnowledgeManager:
         """Get relevant context for a query, formatted for LLM input"""
         results = self.search_knowledge(query, n_results=5)
         
+        # Filter results by relevance score (only high-quality matches)
+        high_quality_results = [r for r in results if r['relevance_score'] > 0.7]
+        
+        if not high_quality_results:
+            return ""
+        
         context_parts = []
         current_length = 0
         
-        for result in results:
+        # Sort by relevance score (highest first)
+        high_quality_results.sort(key=lambda x: x['relevance_score'], reverse=True)
+        
+        for result in high_quality_results:
             text = result['text']
+            score = result['relevance_score']
+            
             if current_length + len(text) <= max_context_length:
-                context_parts.append(f"- {text}")
+                # Include relevance information for transparency
+                context_parts.append(f"- {text} [Rilevanza: {score:.2f}]")
                 current_length += len(text)
             else:
                 break
         
         if context_parts:
-            return "Informazioni rilevanti dal database:\n" + "\n".join(context_parts)
+            return "Informazioni verificate dal database:\n" + "\n".join(context_parts)
         else:
             return ""

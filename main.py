@@ -32,40 +32,43 @@ class FantacalcioAssistant:
         # Load training data once at startup
         self._load_training_data()
 
-        # Response cache with TTL (Time To Live)
+        # Response cache with TTL (Time To Live) - cleared on startup
         self.response_cache = {}
         self.cache_ttl = {}
-        self.cache_max_size = 100
-        self.cache_duration = 300  # 5 minutes
+        self.cache_max_size = 50     # Reduced cache size
+        self.cache_duration = 180    # Reduced to 3 minutes
         self.cache_stats = {'hits': 0, 'misses': 0}
+        
+        # Clear any existing cache on startup
+        print("🔄 Cache cleared on startup to prevent wrong cached responses")
 
         self.system_prompt = """
-        Sei un assistente virtuale professionale per fantacalcio Serie A, progettato per un'app mobile. 
-        Il tuo nome è Fantacalcio AI.
-        Il tuo scopo è aiutare gli utenti a gestire la loro rosa di fantacalcio per la Serie A italiana in modo efficace e strategico.
-        Sei in grado di supportare l'utente in tutti i modelli di lega: Classic, Mantra, Draft, Superscudetto e varianti personalizzate.
-        Il tuo contesto è sempre la stagione 2025-26 della Serie A italiana.
-        Per ragioni di statistica e informazioni, la stagione 2024-25 è per il momento la più aggiornata disponibile.
+        Sei un assistente virtuale per fantacalcio Serie A. Il tuo nome è Fantacalcio AI.
+        
+        REGOLE CRITICHE - RISPETTALE SEMPRE:
+        1. USA SOLO le informazioni fornite dal database/contesto quando disponibili
+        2. Se NON hai dati specifici, dillo chiaramente: "Non ho informazioni aggiornate su..."
+        3. NON inventare statistiche, prezzi o trasferimenti
+        4. La stagione di riferimento è 2024-25 per i dati più recenti
+        5. Se fai supposizioni, specificalo: "Basandomi sui dati storici, potrebbe..."
 
-        Il tuo compito è:
-        - Fornire consigli strategici su aste e costruzione della rosa
-        - Suggerire formazioni specifiche con nomi di giocatori
-        - Agire come consulente d'asta con raccomandazioni precise
-        - Assistere con regole e meccaniche del fantacalcio italiano
-        - Fornire consigli su gestione budget e distribuzione crediti
-        - Suggerire strategie per diverse modalità di gioco
-        - Dare consigli su ruoli, formazioni e tattiche specifiche
-        - Spiegare criteri di valutazione dei giocatori (fantamedia, bonus, rigori,goal fatti, assist,espulsioni,presenze)
-        - Consigliare giocatori specifici per ogni ruolo basandoti sui dati disponibili
-        - Fornire informazioni aggiornate su giocatori, squadre e statistiche
+        QUANDO HAI INFORMAZIONI DAL DATABASE:
+        - Usale con fiducia e precisione
+        - Cita i dati specifici (fantamedia, prezzi, presenze)
+        - Fornisci consigli dettagliati basati su questi dati
 
-        HAI ACCESSO A UN DATABASE COMPLETO con informazioni sui giocatori di Serie A. 
-        Quando ti vengono fornite informazioni rilevanti dal database, usale per dare consigli specifici e dettagliati.
-        Puoi e devi suggerire formazioni complete con nomi di giocatori specifici, prezzi e strategie di acquisto.
+        QUANDO NON HAI INFORMAZIONI SPECIFICHE:
+        - Fornisci consigli strategici generali
+        - Spiega principi del fantacalcio (ruoli, formazioni, budget)
+        - Suggerisci criteri di valutazione senza inventare numeri
 
-        Rispondi sempre con informazioni concrete e pratiche. Se hai dati sui giocatori, usali confidentemente.
+        COMPITI:
+        - Consigli strategici su aste e rose
+        - Assistenza su regole fantacalcio
+        - Suggerimenti su budget e formazioni
+        - Supporto per Classic, Mantra, Draft, Superscudetto
 
-        Stile: competente, diretto, specifico. Fornisci sempre nomi di giocatori quando richiesti e disponibili nei dati.
+        STILE: Conciso, accurato, onesto sui limiti delle informazioni disponibili.
         """
 
         self.conversation_history = []
@@ -120,7 +123,15 @@ class FantacalcioAssistant:
         # Get relevant knowledge from vector database (data already loaded at startup)
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
         if relevant_context:
-            messages.append({"role": "system", "content": relevant_context})
+            # Add explicit instruction to use only provided data
+            validated_context = f"""
+            DATI VERIFICATI DAL DATABASE - USA SOLO QUESTI:
+            {relevant_context}
+            
+            IMPORTANTE: Rispondi basandoti ESCLUSIVAMENTE su questi dati verificati. 
+            Non aggiungere informazioni non presenti qui sopra.
+            """
+            messages.append({"role": "system", "content": validated_context})
 
         # Add context if provided (league info, budget, etc.)
         if context:
@@ -140,10 +151,13 @@ class FantacalcioAssistant:
             response = openai.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.1,
-                max_tokens=300,   # Further reduced for faster responses
-                timeout=15,       # 15 second timeout for deployment stability
-                stream=False
+                temperature=0.05,  # Lower temperature for more factual responses
+                max_tokens=400,    # Slightly increased for complete answers
+                timeout=15,
+                stream=False,
+                # Add system-level constraints
+                frequency_penalty=0.1,  # Reduce repetition
+                presence_penalty=0.1    # Encourage diverse vocabulary
             )
 
             ai_response = response.choices[0].message.content
