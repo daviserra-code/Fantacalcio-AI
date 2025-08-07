@@ -45,6 +45,17 @@ class CorrectionsManager:
             reason
         )
 
+    def search_knowledge(self, query: str, n_results: int = 10):
+        """Search corrections using knowledge manager"""
+        if not self.knowledge_manager:
+            return []
+        
+        try:
+            return self.knowledge_manager.search_knowledge(query, n_results)
+        except Exception as e:
+            logger.error(f"Failed to search corrections: {e}")
+            return []
+
     def get_corrections(self, limit: int = 50) -> List[Dict]:
         """Get all corrections"""
         if not self.knowledge_manager:

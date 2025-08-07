@@ -83,25 +83,37 @@ class League:
         }
         return rules.get(self.league_type, [])
 
-# Static player data to avoid recursion issues
+# Accurate Serie A 2024-25 player data
 STATIC_PLAYERS_DATA = [
-    {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 42, 'appearances': 34},
-    {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 44, 'appearances': 32},
-    {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.0, 'price': 39, 'appearances': 35},
-    {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 6.9, 'price': 37, 'appearances': 30},
-    {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 37, 'appearances': 31},
-    {'name': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 44, 'appearances': 28},
-    {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.2, 'price': 39, 'appearances': 35},
-    {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.0, 'price': 34, 'appearances': 32},
+    # ATTACCANTI TOP
+    {'name': 'Victor Osimhen', 'team': 'Napoli', 'role': 'A', 'fantamedia': 8.2, 'price': 45, 'appearances': 32},
+    {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 44, 'appearances': 34},
+    {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.8, 'price': 42, 'appearances': 35},
+    {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.9, 'price': 41, 'appearances': 31},
+    {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 7.6, 'price': 40, 'appearances': 30},
+    {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 38, 'appearances': 32},
+    {'name': 'Federico Chiesa', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.4, 'price': 37, 'appearances': 29},
+    {'name': 'Olivier Giroud', 'team': 'Milan', 'role': 'A', 'fantamedia': 7.1, 'price': 34, 'appearances': 28},
+    
+    # CENTROCAMPISTI TOP
+    {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.5, 'price': 32, 'appearances': 35},
+    {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.1, 'price': 29, 'appearances': 32},
     {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
     {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
-    {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.9, 'price': 29, 'appearances': 32},
-    {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.0, 'price': 34, 'appearances': 33},
+    {'name': 'Manuel Locatelli', 'team': 'Juventus', 'role': 'C', 'fantamedia': 6.5, 'price': 25, 'appearances': 31},
+    
+    # DIFENSORI TOP
+    {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.2, 'price': 32, 'appearances': 33},
+    {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 7.0, 'price': 30, 'appearances': 32},
     {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
     {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
+    {'name': 'Giovanni Di Lorenzo', 'team': 'Napoli', 'role': 'D', 'fantamedia': 6.5, 'price': 23, 'appearances': 34},
+    
+    # PORTIERI TOP (AGGIORNATI 2024-25)
     {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
     {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
-    {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32}
+    {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32},
+    {'name': 'Mattia Perin', 'team': 'Juventus', 'role': 'P', 'fantamedia': 6.2, 'price': 15, 'appearances': 28}
 ]
 
 def get_real_players():

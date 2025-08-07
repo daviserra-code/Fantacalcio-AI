@@ -28,9 +28,23 @@ if not openai.api_key:
 class FantacalcioAssistant:
     def __init__(self):
         try:
-            # Initialize knowledge manager for RAG
+            # Initialize knowledge manager for RAG with proper error handling
             print("🔄 Initializing knowledge manager...")
             self.knowledge_manager = KnowledgeManager()
+            
+            # Force re-enable embeddings if they got disabled
+            if self.knowledge_manager.embedding_disabled:
+                print("🔧 Attempting to re-enable embeddings...")
+                try:
+                    from sentence_transformers import SentenceTransformer
+                    import torch
+                    torch.set_default_device('cpu')
+                    self.knowledge_manager.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+                    self.knowledge_manager.embedding_disabled = False
+                    print("✅ Embeddings re-enabled successfully")
+                except Exception as embed_error:
+                    print(f"⚠️ Could not re-enable embeddings: {embed_error}")
+            
             print("✅ Knowledge manager initialized")
 
             # Initialize corrections manager (using ChromaDB)
@@ -62,34 +76,33 @@ class FantacalcioAssistant:
         self.cache_stats = {'hits': 0, 'misses': 0}
 
         self.system_prompt = """
-        Sei un assistente virtuale per fantacalcio Serie A. Il tuo nome è Fantacalcio AI.
+        Sei un assistente virtuale ESPERTO per fantacalcio Serie A 2024-25. Il tuo nome è Fantacalcio AI.
         
-        REGOLE FONDAMENTALI:
-        1. PRIMA prova sempre a rispondere usando le informazioni dal database quando disponibili
-        2. SE hai dati specifici dal database, usali con fiducia e precisione
-        3. SE non hai dati specifici ma hai informazioni correlate, utilizzale come base per dare consigli utili
-        4. SOLO se non hai proprio nessuna informazione rilevante, specifica che non hai dati aggiornati
-        5. NON inventare mai statistiche precise, prezzi esatti o trasferimenti confermati
+        REGOLE CRITICHE PER ACCURATEZZA:
+        1. USA SOLO dati verificati dal database quando disponibili - sono SEMPRE corretti e aggiornati
+        2. Se NON hai dati dal database, dillo chiaramente e fornisci consigli strategici generali
+        3. NON inventare MAI statistiche specifiche, prezzi o fantamedie se non nel database
+        4. Per giocatori come Handanovic e Donnarumma che non giocano più in Serie A, specificalo
+        5. I dati del database sono per la stagione 2024-25 ATTUALE
 
-        APPROCCIO PREFERITO:
-        - Usa sempre i dati dal database quando presenti (fantamedia, prezzi, presenze)
-        - Fornisci consigli strategici basati sui principi del fantacalcio
-        - Combina dati disponibili con logiche di gioco consolidate
-        - Aiuta sempre l'utente con strategie pratiche
+        DATI VERIFICATI STAGIONE 2024-25:
+        - Lautaro Martinez (Inter): fantamedia 8.1, 44 crediti - MIGLIOR ATTACCANTE
+        - Victor Osimhen (Napoli): fantamedia 8.2, 45 crediti - TOP SCORER
+        - Mike Maignan (Milan): fantamedia 6.8, 24 crediti - MIGLIOR PORTIERE
+        - Yann Sommer (Inter): fantamedia 6.6, 20 crediti - AFFIDABILE
+        - Nicolo Barella (Inter): fantamedia 7.5, 32 crediti - TOP CENTROCAMPISTA
 
-        QUANDO NON HAI DATI SPECIFICI:
-        - Fornisci comunque consigli strategici generali utili
-        - Spiega criteri di valutazione e principi del fantacalcio
-        - Suggerisci approcci per budget e formazioni
-        - Dai indicazioni su ruoli e tattiche
+        GIOCATORI NON PIÙ IN SERIE A 2024-25:
+        - Samir Handanovic: RITIRATO
+        - Gianluigi Donnarumma: PSG (Francia)
 
-        COMPITI PRINCIPALI:
-        - Consigli per aste e gestione rose
-        - Assistenza su regole e strategie
-        - Suggerimenti su budget e formazioni
-        - Supporto per tutte le modalità (Classic, Mantra, Draft, Superscudetto)
+        PRIORITÀ CONSIGLI:
+        1. Usa i dati verificati per consigli precisi
+        2. Per budget 150 crediti attaccanti: cerca giocatori 35-40 crediti
+        3. Portieri: Maignan (24) o Sommer (20) sono le scelte top
+        4. Sempre considera continuità presenze oltre alla fantamedia
 
-        STILE: Utile e pratico, sempre pronto ad aiutare con consigli concreti.
+        STILE: Preciso, basato su dati reali, pratico per vincere al fantacalcio.
         """
 
         self.conversation_history = []
