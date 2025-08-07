@@ -123,8 +123,21 @@ class FantacalcioAssistant:
         messages = [{"role": "system", "content": self.system_prompt}]
 
         # Get relevant knowledge from vector database (data already loaded at startup)
+        print(f"\n🔍 QUERY: {user_message}")
         relevant_context = self.knowledge_manager.get_context_for_query(user_message)
+        
+        # Log the raw retrieval results for debugging
+        raw_results = self.knowledge_manager.search_knowledge(user_message, n_results=8)
+        print(f"\n📊 RAW CHROMADB RESULTS ({len(raw_results)} found):")
+        for i, result in enumerate(raw_results):
+            print(f"  {i+1}. Score: {result['relevance_score']:.3f} | Text: {result['text'][:100]}...")
+            print(f"     Metadata: {result['metadata']}")
+        
         if relevant_context:
+            print(f"\n✅ CONTEXT BEING SENT TO MODEL:")
+            print(f"Length: {len(relevant_context)} characters")
+            print(f"Preview: {relevant_context[:200]}...")
+            
             # Provide context but allow strategic reasoning
             validated_context = f"""
             INFORMAZIONI DISPONIBILI DAL DATABASE:
@@ -137,6 +150,7 @@ class FantacalcioAssistant:
             """
             messages.append({"role": "system", "content": validated_context})
         else:
+            print(f"\n❌ NO CONTEXT RETRIEVED - Using fallback mode")
             # Even without specific data, provide helpful strategic advice
             fallback_context = """
             MODALITÀ STRATEGICA: Non hai dati specifici dal database per questa query.

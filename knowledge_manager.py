@@ -123,17 +123,24 @@ class KnowledgeManager:
         """Get relevant context for a query, formatted for LLM input"""
         results = self.search_knowledge(query, n_results=8)
         
+        print(f"🧠 Knowledge Manager - Processing {len(results)} results for query: '{query[:50]}...'")
+        
         # Use more flexible relevance thresholds - accept more results
         high_quality_results = [r for r in results if r['relevance_score'] > 0.5]
         medium_quality_results = [r for r in results if 0.3 < r['relevance_score'] <= 0.5]
         
+        print(f"   High quality (>0.5): {len(high_quality_results)}")
+        print(f"   Medium quality (0.3-0.5): {len(medium_quality_results)}")
+        
         # If no high quality, try medium quality results
         if not high_quality_results and medium_quality_results:
             high_quality_results = medium_quality_results[:3]
+            print(f"   Using {len(high_quality_results)} medium quality results")
         
         # If still no results, take top 2 regardless of score for general context
         if not high_quality_results and results:
             high_quality_results = results[:2]
+            print(f"   Fallback: using top {len(high_quality_results)} results regardless of score")
         
         context_parts = []
         current_length = 0
@@ -153,6 +160,9 @@ class KnowledgeManager:
                 break
         
         if context_parts:
-            return "Informazioni verificate dal database:\n" + "\n".join(context_parts)
+            final_context = "Informazioni verificate dal database:\n" + "\n".join(context_parts)
+            print(f"📝 Final context created: {len(final_context)} chars, {len(context_parts)} parts")
+            return final_context
         else:
+            print(f"❌ No context generated")
             return ""
