@@ -56,49 +56,77 @@ class KnowledgeManager:
         self.query_cache = {}
         self.query_cache_size = 50
 
-        # Get or create collection with better error handling
+        # Get or create collection with robust error handling
         self.collection = None
         self.collection_is_empty = True
         
         if not self.embedding_disabled:
+            # Try multiple collection initialization strategies
+            collection_initialized = False
+            
+            # Strategy 1: Try to get existing collection
             try:
-                # First try to get existing collection
+                self.collection = self.client.get_collection(collection_name)
+                count = self.collection.count()
+                if count == 0:
+                    print(f"📂 Found empty collection: {collection_name}")
+                    self.collection_is_empty = True
+                else:
+                    print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
+                    self.collection_is_empty = False
+                collection_initialized = True
+            except Exception as e:
+                print(f"⚠️ Could not load existing collection: {e}")
+            
+            # Strategy 2: Create new collection with unique name
+            if not collection_initialized:
                 try:
-                    self.collection = self.client.get_collection(collection_name)
-                    count = self.collection.count()
-                    if count == 0:
-                        print(f"📂 Found empty collection: {collection_name}")
-                        self.collection_is_empty = True
-                    else:
-                        print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
-                        self.collection_is_empty = False
-                except Exception:
-                    # Collection doesn't exist, create it
-                    print(f"🆕 Creating new collection: {collection_name}")
-                    
-                if self.collection is None:
-                    # Clean up any corrupted collections first
-                    try:
-                        existing_collections = self.client.list_collections()
-                        for col in existing_collections:
-                            if collection_name in col.name:
-                                print(f"🗑️ Deleting corrupted collection: {col.name}")
-                                self.client.delete_collection(col.name)
-                    except Exception as cleanup_error:
-                        print(f"⚠️ Cleanup failed: {cleanup_error}")
-                    
-                    # Create fresh collection
+                    # Use timestamp to ensure unique collection name
+                    import time
+                    unique_name = f"{collection_name}_{int(time.time())}"
                     self.collection = self.client.create_collection(
-                        name=collection_name,
+                        name=unique_name,
                         metadata={"description": "Fantacalcio knowledge base for RAG"}
                     )
-                    print(f"✅ Created fresh collection: {collection_name}")
+                    self.collection_name = unique_name
+                    print(f"✅ Created new collection: {unique_name}")
                     self.collection_is_empty = True
-                    
-            except Exception as final_error:
-                print(f"❌ Complete failure to initialize collection: {final_error}")
-                self.embedding_disabled = True
-                self.collection = None
+                    collection_initialized = True
+                except Exception as e:
+                    print(f"⚠️ Could not create new collection: {e}")
+            
+            # Strategy 3: Reset client and try again
+            if not collection_initialized:
+                try:
+                    print("🔄 Resetting ChromaDB client...")
+                    self.client.reset()
+                    self.collection = self.client.create_collection(
+                        name=f"{collection_name}_fresh",
+                        metadata={"description": "Fantacalcio knowledge base for RAG"}
+                    )
+                    self.collection_name = f"{collection_name}_fresh"
+                    print(f"✅ Created collection after reset: {self.collection_name}")
+                    self.collection_is_empty = True
+                    collection_initialized = True
+                except Exception as e:
+                    print(f"⚠️ Reset strategy failed: {e}")
+            
+            # If all strategies fail, don't disable embeddings - try one more time
+            if not collection_initialized:
+                try:
+                    print("🔄 Final attempt: creating minimal collection...")
+                    import uuid
+                    fallback_name = f"fantacalcio_{str(uuid.uuid4())[:8]}"
+                    self.collection = self.client.create_collection(name=fallback_name)
+                    self.collection_name = fallback_name
+                    print(f"✅ Final attempt successful: {fallback_name}")
+                    self.collection_is_empty = True
+                    collection_initialized = True
+                except Exception as e:
+                    print(f"❌ All collection strategies failed: {e}")
+                    print("⚠️ Embeddings will be disabled")
+                    self.embedding_disabled = True
+                    self.collection = None
 
     def add_knowledge(self, text: str, metadata: Dict[str, Any] = None, doc_id: str = None):
         """Add knowledge to the vector database"""
@@ -113,12 +141,30 @@ class KnowledgeManager:
             # Generate embedding
             embedding = self.embedding_model.encode(text).tolist()
 
-            # Check if collection exists, recreate if needed
+            # Ensure collection exists
             if not hasattr(self, 'collection') or self.collection is None:
+                import time
+                unique_name = f"{self.collection_name}_recovery_{int(time.time())}"
                 self.collection = self.client.create_collection(
-                    name=self.collection_name,
+                    name=unique_name,
                     metadata={"description": "Fantacalcio knowledge base for RAG"}
                 )
+                self.collection_name = unique_name
+                print(f"✅ Created recovery collection: {unique_name}")
+
+            # Test collection before adding
+            try:
+                current_count = self.collection.count()
+            except Exception:
+                # Collection is corrupted, create new one
+                import time
+                new_name = f"{self.collection_name}_fixed_{int(time.time())}"
+                self.collection = self.client.create_collection(
+                    name=new_name,
+                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                )
+                self.collection_name = new_name
+                print(f"✅ Fixed corrupted collection: {new_name}")
 
             self.collection.add(
                 embeddings=[embedding],
@@ -126,28 +172,12 @@ class KnowledgeManager:
                 metadatas=[metadata or {}],
                 ids=[doc_id]
             )
+            
         except Exception as e:
             print(f"⚠️ Error adding knowledge: {e}")
-            # Try to recreate collection one more time
-            try:
-                self.collection = self.client.create_collection(
-                    name=f"{self.collection_name}_new",
-                    metadata={"description": "Fantacalcio knowledge base for RAG"}
-                )
-                self.collection_name = f"{self.collection_name}_new"
-                embedding = self.embedding_model.encode(text).tolist()
-                self.collection.add(
-                    embeddings=[embedding],
-                    documents=[text],
-                    metadatas=[metadata or {}],
-                    ids=[doc_id]
-                )
-                print("✅ Recovered by creating new collection")
-            except Exception as recovery_error:
-                print(f"❌ Recovery failed: {recovery_error}")
-                self.embedding_disabled = True
-                return doc_id
-
+            # Don't disable embeddings, just skip this entry
+            print(f"⚠️ Skipping knowledge entry due to error, embeddings remain active")
+            
         return doc_id
 
     def search_knowledge(self, query: str, n_results: int = 3) -> List[Dict]:

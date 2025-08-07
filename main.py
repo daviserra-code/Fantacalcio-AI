@@ -32,61 +32,92 @@ class FantacalcioAssistant:
             print("🔄 Initializing knowledge manager...")
             self.knowledge_manager = KnowledgeManager()
             
-            # Force re-enable embeddings if they got disabled
+            # Comprehensive embedding recovery system
             if self.knowledge_manager.embedding_disabled:
-                print("🔧 Attempting to force re-enable embeddings...")
+                print("🔧 Attempting comprehensive embedding recovery...")
                 
-                # Reset embedding system completely
+                # Step 1: Reset embedding system completely
                 self.knowledge_manager.embedding_disabled = False
                 self.knowledge_manager.embedding_model = None
                 
+                recovery_successful = False
+                
+                # Step 2: Try to reinitialize embedding model
                 try:
                     import torch
                     from sentence_transformers import SentenceTransformer
                     
-                    # Clear torch settings
+                    # Clear all torch settings
                     if hasattr(torch, '_default_device'):
                         torch._default_device = None
+                    if hasattr(torch, 'cuda') and torch.cuda.is_available():
+                        torch.cuda.empty_cache()
                     
-                    # Force CPU and initialize
-                    self.knowledge_manager.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+                    # Multiple initialization attempts
+                    init_methods = [
+                        lambda: SentenceTransformer('all-MiniLM-L6-v2', device='cpu'),
+                        lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu'),
+                        lambda: SentenceTransformer('all-MiniLM-L6-v2')
+                    ]
                     
-                    # Test the model
-                    test_embed = self.knowledge_manager.embedding_model.encode("test", show_progress_bar=False)
-                    if len(test_embed) > 0:
-                        print("✅ Embeddings force re-enabled successfully")
-                        
-                        # Recreate collection if needed
-                        if self.knowledge_manager.collection is None:
-                            try:
-                                self.knowledge_manager.collection = self.knowledge_manager.client.create_collection(
-                                    name=f"{self.knowledge_manager.collection_name}_recovered",
-                                    metadata={"description": "Fantacalcio knowledge base for RAG"}
-                                )
-                                self.knowledge_manager.collection_name = f"{self.knowledge_manager.collection_name}_recovered"
-                                self.knowledge_manager.collection_is_empty = True
-                                print("✅ Collection recreated successfully")
-                            except Exception as col_error:
-                                print(f"⚠️ Collection recreation failed: {col_error}")
-                    else:
-                        raise Exception("Model test failed")
+                    for i, method in enumerate(init_methods):
+                        try:
+                            print(f"   Recovery attempt {i+1}/3...")
+                            self.knowledge_manager.embedding_model = method()
+                            test_embed = self.knowledge_manager.embedding_model.encode("test recovery", show_progress_bar=False)
+                            if len(test_embed) > 0:
+                                print(f"✅ Embedding model recovered with method {i+1}")
+                                recovery_successful = True
+                                break
+                        except Exception as method_error:
+                            print(f"   Method {i+1} failed: {method_error}")
+                            continue
+                    
+                    if not recovery_successful:
+                        raise Exception("All embedding recovery methods failed")
                         
                 except Exception as embed_error:
-                    print(f"⚠️ Could not force re-enable embeddings: {embed_error}")
-                    # Try complete database reset
-                    print("🔄 Attempting complete database reset...")
+                    print(f"⚠️ Embedding model recovery failed: {embed_error}")
+                
+                # Step 3: Fix collection if embedding model is working
+                if recovery_successful:
                     try:
+                        import time
+                        recovery_name = f"fantacalcio_recovered_{int(time.time())}"
+                        
+                        # Reset database and create fresh collection
+                        print("🔄 Creating fresh database...")
                         self.knowledge_manager.client.reset()
+                        
                         self.knowledge_manager.collection = self.knowledge_manager.client.create_collection(
-                            name="fantacalcio_knowledge_fresh",
-                            metadata={"description": "Fantacalcio knowledge base for RAG"}
+                            name=recovery_name,
+                            metadata={"description": "Fantacalcio knowledge base for RAG - Recovered"}
                         )
-                        self.knowledge_manager.collection_name = "fantacalcio_knowledge_fresh"
+                        self.knowledge_manager.collection_name = recovery_name
                         self.knowledge_manager.collection_is_empty = True
-                        print("✅ Complete database reset successful")
-                    except Exception as reset_error:
-                        print(f"❌ Complete reset failed: {reset_error}")
+                        
+                        # Test the complete system
+                        test_doc_id = self.knowledge_manager.add_knowledge(
+                            "Test recovery document - Lautaro Martinez fantamedia test",
+                            {"type": "recovery_test"}
+                        )
+                        
+                        # Verify search works
+                        test_results = self.knowledge_manager.search_knowledge("Lautaro Martinez", n_results=1)
+                        
+                        if test_results and len(test_results) > 0:
+                            print("✅ Complete embedding system recovery successful!")
+                            print(f"   Collection: {recovery_name}")
+                            print(f"   Test search returned {len(test_results)} results")
+                        else:
+                            raise Exception("Search test failed")
+                            
+                    except Exception as collection_error:
+                        print(f"❌ Collection recovery failed: {collection_error}")
                         self.knowledge_manager.embedding_disabled = True
+                else:
+                    print("❌ Embedding recovery failed - disabling embeddings")
+                    self.knowledge_manager.embedding_disabled = True
             
             print("✅ Knowledge manager initialized")
 
