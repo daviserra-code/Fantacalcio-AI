@@ -87,7 +87,6 @@ class FantacalcioAssistant:
 
         DATI VERIFICATI STAGIONE 2024-25:
         - Lautaro Martinez (Inter): fantamedia 8.1, 44 crediti - MIGLIOR ATTACCANTE
-        - Victor Osimhen (Napoli): fantamedia 8.2, 45 crediti - TOP SCORER
         - Mike Maignan (Milan): fantamedia 6.8, 24 crediti - MIGLIOR PORTIERE
         - Yann Sommer (Inter): fantamedia 6.6, 20 crediti - AFFIDABILE
         - Nicolo Barella (Inter): fantamedia 7.5, 32 crediti - TOP CENTROCAMPISTA
@@ -95,6 +94,7 @@ class FantacalcioAssistant:
         GIOCATORI NON PIÙ IN SERIE A 2024-25:
         - Samir Handanovic: RITIRATO
         - Gianluigi Donnarumma: PSG (Francia)
+          - Victor Osimhen Galatasaray   (Turchia))
 
         PRIORITÀ CONSIGLI:
         1. Usa i dati verificati per consigli precisi
