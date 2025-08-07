@@ -168,7 +168,7 @@ class FantacalcioAssistant:
         GIOCATORI NON PIÙ IN SERIE A 2024-25:
         - Samir Handanovic: RITIRATO
         - Gianluigi Donnarumma: PSG (Francia)
-          - Victor Osimhen Galatasaray   (Turchia))
+          - Victor Osimhen: Galatasaray   (Turchia))
 
         PRIORITÀ CONSIGLI:
         1. Usa i dati verificati per consigli precisi
