@@ -733,26 +733,7 @@ def get_user_analytics():
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
-@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
-def accessibility_settings():
-    """Get or update accessibility configuration"""
-    if request.method == 'POST':
-        try:
-            data = request.get_json()
-            # In a real app, you'd save these to user preferences
-            logger.info(f"Accessibility settings updated: {data}")
-            return jsonify({'status': 'updated'})
-        except Exception as e:
-            logger.error(f"Accessibility settings error: {str(e)}")
-            return jsonify({'error': 'Failed to update settings'}), 500
-    else:
-        return jsonify({
-            'high_contrast': False,
-            'large_text': False,
-            'screen_reader_support': True,
-            'reduced_motion': False,
-            'keyboard_navigation': True
-        })
+
 
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
@@ -785,50 +766,7 @@ def get_mobile_config():
 
 
 
-@app.route('/api/player-comparison', methods=['POST'])
-def compare_players():
-    """Compare multiple players side by side"""
-    try:
-        data = request.get_json()
-        if not data or 'players' not in data:
-            return jsonify({'error': 'Player list required'}), 400
 
-        player_names = data.get('players', [])
-        if len(player_names) < 2 or len(player_names) > 4:
-            return jsonify({'error': 'Compare 2-4 players only'}), 400
-
-        from fantacalcio_data import SAMPLE_PLAYERS
-
-        comparison_data = []
-        for name in player_names:
-            player = next((p for p in SAMPLE_PLAYERS if p.name.lower() == name.lower()), None)
-            if player:
-                comparison_data.append({
-                    'name': player.name,
-                    'team': player.team,
-                    'role': player.role,
-                    'fantamedia': player.fantamedia,
-                    'price': player.price,
-                    'appearances': player.appearances,
-                    'value_ratio': round(player.fantamedia / player.price * 100, 2) if player.price > 0 else 0,
-                    'games_per_season': round(player.appearances / 38 * 100, 1)
-                })
-
-        if not comparison_data:
-            return jsonify({'error': 'No valid players found'}), 404
-
-        return jsonify({
-            'comparison': comparison_data,
-            'metrics': {
-                'best_value': max(comparison_data, key=lambda x: x['value_ratio'])['name'],
-                'highest_fantamedia': max(comparison_data, key=lambda x: x['fantamedia'])['name'],
-                'most_reliable': max(comparison_data, key=lambda x: x['appearances'])['name']
-            }
-        })
-
-    except Exception as e:
-        logger.error(f"Player comparison error: {str(e)}")
-        return jsonify({'error': 'Comparison failed'}), 500
 
 @app.route('/api/performance-charts/<chart_type>', methods=['GET'])
 def get_performance_charts(chart_type):
@@ -992,127 +930,9 @@ def compare_players():
         logger.error(f"Player comparison error: {str(e)}")
         return jsonify({'error': 'Comparison failed'}), 500
 
-@app.route('/api/user-analytics', methods=['GET'])
-def get_user_analytics():
-    """Get user analytics dashboard data"""
-    try:
-        session_id = session.get('session_id', 'anonymous')
 
-        analytics_data = {
-            'session_id': session_id,
-            'most_searched_players': [
-                {'name': 'Osimhen', 'searches': 15, 'team': 'Napoli'},
-                {'name': 'Vlahovic', 'searches': 12, 'team': 'Juventus'},
-                {'name': 'Lautaro', 'searches': 10, 'team': 'Inter'}
-            ],
-            'favorite_positions': [
-                {'position': 'A', 'percentage': 35},
-                {'position': 'C', 'percentage': 30},
-                {'position': 'D', 'percentage': 25},
-                {'position': 'P', 'percentage': 10}
-            ],
-            'league_preferences': {
-                'Classic': 45,
-                'Mantra': 25,
-                'Draft': 20,
-                'Superscudetto': 10
-            },
-            'budget_distribution': {
-                'low': 20,    # <400 credits
-                'medium': 60, # 400-700 credits
-                'high': 20    # >700 credits
-            },
-            'performance_metrics': {
-                'avg_response_time': 2.3,
-                'cache_hit_rate': 78.5,
-                'successful_queries': 142
-            }
-        }
 
-        return jsonify(analytics_data)
 
-    except Exception as e:
-        logger.error(f"User analytics error: {str(e)}")
-        return jsonify({'error': 'Analytics data unavailable'}), 500
-
-@app.route('/api/performance-charts/<chart_type>', methods=['GET'])
-def get_performance_charts(chart_type):
-    """Get chart data for data visualization"""
-    try:
-        if chart_type == 'fantamedia_by_role':
-            role_data = {}
-            for player in SAMPLE_PLAYERS:
-                if player.role not in role_data:
-                    role_data[player.role] = []
-                role_data[player.role].append(player.fantamedia)
-
-            chart_data = {
-                'type': 'bar',
-                'data': {
-                    'labels': list(role_data.keys()),
-                    'datasets': [{
-                        'label': 'Media Fantamedia per Ruolo',
-                        'data': [round(sum(values)/len(values), 2) for values in role_data.values()],
-                        'backgroundColor': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
-                    }]
-                }
-            }
-
-        elif chart_type == 'price_distribution':
-            price_ranges = {'0-20': 0, '21-30': 0, '31-40': 0, '40+': 0}
-            for player in SAMPLE_PLAYERS:
-                if player.price <= 20:
-                    price_ranges['0-20'] += 1
-                elif player.price <= 30:
-                    price_ranges['21-30'] += 1
-                elif player.price <= 40:
-                    price_ranges['31-40'] += 1
-                else:
-                    price_ranges['40+'] += 1
-
-            chart_data = {
-                'type': 'pie',
-                'data': {
-                    'labels': list(price_ranges.keys()),
-                    'datasets': [{
-                        'label': 'Distribuzione Prezzi',
-                        'data': list(price_ranges.values()),
-                        'backgroundColor': ['#FF9F43', '#26de81', '#2d98da', '#a55eea']
-                    }]
-                }
-            }
-
-        elif chart_type == 'value_efficiency':
-            efficiency_data = []
-            for player in SAMPLE_PLAYERS:
-                if player.price > 0:
-                    efficiency = player.fantamedia / player.price
-                    efficiency_data.append({
-                        'x': player.price,
-                        'y': player.fantamedia,
-                        'r': efficiency * 10,
-                        'name': player.name
-                    })
-
-            chart_data = {
-                'type': 'bubble',
-                'data': {
-                    'datasets': [{
-                        'label': 'Efficienza Prezzo/Fantamedia',
-                        'data': efficiency_data[:20],  # Limit to top 20
-                        'backgroundColor': '#45B7D1'
-                    }]
-                }
-            }
-
-        else:
-            return jsonify({'error': 'Invalid chart type'}), 400
-
-        return jsonify(chart_data)
-
-    except Exception as e:
-        logger.error(f"Chart data error: {str(e)}")
-        return jsonify({'error': 'Chart generation failed'}), 500
 
 @app.route('/api/historical-stats', methods=['GET'])
 def get_historical_stats():
