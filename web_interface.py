@@ -28,6 +28,42 @@ except Exception as e:
     FantacalcioAssistant = None
     assistant = None
 
+# Add missing sample data for the application to work
+class Player:
+    def __init__(self, name, team, role, fantamedia, price, appearances):
+        self.name = name
+        self.team = team
+        self.role = role
+        self.fantamedia = fantamedia
+        self.price = price
+        self.appearances = appearances
+
+class League:
+    def __init__(self, league_type, participants, budget):
+        self.league_type = league_type
+        self.participants = participants
+        self.budget = budget
+        self.rules = self._get_rules()
+    
+    def _get_rules(self):
+        rules = {
+            'Classic': ['1 Portiere', '3 Difensori', '4 Centrocampisti', '3 Attaccanti'],
+            'Mantra': ['1 Portiere', '3-5 Difensori', '4-5 Centrocampisti', '3-4 Attaccanti'],
+            'Draft': ['Snake Draft', 'No budget limits', 'Turn-based selection'],
+            'Superscudetto': ['Premium league', 'Higher budgets', 'Extra bonuses']
+        }
+        return rules.get(self.league_type, [])
+
+# Sample players to prevent errors
+SAMPLE_PLAYERS = [
+    Player("Victor Osimhen", "Napoli", "A", 8.2, 45, 32),
+    Player("Dusan Vlahovic", "Juventus", "A", 7.8, 42, 35),
+    Player("Lautaro Martinez", "Inter", "A", 8.1, 44, 34),
+    Player("Mike Maignan", "Milan", "P", 6.8, 24, 36),
+    Player("Theo Hernandez", "Milan", "D", 7.2, 28, 33),
+    Player("Nicolo Barella", "Inter", "C", 7.5, 32, 35)
+]
+
 # Multilingual support
 TRANSLATIONS = {
     'it': {
@@ -551,6 +587,17 @@ def get_user_analytics():
     except Exception as e:
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
+
+@app.route('/api/accessibility-settings', methods=['GET'])
+def get_accessibility_settings():
+    """Get accessibility configuration"""
+    return jsonify({
+        'high_contrast': False,
+        'large_text': False,
+        'screen_reader_support': True,
+        'reduced_motion': False,
+        'keyboard_navigation': True
+    })
 
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
