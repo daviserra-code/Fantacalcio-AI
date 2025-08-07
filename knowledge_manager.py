@@ -36,7 +36,7 @@ class KnowledgeManager:
         self.query_cache = {}
         self.query_cache_size = 50
 
-        # Get or create collection
+        # Get or create collection with better error handling
         try:
             self.collection = self.client.get_collection(collection_name)
             # Check if collection is empty
@@ -47,13 +47,29 @@ class KnowledgeManager:
             else:
                 print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
                 self.collection_is_empty = False
-        except:
-            self.collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"description": "Fantacalcio knowledge base for RAG"}
-            )
-            print(f"🆕 Created new collection: {collection_name}")
-            self.collection_is_empty = True
+        except Exception as e:
+            print(f"Collection not found, creating new one: {e}")
+            try:
+                self.collection = self.client.create_collection(
+                    name=collection_name,
+                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                )
+                print(f"🆕 Created new collection: {collection_name}")
+                self.collection_is_empty = True
+            except Exception as create_error:
+                print(f"❌ Failed to create collection: {create_error}")
+                # Try to reset and recreate
+                try:
+                    self.client.reset()
+                    self.collection = self.client.create_collection(
+                        name=collection_name,
+                        metadata={"description": "Fantacalcio knowledge base for RAG"}
+                    )
+                    print(f"🔄 Reset database and created collection: {collection_name}")
+                    self.collection_is_empty = True
+                except Exception as final_error:
+                    print(f"❌ Complete failure to initialize collection: {final_error}")
+                    self.embedding_disabled = True
 
     def add_knowledge(self, text: str, metadata: Dict[str, Any] = None, doc_id: str = None):
         """Add knowledge to the vector database"""
@@ -68,6 +84,13 @@ class KnowledgeManager:
             # Generate embedding
             embedding = self.embedding_model.encode(text).tolist()
 
+            # Check if collection exists, recreate if needed
+            if not hasattr(self, 'collection') or self.collection is None:
+                self.collection = self.client.create_collection(
+                    name=self.collection_name,
+                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                )
+
             self.collection.add(
                 embeddings=[embedding],
                 documents=[text],
@@ -76,8 +99,25 @@ class KnowledgeManager:
             )
         except Exception as e:
             print(f"⚠️ Error adding knowledge: {e}")
-            self.embedding_disabled = True
-            return doc_id
+            # Try to recreate collection one more time
+            try:
+                self.collection = self.client.create_collection(
+                    name=f"{self.collection_name}_new",
+                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                )
+                self.collection_name = f"{self.collection_name}_new"
+                embedding = self.embedding_model.encode(text).tolist()
+                self.collection.add(
+                    embeddings=[embedding],
+                    documents=[text],
+                    metadatas=[metadata or {}],
+                    ids=[doc_id]
+                )
+                print("✅ Recovered by creating new collection")
+            except Exception as recovery_error:
+                print(f"❌ Recovery failed: {recovery_error}")
+                self.embedding_disabled = True
+                return doc_id
 
         return doc_id
 
