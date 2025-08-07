@@ -12,64 +12,93 @@ class KnowledgeManager:
         self.client = chromadb.PersistentClient(path="./chroma_db")
         self.collection_name = collection_name
 
-        # Initialize SentenceTransformer for embeddings with error handling
+        # Initialize SentenceTransformer for embeddings with better error handling
         self.embedding_model = None
         self.embedding_disabled = False
         
         try:
-            # Force CPU device to avoid tensor device issues
-            torch.set_default_device('cpu')
-            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-            print("✅ SentenceTransformer initialized successfully")
+            print("🔄 Initializing SentenceTransformer...")
+            # Clear any existing torch device settings
+            if hasattr(torch, '_default_device'):
+                torch._default_device = None
+            
+            # Try multiple initialization approaches
+            initialization_methods = [
+                lambda: SentenceTransformer('all-MiniLM-L6-v2', device='cpu'),
+                lambda: SentenceTransformer('all-MiniLM-L6-v2'),
+                lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu'),
+                lambda: SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+            ]
+            
+            for i, method in enumerate(initialization_methods):
+                try:
+                    print(f"   Attempt {i+1}...")
+                    self.embedding_model = method()
+                    # Test the model with a simple encode
+                    test_embedding = self.embedding_model.encode("test", show_progress_bar=False)
+                    if len(test_embedding) > 0:
+                        print(f"✅ SentenceTransformer initialized successfully with method {i+1}")
+                        print(f"   Model device: {getattr(self.embedding_model, 'device', 'unknown')}")
+                        print(f"   Embedding dimension: {len(test_embedding)}")
+                        break
+                except Exception as method_error:
+                    print(f"   Method {i+1} failed: {method_error}")
+                    continue
+            else:
+                raise Exception("All initialization methods failed")
+                
         except Exception as e:
-            print(f"⚠️ Error initializing sentence transformer: {e}")
-            # Try alternative initialization without device specification
-            try:
-                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-                print("✅ SentenceTransformer initialized without device specification")
-            except Exception as e2:
-                print(f"❌ Failed to initialize embedding model: {e2}")
-                print("🔄 Running in degraded mode without embeddings")
-                self.embedding_disabled = True
+            print(f"❌ Failed to initialize embedding model: {e}")
+            print("🔄 Running in degraded mode without embeddings")
+            self.embedding_disabled = True
 
         # Query cache for embedding results
         self.query_cache = {}
         self.query_cache_size = 50
 
         # Get or create collection with better error handling
-        try:
-            self.collection = self.client.get_collection(collection_name)
-            # Check if collection is empty
-            count = self.collection.count()
-            if count == 0:
-                print(f"📂 Found empty collection: {collection_name}")
-                self.collection_is_empty = True
-            else:
-                print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
-                self.collection_is_empty = False
-        except Exception as e:
-            print(f"Collection not found, creating new one: {e}")
+        self.collection = None
+        self.collection_is_empty = True
+        
+        if not self.embedding_disabled:
             try:
-                self.collection = self.client.create_collection(
-                    name=collection_name,
-                    metadata={"description": "Fantacalcio knowledge base for RAG"}
-                )
-                print(f"🆕 Created new collection: {collection_name}")
-                self.collection_is_empty = True
-            except Exception as create_error:
-                print(f"❌ Failed to create collection: {create_error}")
-                # Try to reset and recreate
+                # First try to get existing collection
                 try:
-                    self.client.reset()
+                    self.collection = self.client.get_collection(collection_name)
+                    count = self.collection.count()
+                    if count == 0:
+                        print(f"📂 Found empty collection: {collection_name}")
+                        self.collection_is_empty = True
+                    else:
+                        print(f"✅ Loaded existing collection: {collection_name} with {count} documents")
+                        self.collection_is_empty = False
+                except Exception:
+                    # Collection doesn't exist, create it
+                    print(f"🆕 Creating new collection: {collection_name}")
+                    
+                if self.collection is None:
+                    # Clean up any corrupted collections first
+                    try:
+                        existing_collections = self.client.list_collections()
+                        for col in existing_collections:
+                            if collection_name in col.name:
+                                print(f"🗑️ Deleting corrupted collection: {col.name}")
+                                self.client.delete_collection(col.name)
+                    except Exception as cleanup_error:
+                        print(f"⚠️ Cleanup failed: {cleanup_error}")
+                    
+                    # Create fresh collection
                     self.collection = self.client.create_collection(
                         name=collection_name,
                         metadata={"description": "Fantacalcio knowledge base for RAG"}
                     )
-                    print(f"🔄 Reset database and created collection: {collection_name}")
+                    print(f"✅ Created fresh collection: {collection_name}")
                     self.collection_is_empty = True
-                except Exception as final_error:
-                    print(f"❌ Complete failure to initialize collection: {final_error}")
-                    self.embedding_disabled = True
+                    
+            except Exception as final_error:
+                print(f"❌ Complete failure to initialize collection: {final_error}")
+                self.embedding_disabled = True
+                self.collection = None
 
     def add_knowledge(self, text: str, metadata: Dict[str, Any] = None, doc_id: str = None):
         """Add knowledge to the vector database"""

@@ -34,16 +34,59 @@ class FantacalcioAssistant:
             
             # Force re-enable embeddings if they got disabled
             if self.knowledge_manager.embedding_disabled:
-                print("🔧 Attempting to re-enable embeddings...")
+                print("🔧 Attempting to force re-enable embeddings...")
+                
+                # Reset embedding system completely
+                self.knowledge_manager.embedding_disabled = False
+                self.knowledge_manager.embedding_model = None
+                
                 try:
-                    from sentence_transformers import SentenceTransformer
                     import torch
-                    torch.set_default_device('cpu')
+                    from sentence_transformers import SentenceTransformer
+                    
+                    # Clear torch settings
+                    if hasattr(torch, '_default_device'):
+                        torch._default_device = None
+                    
+                    # Force CPU and initialize
                     self.knowledge_manager.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-                    self.knowledge_manager.embedding_disabled = False
-                    print("✅ Embeddings re-enabled successfully")
+                    
+                    # Test the model
+                    test_embed = self.knowledge_manager.embedding_model.encode("test", show_progress_bar=False)
+                    if len(test_embed) > 0:
+                        print("✅ Embeddings force re-enabled successfully")
+                        
+                        # Recreate collection if needed
+                        if self.knowledge_manager.collection is None:
+                            try:
+                                self.knowledge_manager.collection = self.knowledge_manager.client.create_collection(
+                                    name=f"{self.knowledge_manager.collection_name}_recovered",
+                                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                                )
+                                self.knowledge_manager.collection_name = f"{self.knowledge_manager.collection_name}_recovered"
+                                self.knowledge_manager.collection_is_empty = True
+                                print("✅ Collection recreated successfully")
+                            except Exception as col_error:
+                                print(f"⚠️ Collection recreation failed: {col_error}")
+                    else:
+                        raise Exception("Model test failed")
+                        
                 except Exception as embed_error:
-                    print(f"⚠️ Could not re-enable embeddings: {embed_error}")
+                    print(f"⚠️ Could not force re-enable embeddings: {embed_error}")
+                    # Try complete database reset
+                    print("🔄 Attempting complete database reset...")
+                    try:
+                        self.knowledge_manager.client.reset()
+                        self.knowledge_manager.collection = self.knowledge_manager.client.create_collection(
+                            name="fantacalcio_knowledge_fresh",
+                            metadata={"description": "Fantacalcio knowledge base for RAG"}
+                        )
+                        self.knowledge_manager.collection_name = "fantacalcio_knowledge_fresh"
+                        self.knowledge_manager.collection_is_empty = True
+                        print("✅ Complete database reset successful")
+                    except Exception as reset_error:
+                        print(f"❌ Complete reset failed: {reset_error}")
+                        self.knowledge_manager.embedding_disabled = True
             
             print("✅ Knowledge manager initialized")
 
@@ -113,24 +156,53 @@ class FantacalcioAssistant:
             print("⚠️ Knowledge manager not available, skipping training data load")
             return
             
+        # Check if embeddings are working
+        if self.knowledge_manager.embedding_disabled:
+            print("⚠️ Embeddings disabled, cannot load training data")
+            return
+            
         training_loaded = False
 
         # Try loading main training data
         try:
+            print("🔄 Loading main training data...")
             self.knowledge_manager.load_from_jsonl("training_data.jsonl")
             training_loaded = True
             print("✅ Main training data loaded")
+            
+            # Verify data was actually loaded
+            if self.knowledge_manager.collection:
+                count = self.knowledge_manager.collection.count()
+                print(f"📊 Collection now has {count} documents")
+                if count == 0:
+                    print("⚠️ No documents in collection after loading")
+                    
         except Exception as e:
             print(f"⚠️ Could not load training_data.jsonl: {e}")
 
         # Try loading extended training data as fallback
         try:
+            print("🔄 Loading extended training data...")
             self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
             print("✅ Extended training data loaded")
+            
+            if self.knowledge_manager.collection:
+                count = self.knowledge_manager.collection.count()
+                print(f"📊 Collection now has {count} total documents")
+                
         except Exception as e:
             print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
             if not training_loaded:
                 print("⚠️ Running with limited knowledge base")
+                
+        # Final verification
+        if self.knowledge_manager.collection:
+            final_count = self.knowledge_manager.collection.count()
+            if final_count > 0:
+                print(f"✅ Knowledge base loaded successfully with {final_count} documents")
+                self.knowledge_manager.collection_is_empty = False
+            else:
+                print("❌ Knowledge base is empty after loading attempts")
 
     def _update_serie_a_data(self):
         """Update knowledge base with current Serie A data"""
