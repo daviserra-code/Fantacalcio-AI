@@ -1,4 +1,3 @@
-
 """
 Strutture dati e utilities per il fantacalcio
 """
@@ -22,7 +21,7 @@ class League:
         self.participants = participants
         self.budget = budget
         self.rules = self.get_default_rules()
-    
+
     def get_default_rules(self):
         """Get default rules based on league type"""
         base_rules = {
@@ -32,16 +31,16 @@ class League:
             "attaccanti": 6,
             "formazione": "3-5-2 o varianti"
         }
-        
+
         if self.league_type == "Mantra":
             base_rules["modificatori_mantra"] = True
             base_rules["bonus_assist"] = 1
             base_rules["bonus_clean_sheet"] = 1
-        
+
         elif self.league_type == "Draft":
             base_rules["budget"] = 0  # No budget in draft
             base_rules["snake_draft"] = True
-        
+
         return base_rules
 
 class AuctionHelper:
@@ -50,28 +49,28 @@ class AuctionHelper:
         self.spent_budget = 0
         self.remaining_budget = league.budget
         self.players_bought = {"P": 0, "D": 0, "C": 0, "A": 0}
-    
+
     def suggest_bid(self, player, current_bid):
         """Suggest optimal bid for a player"""
         max_recommended = self.calculate_max_bid(player)
-        
+
         if current_bid >= max_recommended:
             return {"action": "PASSA", "reason": f"Prezzo troppo alto (max consigliato: {max_recommended})"}
-        
+
         next_bid = current_bid + 1
         return {
-            "action": "RILANCIA", 
+            "action": "RILANCIA",
             "suggested_bid": next_bid,
             "max_bid": max_recommended,
             "reason": f"Giocatore interessante fino a {max_recommended}"
         }
-    
+
     def calculate_max_bid(self, player):
         """Calculate maximum recommended bid"""
         # Simplified calculation - in real app would use complex algorithms
         base_value = player.fantamedia * 3
         role_multiplier = {"P": 0.8, "D": 0.9, "C": 1.0, "A": 1.2}
-        
+
         return int(base_value * role_multiplier.get(player.role, 1.0))
 
 # Sample data for testing
@@ -83,7 +82,7 @@ SAMPLE_PLAYERS = [
     Player("Perin", "Juventus", "P", fantamedia=5.8, appearances=15, price=12),
     Player("Handanovic", "Inter", "P", fantamedia=5.9, appearances=25, price=18),
     Player("Meret", "Napoli", "P", fantamedia=6.0, appearances=22, price=15),
-    
+
     # Defenders
     Player("Bastoni", "Inter", "D", fantamedia=6.2, appearances=32, price=28),
     Player("Theo Hernandez", "Milan", "D", fantamedia=6.8, appearances=30, price=32),
@@ -96,7 +95,7 @@ SAMPLE_PLAYERS = [
     Player("Spinazzola", "Roma", "D", fantamedia=6.0, appearances=20, price=22),
     Player("Acerbi", "Inter", "D", fantamedia=6.2, appearances=29, price=20),
     Player("Tomori", "Milan", "D", fantamedia=6.0, appearances=31, price=18),
-    
+
     # Midfielders
     Player("Barella", "Inter", "C", fantamedia=6.8, appearances=28, price=35),
     Player("Milinkovic-Savic", "Lazio", "C", fantamedia=6.9, appearances=32, price=38),
@@ -110,7 +109,7 @@ SAMPLE_PLAYERS = [
     Player("Zaniolo", "Roma", "C", fantamedia=6.2, appearances=24, price=28),
     Player("Kvaratskhelia", "Napoli", "C", fantamedia=7.1, appearances=31, price=42),
     Player("Leao", "Milan", "C", fantamedia=6.7, appearances=30, price=38),
-    
+
     # Forwards
     Player("Osimhen", "Napoli", "A", fantamedia=7.2, appearances=25, price=45),
     Player("Vlahovic", "Juventus", "A", fantamedia=6.8, appearances=28, price=40),
