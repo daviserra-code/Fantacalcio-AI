@@ -5,7 +5,6 @@ import json
 import logging
 from datetime import datetime
 from knowledge_manager import KnowledgeManager
-from corrections_manager import CorrectionsManager
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

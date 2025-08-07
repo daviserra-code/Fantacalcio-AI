@@ -83,30 +83,32 @@ class League:
         }
         return rules.get(self.league_type, [])
 
+# Static player data to avoid recursion issues
+STATIC_PLAYERS_DATA = [
+    {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 42, 'appearances': 34},
+    {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 44, 'appearances': 32},
+    {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.0, 'price': 39, 'appearances': 35},
+    {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 6.9, 'price': 37, 'appearances': 30},
+    {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 37, 'appearances': 31},
+    {'name': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 44, 'appearances': 28},
+    {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.2, 'price': 39, 'appearances': 35},
+    {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.0, 'price': 34, 'appearances': 32},
+    {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
+    {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
+    {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.9, 'price': 29, 'appearances': 32},
+    {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.0, 'price': 34, 'appearances': 33},
+    {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
+    {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
+    {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
+    {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
+    {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32}
+]
+
 def get_real_players():
     """Get real player data from the knowledge manager"""
     assistant = get_assistant()
     if not assistant or not assistant.knowledge_manager:
-        # Fallback minimal data if knowledge manager not available
-        return [
-            {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 42, 'appearances': 34},
-            {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 44, 'appearances': 32},
-            {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.0, 'price': 39, 'appearances': 35},
-            {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 6.9, 'price': 37, 'appearances': 30},
-            {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 37, 'appearances': 31},
-            {'name': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 44, 'appearances': 28},
-            {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.2, 'price': 39, 'appearances': 35},
-            {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.0, 'price': 34, 'appearances': 32},
-            {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
-            {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
-            {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.9, 'price': 29, 'appearances': 32},
-            {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.0, 'price': 34, 'appearances': 33},
-            {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
-            {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
-            {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
-            {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
-            {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32}
-        ]
+        return STATIC_PLAYERS_DATA
     
     try:
         # Query real player data from knowledge manager
@@ -125,33 +127,21 @@ def get_real_players():
                     'appearances': metadata.get('appearances', 30)
                 })
         
-        return real_players if real_players else get_real_players()  # Fallback
+        return real_players if real_players else STATIC_PLAYERS_DATA
         
     except Exception as e:
         logger.error(f"Failed to get real players data: {e}")
-        # Return hardcoded fallback data to avoid recursion
-        return [
-            {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 42, 'appearances': 34},
-            {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 44, 'appearances': 32},
-            {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.0, 'price': 39, 'appearances': 35},
-            {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 6.9, 'price': 37, 'appearances': 30},
-            {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 37, 'appearances': 31},
-            {'name': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 44, 'appearances': 28},
-            {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.2, 'price': 39, 'appearances': 35},
-            {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.0, 'price': 34, 'appearances': 32},
-            {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
-            {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
-            {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.9, 'price': 29, 'appearances': 32},
-            {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.0, 'price': 34, 'appearances': 33},
-            {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
-            {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
-            {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
-            {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
-            {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32}
-        ]
+        return STATIC_PLAYERS_DATA
 
-# Use real players instead of sample
-REAL_PLAYERS = get_real_players()
+# Use real players instead of sample - initialize after function definition
+REAL_PLAYERS = None
+
+def init_real_players():
+    """Initialize real players data once"""
+    global REAL_PLAYERS
+    if REAL_PLAYERS is None:
+        REAL_PLAYERS = get_real_players()
+    return REAL_PLAYERS
 
 # Multilingual support
 TRANSLATIONS = {
@@ -498,7 +488,7 @@ def search_players():
 
         # Filter players based on search query and role
         results = []
-        players_data = get_real_players()
+        players_data = init_real_players()
         for player_dict in players_data:
             match_name = query in player_dict['name'].lower()
             match_team = query in player_dict['team'].lower()
@@ -684,7 +674,7 @@ def get_performance_charts(chart_type):
     try:
         if chart_type == 'fantamedia_by_role':
             role_data = {}
-            players_data = get_real_players()
+            players_data = init_real_players()
             for player in players_data:
                 if player['role'] not in role_data:
                     role_data[player['role']] = []
@@ -704,7 +694,7 @@ def get_performance_charts(chart_type):
 
         elif chart_type == 'price_distribution':
             price_ranges = {'0-20': 0, '21-30': 0, '31-40': 0, '40+': 0}
-            players_data = get_real_players()
+            players_data = init_real_players()
             for player in players_data:
                 if player['price'] <= 20:
                     price_ranges['0-20'] += 1
@@ -729,7 +719,7 @@ def get_performance_charts(chart_type):
 
         elif chart_type == 'value_efficiency':
             efficiency_data = []
-            players_data = get_real_players()
+            players_data = init_real_players()
             for player in players_data:
                 if player['price'] > 0:
                     efficiency = player['fantamedia'] / player['price']
@@ -817,7 +807,7 @@ def compare_players():
             return jsonify({'error': 'Compare 2-4 players only'}), 400
 
         comparison_data = []
-        players_data = get_real_players()
+        players_data = init_real_players()
         for name in player_names:
             player = next((p for p in players_data if p['name'].lower() == name.lower()), None)
             if player:
@@ -853,7 +843,7 @@ def get_player_analysis(player_name):
     """Get detailed player analysis"""
     try:
         # Find player in real data
-        players_data = get_real_players()
+        players_data = init_real_players()
         player = next((p for p in players_data if p['name'].lower() == player_name.lower()), None)
         if not player:
             return jsonify({'error': 'Player not found'}), 404
@@ -1180,7 +1170,7 @@ def export_data():
                 writer = csv.writer(output)
                 writer.writerow(['Name', 'Team', 'Role', 'Fantamedia', 'Price', 'Appearances'])
 
-                players_data = get_real_players()
+                players_data = init_real_players()
                 for player in players_data:
                     writer.writerow([player['name'], player['team'], player['role'],
                                    player['fantamedia'], player['price'], player['appearances']])
