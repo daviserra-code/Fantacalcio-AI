@@ -49,7 +49,7 @@ class FantacalcioAssistant:
         1. USA SOLO le informazioni fornite dal database/contesto quando disponibili
         2. Se NON hai dati specifici, dillo chiaramente: "Non ho informazioni aggiornate su..."
         3. NON inventare statistiche, prezzi o trasferimenti
-        4. La stagione di riferimento è 2024-25 per i dati più recenti
+        4. La stagione di riferimento è 2025-26 per i dati più recenti
         5. Se fai supposizioni, specificalo: "Basandomi sui dati storici, potrebbe..."
 
         QUANDO HAI INFORMAZIONI DAL DATABASE:
