@@ -78,11 +78,11 @@ class KnowledgeManager:
             # ChromaDB uses cosine distance by default, convert to cosine similarity
             distance = results['distances'][0][i]
             cosine_similarity = 1 - distance  # For cosine distance: similarity = 1 - distance
-
+            
             # Log detailed similarity information
             if i < 3:  # Log first 3 results for debugging
                 print(f"   Result {i+1}: Distance={distance:.4f}, Cosine Similarity={cosine_similarity:.4f}")
-
+            
             formatted_results.append({
                 'text': results['documents'][0][i],
                 'metadata': results['metadatas'][0][i],
@@ -191,7 +191,7 @@ class KnowledgeManager:
     def verify_embedding_consistency(self):
         """Verify that embeddings are consistent and high quality"""
         print(f"🔬 EMBEDDING VERIFICATION:")
-
+        
         # Verify model name
         model_name = getattr(self.encoder, 'model_name', 'all-MiniLM-L6-v2')
         print(f"   Model: {model_name}")
@@ -202,7 +202,7 @@ class KnowledgeManager:
         # Test embedding with sample text
         sample_text = "Lautaro Martinez fantamedia gol assist"
         sample_embedding = self.encoder.encode(sample_text).tolist()
-
+        
         # Calculate L2 norm (should be 1.0 for normalized embeddings)
         embedding_norm = (sum(x*x for x in sample_embedding))**0.5
 
@@ -223,10 +223,10 @@ class KnowledgeManager:
             print(f"     Cosine Similarity: {similarity:.4f}")
             print(f"     Distance: {distance:.4f}")
             print(f"     Text: '{result['text'][:60]}...'")
-
+            
             # Check if similarity makes sense (should be between -1 and 1)
             if -1 <= similarity <= 1:
-                quality = "Good" if similarity > 0.3 else ("Low" if similarity > 0.0 else "Very Low")
+                quality = "Good" if similarity > 0.3 else "Low" if similarity > 0 else "Very Low"
                 print(f"     Quality: {quality}")
             else:
                 print(f"     WARNING: Invalid similarity score!")
@@ -236,28 +236,28 @@ class KnowledgeManager:
     def reset_database(self):
         """Reset the entire ChromaDB database and rebuild from scratch"""
         print(f"🗑️ RESETTING DATABASE...")
-
+        
         try:
             # Reset the entire ChromaDB client (clears all collections)
             self.client.reset()
             print("✅ ChromaDB reset complete - all collections cleared")
-
+            
             # Recreate the collection
             self.collection = self.client.create_collection(
                 name=self.collection_name,
                 metadata={"description": "Fantacalcio knowledge base for RAG"}
             )
             print(f"✅ Recreated collection: {self.collection_name}")
-
+            
             # Mark collection as empty so data will be reloaded
             self.collection_is_empty = True
-
+            
             # Clear query cache
             self.query_cache = {}
             print("✅ Query cache cleared")
-
+            
             return True
-
+            
         except Exception as e:
             print(f"❌ Error resetting database: {e}")
             return False
@@ -265,7 +265,7 @@ class KnowledgeManager:
     def rebuild_database_from_jsonl(self, jsonl_files):
         """Rebuild database from JSONL files after reset"""
         print(f"🔄 REBUILDING DATABASE...")
-
+        
         total_loaded = 0
         for jsonl_file in jsonl_files:
             if os.path.exists(jsonl_file):
@@ -284,15 +284,15 @@ class KnowledgeManager:
                                     count += 1
                             except json.JSONDecodeError as e:
                                 print(f"⚠️ Error parsing line in {jsonl_file}: {e}")
-
+                    
                     print(f"✅ Loaded {count} entries from {jsonl_file}")
                     total_loaded += count
-
+                    
                 except Exception as e:
                     print(f"❌ Error loading {jsonl_file}: {e}")
             else:
                 print(f"⚠️ File not found: {jsonl_file}")
-
+        
         self.collection_is_empty = False
         print(f"🎉 Database rebuild complete! Total entries loaded: {total_loaded}")
         return total_loaded
