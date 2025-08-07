@@ -47,6 +47,9 @@ class FantacalcioAssistant:
         # Load training data once at startup
         self._load_training_data()
         
+        # Update knowledge base with current Serie A data
+        self._update_serie_a_data()
+        
         # Skip model verification in production for faster startup
         
         # Response cache with TTL (Time To Live)
@@ -113,6 +116,18 @@ class FantacalcioAssistant:
             print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
             if not training_loaded:
                 print("⚠️ Running with limited knowledge base")
+
+    def _update_serie_a_data(self):
+        """Update knowledge base with current Serie A data"""
+        try:
+            from serie_a_data_collector import SerieADataCollector
+            collector = SerieADataCollector()
+            # This will add current season data to the knowledge manager
+            collector.update_knowledge_base()
+            print("✅ Serie A data updated")
+        except Exception as e:
+            print(f"⚠️ Could not update Serie A data: {e}")
+            # Continue running with existing data
 
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
