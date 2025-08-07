@@ -588,16 +588,26 @@ def get_user_analytics():
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
-@app.route('/api/accessibility-settings', methods=['GET'])
-def get_accessibility_settings():
-    """Get accessibility configuration"""
-    return jsonify({
-        'high_contrast': False,
-        'large_text': False,
-        'screen_reader_support': True,
-        'reduced_motion': False,
-        'keyboard_navigation': True
-    })
+@app.route('/api/accessibility-settings', methods=['GET', 'POST'])
+def accessibility_settings():
+    """Get or update accessibility configuration"""
+    if request.method == 'POST':
+        try:
+            data = request.get_json()
+            # In a real app, you'd save these to user preferences
+            logger.info(f"Accessibility settings updated: {data}")
+            return jsonify({'status': 'updated'})
+        except Exception as e:
+            logger.error(f"Accessibility settings error: {str(e)}")
+            return jsonify({'error': 'Failed to update settings'}), 500
+    else:
+        return jsonify({
+            'high_contrast': False,
+            'large_text': False,
+            'screen_reader_support': True,
+            'reduced_motion': False,
+            'keyboard_navigation': True
+        })
 
 @app.route('/api/mobile-config', methods=['GET'])
 def get_mobile_config():
