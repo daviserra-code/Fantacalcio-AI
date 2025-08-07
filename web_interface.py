@@ -34,9 +34,28 @@ def get_assistant():
             logger.info("FantacalcioAssistant initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize FantacalcioAssistant: {e}")
-            assistant_instance = False
+            # Create a minimal mock assistant for basic functionality
+            assistant_instance = create_mock_assistant()
 
     return assistant_instance if assistant_instance is not False else None
+
+def create_mock_assistant():
+    """Create a mock assistant for degraded mode operation"""
+    class MockAssistant:
+        def __init__(self):
+            self.knowledge_manager = None
+            self.corrections_manager = None
+            
+        def get_response(self, message, context=None):
+            return "⚠️ Servizio temporaneamente non disponibile. Riprova più tardi."
+            
+        def reset_conversation(self):
+            return "Conversazione resettata (modalità limitata)."
+            
+        def get_cache_stats(self):
+            return {'hits': 0, 'misses': 0, 'hit_rate_percentage': 0, 'cache_size': 0, 'max_cache_size': 0}
+    
+    return MockAssistant()
 
 # Add missing sample data for the application to work
 class Player:
@@ -110,8 +129,26 @@ def get_real_players():
         
     except Exception as e:
         logger.error(f"Failed to get real players data: {e}")
-        # Return current season data as fallback
-        return get_real_players()
+        # Return hardcoded fallback data to avoid recursion
+        return [
+            {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 42, 'appearances': 34},
+            {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 44, 'appearances': 32},
+            {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.0, 'price': 39, 'appearances': 35},
+            {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 6.9, 'price': 37, 'appearances': 30},
+            {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 37, 'appearances': 31},
+            {'name': 'Romelu Lukaku', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.1, 'price': 44, 'appearances': 28},
+            {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.2, 'price': 39, 'appearances': 35},
+            {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.0, 'price': 34, 'appearances': 32},
+            {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
+            {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
+            {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.9, 'price': 29, 'appearances': 32},
+            {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.0, 'price': 34, 'appearances': 33},
+            {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
+            {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
+            {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
+            {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
+            {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32}
+        ]
 
 # Use real players instead of sample
 REAL_PLAYERS = get_real_players()

@@ -13,19 +13,24 @@ class KnowledgeManager:
         self.collection_name = collection_name
 
         # Initialize SentenceTransformer for embeddings with error handling
+        self.embedding_model = None
+        self.embedding_disabled = False
+        
         try:
             # Force CPU device to avoid tensor device issues
             torch.set_default_device('cpu')
             self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+            print("✅ SentenceTransformer initialized successfully")
         except Exception as e:
             print(f"⚠️ Error initializing sentence transformer: {e}")
-            # Try alternative initialization
+            # Try alternative initialization without device specification
             try:
                 self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-                self.embedding_model = self.embedding_model.to('cpu')
+                print("✅ SentenceTransformer initialized without device specification")
             except Exception as e2:
                 print(f"❌ Failed to initialize embedding model: {e2}")
-                raise RuntimeError("Cannot initialize embedding model") from e2
+                print("🔄 Running in degraded mode without embeddings")
+                self.embedding_disabled = True
 
         # Query cache for embedding results
         self.query_cache = {}
@@ -52,31 +57,49 @@ class KnowledgeManager:
 
     def add_knowledge(self, text: str, metadata: Dict[str, Any] = None, doc_id: str = None):
         """Add knowledge to the vector database"""
+        if self.embedding_disabled:
+            print("⚠️ Embeddings disabled, skipping knowledge addition")
+            return str(uuid.uuid4()) if doc_id is None else doc_id
+            
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        # Generate embedding
-        embedding = self.embedding_model.encode(text).tolist()
+        try:
+            # Generate embedding
+            embedding = self.embedding_model.encode(text).tolist()
 
-        self.collection.add(
-            embeddings=[embedding],
-            documents=[text],
-            metadatas=[metadata or {}],
-            ids=[doc_id]
-        )
+            self.collection.add(
+                embeddings=[embedding],
+                documents=[text],
+                metadatas=[metadata or {}],
+                ids=[doc_id]
+            )
+        except Exception as e:
+            print(f"⚠️ Error adding knowledge: {e}")
+            self.embedding_disabled = True
+            return doc_id
 
         return doc_id
 
     def search_knowledge(self, query: str, n_results: int = 3) -> List[Dict]:
         """Search for relevant knowledge with caching"""
+        if self.embedding_disabled:
+            print("⚠️ Embeddings disabled, returning empty search results")
+            return []
+            
         cache_key = f"{query.lower().strip()}_{n_results}"
 
         # Check query cache first
         if cache_key in self.query_cache:
             return self.query_cache[cache_key]
 
-        # Generate query embedding
-        query_embedding = self.embedding_model.encode(query).tolist()
+        try:
+            # Generate query embedding
+            query_embedding = self.embedding_model.encode(query).tolist()
+        except Exception as e:
+            print(f"⚠️ Error generating query embedding: {e}")
+            self.embedding_disabled = True
+            return []
 
         # Search in collection
         results = self.collection.query(

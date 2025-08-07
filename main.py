@@ -40,6 +40,7 @@ class FantacalcioAssistant:
             print("✅ Corrections manager initialized")
         except Exception as e:
             print(f"❌ Failed to initialize managers: {e}")
+            print("🔄 Running in degraded mode without vector search")
             # Create minimal fallback managers
             self.knowledge_manager = None
             self.corrections_manager = None
