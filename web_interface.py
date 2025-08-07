@@ -719,7 +719,7 @@ def get_user_analytics():
 
     except Exception as e:
         logger.error(f"User analytics error: {str(e)}")
-        return jsonify({'error': 'Analytics data unavailable'}), 500
+        return jsonify({'error': 'Analytics data unavailable'}), 500</old_str>
 
 @app.route('/api/player-comparison', methods=['POST'])
 def compare_players():

@@ -1326,14 +1326,31 @@
 
         <!-- Charts Section -->
         <div class="chart-container" id="chartsSection" style="display: none;">
-            <h3>Visualizzazioni Dati</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-                <canvas id="fantamediaChart" width="400" height="200"></canvas>
-                <canvas id="priceChart" width="400" height="200"></canvas>
-                <canvas id="efficiencyChart" width="400" height="200"></canvas>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h3 style="color: var(--text-primary); margin-bottom: 0.5rem;">📊 Visualizzazioni Dati Fantacalcio</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">
+                    Analisi grafiche dei dati dei giocatori: fantamedia per ruolo, distribuzione prezzi e efficienza
+                </p>
             </div>
-            <button onclick="exportData('csv', 'players')" class="quick-action-btn">📥 Esporta Dati</button>
-        </div>
+            <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+                <div class="chart-wrapper" style="background: var(--bg-secondary); border-radius: 10px; padding: 1rem; border: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; text-align: center;">Fantamedia per Ruolo</h4>
+                    <canvas id="fantamediaChart" width="300" height="200"></canvas>
+                </div>
+                <div class="chart-wrapper" style="background: var(--bg-secondary); border-radius: 10px; padding: 1rem; border: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; text-align: center;">Distribuzione Prezzi</h4>
+                    <canvas id="priceChart" width="300" height="200"></canvas>
+                </div>
+                <div class="chart-wrapper" style="background: var(--bg-secondary); border-radius: 10px; padding: 1rem; border: 1px solid var(--border-color);">
+                    <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; text-align: center;">Efficienza Valore</h4>
+                    <canvas id="efficiencyChart" width="300" height="200"></canvas>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <button onclick="exportData('csv', 'players')" class="quick-action-btn" style="margin: 0 0.5rem;">📥 Esporta Dati CSV</button>
+                <button onclick="hideCharts()" class="quick-action-btn" style="background: #6c757d; margin: 0 0.5rem;">✖️ Nascondi Grafici</button>
+            </div>
+        </div></old_str>
 
         <!-- Player Comparison Section -->
         <div id="comparisonSection" style="display: none;">
@@ -2593,48 +2610,144 @@ Le correzioni verranno salvate automaticamente e applicate alle future risposte!
             });
         }
 
-        // Placeholder for actual chart creation logic (e.g., using Chart.js)
         function createChart(chartType, data) {
-            // In a real application, you would use a charting library here.
-            // For demonstration, we'll just log the data.
             console.log(`Rendering chart: ${chartType}`, data);
 
-            // Example of how you might render a simple bar chart:
-            const canvas = document.getElementById(`${chartType.replace('_', '')}Chart`); // e.g., fantamediaChart
-            if (!canvas) return;
+            const canvasMap = {
+                'fantamedia_by_role': 'fantamediaChart',
+                'price_distribution': 'priceChart',
+                'value_efficiency': 'efficiencyChart'
+            };
+
+            const canvas = document.getElementById(canvasMap[chartType]);
+            if (!canvas) {
+                console.warn(`Canvas not found for chart type: ${chartType}`);
+                return;
+            }
 
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous chart
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Simple drawing for demonstration
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '12px Arial';
-            ctx.fillText(`Chart data for ${chartType}:`, 10, 20);
+            // Set background
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (data && data.data && data.data.labels && data.data.datasets) {
                 const bars = data.data.datasets[0].data;
                 const labels = data.data.labels;
-                const barWidth = canvas.width / (bars.length * 2);
-                const maxValue = Math.max(...bars);
-                const scale = (canvas.height - 40) / maxValue; // Reserve space for labels
+                const colors = data.data.datasets[0].backgroundColor;
 
-                bars.forEach((value, i) => {
-                    const barHeight = value * scale;
-                    const x = i * (barWidth * 2) + barWidth / 2;
-                    const y = canvas.height - 40 - barHeight;
-
-                    ctx.fillStyle = data.data.datasets[0].backgroundColor[i] || '#00ff88';
-                    ctx.fillRect(x, y, barWidth, barHeight);
-
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText(labels[i], x - (ctx.measureText(labels[i]).width / 2), canvas.height - 20);
-                    ctx.fillText(value.toString(), x - (ctx.measureText(value.toString()).width / 2), y - 5);
-                });
+                if (data.type === 'bar') {
+                    drawBarChart(ctx, canvas, bars, labels, colors);
+                } else if (data.type === 'pie') {
+                    drawPieChart(ctx, canvas, bars, labels, colors);
+                } else if (data.type === 'bubble') {
+                    drawBubbleChart(ctx, canvas, data.data.datasets[0].data);
+                }
             } else {
+                // Error state
                 ctx.fillStyle = '#ff6b6b';
-                ctx.fillText('No data available for this chart.', 10, 50);
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dati non disponibili', canvas.width / 2, canvas.height / 2 - 10);
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.fillText('Riprova più tardi', canvas.width / 2, canvas.height / 2 + 10);
             }
         }
+
+        function drawBarChart(ctx, canvas, values, labels, colors) {
+            const padding = 40;
+            const maxValue = Math.max(...values);
+            const barWidth = (canvas.width - padding * 2) / (values.length * 1.5);
+            const scale = (canvas.height - padding * 2) / maxValue;
+
+            values.forEach((value, i) => {
+                const barHeight = value * scale;
+                const x = padding + i * (barWidth * 1.5);
+                const y = canvas.height - padding - barHeight;
+
+                // Draw bar
+                ctx.fillStyle = colors[i] || '#00ff88';
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Draw label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[i], x + barWidth / 2, canvas.height - 20);
+                
+                // Draw value
+                ctx.fillText(value.toFixed(1), x + barWidth / 2, y - 5);
+            });
+        }
+
+        function drawPieChart(ctx, canvas, values, labels, colors) {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 3;
+            const total = values.reduce((sum, val) => sum + val, 0);
+            
+            let currentAngle = -Math.PI / 2;
+
+            values.forEach((value, i) => {
+                const sliceAngle = (value / total) * 2 * Math.PI;
+                
+                // Draw slice
+                ctx.fillStyle = colors[i] || '#00ff88';
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                // Draw label
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${labels[i]}: ${value}`, labelX, labelY);
+
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function drawBubbleChart(ctx, canvas, data) {
+            const padding = 40;
+            const maxX = Math.max(...data.map(d => d.x));
+            const maxY = Math.max(...data.map(d => d.y));
+            const scaleX = (canvas.width - padding * 2) / maxX;
+            const scaleY = (canvas.height - padding * 2) / maxY;
+
+            data.forEach((point, i) => {
+                const x = padding + point.x * scaleX;
+                const y = canvas.height - padding - point.y * scaleY;
+                const radius = Math.min(point.r || 5, 15);
+
+                ctx.fillStyle = '#45B7D1';
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px Arial';
+                ctx.textAlign = 'center';
+                if (point.name) {
+                    ctx.fillText(point.name.substring(0, 8), x, y - radius - 5);
+                }
+            });
+        }
+
+        function hideCharts() {
+            const chartsSection = document.getElementById('chartsSection');
+            if (chartsSection) {
+                chartsSection.style.display = 'none';
+            }
+        }</old_str>
 
         // Player Comparison Functions
         function showPlayerComparison() {
