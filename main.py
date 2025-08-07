@@ -2,9 +2,14 @@ import openai
 import os
 import sys
 import json
+import logging
 from datetime import datetime
 from knowledge_manager import KnowledgeManager
 from corrections_manager import CorrectionsManager
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 openai.api_key = os.environ.get('OPENAI_API_KEY', '')
 
@@ -23,11 +28,21 @@ if not openai.api_key:
 
 class FantacalcioAssistant:
     def __init__(self):
-        # Initialize knowledge manager for RAG
-        self.knowledge_manager = KnowledgeManager()
+        try:
+            # Initialize knowledge manager for RAG
+            print("🔄 Initializing knowledge manager...")
+            self.knowledge_manager = KnowledgeManager()
+            print("✅ Knowledge manager initialized")
 
-        # Initialize corrections manager (using ChromaDB)
-        self.corrections_manager = KnowledgeManager(collection_name="corrections")
+            # Initialize corrections manager (using ChromaDB)
+            print("🔄 Initializing corrections manager...")
+            self.corrections_manager = KnowledgeManager(collection_name="corrections")
+            print("✅ Corrections manager initialized")
+        except Exception as e:
+            print(f"❌ Failed to initialize managers: {e}")
+            # Create minimal fallback managers
+            self.knowledge_manager = None
+            self.corrections_manager = None
 
         # Load training data once at startup
         self._load_training_data()
@@ -76,22 +91,28 @@ class FantacalcioAssistant:
 
     def _load_training_data(self):
         """Load training data once at startup"""
+        if not self.knowledge_manager:
+            print("⚠️ Knowledge manager not available, skipping training data load")
+            return
+            
         training_loaded = False
 
         # Try loading main training data
         try:
             self.knowledge_manager.load_from_jsonl("training_data.jsonl")
             training_loaded = True
+            print("✅ Main training data loaded")
         except Exception as e:
-            logger.warning(f"Could not load training_data.jsonl: {e}")
+            print(f"⚠️ Could not load training_data.jsonl: {e}")
 
         # Try loading extended training data as fallback
         try:
             self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
+            print("✅ Extended training data loaded")
         except Exception as e:
-            logger.warning(f"Could not load extended_training_data.jsonl: {e}")
+            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
             if not training_loaded:
-                logger.info("Running with limited knowledge base")
+                print("⚠️ Running with limited knowledge base")
 
     def get_response(self, user_message, context=None):
         """Get AI response for fantasy football queries with RAG"""
@@ -118,7 +139,13 @@ class FantacalcioAssistant:
 
         # Get relevant knowledge from vector database (data already loaded at startup)
         print(f"\n🔍 QUERY: {user_message}")
-        relevant_context = self.knowledge_manager.get_context_for_query(user_message)
+        relevant_context = None
+        if self.knowledge_manager:
+            try:
+                relevant_context = self.knowledge_manager.get_context_for_query(user_message)
+            except Exception as e:
+                print(f"⚠️ Knowledge search failed: {e}")
+                relevant_context = None
         
         if relevant_context:
             # Provide context but allow strategic reasoning
@@ -259,6 +286,9 @@ class FantacalcioAssistant:
 
     def _apply_corrections_from_chromadb(self, text):
         """Apply corrections stored in ChromaDB"""
+        if not self.corrections_manager:
+            return text
+            
         try:
             # Search for relevant corrections
             corrections = self.corrections_manager.search_knowledge("CORREZIONE", n_results=10)

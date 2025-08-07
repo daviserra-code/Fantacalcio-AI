@@ -4,15 +4,28 @@ import os
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any
 import uuid
+import torch
 
 class KnowledgeManager:
     def __init__(self, collection_name="fantacalcio_knowledge"):
-        # Initialize ChromaDB client with connection pooling
+        # Initialize Chroma client
         self.client = chromadb.PersistentClient(path="./chroma_db")
         self.collection_name = collection_name
 
-        # Initialize sentence transformer for embeddings
-        self.encoder = SentenceTransformer('all-MiniLM-L6-v2')
+        # Initialize SentenceTransformer for embeddings with error handling
+        try:
+            # Force CPU device to avoid tensor device issues
+            torch.set_default_device('cpu')
+            self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+        except Exception as e:
+            print(f"⚠️ Error initializing sentence transformer: {e}")
+            # Try alternative initialization
+            try:
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+                self.embedding_model = self.embedding_model.to('cpu')
+            except Exception as e2:
+                print(f"❌ Failed to initialize embedding model: {e2}")
+                raise RuntimeError("Cannot initialize embedding model") from e2
 
         # Query cache for embedding results
         self.query_cache = {}
@@ -43,7 +56,7 @@ class KnowledgeManager:
             doc_id = str(uuid.uuid4())
 
         # Generate embedding
-        embedding = self.encoder.encode(text).tolist()
+        embedding = self.embedding_model.encode(text).tolist()
 
         self.collection.add(
             embeddings=[embedding],
@@ -63,7 +76,7 @@ class KnowledgeManager:
             return self.query_cache[cache_key]
 
         # Generate query embedding
-        query_embedding = self.encoder.encode(query).tolist()
+        query_embedding = self.embedding_model.encode(query).tolist()
 
         # Search in collection
         results = self.collection.query(
@@ -194,15 +207,15 @@ class KnowledgeManager:
         print(f"🔬 EMBEDDING VERIFICATION:")
 
         # Verify model name
-        model_name = getattr(self.encoder, 'model_name', 'all-MiniLM-L6-v2')
+        model_name = getattr(self.embedding_model, 'model_name', 'all-MiniLM-L6-v2')
         print(f"   Model: {model_name}")
-        print(f"   Model device: {self.encoder.device}")
+        print(f"   Model device: {self.embedding_model.device}")
         print(f"   Collection: {self.collection_name}")
         print(f"   Total documents: {self.collection.count()}")
 
         # Test embedding with sample text
         sample_text = "Lautaro Martinez fantamedia gol assist"
-        sample_embedding = self.encoder.encode(sample_text).tolist()
+        sample_embedding = self.embedding_model.encode(sample_text).tolist()
 
         # Calculate L2 norm (should be 1.0 for normalized embeddings)
         embedding_norm = (sum(x*x for x in sample_embedding))**0.5
