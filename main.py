@@ -32,9 +32,18 @@ class FantacalcioAssistant:
         # Load training data once at startup
         self._load_training_data()
         
-        # Verify embedding consistency
+        # Verify embedding consistency and model matching
         print("\n🔍 VERIFYING EMBEDDING CONSISTENCY...")
         self.knowledge_manager.verify_embedding_consistency()
+        
+        # Verify both managers use the same model
+        knowledge_model = getattr(self.knowledge_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
+        corrections_model = getattr(self.corrections_manager.encoder, 'model_name', 'all-MiniLM-L6-v2')
+        
+        if knowledge_model == corrections_model:
+            print(f"✅ Both collections use same model: {knowledge_model}")
+        else:
+            print(f"⚠️ Model mismatch - Knowledge: {knowledge_model}, Corrections: {corrections_model}")
 
         # Response cache with TTL (Time To Live) - cleared on startup
         self.response_cache = {}

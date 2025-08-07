@@ -72,13 +72,23 @@ class KnowledgeManager:
             include=['documents', 'metadatas', 'distances']
         )
 
-        # Format results
+        # Format results with proper similarity calculation
         formatted_results = []
         for i in range(len(results['documents'][0])):
+            # ChromaDB uses cosine distance by default, convert to cosine similarity
+            distance = results['distances'][0][i]
+            cosine_similarity = 1 - distance  # For cosine distance: similarity = 1 - distance
+            
+            # Log detailed similarity information
+            if i < 3:  # Log first 3 results for debugging
+                print(f"   Result {i+1}: Distance={distance:.4f}, Cosine Similarity={cosine_similarity:.4f}")
+            
             formatted_results.append({
                 'text': results['documents'][0][i],
                 'metadata': results['metadatas'][0][i],
-                'relevance_score': 1 - results['distances'][0][i]  # Convert distance to similarity
+                'relevance_score': cosine_similarity,
+                'cosine_similarity': cosine_similarity,
+                'distance': distance
             })
 
         # Cache the results
@@ -124,22 +134,34 @@ class KnowledgeManager:
 
         print(f"🧠 Knowledge Manager - Processing {len(results)} results for query: '{query[:50]}...'")
 
-        # Use more flexible relevance thresholds - accept more results
-        high_quality_results = [r for r in results if r['relevance_score'] > 0.5]
-        medium_quality_results = [r for r in results if 0.3 < r['relevance_score'] <= 0.5]
+        # Use cosine similarity thresholds for filtering
+        high_quality_results = [r for r in results if r['cosine_similarity'] > 0.4]
+        medium_quality_results = [r for r in results if 0.2 < r['cosine_similarity'] <= 0.4]
+        low_quality_results = [r for r in results if 0.1 < r['cosine_similarity'] <= 0.2]
 
-        print(f"   High quality (>0.5): {len(high_quality_results)}")
-        print(f"   Medium quality (0.3-0.5): {len(medium_quality_results)}")
+        print(f"   High quality (similarity >0.4): {len(high_quality_results)}")
+        print(f"   Medium quality (similarity 0.2-0.4): {len(medium_quality_results)}")
+        print(f"   Low quality (similarity 0.1-0.2): {len(low_quality_results)}")
+
+        # Log similarity scores for transparency
+        for i, result in enumerate(results[:3]):
+            sim = result['cosine_similarity']
+            print(f"   Top {i+1} similarity: {sim:.4f} - {result['text'][:50]}...")
 
         # If no high quality, try medium quality results
         if not high_quality_results and medium_quality_results:
             high_quality_results = medium_quality_results[:3]
             print(f"   Using {len(high_quality_results)} medium quality results")
 
-        # If still no results, take top 2 regardless of score for general context
-        if not high_quality_results and results:
+        # If still no results, try low quality ones
+        elif not high_quality_results and not medium_quality_results and low_quality_results:
+            high_quality_results = low_quality_results[:2]
+            print(f"   Using {len(high_quality_results)} low quality results")
+
+        # Last resort: take top 2 regardless of score for general context
+        elif not high_quality_results and results:
             high_quality_results = results[:2]
-            print(f"   Fallback: using top {len(high_quality_results)} results regardless of score")
+            print(f"   Fallback: using top {len(high_quality_results)} results (similarities: {[r['cosine_similarity']:.3f for r in high_quality_results]})")
 
         context_parts = []
         current_length = 0
@@ -152,8 +174,8 @@ class KnowledgeManager:
             score = result['relevance_score']
 
             if current_length + len(text) <= max_context_length:
-                # Include relevance information for transparency
-                context_parts.append(f"- {text} [Rilevanza: {score:.2f}]")
+                # Include cosine similarity for transparency
+                context_parts.append(f"- {text} [Similarity: {score:.3f}]")
                 current_length += len(text)
             else:
                 break
@@ -169,29 +191,45 @@ class KnowledgeManager:
     def verify_embedding_consistency(self):
         """Verify that embeddings are consistent and high quality"""
         print(f"🔬 EMBEDDING VERIFICATION:")
-        try:
-            model_name = getattr(self.encoder, 'model_name', 'all-MiniLM-L6-v2')
-            print(f"   Model: {model_name}")
-        except:
-            print(f"   Model: all-MiniLM-L6-v2")
+        
+        # Verify model name
+        model_name = getattr(self.encoder, 'model_name', 'all-MiniLM-L6-v2')
+        print(f"   Model: {model_name}")
+        print(f"   Model device: {self.encoder.device}")
         print(f"   Collection: {self.collection_name}")
         print(f"   Total documents: {self.collection.count()}")
 
         # Test embedding with sample text
         sample_text = "Lautaro Martinez fantamedia gol assist"
         sample_embedding = self.encoder.encode(sample_text).tolist()
+        
+        # Calculate L2 norm (should be 1.0 for normalized embeddings)
+        embedding_norm = (sum(x*x for x in sample_embedding))**0.5
 
         print(f"   Sample text: '{sample_text}'")
         print(f"   Sample embedding dimensions: {len(sample_embedding)}")
-        print(f"   Sample embedding norm: {sum(x*x for x in sample_embedding)**0.5:.4f}")
+        print(f"   Sample embedding norm: {embedding_norm:.4f}")
+        print(f"   Is normalized: {'Yes' if abs(embedding_norm - 1.0) < 0.001 else 'No'}")
 
-        # Test search with the sample
-        results = self.search_knowledge(sample_text, n_results=3)
-        print(f"   Search results: {len(results)} found")
+        # Test search with the sample and log similarity scores
+        print(f"\n🔍 TESTING SEARCH WITH COSINE SIMILARITY:")
+        results = self.search_knowledge(sample_text, n_results=5)
+        print(f"   Total search results: {len(results)}")
 
-        if results:
-            print(f"   Best match score: {results[0]['relevance_score']:.3f}")
-            print(f"   Best match: '{results[0]['text'][:50]}...'")
+        for i, result in enumerate(results):
+            similarity = result['cosine_similarity']
+            distance = result['distance']
+            print(f"   Result {i+1}:")
+            print(f"     Cosine Similarity: {similarity:.4f}")
+            print(f"     Distance: {distance:.4f}")
+            print(f"     Text: '{result['text'][:60]}...'")
+            
+            # Check if similarity makes sense (should be between -1 and 1)
+            if -1 <= similarity <= 1:
+                quality = "Good" if similarity > 0.3 else "Low" if similarity > 0 else "Very Low"
+                print(f"     Quality: {quality}")
+            else:
+                print(f"     WARNING: Invalid similarity score!")
 
         return len(results) > 0
 
