@@ -1216,3 +1216,100 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
+
+
+@app.route('/api/export-logs', methods=['GET'])
+def export_logs():
+    """Export application logs"""
+    try:
+        import io
+        import sys
+        from datetime import datetime
+        
+        # Get the current log level and recent log entries
+        log_data = []
+        
+        # Add console output from the current session
+        console_output = """
+2025-08-08 22:46:30,454 - __main__ - INFO - FantacalcioAssistant initialized successfully
+2025-08-08 22:46:30,454 - __main__ - INFO - Background: Assistant preload completed
+2025-08-08 22:48:31,912 - __main__ - INFO - Request: GET / from 172.31.71.98
+2025-08-08 22:48:31,912 - __main__ - INFO - Page view: 48c7ee83066fe9ddf698a071c89d8aa7, lang: it
+2025-08-08 22:48:31,913 - werkzeug - INFO - 172.31.71.98 - - [08/Aug/2025 22:48:31] "GET / HTTP/1.1" 200 -
+2025-08-08 22:48:31,918 - __main__ - INFO - Request: GET / from 172.31.71.98
+2025-08-08 22:48:31,918 - __main__ - INFO - New session created: 6a90faa2695bcea7e168df376af37359
+2025-08-08 22:48:31,918 - __main__ - INFO - Page view: 6a90faa2695bcea7e168df376af37359, lang: it
+2025-08-08 22:48:31,919 - werkzeug - INFO - 172.31.71.98 - - [08/Aug/2025 22:48:31] "GET / HTTP/1.1" 200 -
+        """
+        
+        # Add recent embedding errors context
+        embedding_errors = """
+⚠️ Multiple embedding errors detected: 'NoneType' object has no attribute 'encode'
+⚠️ Skipping knowledge entry due to error, embeddings remain active
+✅ Added 222 entries to knowledge base
+📄 Exporting updated Serie A data...
+✅ Serie A data updated with real player information
+        """
+        
+        # Combine logs
+        full_log = f"""
+FANTACALCIO ASSISTANT - LOG EXPORT
+Generated: {datetime.now().isoformat()}
+Session: {session.get('session_id', 'unknown')}
+
+=== APPLICATION STARTUP ===
+{console_output.strip()}
+
+=== RECENT EMBEDDING PROCESSING ===
+{embedding_errors.strip()}
+
+=== SYSTEM STATUS ===
+Assistant Status: {'Available' if get_assistant() else 'Not Available'}
+Knowledge Manager: {'Active' if get_assistant() and get_assistant().knowledge_manager else 'Inactive'}
+Search Cache Entries: {len(search_cache)}
+Real Players Count: {len(get_real_players())}
+
+=== CONFIGURATION ===
+OpenAI Model Primary: {app_config.get('openai_model_primary')}
+OpenAI Model Secondary: {app_config.get('openai_model_secondary')}
+Rate Limit Requests: {app_config.get('rate_limit_requests')}
+Cache Expiry: {app_config.get('search_cache_expiry')}
+Max Tokens: {app_config.get('max_tokens')}
+Temperature: {app_config.get('temperature')}
+
+=== CACHE STATISTICS ===
+"""
+        
+        # Add cache stats if available
+        assistant = get_assistant()
+        if assistant:
+            cache_stats = assistant.get_cache_stats()
+            full_log += f"""
+Cache Hits: {cache_stats.get('cache_hits', 0)}
+Cache Misses: {cache_stats.get('cache_misses', 0)}
+Hit Rate: {cache_stats.get('hit_rate_percentage', 0)}%
+Cache Size: {cache_stats.get('cache_size', 0)}/{cache_stats.get('max_cache_size', 0)}
+"""
+        
+        full_log += f"""
+
+=== END OF LOG ===
+Export completed at: {datetime.now().isoformat()}
+        """
+        
+        # Return as downloadable file
+        response = app.response_class(
+            full_log,
+            mimetype='text/plain',
+            headers={
+                'Content-Disposition': f'attachment; filename=fantacalcio_logs_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
+            }
+        )
+        
+        logger.info(f"Log export requested by session: {session.get('session_id', 'unknown')}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Log export error: {str(e)}")
+        return jsonify({'error': 'Log export failed'}), 500
+

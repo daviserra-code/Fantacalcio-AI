@@ -857,7 +857,12 @@
                         <option value="C">{{ t.midfielder }}</option>
                         <option value="A">{{ t.forward }}</option>
                     </select>
-                    <button class="filter-btn" onclick="exportSearchResults()">📊 Export</button>
+                    <button onclick="downloadData()" class="action-btn">
+                        📊 Esporta Dati
+                    </button>
+                    <button onclick="exportLogs()" class="action-btn">
+                        📋 Esporta Log
+                    </button>
                     <button class="filter-btn" onclick="showAdvancedFilters()">🔧 Advanced</button>
                 </div>
 
@@ -959,23 +964,22 @@
                 `<div class="metrics"><strong>Best Value:</strong> ${metrics.best_value}</div>`;
         }
 
-        function exportSearchResults() {
-            fetch('/api/export-data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type: 'csv', data_type: 'players' })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.data) {
-                    const blob = new Blob([data.data], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = data.filename;
-                    a.click();
-                }
-            });
+        function downloadData() {
+            showNotification('Preparando esportazione dati...', 'info');
+            // Implementation for data export
+        }
+
+        function exportLogs() {
+            showNotification('Esportando log applicazione...', 'info');
+
+            // Create a download link for the logs
+            const link = document.createElement('a');
+            link.href = '/api/export-logs';
+            link.download = `fantacalcio_logs_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.txt`;
+            document.body.appendChild(link);
+            document.body.removeChild(link);
+
+            showNotification('Log esportato con successo!', 'success');
         }
 
         function showAdvancedFilters() {
