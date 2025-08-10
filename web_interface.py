@@ -105,7 +105,8 @@ def get_assistant_players():
         # query "larga" per pescare giocatori recenti
         search_results = assistant.knowledge_manager.search_knowledge(
             "giocatore attaccante centrocampista difensore portiere fantamedia stagione",
-            n_results=400
+            n_results=400,
+            where=None  # Fix Chroma query issue
         )
         real_players = []
         for r in search_results:
@@ -298,6 +299,49 @@ def compare_players_api():
         logger.error(f"Compare error: {e}")
         return jsonify({'error': 'Comparison failed'}), 500
 
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Basic chat endpoint for the interface"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
+        message = data.get('message', '').strip()
+        mode = data.get('mode', 'classic')
+        
+        if not message:
+            return jsonify({'error': 'No message provided'}), 400
+            
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({'response': '⚠️ Servizio temporaneamente non disponibile. Riprova più tardi.'}), 200
+            
+        # Get response from assistant
+        response = assistant.get_response(message)
+        
+        return jsonify({
+            'response': response,
+            'mode': mode,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        return jsonify({'error': 'Chat failed', 'response': 'Mi dispiace, si è verificato un errore.'}), 500
+
+@app.route('/api/reset-chat', methods=['POST'])
+def reset_chat():
+    """Reset chat conversation"""
+    try:
+        assistant = get_assistant()
+        if assistant:
+            result = assistant.reset_conversation()
+            return jsonify({'message': result})
+        return jsonify({'message': 'Chat resettata'})
+    except Exception as e:
+        logger.error(f"Reset chat error: {e}")
+        return jsonify({'error': 'Reset failed'}), 500
 
 # --- Endpoints base (chat, ecc.) opzionali: qui teniamo solo quelli utili alla comparison ---
 
