@@ -171,6 +171,9 @@
                 font-size: 0.85em;
                 white-space: nowrap;
                 border-radius: 20px;
+                background: linear-gradient(135deg, #00c851, #007e33) !important;
+                color: white !important;
+                border: 2px solid #00c851 !important;
             }
 
             .search-header input {
@@ -642,21 +645,23 @@
         }
 
         .quick-action-btn {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-            border: 1px solid #2196f3;
+            background: linear-gradient(135deg, #00c851, #007e33);
+            border: 1px solid #00c851;
             border-radius: 15px;
             padding: 8px 12px;
             font-size: 0.8em;
             cursor: pointer;
             transition: all 0.3s;
-            color: #1976d2;
+            color: white;
             font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 200, 81, 0.2);
         }
 
         .quick-action-btn:hover {
-            background: linear-gradient(135deg, #2196f3, #1976d2);
+            background: linear-gradient(135deg, #007e33, #005525);
             color: white;
             transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 200, 81, 0.3);
         }
 
         #messageInput {
@@ -735,12 +740,19 @@
 
         .filter-btn {
             padding: 6px 12px;
-            border: 1px solid #ddd;
-            background: white;
+            border: 2px solid #00c851;
+            background: #f8f9fa;
+            color: #00c851;
             border-radius: 15px;
             cursor: pointer;
             font-size: 0.8em;
             transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            background: #00c851;
+            color: white;
         }
 
         .filter-btn.active {
@@ -1192,10 +1204,10 @@
                         <option value="C">{{ t.midfielder }}</option>
                         <option value="A">{{ t.forward }}</option>
                     </select>
-                    <button onclick="downloadData()" class="action-btn">
+                    <button onclick="downloadData()" class="filter-btn">
                         📊 Esporta Dati
                     </button>
-                    <button onclick="exportLogs()" class="action-btn">
+                    <button onclick="exportLogs()" class="filter-btn">
                         📋 Esporta Log
                     </button>
                     <button class="filter-btn" onclick="showAdvancedFilters()">🔧 Advanced</button>
