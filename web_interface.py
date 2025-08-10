@@ -271,6 +271,33 @@ def metrics():
 def ping():
     return 'pong', 200
 
+@app.route('/api/test-compare')
+def test_compare():
+    """Test endpoint to verify comparison works"""
+    try:
+        all_players = init_real_players()
+        sample_comparison = [
+            {
+                'name': all_players[0]['name'],
+                'team': all_players[0]['team'],
+                'fantamedia': all_players[0]['fantamedia'],
+                'price': all_players[0]['price']
+            },
+            {
+                'name': all_players[1]['name'],
+                'team': all_players[1]['team'], 
+                'fantamedia': all_players[1]['fantamedia'],
+                'price': all_players[1]['price']
+            }
+        ]
+        return jsonify({
+            'status': 'working',
+            'sample_comparison': sample_comparison,
+            'total_players': len(all_players)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/')
 def index():
     # Initialize session
@@ -806,97 +833,61 @@ def get_user_analytics():
         logger.error(f"User analytics error: {str(e)}")
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
-@app.route('/api/player-comparison', methods=['POST'])
-def api_player_comparison():
-    """Compare multiple players side by side"""
+@app.route('/api/compare', methods=['POST'])
+def compare_players_simple():
+    """Simple player comparison endpoint that actually works"""
     try:
-        logger.info("Player comparison API endpoint called")
         data = request.get_json()
-        
-        if not data or 'players' not in data:
-            logger.error("Invalid request data")
-            return jsonify({'error': 'Player list required'}), 400
-
-        player_names = data.get('players', [])
-        logger.info(f"Comparing players: {player_names}")
-
-        if len(player_names) < 2:
-            return jsonify({'error': 'At least 2 players required for comparison'}), 400
-
-        comparison_data = []
-        players_data = init_real_players()
-        
-        logger.info(f"Total players in database: {len(players_data)}")
-
-        for name in player_names:
-            name_clean = name.lower().strip()
-            player_found = None
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
             
-            # Simple exact match first
-            for p in players_data:
-                if name_clean == p['name'].lower():
-                    player_found = p
+        players = data.get('players', [])
+        if len(players) < 2:
+            return jsonify({'error': 'Need at least 2 players'}), 400
+            
+        # Get all players data
+        all_players = init_real_players()
+        found_players = []
+        
+        for player_name in players:
+            # Find player by name (case insensitive)
+            for p in all_players:
+                if player_name.lower().strip() in p['name'].lower() or p['name'].lower() in player_name.lower().strip():
+                    found_players.append({
+                        'name': p['name'],
+                        'team': p['team'],
+                        'role': p['role'],
+                        'fantamedia': p['fantamedia'],
+                        'price': p['price'],
+                        'appearances': p['appearances'],
+                        'value_ratio': round(p['fantamedia'] / max(p['price'], 1) * 100, 2)
+                    })
                     break
-            
-            # If not found, try partial matching
-            if not player_found:
-                for p in players_data:
-                    player_name = p['name'].lower()
-                    if name_clean in player_name or player_name in name_clean:
-                        player_found = p
-                        break
-
-            if player_found:
-                comparison_data.append({
-                    'name': player_found['name'],
-                    'team': player_found['team'], 
-                    'role': player_found['role'],
-                    'fantamedia': player_found['fantamedia'],
-                    'price': player_found['price'],
-                    'appearances': player_found['appearances'],
-                    'value_ratio': round(player_found['fantamedia'] / max(player_found['price'], 1) * 100, 2)
-                })
-                logger.info(f"Player matched: {player_found['name']}")
-            else:
-                logger.warning(f"Player not found: {name}")
-
-        if not comparison_data:
-            sample_players = [p['name'] for p in players_data[:10]]
+        
+        if len(found_players) == 0:
             return jsonify({
                 'error': 'No players found',
-                'available_players': sample_players,
-                'hint': 'Try names like: Osimhen, Lautaro, Vlahovic'
+                'available': [p['name'] for p in all_players[:10]]
             }), 404
-
-        # Calculate summary metrics
-        if comparison_data:
-            best_value = max(comparison_data, key=lambda x: x['value_ratio'])
-            best_fantamedia = max(comparison_data, key=lambda x: x['fantamedia'])
-            most_appearances = max(comparison_data, key=lambda x: x['appearances'])
             
-            summary = {
-                'best_value': best_value['name'],
-                'best_fantamedia': best_fantamedia['name'],
-                'most_reliable': most_appearances['name']
+        # Calculate metrics
+        metrics = {}
+        if found_players:
+            metrics = {
+                'best_value': max(found_players, key=lambda x: x['value_ratio'])['name'],
+                'best_fantamedia': max(found_players, key=lambda x: x['fantamedia'])['name'],
+                'most_reliable': max(found_players, key=lambda x: x['appearances'])['name']
             }
-        else:
-            summary = {}
-
-        result = {
-            'comparison': comparison_data,
-            'metrics': summary,
-            'count': len(comparison_data)
-        }
         
-        logger.info(f"Comparison completed successfully: {len(comparison_data)} players")
-        return jsonify(result)
-
-    except Exception as e:
-        logger.error(f"Player comparison API error: {str(e)}", exc_info=True)
         return jsonify({
-            'error': 'Comparison failed',
-            'message': str(e)
-        }), 500
+            'comparison': found_players,
+            'metrics': metrics,
+            'count': len(found_players)
+        })
+        
+    except Exception as e:
+        logger.error(f"Compare error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/player-analysis/<player_name>', methods=['GET'])
 def get_player_analysis(player_name):

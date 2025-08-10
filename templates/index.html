@@ -981,7 +981,7 @@
             // Show loading indicator
             document.getElementById('comparisonResults').innerHTML = '<p>🔄 Caricamento confronto...</p>';
 
-            fetch('/api/player-comparison', {
+            fetch('/api/compare', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ players: [player1, player2] })
