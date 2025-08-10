@@ -606,6 +606,57 @@
             margin-top: 5px;
         }
 
+        /* Player Comparison Styles */
+        .comparison-table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+
+        .comparison-header {
+            display: grid;
+            grid-template-columns: 150px repeat(auto-fit, minmax(120px, 1fr));
+            background-color: #f5f5f5;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 150px repeat(auto-fit, minmax(120px, 1fr));
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-metric, .comparison-player, .comparison-value {
+            padding: 10px;
+            text-align: left;
+            border-right: 1px solid #eee;
+        }
+
+        .comparison-metric {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+
+        .comparison-player {
+            font-weight: bold;
+            color: #2d98da;
+        }
+
+        .comparison-summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 5px;
+            border-left: 4px solid #2d98da;
+        }
+
+        .comparison-summary h4 {
+            margin-top: 0;
+            color: #2d98da;
+        }
+        /* End Player Comparison Styles */
+
         @media (max-width: 480px) {
             .container {
                 margin: 5px;
@@ -681,10 +732,12 @@
             <span class="close" onclick="closeModal('comparisonModal')">&times;</span>
             <h2>⚖️ Player Comparison</h2>
             <div id="comparisonContent">
-                <input type="text" id="player1Input" placeholder="Player 1" style="width: 48%; margin: 5px;">
-                <input type="text" id="player2Input" placeholder="Player 2" style="width: 48%; margin: 5px;">
-                <button onclick="comparePlayersModal()" class="btn btn-primary">Compare</button>
-                <div id="comparisonResults"></div>
+                <div class="comparison-inputs">
+                    <input type="text" id="player1Input" placeholder="Player 1" style="margin-bottom: 10px; padding: 8px; width: 100%;">
+                    <input type="text" id="player2Input" placeholder="Player 2" style="margin-bottom: 10px; padding: 8px; width: 100%;">
+                    <button onclick="comparePlayersModal()" style="padding: 10px 20px; background-color: #2d98da; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%;">Compare</button>
+                </div>
+                <div id="comparisonResults" style="margin-top: 20px;"></div>
             </div>
         </div>
     </div>
@@ -939,30 +992,57 @@
                 }
             })
             .catch(error => {
+                console.error('Error comparing players:', error);
                 document.getElementById('comparisonResults').innerHTML = '<p>Errore nel confronto</p>';
             });
         }
 
         function displayComparison(players, metrics) {
-            const html = players.map(player => `
-                <div class="player-card">
-                    <div class="player-header">
-                        <span class="player-name">${player.name}</span>
-                        <span class="player-role">${player.role}</span>
-                    </div>
-                    <div class="player-details">
-                        <div><strong>Squadra:</strong> ${player.team}</div>
-                        <div><strong>Fantamedia:</strong> ${player.fantamedia}</div>
-                        <div><strong>Prezzo:</strong> ${player.price}</div>
-                        <div><strong>Presenze:</strong> ${player.appearances}</div>
-                        <div><strong>Value Ratio:</strong> ${player.value_ratio}</div>
-                    </div>
+            let html = `
+                <table class="comparison-table">
+                    <thead>
+                        <tr class="comparison-header">
+                            <th class="comparison-metric">Metric</th>
+                            <th class="comparison-player">${players[0].name}</th>
+                            <th class="comparison-player">${players[1].name}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="comparison-row">
+                            <td class="comparison-metric">Squadra</td>
+                            <td class="comparison-value">${players[0].team}</td>
+                            <td class="comparison-value">${players[1].team}</td>
+                        </tr>
+                        <tr class="comparison-row">
+                            <td class="comparison-metric">Fantamedia</td>
+                            <td class="comparison-value">${players[0].fantamedia}</td>
+                            <td class="comparison-value">${players[1].fantamedia}</td>
+                        </tr>
+                        <tr class="comparison-row">
+                            <td class="comparison-metric">Prezzo</td>
+                            <td class="comparison-value">${players[0].price}</td>
+                            <td class="comparison-value">${players[1].price}</td>
+                        </tr>
+                        <tr class="comparison-row">
+                            <td class="comparison-metric">Presenze</td>
+                            <td class="comparison-value">${players[0].appearances}</td>
+                            <td class="comparison-value">${players[1].appearances}</td>
+                        </tr>
+                        <tr class="comparison-row">
+                            <td class="comparison-metric">Value Ratio</td>
+                            <td class="comparison-value">${players[0].value_ratio}</td>
+                            <td class="comparison-value">${players[1].value_ratio}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="comparison-summary">
+                    <h4>${metrics.summary}</h4>
                 </div>
-            `).join('');
+            `;
 
-            document.getElementById('comparisonResults').innerHTML = html +
-                `<div class="metrics"><strong>Best Value:</strong> ${metrics.best_value}</div>`;
+            document.getElementById('comparisonResults').innerHTML = html;
         }
+
 
         function downloadData() {
             showNotification('Preparando esportazione dati...', 'info');

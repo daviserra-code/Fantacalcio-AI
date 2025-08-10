@@ -848,7 +848,11 @@ def compare_players():
 
     except Exception as e:
         logger.error(f"Player comparison error: {str(e)}")
-        return jsonify({'error': 'Comparison failed'}), 500
+        return jsonify({
+            'error': 'Comparison failed', 
+            'details': str(e),
+            'available_players': [p['name'] for p in init_real_players()[:10]]
+        }), 500
 
 @app.route('/api/player-analysis/<player_name>', methods=['GET'])
 def get_player_analysis(player_name):
