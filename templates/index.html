@@ -1124,7 +1124,15 @@
                 <input type="number" id="budgetMantra" placeholder="{{ t.budget }}" value="500">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
+            
             <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span>Modalità Mantra Attiva</span>
+                    </div>
+                </div>
+
                 <div class="chat-messages" id="chatContainerMantra">
                     <div class="message assistant-message">
                         👋 {{ t.welcome }}
@@ -1132,6 +1140,16 @@
                         Modalità <strong>Mantra</strong> attiva. Bonus assist e clean sheet attivi!
                     </div>
                 </div>
+
+                <div class="typing-indicator" id="typingIndicatorMantra" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
                 <div class="input-area">
                     <div class="input-wrapper">
                         <textarea id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
@@ -1139,6 +1157,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="quick-actions">
                 <button class="quick-action-btn" onclick="askQuickQuestion('Migliori centrocampisti Mantra con bonus assist?')">
                     🎯 Centrocampisti Assist
@@ -1165,7 +1184,15 @@
                 </select>
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
+            
             <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span>Modalità Draft Attiva</span>
+                    </div>
+                </div>
+
                 <div class="chat-messages" id="chatContainerDraft">
                     <div class="message assistant-message">
                         👋 {{ t.welcome }}
@@ -1173,6 +1200,16 @@
                         Modalità <strong>Draft</strong> attiva. Niente budget, solo strategia di selezione!
                     </div>
                 </div>
+
+                <div class="typing-indicator" id="typingIndicatorDraft" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
                 <div class="input-area">
                     <div class="input-wrapper">
                         <textarea id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
@@ -1180,6 +1217,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="quick-actions">
                 <button class="quick-action-btn" onclick="askQuickQuestion('Strategia Snake Draft 8 giocatori?')">
                     🐍 Strategia Snake
@@ -1203,7 +1241,15 @@
                 <input type="number" id="budgetSuper" placeholder="{{ t.budget }}" value="500">
                 <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
             </div>
+            
             <div class="chat-container">
+                <div class="chat-header">
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span>Modalità Superscudetto Attiva</span>
+                    </div>
+                </div>
+
                 <div class="chat-messages" id="chatContainerSuper">
                     <div class="message assistant-message">
                         👋 {{ t.welcome }}
@@ -1211,6 +1257,16 @@
                         Modalità <strong>Superscudetto</strong> attiva. Regole speciali e premi aggiuntivi!
                     </div>
                 </div>
+
+                <div class="typing-indicator" id="typingIndicatorSuper" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span>L'assistente sta scrivendo...</span>
+                </div>
+
                 <div class="input-area">
                     <div class="input-wrapper">
                         <textarea id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
@@ -1218,6 +1274,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="quick-actions">
                 <button class="quick-action-btn" onclick="askQuickQuestion('Strategia Superscudetto premi speciali?')">
                     🏆 Premi Speciali
