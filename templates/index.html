@@ -636,10 +636,10 @@
         }
 
         .quick-actions {
-            padding: 10px 20px;
+            padding: 15px 20px;
             border-top: 1px solid #f0f0f0;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
             background: #f8f9fa;
         }
@@ -1135,6 +1135,20 @@
                     </div>
                 </div>
             </div>
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="askQuickQuestion('Migliori centrocampisti Mantra con bonus assist?')">
+                    🎯 Centrocampisti Assist
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Difensori con bonus clean sheet Mantra?')">
+                    🛡️ Difensori Clean Sheet
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Strategia asta Mantra 8 partecipanti?')">
+                    🏆 Strategia Mantra
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Formazione 4-3-3 modalità Mantra?')">
+                    ⚽ Formazione 4-3-3
+                </button>
+            </div>
         </div>
 
         <!-- Draft Mode -->
@@ -1162,6 +1176,20 @@
                     </div>
                 </div>
             </div>
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="askQuickQuestion('Strategia Snake Draft 8 giocatori?')">
+                    🐍 Strategia Snake
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Ordine di pick Draft ottimale?')">
+                    📋 Ordine Pick
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Migliori giocatori Draft per ruolo?')">
+                    🎯 Top Draft Players
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Consigli Draft ultimo turno?')">
+                    🔄 Ultimo Turno
+                </button>
+            </div>
         </div>
 
         <!-- Superscudetto Mode -->
@@ -1185,6 +1213,20 @@
                         <button class="btn btn-primary" onclick="sendMessage('superscudetto')">{{ t.send }}</button>
                     </div>
                 </div>
+            </div>
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="askQuickQuestion('Strategia Superscudetto premi speciali?')">
+                    🏆 Premi Speciali
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Migliori investimenti Superscudetto?')">
+                    💰 Top Investimenti
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Formazione Superscudetto competitiva?')">
+                    ⚽ Formazione Pro
+                </button>
+                <button class="quick-action-btn" onclick="askQuickQuestion('Regole bonus Superscudetto?')">
+                    📜 Regole Bonus
+                </button>
             </div>
         </div>
 
