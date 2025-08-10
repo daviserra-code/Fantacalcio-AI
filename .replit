@@ -5,7 +5,7 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-23_05"
-packages = ["gdb"]
+packages = ["gdb", "mailutils"]
 
 [unitTest]
 language = "python3"
@@ -32,3 +32,7 @@ args = "python web_interface.py"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000

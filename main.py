@@ -1,543 +1,183 @@
-import openai
 import os
-import sys
-import json
-import logging
-from datetime import datetime
+import traceback
+from typing import List, Optional
+
 from knowledge_manager import KnowledgeManager
+from retrieval.helpers import dump_chroma_texts_ids
+from retrieval.rag_pipeline import RAGPipeline
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# ====== opzionale: OpenAI per la generazione ======
+def openai_chat(system_prompt: str, user_prompt: str) -> str:
+    """
+    Usa OpenAI se OPENAI_API_KEY e' presente; altrimenti risponde con un fallback
+    che riporta solo parte del contesto per evitare allucinazioni.
+    Sostituisci con la tua funzione se vuoi.
+    """
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return ("[No LLM configurato] Riassunto contesto:\n\n" + user_prompt[:1200])
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.3,
+            max_tokens=700,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"[Errore generazione] {e}"
 
-openai.api_key = os.environ.get('OPENAI_API_KEY', '')
+class ChatAssistant:
+    """
+    Assistente principale. Espone:
+    - answer(msg) -> dict {ok, message, citations}
+    - get_response(msg, *args, **kwargs) -> str   (retro-compat)
+    - get_cache_stats() -> dict
+    - clear_cache() -> bool
+    """
+    def __init__(self, collection_name: Optional[str] = None, season_default: Optional[str] = None):
+        self.collection_name = collection_name or os.environ.get("CHROMA_COLLECTION", "fantacalcio_knowledge")
+        self.season_default = season_default or os.environ.get("SEASON_DEFAULT", "2025-26")
 
-if not openai.api_key:
-    sys.stderr.write("""
-    Devi configurare la tua API key OpenAI.
+        # Inizializza KnowledgeManager e Chroma collection
+        self.knowledge_manager = KnowledgeManager(collection_name=self.collection_name)
 
-    Vai su: https://platform.openai.com/signup
-    1. Crea un account o accedi
-    2. Clicca "View API Keys" 
-    3. Clicca "Create new secret key"
-
-    Poi apri il tool Secrets e aggiungi OPENAI_API_KEY come secret.
-    """)
-    exit(1)
-
-class FantacalcioAssistant:
-    def __init__(self):
+        # Costruisci RAGPipeline
         try:
-            # Initialize knowledge manager for RAG with proper error handling
-            print("🔄 Initializing knowledge manager...")
-            self.knowledge_manager = KnowledgeManager()
-            
-            # Embeddings are now forced to remain enabled
-            if hasattr(self.knowledge_manager, 'embedding_disabled') and self.knowledge_manager.embedding_disabled:
-                print("🔧 Re-enabling embeddings...")
-                self.knowledge_manager.embedding_disabled = False
-            
-            print("✅ Knowledge manager initialized")
-
-            # Initialize corrections manager (using ChromaDB)
-            print("🔄 Initializing corrections manager...")
-            from corrections_manager import CorrectionsManager
-            self.corrections_manager = CorrectionsManager(self.knowledge_manager)
-            print("✅ Corrections manager initialized")
+            texts, ids = dump_chroma_texts_ids(self.knowledge_manager.collection)
+            self.rag = RAGPipeline(self.knowledge_manager.collection, texts, ids)
+            print(f"[RAG] Pipeline inizializzata. Collection='{self.collection_name}', documenti indicizzati: {len(ids)}")
         except Exception as e:
-            print(f"❌ Failed to initialize managers: {e}")
-            print("🔄 Running in degraded mode without vector search")
-            # Create minimal fallback managers
-            self.knowledge_manager = None
-            from corrections_manager import CorrectionsManager
-            self.corrections_manager = CorrectionsManager(None)
+            print("[RAG] Init fallita:", e)
+            traceback.print_exc()
+            self.rag = None
 
-        # Load training data once at startup
-        self._load_training_data()
-        
-        # Update knowledge base with current Serie A data
-        self._update_serie_a_data()
-        
-        # Skip model verification in production for faster startup
-        
-        # Response cache with TTL (Time To Live)
-        self.response_cache = {}
-        self.cache_ttl = {}
-        self.cache_max_size = 50
-        self.cache_duration = 180
-        self.cache_stats = {'hits': 0, 'misses': 0}
+    @staticmethod
+    def _build_prompts(user_message: str, context_chunks: List[str]):
+        context = "\n\n---\n\n".join(chunk.strip() for chunk in context_chunks if chunk and chunk.strip())
+        system_rules = (
+            "Sei un assistente per il fantacalcio. "
+            "Rispondi SOLO usando il contesto fornito. "
+            "Se il contesto non basta, di che non lo sai. "
+            "Rispondi in modo conciso, poi aggiungi esattamente due motivi (bullet). "
+            "Non inventare dati o trasferimenti. "
+            "Chiudi con 2-3 fonti tra parentesi quadre nel formato: [Titolo — AAAA-MM-GG]."
+        )
+        user_prompt = (
+            "Contesto:\n" + (context if context else "(nessun contesto)") + "\n\n"
+            "Domanda: " + user_message + "\n"
+            "Fornisci una risposta concisa e due motivi in elenco puntato."
+        )
+        return system_rules, user_prompt
 
-        self.system_prompt = """
-        Sei un assistente virtuale ESPERTO per fantacalcio Serie A 2024-25. Il tuo nome è Fantacalcio AI.
-        
-        REGOLE CRITICHE:
-        1. SEMPRE fornisci nomi specifici di giocatori con prezzi e fantamedie concrete
-        2. USA i dati dal database quando disponibili - sono accurati e aggiornati
-        3. Se chiesto di giocatori per budget specifico, suggerisci SEMPRE nomi reali
-        4. NON dire mai "non ho informazioni" - fornisci consigli pratici
-        5. Fornisci formazioni complete con 11 giocatori e prezzi totali
+    def answer(self, user_message: str) -> dict:
+        season = self.season_default
+        top_docs, citations = [], []
 
-        DATI PRINCIPALI STAGIONE 2024-25:
+        # Retrieval con guardrail
+        if self.rag is not None:
+            rag_out = self.rag.retrieve(user_message, season=season, final_k=8)
+            if not rag_out.get("grounded", False):
+                if rag_out.get("has_conflict"):
+                    return {
+                        "ok": False,
+                        "message": ("Ho trovato dati in conflitto (per esempio squadra diversa "
+                                    "per lo stesso giocatore). Specifica meglio o aggiorna i dati."),
+                        "citations": rag_out.get("citations", []),
+                        "conflicts": rag_out.get("conflicts", {})
+                    }
+                return {
+                    "ok": False,
+                    "message": ("Non ho fonti aggiornate e sufficienti per rispondere con sicurezza. "
+                                "Riformula la domanda o aggiorna i dati."),
+                    "citations": rag_out.get("citations", []),
+                    "conflicts": rag_out.get("conflicts", {})
+                }
+            top_docs = rag_out.get("results", [])
+            citations = rag_out.get("citations", [])
 
-        ATTACCANTI TOP:
-        - Victor Osimhen (Napoli): fantamedia 8.2, 45 crediti
-        - Lautaro Martinez (Inter): fantamedia 8.1, 44 crediti  
-        - Dusan Vlahovic (Juventus): fantamedia 7.8, 42 crediti
-        - Khvicha Kvaratskhelia (Napoli): fantamedia 7.9, 41 crediti
-        - Rafael Leao (Milan): fantamedia 7.6, 40 crediti
-        - Marcus Thuram (Inter): fantamedia 7.3, 38 crediti
-        - Federico Chiesa (Juventus): fantamedia 7.4, 37 crediti
-        - Olivier Giroud (Milan): fantamedia 7.1, 34 crediti
+        # Prompt e generazione
+        context_chunks = [d.get("text") or "" for d in top_docs]
+        system_rules, user_prompt = self._build_prompts(user_message, context_chunks)
+        text = openai_chat(system_rules, user_prompt)
 
-        CENTROCAMPISTI TOP:
-        - Nicolo Barella (Inter): fantamedia 7.5, 32 crediti
-        - Hakan Calhanoglu (Inter): fantamedia 7.1, 29 crediti
-        - Tijjani Reijnders (Milan): fantamedia 6.7, 28 crediti
-        - Stanislav Lobotka (Napoli): fantamedia 6.6, 26 crediti
-        - Manuel Locatelli (Juventus): fantamedia 6.5, 25 crediti
+        if citations:
+            cites_str = " | ".join("[{} — {}]".format(c["title"], c["date"]) for c in citations[:3])
+            text = text.rstrip() + "\n\nFonti: " + cites_str
 
-        DIFENSORI TOP:
-        - Theo Hernandez (Milan): fantamedia 7.2, 32 crediti
-        - Alessandro Bastoni (Inter): fantamedia 7.0, 30 crediti
-        - Federico Dimarco (Inter): fantamedia 6.8, 26 crediti
-        - Andrea Cambiaso (Juventus): fantamedia 6.6, 24 crediti
-        - Giovanni Di Lorenzo (Napoli): fantamedia 6.5, 23 crediti
+        return {"ok": True, "message": text, "citations": citations}
 
-        PORTIERI TOP:
-        - Mike Maignan (Milan): fantamedia 6.8, 24 crediti
-        - Yann Sommer (Inter): fantamedia 6.6, 20 crediti
-        - Alex Meret (Napoli): fantamedia 6.4, 17 crediti
-        - Mattia Perin (Juventus): fantamedia 6.2, 15 crediti
+    # Retro-compat: alcune UI chiamano get_response(msg, session_id, ...)
+    def get_response(self, user_message: str, *args, **kwargs) -> str:
+        out = self.answer(user_message)
+        return out.get("message", "")
 
-        CONSIGLI BUDGET:
-        - Budget 150 crediti: Giroud (34) + Thuram (38) + riserve
-        - Budget 350 crediti: Osimhen (45) + Barella (32) + Maignan (24) + altri
-        - Budget 500 crediti: formazione completa con top player
-
-        STILE: Sempre specifico, con nomi reali e prezzi, pratico per vincere.
+    # Statistiche per la tua UI
+    def get_cache_stats(self) -> dict:
         """
-
-        self.conversation_history = []
-
-    def _load_training_data(self):
-        """Load training data once at startup"""
-        if not self.knowledge_manager:
-            print("⚠️ Knowledge manager not available, skipping training data load")
-            return
-            
-        # Check if embeddings are working
-        if self.knowledge_manager.embedding_disabled:
-            print("⚠️ Embeddings disabled, cannot load training data")
-            return
-            
-        training_loaded = False
-
-        # Try loading main training data
-        try:
-            print("🔄 Loading main training data...")
-            self.knowledge_manager.load_from_jsonl("training_data.jsonl")
-            training_loaded = True
-            print("✅ Main training data loaded")
-            
-            # Verify data was actually loaded
-            if self.knowledge_manager.collection:
-                count = self.knowledge_manager.collection.count()
-                print(f"📊 Collection now has {count} documents")
-                if count == 0:
-                    print("⚠️ No documents in collection after loading")
-                    
-        except Exception as e:
-            print(f"⚠️ Could not load training_data.jsonl: {e}")
-
-        # Try loading extended training data as fallback
-        try:
-            print("🔄 Loading extended training data...")
-            self.knowledge_manager.load_from_jsonl("extended_training_data.jsonl")
-            print("✅ Extended training data loaded")
-            
-            if self.knowledge_manager.collection:
-                count = self.knowledge_manager.collection.count()
-                print(f"📊 Collection now has {count} total documents")
-                
-        except Exception as e:
-            print(f"⚠️ Could not load extended_training_data.jsonl: {e}")
-            if not training_loaded:
-                print("⚠️ Running with limited knowledge base")
-                
-        # Final verification
-        if self.knowledge_manager.collection:
-            final_count = self.knowledge_manager.collection.count()
-            if final_count > 0:
-                print(f"✅ Knowledge base loaded successfully with {final_count} documents")
-                self.knowledge_manager.collection_is_empty = False
-            else:
-                print("❌ Knowledge base is empty after loading attempts")
-
-    def _update_serie_a_data(self):
-        """Update knowledge base with current Serie A data"""
-        try:
-            from serie_a_data_collector import SerieADataCollector
-            collector = SerieADataCollector()
-            # This will add current season data to the knowledge manager
-            collector.update_knowledge_base()
-            print("✅ Serie A data updated with real player information")
-            
-            # Also load additional real player data
-            self._load_real_player_data()
-        except Exception as e:
-            print(f"⚠️ Could not update Serie A data: {e}")
-            # Load minimal real data as fallback
-            self._load_minimal_real_data()
-    
-    def _load_real_player_data(self):
-        """Load comprehensive real player data into knowledge base"""
-        real_players_data = [
-            "Lautaro Martinez dell'Inter ha fantamedia 8.1 nella stagione 2024-25, costa 44 crediti ed è il miglior attaccante per affidabilità",
-            "Victor Osimhen del Napoli ha fantamedia 8.2 nella stagione 2024-25, costa 45 crediti ma è a rischio trasferimento",
-            "Dusan Vlahovic della Juventus ha fantamedia 7.8 nella stagione 2024-25, costa 42 crediti ed è il rigorista titolare",
-            "Khvicha Kvaratskhelia del Napoli ha fantamedia 7.9 nella stagione 2024-25, costa 41 crediti ed è molto decisivo",
-            "Rafael Leao del Milan ha fantamedia 7.6 nella stagione 2024-25, costa 40 crediti ma è discontinuo",
-            "Nicolo Barella dell'Inter ha fantamedia 7.5 nella stagione 2024-25, costa 32 crediti ed è il miglior centrocampista",
-            "Hakan Calhanoglu dell'Inter ha fantamedia 7.1 nella stagione 2024-25, costa 29 crediti ed è rigorista e punizioni",
-            "Theo Hernandez del Milan ha fantamedia 7.2 nella stagione 2024-25, costa 32 crediti ed è il miglior terzino",
-            "Alessandro Bastoni dell'Inter ha fantamedia 7.0 nella stagione 2024-25, costa 30 crediti e fa assist da difensore",
-            "Mike Maignan del Milan ha fantamedia 6.8 nella stagione 2024-25, costa 24 crediti ed è il portiere più affidabile"
-        ]
-        
-        if self.knowledge_manager:
-            for player_info in real_players_data:
-                try:
-                    self.knowledge_manager.add_knowledge(player_info, {
-                        "type": "real_player_2024_25",
-                        "season": "2024-25",
-                        "source": "current_data"
-                    })
-                except Exception as e:
-                    print(f"⚠️ Failed to add player data: {e}")
-    
-    def _load_minimal_real_data(self):
-        """Load minimal real data as fallback when full update fails"""
-        minimal_data = [
-            "Lautaro Martinez è il miglior attaccante della Serie A 2024-25 con fantamedia 8.1, costa 44 crediti",
-            "Victor Osimhen del Napoli ha la fantamedia più alta tra gli attaccanti: 8.2, costa 45 crediti",
-            "Dusan Vlahovic della Juventus ha fantamedia 7.8, costa 42 crediti ed è il rigorista",
-            "Khvicha Kvaratskhelia del Napoli ha fantamedia 7.9, costa 41 crediti",
-            "Rafael Leao del Milan ha fantamedia 7.6, costa 40 crediti ma è discontinuo",
-            "Nicolo Barella dell'Inter è il centrocampista più affidabile con fantamedia 7.5, costa 32 crediti",
-            "Hakan Calhanoglu dell'Inter ha fantamedia 7.1, costa 29 crediti ed è rigorista",
-            "Theo Hernandez del Milan ha fantamedia 7.2, costa 32 crediti, miglior terzino",
-            "Mike Maignan del Milan è il portiere consigliato con fantamedia 6.8, costa 24 crediti",
-            "Yann Sommer dell'Inter ha fantamedia 6.6, costa 20 crediti ed è molto affidabile"
-        ]
-        
-        # Store as static fallback regardless of knowledge manager status
-        self.static_fallback_data = minimal_data
-        
-        if self.knowledge_manager:
-            for data in minimal_data:
-                try:
-                    self.knowledge_manager.add_knowledge(data, {
-                        "type": "minimal_real_data",
-                        "season": "2024-25"
-                    })
-                except Exception as e:
-                    print(f"⚠️ Failed to add minimal data: {e}")
-        else:
-            print("📋 Knowledge manager disabled, using static fallback data")
-
-    def get_response(self, user_message, context=None):
-        """Get AI response for fantasy football queries with RAG"""
-
-        # Check if this is a correction command
-        if user_message.lower().startswith("correggi:") or user_message.lower().startswith("correzione:"):
-            return self._handle_correction_command(user_message)
-
-        # TTL-based response cache for better performance
-        cache_key = f"{user_message.lower().strip()}_{json.dumps(context, sort_keys=True) if context else ''}"
-        current_time = datetime.now().timestamp()
-
-        # Check if cache entry exists and is still valid
-        if cache_key in self.response_cache and cache_key in self.cache_ttl:
-            if current_time - self.cache_ttl[cache_key] < self.cache_duration:
-                self.cache_stats['hits'] += 1
-                return self.response_cache[cache_key]
-            else:
-                # Cache expired, remove it
-                del self.response_cache[cache_key]
-                del self.cache_ttl[cache_key]
-
-        messages = [{"role": "system", "content": self.system_prompt}]
-
-        # Get relevant knowledge from vector database (data already loaded at startup)
-        print(f"\n🔍 QUERY: {user_message}")
-        relevant_context = None
-        if self.knowledge_manager and not self.knowledge_manager.embedding_disabled:
-            try:
-                relevant_context = self.knowledge_manager.get_context_for_query(user_message)
-            except Exception as e:
-                print(f"⚠️ Knowledge search failed: {e}")
-                relevant_context = None
-        
-        # If no relevant context from database, use static fallback data
-        if relevant_context:
-            # Provide context but allow strategic reasoning
-            validated_context = f"""
-            INFORMAZIONI DISPONIBILI DAL DATABASE:
-            {relevant_context}
-            
-            ISTRUZIONI: Usa queste informazioni come base per la tua risposta. 
-            Se i dati sono sufficienti, fornisci consigli dettagliati.
-            Se i dati sono parziali, integra con principi strategici del fantacalcio.
-            Aiuta sempre l'utente con consigli pratici e utili.
-            """
-            messages.append({"role": "system", "content": validated_context})
-        elif hasattr(self, 'static_fallback_data'):
-            # Use static fallback data when database is unavailable
-            fallback_context = f"""
-            DATI FANTACALCIO SERIE A 2024-25 (da database statico):
-            {chr(10).join(self.static_fallback_data)}
-            
-            ISTRUZIONI: Usa questi dati verificati per fornire consigli specifici sui giocatori.
-            Fornisci sempre nomi concreti, prezzi e fantamedie quando richiesto.
-            Sii preciso e pratico nelle tue risposte.
-            """
-            messages.append({"role": "system", "content": fallback_context})
-            print("📋 Using static fallback data for response")
-        else:
-            # Even without specific data, provide helpful strategic advice
-            fallback_context = """
-            MODALITÀ STRATEGICA: Non hai dati specifici dal database per questa query.
-            Fornisci comunque consigli strategici utili basati sui principi del fantacalcio,
-            criteri di valutazione generali, e best practices per aste e gestione rosa.
-            Sii sempre utile e pratico nelle tue risposte.
-            """
-            messages.append({"role": "system", "content": fallback_context})
-
-        # Add context if provided (league info, budget, etc.)
-        if context:
-            context_msg = f"Contesto attuale: {json.dumps(context, ensure_ascii=False)}"
-            messages.append({"role": "system", "content": context_msg})
-
-        # Add conversation history (last 6 messages to manage token usage)
-        messages.extend(self.conversation_history[-6:])
-
-        # Add current user message
-        messages.append({"role": "user", "content": user_message})
-
-        try:
-            # Always use gpt-4o-mini for faster responses
-            model = "gpt-4o-mini"
-
-            response = openai.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=0.05,  # Lower temperature for more factual responses
-                max_tokens=400,    # Slightly increased for complete answers
-                timeout=15,
-                stream=False,
-                # Add system-level constraints
-                frequency_penalty=0.1,  # Reduce repetition
-                presence_penalty=0.1    # Encourage diverse vocabulary
-            )
-
-            ai_response = response.choices[0].message.content
-
-            # Apply corrections from ChromaDB
-            ai_response = self._apply_corrections_from_chromadb(ai_response)
-
-            # Cache response with TTL
-            self.cache_stats['misses'] += 1
-
-            # Manage cache size - remove oldest entries if cache is full
-            if len(self.response_cache) >= self.cache_max_size:
-                oldest_key = min(self.cache_ttl.keys(), key=lambda k: self.cache_ttl[k])
-                del self.response_cache[oldest_key]
-                del self.cache_ttl[oldest_key]
-
-            # Store in cache with timestamp
-            self.response_cache[cache_key] = ai_response
-            self.cache_ttl[cache_key] = current_time
-
-            # Update conversation history
-            self.conversation_history.append({"role": "user", "content": user_message})
-            self.conversation_history.append({"role": "assistant", "content": ai_response})
-
-            return ai_response
-
-        except Exception as e:
-            return f"Errore nel processare la richiesta: {str(e)}"
-
-    def reset_conversation(self):
-        """Reset conversation history"""
-        self.conversation_history = []
-        return "Conversazione resettata. Pronto per nuove domande sul fantacalcio."
-
-    def get_cache_stats(self):
-        """Get cache performance statistics"""
-        total_requests = self.cache_stats['hits'] + self.cache_stats['misses']
-        hit_rate = (self.cache_stats['hits'] / total_requests * 100) if total_requests > 0 else 0
-
-        return {
-            'cache_hits': self.cache_stats['hits'],
-            'cache_misses': self.cache_stats['misses'],
-            'hit_rate_percentage': round(hit_rate, 2),
-            'cache_size': len(self.response_cache),
-            'max_cache_size': self.cache_max_size
+        Ritorna statistiche utili:
+        - chroma_docs: numero di documenti nella collection
+        - bm25_docs:   numero di doc indicizzati in BM25 (se presente)
+        - embed_cache_entries: righe nella cache SQLite degli embeddings (se disponibile)
+        - embed_model: nome modello per embeddings
+        """
+        stats = {
+            "chroma_docs": 0,
+            "bm25_docs": 0,
+            "embed_cache_entries": 0,
+            "embed_model": None,
         }
-
-    def add_correction(self, incorrect_info: str, correct_info: str, 
-                      correction_type: str = "general", context: str = None):
-        """Add a new correction to the persistent system"""
-        return self.corrections_manager.add_correction(
-            correction_type, incorrect_info, correct_info, context
-        )
-
-    def add_player_correction(self, player_name: str, field_name: str, 
-                            old_value: str, new_value: str, reason: str = None):
-        """Add a player data correction"""
-        return self.corrections_manager.add_player_correction(
-            player_name, field_name, old_value, new_value, reason
-        )
-
-    def _handle_correction_command(self, message):
-        """Handle correction commands from chat"""
-        # Format: "Correggi: [wrong info] -> [correct info]"
         try:
-            if "->" in message:
-                parts = message.split(":", 1)[1].split("->")
-                if len(parts) == 2:
-                    wrong_info = parts[0].strip()
-                    correct_info = parts[1].strip()
+            stats["chroma_docs"] = self.knowledge_manager.count()
+        except Exception:
+            pass
 
-                    # Store correction in ChromaDB
-                    correction_text = f"CORREZIONE: Sostituisci '{wrong_info}' con '{correct_info}'"
-                    correction_id = self.corrections_manager.add_knowledge(
-                        correction_text,
-                        {
-                            "type": "correction",
-                            "wrong": wrong_info,
-                            "correct": correct_info,
-                            "created_at": datetime.now().isoformat()
-                        }
-                    )
-
-                    return f"✅ Correzione aggiunta con successo! ID: {correction_id[:8]}...\nDa ora in poi sostituirò '{wrong_info}' con '{correct_info}'"
-
-            return "❌ Formato correzione non valido. Usa: 'Correggi: [info errata] -> [info corretta]'"
-
-        except Exception as e:
-            return f"❌ Errore nell'aggiungere la correzione: {str(e)}"
-
-    def _apply_corrections_from_chromadb(self, text):
-        """Apply corrections stored in ChromaDB"""
-        if not self.corrections_manager:
-            return text
-            
         try:
-            # Search for relevant corrections
-            corrections = self.corrections_manager.search_knowledge("CORREZIONE", n_results=10)
+            if getattr(self, "rag", None) and getattr(self.rag, "bm25", None):
+                stats["bm25_docs"] = len(self.rag.bm25.doc_ids or [])
+        except Exception:
+            pass
 
-            corrected_text = text
-            applied_count = 0
-
-            for correction in corrections:
-                if correction['metadata'].get('type') == 'correction':
-                    wrong = correction['metadata'].get('wrong', '')
-                    correct = correction['metadata'].get('correct', '')
-
-                    if wrong and correct and wrong.lower() in corrected_text.lower():
-                        # Case insensitive replacement
-                        import re
-                        corrected_text = re.sub(re.escape(wrong), correct, corrected_text, flags=re.IGNORECASE)
-                        applied_count += 1
-
-            if applied_count > 0:
-                print(f"📝 Applied {applied_count} corrections to response")
-
-            return corrected_text
-
-        except Exception as e:
-            print(f"⚠️ Error applying corrections: {e}")
-            return text
-
-    def get_corrections_summary(self):
-        """Get corrections system summary"""
         try:
-            corrections = self.corrections_manager.search_knowledge("CORREZIONE", n_results=50)
-            correction_corrections = [c for c in corrections if c['metadata'].get('type') == 'correction']
+            if getattr(self, "rag", None) and getattr(self.rag, "embedder", None):
+                stats["embed_model"] = getattr(self.rag.embedder, "model", None)
+                cache = getattr(self.rag.embedder, "cache", None)
+                if cache and hasattr(cache, "conn"):
+                    cur = cache.conn.execute("SELECT COUNT(*) FROM cache")
+                    stats["embed_cache_entries"] = int(cur.fetchone()[0])
+        except Exception:
+            pass
 
-            return {
-                'total_corrections': len(correction_corrections),
-                'corrections': correction_corrections[:10]  # Return first 10
-            }
-        except:
-            return {'total_corrections': 0, 'corrections': []}
+        return stats
 
-    def reset_and_rebuild_database(self):
-        """Reset ChromaDB and rebuild from JSONL files"""
-        print("🔄 STARTING DATABASE RESET AND REBUILD...")
-        
-        # Reset main knowledge database
-        if self.knowledge_manager.reset_database():
-            # Rebuild from JSONL files
-            jsonl_files = ["training_data.jsonl", "extended_training_data.jsonl"]
-            total_loaded = self.knowledge_manager.rebuild_database_from_jsonl(jsonl_files)
-            
-            # Reset corrections database
-            if self.corrections_manager.reset_database():
-                print("✅ Corrections database also reset")
-            
-            # Verify the rebuild worked
-            print("\n🔍 VERIFYING REBUILD...")
-            self.knowledge_manager.verify_embedding_consistency()
-            
-            return f"✅ Database reset and rebuild complete! Loaded {total_loaded} entries from JSONL files."
-        else:
-            return "❌ Database reset failed"
-
-def main():
-    assistant = FantacalcioAssistant()
-
-    print("🏆 ASSISTENTE FANTACALCIO PROFESSIONALE")
-    print("=" * 50)
-    print("Supporto per: Classic, Mantra, Draft, Superscudetto")
-    print("Comandi: 'reset' per resettare, 'quit' per uscire")
-    print("=" * 50)
-
-    while True:
+    def clear_cache(self) -> bool:
+        """
+        Svuota la cache SQLite degli embeddings (HFEmbedder).
+        Non tocca Chroma ne' BM25.
+        """
         try:
-            user_input = input("\n💬 La tua domanda: ").strip()
+            if getattr(self, "rag", None) and getattr(self.rag, "embedder", None):
+                cache = getattr(self.rag.embedder, "cache", None)
+                if cache and hasattr(cache, "conn"):
+                    cache.conn.execute("DELETE FROM cache")
+                    cache.conn.commit()
+                    try:
+                        cache.conn.execute("VACUUM")
+                    except Exception:
+                        pass
+            return True
+        except Exception:
+            return False
 
-            if user_input.lower() in ['quit', 'exit', 'esci']:
-                print("👋 Buona fortuna con il fantacalcio!")
-                break
+# --- Back-compat per web_interface: mantiene il vecchio nome classe ---
+class FantacalcioAssistant(ChatAssistant):
+    pass
 
-            if user_input.lower() == 'reset':
-                print(assistant.reset_conversation())
-                continue
-
-            if user_input.lower() == 'reset-db':
-                print(assistant.reset_and_rebuild_database())
-                continue
-
-            if not user_input:
-                continue
-
-            # Example context - in a real app this would come from user profile/league settings
-            context = {
-                "timestamp": datetime.now().isoformat(),
-                "session_type": "consultation"
-            }
-
-            print("\n🤔 Elaborando risposta...")
-            response = assistant.get_response(user_input, context)
-            print(f"\n🎯 {response}")
-
-        except KeyboardInterrupt:
-            print("\n\n👋 Sessione terminata. Buona fortuna!")
-            break
-        except Exception as e:
-            print(f"\n❌ Errore: {str(e)}")
-
-if __name__ == "__main__":
-    main()
+# Factory comoda per web_interface
+def get_assistant(collection_name: Optional[str] = None, season_default: Optional[str] = None) -> ChatAssistant:
+    return ChatAssistant(collection_name=collection_name, season_default=season_default)
