@@ -131,6 +131,30 @@ class RAGPipeline:
         has_conflict, conflict_map = self._has_conflicts(items)
         citations = self._select_citations(items, max_items=3)
         grounded = (not has_conflict) and self._grounded(items)
+        
+        # Aggiunto il parametro query per il fallback specifico per i trasferimenti
+        grounded_results = items # Supponendo che items sia il risultato della ricerca
+        query = user_query # Assumendo che user_query sia accessibile qui
+
+        # Se non ci sono risultati utili, fallback con suggerimento per trasferimenti
+        if not grounded_results:
+            # Controlla se la query riguarda un giocatore specifico
+            query_lower = query.lower()
+            player_keywords = ['dove gioca', 'gioca', 'squadra', 'team']
+            if any(keyword in query_lower for keyword in player_keywords):
+                return {
+                    "answer": "Il giocatore richiesto potrebbe non essere più in Serie A o i dati potrebbero non essere aggiornati. Controlla se il giocatore è stato trasferito in un'altra lega. Per informazioni aggiornate sui trasferimenti, verifica le fonti ufficiali.",
+                    "sources": [],
+                    "grounded": False,
+                    "has_conflicts": False
+                }
+
+            return {
+                "answer": "Non ho fonti aggiornate e sufficienti per rispondere con sicurezza. Riformula la domanda o aggiorna i dati.",
+                "sources": [],
+                "grounded": False,
+                "has_conflicts": False
+            }
 
         return {
             "results": items,

@@ -264,6 +264,10 @@ class SerieADataCollector:
             
             # CENTROCAMPISTI 2024-25
             {
+                'text': "Sandro Tonali è un centrocampista italiano che attualmente gioca nel Newcastle United in Premier League. Ha lasciato il Milan nel 2023 per trasferirsi in Inghilterra. Non è più disponibile per il fantacalcio Serie A.",
+                'metadata': {'type': 'player_transfer', 'player': 'Sandro Tonali', 'team': 'Newcastle United', 'league': 'Premier League', 'role': 'C', 'season': '2024-25', 'status': 'transferred'}
+            },
+            {
                 'text': "Nicolò Barella dell'Inter ha fantamedia 7.2 come centrocampista nella stagione 2024-25, top assoluto che vale 37-42 crediti. Il migliore del ruolo.",
                 'metadata': {'type': 'current_player', 'player': 'Nicolò Barella', 'team': 'Inter', 'role': 'C', 'season': '2024-25', 'price': 39}
             },
