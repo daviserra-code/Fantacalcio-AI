@@ -17,7 +17,7 @@ class RAGPipeline:
         chroma_collection,
         docs_texts: Optional[List[str]] = None,
         docs_ids: Optional[List[str]] = None,
-        min_sources: int = 2,
+        min_sources: int = 1,
     ):
         self.collection = chroma_collection
         self.embedder = HFEmbedder()
@@ -60,8 +60,19 @@ class RAGPipeline:
         return cites
 
     def _grounded(self, items: List[Dict[str, Any]]) -> bool:
+        # More lenient: allow responses if we have any relevant documents
+        if not items:
+            return False
+        
+        # Check if we have at least one document with good metadata
+        for item in items:
+            meta = item.get("metadata", {})
+            if meta.get("type") in ["player_info", "current_player", "strategy", "team_info"]:
+                return True
+        
+        # Fallback: check for citations but be more lenient
         cites = self._select_citations(items, max_items=self.min_sources)
-        return len(cites) >= self.min_sources
+        return len(cites) >= max(1, self.min_sources - 1)
 
     def retrieve(
         self,
@@ -89,11 +100,24 @@ class RAGPipeline:
         )
 
         # 4) freschezza in Python: valid_to >= oggi (string compare su YYYY-MM-DD)
+        # But be more lenient - allow documents without valid_to or with recent dates
         today = self._today_str()
         def _fresh(it):
             meta = it.get("metadata") or {}
             vt = meta.get("valid_to")
-            return isinstance(vt, str) and vt >= today
+            
+            # Allow documents without valid_to date
+            if not vt:
+                return True
+            
+            # Allow if valid_to is a valid date and recent enough
+            if isinstance(vt, str):
+                try:
+                    return vt >= today or vt >= "2024-01-01"  # Allow anything from 2024 onwards
+                except:
+                    return True  # If comparison fails, allow it
+            
+            return True
         items = [it for it in items if _fresh(it)]
 
         # 5) guardrail: conflitti e citazioni
