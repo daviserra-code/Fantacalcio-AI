@@ -11,6 +11,19 @@ from chromadb.config import Settings
 from hf_embedder import HFEmbedder
 
 
+def _sanitize_meta(meta: dict) -> dict:
+    """Sanifica metadati per Chroma: solo str|int|float|bool, None -> ''."""
+    out = {}
+    for k, v in (meta or {}).items():
+        if v is None:
+            out[k] = ""
+        elif isinstance(v, (str, int, float, bool)):
+            out[k] = v
+        else:
+            out[k] = str(v)
+    return out
+
+
 class KnowledgeManager:
     """
     Gestisce la persistenza su Chroma e l'ingest dei documenti usando
@@ -79,7 +92,7 @@ class KnowledgeManager:
             return doc_id or str(uuid.uuid4())
 
         _id = doc_id or str(uuid.uuid4())
-        md = metadata or {}
+        md = _sanitize_meta(metadata or {})
 
         # embedding "passage" (non query)
         emb = self.embedder.embed_one(text, is_query=False).tolist()
@@ -106,7 +119,7 @@ class KnowledgeManager:
             if not t:
                 continue
             texts.append(t)
-            metas.append(it.get("metadata") or {})
+            metas.append(_sanitize_meta(it.get("metadata") or {}))  # SANITIZZA
             ids.append(it.get("id") or str(uuid.uuid4()))
 
         added, i = 0, 0

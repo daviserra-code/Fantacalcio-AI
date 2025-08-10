@@ -18,11 +18,24 @@ DB_PATH = os.environ.get("ETL_DB", "./fantacalcio.db")
 try:
     from knowledge_manager import KnowledgeManager
 except Exception:
-    KnowledgeManager = None  # permetti --no-chroma
+    KnowledgeManager = None  # permette --no-chroma
+
+# -------------------- Sanitizzazione metadati (per Chroma) --------------------
+def _sanitize_meta(meta: dict) -> dict:
+    """Rimuove tipi non primitivi e converte None -> '' per compatibilita' Chroma."""
+    out = {}
+    for k, v in (meta or {}).items():
+        if v is None:
+            out[k] = ""
+        elif isinstance(v, (str, int, float, bool)):
+            out[k] = v
+        else:
+            out[k] = str(v)
+    return out
 
 # -------------------- Helper HTTP/SPARQL/Wikidata --------------------
 def wbsearchentities(name: str, lang: str = "it", type_hint: Optional[str] = None) -> Optional[Dict]:
-    """Cerca entità su Wikidata. Ritorna {"id","label"} o None."""
+    """Cerca entita' su Wikidata. Ritorna {'id','label'} o None."""
     params = {
         "action": "wbsearchentities",
         "search": name,
@@ -39,11 +52,10 @@ def wbsearchentities(name: str, lang: str = "it", type_hint: Optional[str] = Non
     if not res:
         return None
 
-    # ranking semplice: preferisci descrizioni che parlano di club di calcio
     def score(item):
         desc = (item.get("description") or "").lower()
         s = 0
-        if "football" in desc or "calcio" in desc or "club" in desc or "società" in desc:
+        if "football" in desc or "calcio" in desc or "club" in desc or "societa" in desc or "società" in desc:
             s += 10
         if "club" in desc and "football" in desc:
             s += 5
@@ -98,7 +110,7 @@ def fetch_current_roster(club_qid: str, lang: str = "it") -> List[Dict]:
             "wiki_page": val("wpPage"),
             "position": val("positionLabel"),
         })
-    # dedup per player_qid
+    # dedup per player_qid/label
     seen, uniq = set(), []
     for r in out:
         key = r.get("player_qid") or r.get("player_label")
@@ -207,19 +219,20 @@ def ingest_team(team_name: str, season: str, valid_to: str, lang: str = "it", no
         for r in roster:
             name = r.get("player_label") or "Giocatore"
             pid = f"pl_{normalize_id(name)}"
-            text = f"{name} è un calciatore del {club_label}."
+            text = f"{name} e' un calciatore del {club_label}."
             md = {
                 "type": "player_info",
-                "player": name,
+                "player": name or "",
                 "player_id": pid,
-                "team": club_label,
-                "position": r.get("position"),
-                "title": f"Profilo {name}",
+                "team": club_label or "",
+                "position": r.get("position") or "",
+                "title": f"Profilo {name or ''}",
                 "source": r.get("wiki_page") or (f"https://www.wikidata.org/wiki/{r.get('player_qid')}" if r.get("player_qid") else "internal://wikidata"),
-                "date": now,
-                "valid_to": valid_to,
-                "season": season,
+                "date": now or "",
+                "valid_to": valid_to or "2099-01-01",
+                "season": season or "",
             }
+            md = _sanitize_meta(md)
             items.append({"id": pid, "text": text, "metadata": md})
 
         stats = km.add_many(items)
@@ -240,8 +253,8 @@ def resolve_league(league_name: str, lang: str = "it") -> Optional[Dict]:
 
 def fetch_league_clubs(league_qid: str, lang: str = "it", country_hint: Optional[str] = None, limit: Optional[int] = None) -> List[Dict]:
     """
-    Trova i club che militano nella lega: team con proprietà wdt:P118 = wd:<league_qid>.
-    Se country_hint è valorizzato, prova a filtrare per P17 (paese).
+    Trova i club che militano nella lega: team con proprieta' wdt:P118 = wd:<league_qid>.
+    Se country_hint e' valorizzato, prova a filtrare per P17 (paese).
     """
     country_filter = ""
     if country_hint:
@@ -277,12 +290,12 @@ def main():
     ap = argparse.ArgumentParser(description="ETL batch per LEGA: risolve la lega su Wikidata e ingesta tutti i club della lega (SQLite + Chroma).")
     ap.add_argument("--league", required=True, help='Nome lega (es. "Serie A", "Premier League")')
     ap.add_argument("--season", default=os.environ.get("SEASON_DEFAULT", "2025-26"), help='Stagione nei metadati (es. "2025-26")')
-    ap.add_argument("--valid-to", default="2099-01-01", help="Data validità dei documenti (YYYY-MM-DD)")
+    ap.add_argument("--valid-to", default="2099-01-01", help="Data validita' dei documenti (YYYY-MM-DD)")
     ap.add_argument("--lang", default="it", help="Lingua preferita (default: it)")
     ap.add_argument("--country", default=None, help='Hint paese per filtrare i club (es. "Italy", "England")')
     ap.add_argument("--limit", type=int, default=None, help="Limita il numero di club da processare (per test)")
     ap.add_argument("--no-chroma", action="store_true", help="Non indicizzare in Chroma (solo DB locale)")
-    ap.add_argument("--sleep", type=float, default=1.0, help="Sleep tra club (secondi) per essere gentili con gli endpoint")
+    ap.add_argument("--sleep", type=float, default=1.0, help="Sleep tra club (secondi) per essere gentili con gli endpoint)")
     args = ap.parse_args()
 
     # 1) Risolvi la LEGA
