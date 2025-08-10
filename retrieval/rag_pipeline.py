@@ -6,10 +6,14 @@ from retrieval.reranker import CrossEncoderReranker
 
 DATE_FMT = "%Y-%m-%d"
 
+
 class RAGPipeline:
     """
     HF embeddings -> Chroma -> (BM25) -> RRF -> CrossEncoder rerank
-    Guardrail: freschezza (valid_to in Python), conflitti player_id/team, citazioni minime.
+    Guardrail:
+      - Freschezza (valid_to) verificata in Python con logica PERMISSIVA
+      - Conflitti player_id/team
+      - Citazioni: usa metadati reali se presenti, altrimenti sintetizza "Interno KB"
     """
 
     def __init__(
@@ -17,12 +21,12 @@ class RAGPipeline:
         chroma_collection,
         docs_texts: Optional[List[str]] = None,
         docs_ids: Optional[List[str]] = None,
-        min_sources: int = 1,
+        min_sources: int = 1,  # piu' tollerante
     ):
         self.collection = chroma_collection
         self.embedder = HFEmbedder()
         self.bm25 = BM25Index(docs_texts, docs_ids) if docs_texts and docs_ids else None
-        self.reranker = CrossEncoderReranker()  # puo disattivarsi internamente
+        self.reranker = CrossEncoderReranker()  # puo' disattivarsi internamente
         self.min_sources = max(1, int(min_sources))
 
     @staticmethod
@@ -48,7 +52,7 @@ class RAGPipeline:
             meta = (it.get("metadata") or {})
             src = meta.get("source")
             dt = meta.get("date")
-            title = meta.get("title") or meta.get("type") or "fonte"
+            title = meta.get("title") or meta.get("player") or meta.get("team") or meta.get("type") or "fonte"
             if src and dt:
                 key = (src, dt)
                 if key in seen:
@@ -57,22 +61,20 @@ class RAGPipeline:
                 cites.append({"title": title, "date": dt, "url": src})
                 if len(cites) >= max_items:
                     break
+
+        # Se non ci sono citazioni “web”, sintetizza da KB interna
+        if not cites:
+            today = self._today_str()
+            for it in items[:max_items]:
+                meta = (it.get("metadata") or {})
+                title = meta.get("title") or meta.get("player") or meta.get("team") or meta.get("type") or "Interno KB"
+                cites.append({"title": title, "date": meta.get("date", today), "url": "internal://kb"})
         return cites
 
     def _grounded(self, items: List[Dict[str, Any]]) -> bool:
-        # More lenient: allow responses if we have any relevant documents
-        if not items:
-            return False
-        
-        # Check if we have at least one document with good metadata
-        for item in items:
-            meta = item.get("metadata", {})
-            if meta.get("type") in ["player_info", "current_player", "strategy", "team_info"]:
-                return True
-        
-        # Fallback: check for citations but be more lenient
+        # Con docs interni permettiamo grounded (min 1 citazione sintetizzata)
         cites = self._select_citations(items, max_items=self.min_sources)
-        return len(cites) >= max(1, self.min_sources - 1)
+        return len(items) > 0 and len(cites) >= self.min_sources
 
     def retrieve(
         self,
@@ -80,47 +82,52 @@ class RAGPipeline:
         season: Optional[str] = None,
         final_k: int = 8,
     ) -> Dict[str, Any]:
-        # 1) embedding query
         q_vec = self.embedder.embed_one(user_query, is_query=True).tolist()
 
-        # 2) where SOLO per season (evita operatori numerici su stringhe)
-        where = {}
-        if season:
-            where = {"season": {"$eq": season}}
+        # where solo se stagione passata in modo esplicito e non vuota
+        use_season = bool(season and isinstance(season, str) and season.strip())
+        where = {"season": {"$eq": season.strip()}} if use_season else {}
 
-        # 3) hybrid search (+ rerank se disponibile)
+        # primo tentativo (eventualmente con filtro stagione)
         items = hybrid_search(
-            user_query,
-            q_vec,
-            self.collection,
-            self.bm25,
-            where=where,
-            final_k=final_k,
-            reranker=self.reranker,
+            user_query, q_vec, self.collection, self.bm25,
+            where=where, final_k=final_k, reranker=self.reranker,
         )
 
-        # 4) freschezza in Python: valid_to >= oggi (string compare su YYYY-MM-DD)
-        # But be more lenient - allow documents without valid_to or with recent dates
-        today = self._today_str()
-        def _fresh(it):
+        # fallback: se 0 risultati e avevamo filtrato per stagione, riprova senza filtro
+        if use_season and not items:
+            items = hybrid_search(
+                user_query, q_vec, self.collection, self.bm25,
+                where={}, final_k=final_k, reranker=self.reranker,
+            )
+
+        # freschezza permissiva
+        today = datetime.utcnow().strftime(DATE_FMT)
+        today_num = int(today.replace("-", ""))
+
+        def _fresh(it: Dict[str, Any]) -> bool:
             meta = it.get("metadata") or {}
             vt = meta.get("valid_to")
-            
-            # Allow documents without valid_to date
-            if not vt:
+            if vt is None or vt == "":
                 return True
-            
-            # Allow if valid_to is a valid date and recent enough
-            if isinstance(vt, str):
+            if isinstance(vt, (int, float)):
                 try:
-                    return vt >= today or vt >= "2024-01-01"  # Allow anything from 2024 onwards
-                except:
-                    return True  # If comparison fails, allow it
-            
+                    return int(vt) >= today_num
+                except Exception:
+                    return True
+            if isinstance(vt, str):
+                s = vt.strip()
+                if len(s) == 10 and s[4] == "-" and s[7] == "-":  # YYYY-MM-DD
+                    return s >= today
+                if len(s) == 8 and s.isdigit():  # YYYYMMDD
+                    try:
+                        return int(s) >= today_num
+                    except Exception:
+                        return True
             return True
+
         items = [it for it in items if _fresh(it)]
 
-        # 5) guardrail: conflitti e citazioni
         has_conflict, conflict_map = self._has_conflicts(items)
         citations = self._select_citations(items, max_items=3)
         grounded = (not has_conflict) and self._grounded(items)

@@ -1,6 +1,7 @@
 import os
+import re
 import traceback
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from knowledge_manager import KnowledgeManager
 from retrieval.helpers import dump_chroma_texts_ids
@@ -32,6 +33,7 @@ def openai_chat(system_prompt: str, user_prompt: str) -> str:
     except Exception as e:
         return f"[Errore generazione] {e}"
 
+
 class ChatAssistant:
     """
     Assistente principale. Espone:
@@ -42,7 +44,7 @@ class ChatAssistant:
     """
     def __init__(self, collection_name: Optional[str] = None, season_default: Optional[str] = None):
         self.collection_name = collection_name or os.environ.get("CHROMA_COLLECTION", "fantacalcio_knowledge")
-        self.season_default = season_default or os.environ.get("SEASON_DEFAULT", "2025-26")
+        self.season_default  = season_default  or os.environ.get("SEASON_DEFAULT", "2025-26")
 
         # Inizializza KnowledgeManager e Chroma collection
         self.knowledge_manager = KnowledgeManager(collection_name=self.collection_name)
@@ -75,33 +77,96 @@ class ChatAssistant:
         )
         return system_rules, user_prompt
 
+    def _maybe_player_query(self, q: str) -> bool:
+        # euristica minimale: almeno una parola con iniziale maiuscola -> probabile entita'
+        toks = [t for t in re.split(r"[^A-Za-zÀ-ÿ']", q) if t]
+        caps = [t for t in toks if t[:1].isupper()]
+        return len(caps) >= 1
+
+    def _covers_entity(self, user_message: str, items: list) -> bool:
+        """
+        Considera "grounded" solo se almeno uno dei documenti recuperati
+        contiene l'entita' nominata nella query (nel testo o nei metadati).
+        """
+        toks = [t for t in re.findall(r"[A-Za-zÀ-ÿ']+", user_message) if t[:1].isupper()]
+        if not toks:
+            return True  # domanda generica
+        qnames = set(t.lower() for t in toks)
+        for it in items or []:
+            meta = (it.get("metadata") or {})
+            text = (it.get("text") or "")
+            fields = " ".join(str(meta.get(k, "")) for k in ("player", "title", "team", "type"))
+            blob = (text + " " + fields).lower()
+            if any(n in blob for n in qnames):
+                return True
+        return False
+
+    def _fallback_live_player(self, user_message: str) -> Optional[Dict[str, Any]]:
+        """
+        Usa Wikipedia/Wikidata per ricavare squadra attuale se la KB non copre l'entita'.
+        Ritorna un "documento" temporaneo {text, metadata} o None.
+        """
+        try:
+            from live_sources import fetch_player_current_team
+        except Exception:
+            return None
+
+        name_guess = " ".join([w for w in re.findall(r"[A-Za-zÀ-ÿ']+", user_message) if w[:1].isupper()]) or user_message
+        try:
+            live = fetch_player_current_team(name_guess, lang="it")
+        except Exception:
+            live = None
+        if live and live.get("team"):
+            txt = f"{name_guess} attualmente gioca nel {live['team']}."
+            meta = {
+                "title": f"Profilo {name_guess}",
+                "date": live.get("date"),
+                "source": live.get("source_url") or "internal://live",
+                "team": live["team"],
+                "player": name_guess,
+                "type": "live_web",
+            }
+            return {"text": txt, "metadata": meta}
+        return None
+
     def answer(self, user_message: str) -> dict:
-        season = self.season_default
+        # SEASON permissiva: se env e' "*" o vuota, niente filtro
+        season_env = (self.season_default or "").strip()
+        season_arg = season_env if season_env and season_env != "*" else None
+
         top_docs, citations = [], []
+        rag_out = None
 
-        # Retrieval con guardrail
+        # 0) Retrieval RAG interno
         if self.rag is not None:
-            rag_out = self.rag.retrieve(user_message, season=season, final_k=8)
-            if not rag_out.get("grounded", False):
-                if rag_out.get("has_conflict"):
-                    return {
-                        "ok": False,
-                        "message": ("Ho trovato dati in conflitto (per esempio squadra diversa "
-                                    "per lo stesso giocatore). Specifica meglio o aggiorna i dati."),
-                        "citations": rag_out.get("citations", []),
-                        "conflicts": rag_out.get("conflicts", {})
-                    }
-                return {
-                    "ok": False,
-                    "message": ("Non ho fonti aggiornate e sufficienti per rispondere con sicurezza. "
-                                "Riformula la domanda o aggiorna i dati."),
-                    "citations": rag_out.get("citations", []),
-                    "conflicts": rag_out.get("conflicts", {})
-                }
-            top_docs = rag_out.get("results", [])
-            citations = rag_out.get("citations", [])
+            rag_out = self.rag.retrieve(user_message, season=season_arg, final_k=8)
+            # grounded solo se ci sono fonti e coprono l'entita' richiesta
+            if rag_out.get("grounded", False) and self._covers_entity(user_message, rag_out.get("results", [])):
+                top_docs = rag_out.get("results", [])
+                citations = rag_out.get("citations", [])
 
-        # Prompt e generazione
+        # 1) Fallback live se il RAG non e' grounded o non ha trovato nulla di pertinente
+        if not top_docs and self._maybe_player_query(user_message):
+            live_doc = self._fallback_live_player(user_message)
+            if live_doc:
+                top_docs = [live_doc]
+                citations.append({
+                    "title": live_doc["metadata"].get("title", "Profilo"),
+                    "date":  live_doc["metadata"].get("date"),
+                    "url":   live_doc["metadata"].get("source", "internal://live"),
+                })
+
+        # 2) Se ancora vuoto, risposta onesta
+        if not top_docs:
+            return {
+                "ok": False,
+                "message": ("Non ho fonti sufficienti. Vuoi che provi una ricerca web mirata (Wikipedia/Wikidata) "
+                            "o che aggiorniamo la base di conoscenza?"),
+                "citations": citations,
+                "conflicts": rag_out.get("conflicts", {}) if rag_out else {}
+            }
+
+        # 3) Costruisci prompt + genera
         context_chunks = [d.get("text") or "" for d in top_docs]
         system_rules, user_prompt = self._build_prompts(user_message, context_chunks)
         text = openai_chat(system_rules, user_prompt)
@@ -174,9 +239,11 @@ class ChatAssistant:
         except Exception:
             return False
 
+
 # --- Back-compat per web_interface: mantiene il vecchio nome classe ---
 class FantacalcioAssistant(ChatAssistant):
     pass
+
 
 # Factory comoda per web_interface
 def get_assistant(collection_name: Optional[str] = None, season_default: Optional[str] = None) -> ChatAssistant:
