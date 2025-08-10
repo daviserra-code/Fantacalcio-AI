@@ -481,6 +481,18 @@
             flex-direction: column;
         }
 
+        /* Ensure all tab content containers are properly styled */
+        #classic, #mantra, #draft, #superscudetto, #historical {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #classic.active, #mantra.active, #draft.active, #superscudetto.active, #historical.active {
+            display: flex;
+            flex-direction: column;
+        }
+
         .league-setup {
             padding: 15px 20px;
             border-bottom: 1px solid #eee;
@@ -1638,24 +1650,33 @@
 
         // Enhanced switchTab function with mobile optimizations
         function switchTab(tabName) {
+            // Remove active class from all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
 
+            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach((tab, index) => {
                 tab.classList.remove('active');
-                if (tab.onclick && tab.onclick.toString().includes(tabName)) {
-                    currentTab = index;
-                }
             });
 
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            // Show the selected tab content
+            const targetContent = document.getElementById(tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // Mark the clicked tab as active
+            const clickedTab = event ? event.target : document.querySelector(`[onclick*="${tabName}"]`);
+            if (clickedTab) {
+                clickedTab.classList.add('active');
+            }
+
             currentTab = tabName;
 
             // Scroll active tab into view on mobile
-            if (isMobile() && event.target) {
-                event.target.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            if (isMobile() && clickedTab) {
+                clickedTab.scrollIntoView({ behavior: 'smooth', inline: 'center' });
             }
 
             // Optimize layout after tab switch
