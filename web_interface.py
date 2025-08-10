@@ -807,86 +807,95 @@ def get_user_analytics():
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
 @app.route('/api/player-comparison', methods=['POST'])
-def compare_players():
+def api_player_comparison():
     """Compare multiple players side by side"""
     try:
-        logger.info("Player comparison endpoint called")
+        logger.info("Player comparison API endpoint called")
         data = request.get_json()
+        
         if not data or 'players' not in data:
-            logger.error("No players data in request")
+            logger.error("Invalid request data")
             return jsonify({'error': 'Player list required'}), 400
 
         player_names = data.get('players', [])
         logger.info(f"Comparing players: {player_names}")
 
-        if len(player_names) < 2 or len(player_names) > 4:
-            return jsonify({'error': 'Compare 2-4 players only'}), 400
+        if len(player_names) < 2:
+            return jsonify({'error': 'At least 2 players required for comparison'}), 400
 
         comparison_data = []
         players_data = init_real_players()
+        
+        logger.info(f"Total players in database: {len(players_data)}")
 
         for name in player_names:
-            # More flexible name matching
-            player = None
-            name_lower = name.lower().strip()
-
+            name_clean = name.lower().strip()
+            player_found = None
+            
+            # Simple exact match first
             for p in players_data:
-                player_name_lower = p['name'].lower()
-                if (name_lower in player_name_lower or 
-                    player_name_lower in name_lower or
-                    any(word in player_name_lower for word in name_lower.split()) or
-                    any(word in name_lower for word in player_name_lower.split())):
-                    player = p
+                if name_clean == p['name'].lower():
+                    player_found = p
                     break
+            
+            # If not found, try partial matching
+            if not player_found:
+                for p in players_data:
+                    player_name = p['name'].lower()
+                    if name_clean in player_name or player_name in name_clean:
+                        player_found = p
+                        break
 
-            if player:
+            if player_found:
                 comparison_data.append({
-                    'name': player['name'],
-                    'team': player['team'],
-                    'role': player['role'],
-                    'fantamedia': player['fantamedia'],
-                    'price': player['price'],
-                    'appearances': player['appearances'],
-                    'value_ratio': round(player['fantamedia'] / player['price'] * 100, 2) if player['price'] > 0 else 0,
-                    'games_per_season': round(player['appearances'] / 38 * 100, 1)
+                    'name': player_found['name'],
+                    'team': player_found['team'], 
+                    'role': player_found['role'],
+                    'fantamedia': player_found['fantamedia'],
+                    'price': player_found['price'],
+                    'appearances': player_found['appearances'],
+                    'value_ratio': round(player_found['fantamedia'] / max(player_found['price'], 1) * 100, 2)
                 })
-                logger.info(f"Found player: {player['name']}")
+                logger.info(f"Player matched: {player_found['name']}")
             else:
                 logger.warning(f"Player not found: {name}")
 
         if not comparison_data:
-            available_names = [p['name'] for p in init_real_players()[:20]]
-            logger.error(f"No players found. Available: {available_names[:5]}")
+            sample_players = [p['name'] for p in players_data[:10]]
             return jsonify({
-                'error': 'Nessun giocatore trovato con quei nomi',
-                'available_players': available_names,
-                'suggestion': 'Prova con nomi come: Osimhen, Vlahovic, Lautaro, Barella'
+                'error': 'No players found',
+                'available_players': sample_players,
+                'hint': 'Try names like: Osimhen, Lautaro, Vlahovic'
             }), 404
 
-        # Calculate metrics
-        best_value_player = max(comparison_data, key=lambda x: x['value_ratio'])
-        highest_fantamedia_player = max(comparison_data, key=lambda x: x['fantamedia'])
-        most_reliable_player = max(comparison_data, key=lambda x: x['appearances'])
+        # Calculate summary metrics
+        if comparison_data:
+            best_value = max(comparison_data, key=lambda x: x['value_ratio'])
+            best_fantamedia = max(comparison_data, key=lambda x: x['fantamedia'])
+            most_appearances = max(comparison_data, key=lambda x: x['appearances'])
+            
+            summary = {
+                'best_value': best_value['name'],
+                'best_fantamedia': best_fantamedia['name'],
+                'most_reliable': most_appearances['name']
+            }
+        else:
+            summary = {}
 
         result = {
             'comparison': comparison_data,
-            'metrics': {
-                'best_value': best_value_player['name'],
-                'highest_fantamedia': highest_fantamedia_player['name'], 
-                'most_reliable': most_reliable_player['name'],
-                'summary': f"Miglior rapporto qualità-prezzo: {best_value_player['name']}"
-            }
+            'metrics': summary,
+            'count': len(comparison_data)
         }
-
-        logger.info(f"Comparison successful: {len(comparison_data)} players")
+        
+        logger.info(f"Comparison completed successfully: {len(comparison_data)} players")
         return jsonify(result)
 
     except Exception as e:
-        logger.error(f"Player comparison error: {str(e)}")
+        logger.error(f"Player comparison API error: {str(e)}", exc_info=True)
         return jsonify({
-            'error': 'Errore nel confronto giocatori', 
-            'details': str(e),
-            'available_players': [p['name'] for p in init_real_players()[:10]]
+            'error': 'Comparison failed',
+            'message': str(e)
         }), 500
 
 @app.route('/api/player-analysis/<player_name>', methods=['GET'])
