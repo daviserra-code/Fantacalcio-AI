@@ -876,7 +876,8 @@ def compare_players_simple():
             metrics = {
                 'best_value': max(found_players, key=lambda x: x['value_ratio'])['name'],
                 'best_fantamedia': max(found_players, key=lambda x: x['fantamedia'])['name'],
-                'most_reliable': max(found_players, key=lambda x: x['appearances'])['name']
+                'most_reliable': max(found_players, key=lambda x: x['appearances'])['name'],
+                'summary': f"Miglior rapporto qualità-prezzo: {max(found_players, key=lambda x: x['value_ratio'])['name']}"
             }
         
         return jsonify({
