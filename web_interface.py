@@ -810,24 +810,35 @@ def get_user_analytics():
 def compare_players():
     """Compare multiple players side by side"""
     try:
+        logger.info("Player comparison endpoint called")
         data = request.get_json()
         if not data or 'players' not in data:
+            logger.error("No players data in request")
             return jsonify({'error': 'Player list required'}), 400
 
         player_names = data.get('players', [])
+        logger.info(f"Comparing players: {player_names}")
+
         if len(player_names) < 2 or len(player_names) > 4:
             return jsonify({'error': 'Compare 2-4 players only'}), 400
 
         comparison_data = []
         players_data = init_real_players()
+
         for name in player_names:
             # More flexible name matching
             player = None
+            name_lower = name.lower().strip()
+
             for p in players_data:
-                if name.lower() in p['name'].lower() or p['name'].lower() in name.lower():
+                player_name_lower = p['name'].lower()
+                if (name_lower in player_name_lower or 
+                    player_name_lower in name_lower or
+                    any(word in player_name_lower for word in name_lower.split()) or
+                    any(word in name_lower for word in player_name_lower.split())):
                     player = p
                     break
-            
+
             if player:
                 comparison_data.append({
                     'name': player['name'],
@@ -839,11 +850,17 @@ def compare_players():
                     'value_ratio': round(player['fantamedia'] / player['price'] * 100, 2) if player['price'] > 0 else 0,
                     'games_per_season': round(player['appearances'] / 38 * 100, 1)
                 })
+                logger.info(f"Found player: {player['name']}")
+            else:
+                logger.warning(f"Player not found: {name}")
 
         if not comparison_data:
+            available_names = [p['name'] for p in init_real_players()[:20]]
+            logger.error(f"No players found. Available: {available_names[:5]}")
             return jsonify({
-                'error': 'No valid players found',
-                'available_players': [p['name'] for p in init_real_players()[:20]]
+                'error': 'Nessun giocatore trovato con quei nomi',
+                'available_players': available_names,
+                'suggestion': 'Prova con nomi come: Osimhen, Vlahovic, Lautaro, Barella'
             }), 404
 
         # Calculate metrics
@@ -851,7 +868,7 @@ def compare_players():
         highest_fantamedia_player = max(comparison_data, key=lambda x: x['fantamedia'])
         most_reliable_player = max(comparison_data, key=lambda x: x['appearances'])
 
-        return jsonify({
+        result = {
             'comparison': comparison_data,
             'metrics': {
                 'best_value': best_value_player['name'],
@@ -859,12 +876,15 @@ def compare_players():
                 'most_reliable': most_reliable_player['name'],
                 'summary': f"Miglior rapporto qualità-prezzo: {best_value_player['name']}"
             }
-        })
+        }
+
+        logger.info(f"Comparison successful: {len(comparison_data)} players")
+        return jsonify(result)
 
     except Exception as e:
         logger.error(f"Player comparison error: {str(e)}")
         return jsonify({
-            'error': 'Comparison failed', 
+            'error': 'Errore nel confronto giocatori', 
             'details': str(e),
             'available_players': [p['name'] for p in init_real_players()[:10]]
         }), 500
@@ -1244,10 +1264,10 @@ def export_logs():
         import io
         import sys
         from datetime import datetime
-        
+
         # Get the current log level and recent log entries
         log_data = []
-        
+
         # Add console output from the current session
         console_output = """
 2025-08-08 22:46:30,454 - __main__ - INFO - FantacalcioAssistant initialized successfully
@@ -1260,7 +1280,7 @@ def export_logs():
 2025-08-08 22:48:31,918 - __main__ - INFO - Page view: 6a90faa2695bcea7e168df376af37359, lang: it
 2025-08-08 22:48:31,919 - werkzeug - INFO - 172.31.71.98 - - [08/Aug/2025 22:48:31] "GET / HTTP/1.1" 200 -
         """
-        
+
         # Add recent embedding errors context
         embedding_errors = """
 ⚠️ Multiple embedding errors detected: 'NoneType' object has no attribute 'encode'
@@ -1269,7 +1289,7 @@ def export_logs():
 📄 Exporting updated Serie A data...
 ✅ Serie A data updated with real player information
         """
-        
+
         # Combine logs
         full_log = f"""
 FANTACALCIO ASSISTANT - LOG EXPORT
@@ -1298,7 +1318,7 @@ Temperature: {app_config.get('temperature')}
 
 === CACHE STATISTICS ===
 """
-        
+
         # Add cache stats if available
         assistant = get_assistant()
         if assistant:
@@ -1309,13 +1329,13 @@ Cache Misses: {cache_stats.get('cache_misses', 0)}
 Hit Rate: {cache_stats.get('hit_rate_percentage', 0)}%
 Cache Size: {cache_stats.get('cache_size', 0)}/{cache_stats.get('max_cache_size', 0)}
 """
-        
+
         full_log += f"""
 
 === END OF LOG ===
 Export completed at: {datetime.now().isoformat()}
         """
-        
+
         # Return as downloadable file
         response = app.response_class(
             full_log,
@@ -1324,11 +1344,10 @@ Export completed at: {datetime.now().isoformat()}
                 'Content-Disposition': f'attachment; filename=fantacalcio_logs_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
             }
         )
-        
+
         logger.info(f"Log export requested by session: {session.get('session_id', 'unknown')}")
         return response
-        
+
     except Exception as e:
         logger.error(f"Log export error: {str(e)}")
         return jsonify({'error': 'Log export failed'}), 500
-
