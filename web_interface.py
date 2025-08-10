@@ -821,7 +821,13 @@ def compare_players():
         comparison_data = []
         players_data = init_real_players()
         for name in player_names:
-            player = next((p for p in players_data if p['name'].lower() == name.lower()), None)
+            # More flexible name matching
+            player = None
+            for p in players_data:
+                if name.lower() in p['name'].lower() or p['name'].lower() in name.lower():
+                    player = p
+                    break
+            
             if player:
                 comparison_data.append({
                     'name': player['name'],
@@ -835,14 +841,23 @@ def compare_players():
                 })
 
         if not comparison_data:
-            return jsonify({'error': 'No valid players found'}), 404
+            return jsonify({
+                'error': 'No valid players found',
+                'available_players': [p['name'] for p in init_real_players()[:20]]
+            }), 404
+
+        # Calculate metrics
+        best_value_player = max(comparison_data, key=lambda x: x['value_ratio'])
+        highest_fantamedia_player = max(comparison_data, key=lambda x: x['fantamedia'])
+        most_reliable_player = max(comparison_data, key=lambda x: x['appearances'])
 
         return jsonify({
             'comparison': comparison_data,
             'metrics': {
-                'best_value': max(comparison_data, key=lambda x: x['value_ratio'])['name'],
-                'highest_fantamedia': max(comparison_data, key=lambda x: x['fantamedia'])['name'],
-                'most_reliable': max(comparison_data, key=lambda x: x['appearances'])['name']
+                'best_value': best_value_player['name'],
+                'highest_fantamedia': highest_fantamedia_player['name'], 
+                'most_reliable': most_reliable_player['name'],
+                'summary': f"Miglior rapporto qualità-prezzo: {best_value_player['name']}"
             }
         })
 

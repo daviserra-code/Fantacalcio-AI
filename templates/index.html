@@ -970,30 +970,44 @@
         }
 
         function comparePlayersModal() {
-            const player1 = document.getElementById('player1Input').value;
-            const player2 = document.getElementById('player2Input').value;
+            const player1 = document.getElementById('player1Input').value.trim();
+            const player2 = document.getElementById('player2Input').value.trim();
 
             if (!player1 || !player2) {
                 alert('Inserisci entrambi i giocatori');
                 return;
             }
 
+            // Show loading indicator
+            document.getElementById('comparisonResults').innerHTML = '<p>🔄 Caricamento confronto...</p>';
+
             fetch('/api/player-comparison', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ players: [player1, player2] })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(err));
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.comparison) {
+                if (data.comparison && data.comparison.length > 0) {
                     displayComparison(data.comparison, data.metrics);
+                } else if (data.error) {
+                    document.getElementById('comparisonResults').innerHTML = 
+                        `<p>❌ ${data.error}</p>
+                         <p><strong>Giocatori disponibili:</strong> ${data.available_players ? data.available_players.slice(0, 10).join(', ') : 'Nessuno'}</p>`;
                 } else {
-                    document.getElementById('comparisonResults').innerHTML = '<p>Giocatori non trovati</p>';
+                    document.getElementById('comparisonResults').innerHTML = '<p>❌ Giocatori non trovati</p>';
                 }
             })
             .catch(error => {
                 console.error('Error comparing players:', error);
-                document.getElementById('comparisonResults').innerHTML = '<p>Errore nel confronto</p>';
+                document.getElementById('comparisonResults').innerHTML = 
+                    `<p>❌ Errore nel confronto: ${error.error || 'Errore di connessione'}</p>
+                     ${error.available_players ? `<p><strong>Suggerimenti:</strong> ${error.available_players.slice(0, 5).join(', ')}</p>` : ''}`;
             });
         }
 
