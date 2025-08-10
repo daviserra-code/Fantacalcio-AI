@@ -482,6 +482,17 @@
         }
 
         /* Ensure all tab content containers are properly styled */
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex !important;
+            flex-direction: column;
+        }
+
         #classic, #mantra, #draft, #superscudetto, #historical {
             display: none;
             flex: 1;
@@ -489,7 +500,7 @@
         }
 
         #classic.active, #mantra.active, #draft.active, #superscudetto.active, #historical.active {
-            display: flex;
+            display: flex !important;
             flex-direction: column;
         }
 
@@ -1650,13 +1661,16 @@
 
         // Enhanced switchTab function with mobile optimizations
         function switchTab(tabName) {
+            console.log('Switching to tab:', tabName); // Debug log
+            
             // Remove active class from all tab contents
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
+                content.style.display = 'none'; // Force hide
             });
 
             // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach((tab, index) => {
+            document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
 
@@ -1664,19 +1678,31 @@
             const targetContent = document.getElementById(tabName);
             if (targetContent) {
                 targetContent.classList.add('active');
+                targetContent.style.display = 'flex'; // Force show
+                targetContent.style.flexDirection = 'column';
+                console.log('Tab content shown:', tabName); // Debug log
+            } else {
+                console.error('Tab content not found:', tabName); // Debug log
             }
 
             // Mark the clicked tab as active
-            const clickedTab = event ? event.target : document.querySelector(`[onclick*="${tabName}"]`);
-            if (clickedTab) {
-                clickedTab.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback: find tab by onclick attribute
+                const tabButtons = document.querySelectorAll('.tab');
+                tabButtons.forEach(tab => {
+                    if (tab.getAttribute('onclick') && tab.getAttribute('onclick').includes(tabName)) {
+                        tab.classList.add('active');
+                    }
+                });
             }
 
             currentTab = tabName;
 
             // Scroll active tab into view on mobile
-            if (isMobile() && clickedTab) {
-                clickedTab.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            if (isMobile() && event && event.target) {
+                event.target.scrollIntoView({ behavior: 'smooth', inline: 'center' });
             }
 
             // Optimize layout after tab switch
@@ -1685,6 +1711,14 @@
 
         // Initialize app with mobile optimizations
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure classic tab is visible by default
+            const classicTab = document.getElementById('classic');
+            if (classicTab) {
+                classicTab.classList.add('active');
+                classicTab.style.display = 'flex';
+                classicTab.style.flexDirection = 'column';
+            }
+            
             // Apply mobile optimizations
             enableMobileOptimizations();
             optimizeForScreenSize();
