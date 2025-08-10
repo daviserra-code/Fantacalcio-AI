@@ -325,7 +325,8 @@ if __name__ == '__main__':
         debug_mode = False
         logger.info("Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
-        app.run(host='0.0.0.0', port=port, debug=debug_mode, threaded=True, use_reloader=False, processes=1)
+        logger.info("App should be accessible at the preview URL")
+        app.run(host='0.0.0.0', port=port, debug=debug_mode, threaded=True, use_reloader=False)
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
