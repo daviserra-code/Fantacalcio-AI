@@ -834,14 +834,18 @@ def get_user_analytics():
         return jsonify({'error': 'Analytics data unavailable'}), 500
 
 @app.route('/api/compare', methods=['POST'])
-def compare_players_simple():
-    """Simple player comparison endpoint that actually works"""
+def compare_players_api():
+    """Player comparison endpoint that frontend calls"""
     try:
+        logger.info("Compare endpoint called")
+        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
             
         players = data.get('players', [])
+        logger.info(f"Comparing players: {players}")
+        
         if len(players) < 2:
             return jsonify({'error': 'Need at least 2 players'}), 400
             
@@ -864,10 +868,12 @@ def compare_players_simple():
                     })
                     break
         
+        logger.info(f"Found {len(found_players)} players")
+        
         if len(found_players) == 0:
             return jsonify({
                 'error': 'No players found',
-                'available': [p['name'] for p in all_players[:10]]
+                'available_players': [p['name'] for p in all_players[:10]]
             }), 404
             
         # Calculate metrics
