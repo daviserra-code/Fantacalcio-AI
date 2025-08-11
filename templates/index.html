@@ -435,57 +435,18 @@
 
     // Chat functionality
     async function sendMessage(mode) {
-        console.log('sendMessage called with mode:', mode);
-        
-        // Map mode to correct element IDs
-        let inputId, containerId, typingId;
-        
-        switch(mode) {
-            case 'classic':
-                inputId = 'messageInput';
-                containerId = 'chatContainer';
-                typingId = 'typingIndicator';
-                break;
-            case 'mantra':
-                inputId = 'messageInputMantra';
-                containerId = 'chatContainerMantra';
-                typingId = 'typingIndicatorMantra';
-                break;
-            case 'draft':
-                inputId = 'messageInputDraft';
-                containerId = 'chatContainerDraft';
-                typingId = 'typingIndicatorDraft';
-                break;
-            case 'superscudetto':
-                inputId = 'messageInputSuper';
-                containerId = 'chatContainerSuper';
-                typingId = 'typingIndicatorSuper';
-                break;
-            default:
-                console.error('Unknown mode:', mode);
-                return;
-        }
-        
-        console.log('Using elements:', { inputId, containerId, typingId });
+        const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        const typingId = mode === 'classic' ? 'typingIndicator' : `typingIndicator${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
         
         const input = document.getElementById(inputId);
         const container = document.getElementById(containerId);
         const typing = document.getElementById(typingId);
         
-        console.log('Elements found:', { input: !!input, container: !!container, typing: !!typing });
-        
-        if (!input || !container) {
-            console.error('Required elements not found');
-            return;
-        }
+        if (!input || !container) return;
         
         const message = input.value.trim();
-        console.log('Message:', message);
-        
-        if (!message) {
-            console.log('Empty message, returning');
-            return;
-        }
+        if (!message) return;
         
         // Add user message
         const userMsg = document.createElement('div');
@@ -501,16 +462,13 @@
         container.scrollTop = container.scrollHeight;
         
         try {
-            console.log('Sending request to /api/chat');
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message, mode })
             });
             
-            console.log('Response status:', response.status);
             const data = await response.json();
-            console.log('Response data:', data);
             
             // Hide typing indicator
             if (typing) typing.style.display = 'none';
