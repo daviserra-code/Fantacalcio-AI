@@ -294,7 +294,7 @@
         </div>
 
         <div class="input-wrapper">
-          <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
+          <textarea id="messageInput" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('classic');}"></textarea>
           <button class="btn btn-primary" onclick="sendMessage('classic')" id="sendBtn">{{ t.send }}</button>
         </div>
       </div>
@@ -328,7 +328,7 @@
           <span>L'assistente sta scrivendo...</span>
         </div>
         <div class="input-wrapper">
-          <textarea id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
+          <textarea id="messageInputMantra" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('mantra');}"></textarea>
           <button class="btn btn-primary" onclick="sendMessage('mantra')">{{ t.send }}</button>
         </div>
       </div>
@@ -351,7 +351,7 @@
         </div>
         <div class="typing-indicator" id="typingIndicatorDraft"><div class="typing-dots"><span></span><span></span><span></span></div><span>L'assistente sta scrivendo...</span></div>
         <div class="input-wrapper">
-          <textarea id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
+          <textarea id="messageInputDraft" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('draft');}"></textarea>
           <button class="btn btn-primary" onclick="sendMessage('draft')">{{ t.send }}</button>
         </div>
       </div>
@@ -371,7 +371,7 @@
         </div>
         <div class="typing-indicator" id="typingIndicatorSuper"><div class="typing-dots"><span></span><span></span><span></span></div><span>L'assistente sta scrivendo...</span></div>
         <div class="input-wrapper">
-          <textarea id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3"></textarea>
+          <textarea id="messageInputSuper" placeholder="Scrivi la tua domanda..." maxlength="500" rows="3" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage('superscudetto');}"></textarea>
           <button class="btn btn-primary" onclick="sendMessage('superscudetto')">{{ t.send }}</button>
         </div>
       </div>
@@ -433,8 +433,65 @@
       }
     }
 
-    // MOCK funzioni essenziali
-    async function sendMessage(mode){ /* chiamata API chat, invariato nel tuo backend */ }
+    // Chat functionality
+    async function sendMessage(mode) {
+        const inputId = mode === 'classic' ? 'messageInput' : `messageInput${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        const containerId = mode === 'classic' ? 'chatContainer' : `chatContainer${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        const typingId = mode === 'classic' ? 'typingIndicator' : `typingIndicator${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+        
+        const input = document.getElementById(inputId);
+        const container = document.getElementById(containerId);
+        const typing = document.getElementById(typingId);
+        
+        if (!input || !container) return;
+        
+        const message = input.value.trim();
+        if (!message) return;
+        
+        // Add user message
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user-message';
+        userMsg.textContent = message;
+        container.appendChild(userMsg);
+        
+        // Clear input and show typing
+        input.value = '';
+        if (typing) typing.style.display = 'flex';
+        
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+        
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, mode })
+            });
+            
+            const data = await response.json();
+            
+            // Hide typing indicator
+            if (typing) typing.style.display = 'none';
+            
+            // Add assistant response
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant-message';
+            assistantMsg.innerHTML = data.response || data.error || 'Errore nella risposta';
+            container.appendChild(assistantMsg);
+            
+        } catch (error) {
+            console.error('Chat error:', error);
+            if (typing) typing.style.display = 'none';
+            
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'message assistant-message';
+            errorMsg.textContent = '❌ Errore di connessione. Riprova più tardi.';
+            container.appendChild(errorMsg);
+        }
+        
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
     function askQuickQuestion(q){ const i=document.getElementById('messageInput'); i.value=q; sendMessage('classic'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
 
