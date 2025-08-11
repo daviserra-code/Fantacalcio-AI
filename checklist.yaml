@@ -1,0 +1,63 @@
+project: FantaCalcio-AI
+owner: @daviserra3
+goals:
+  - Risposte accurate, citate e fresche su trasferimenti/infortuni/valori
+  - Confronti giocatori robusti (fuzzy + merge KB/statici)
+  - ETL legale e ripetibile, con validazione e versioning
+
+sprint_1_quick_wins:
+  timeframe: 3-5 giorni
+  tasks:
+    - Blocca scritture durante le richieste (ALLOW_KB_WRITES=false in prod)
+    - Patch Chroma 'where' only-if-present
+    - Merge REAL+STATIC per /api/compare con normalizzazione cognomi/diacritici
+    - Fallback “Non so + Aggiorna dati ora” se RAG povero
+  acceptance:
+    - 0 warning "Add of existing embedding ID" durante /api/compare
+    - 95% dei confronti di 20 duelli comuni trovano entrambi i giocatori
+  metrics:
+    - cache_hit_rate >= 60%
+    - % risposte con citazioni >= 90%
+
+sprint_2_retrieval:
+  timeframe: 1 settimana
+  tasks:
+    - Hybrid retrieval (BM25 + e5) + re-ranker cross-encoder (top-50 → top-8)
+    - Query-rewrite per intent (transfer/injury/value/fixtures)
+    - Filtri freschezza: valid_to >= today; season match
+  acceptance:
+    - MRR@10 +15% su suite di test
+    - Latency P95 < 2.5s (senza web fallback)
+
+sprint_3_data_etl_legale:
+  timeframe: 1 settimana
+  tasks:
+    - ETL lega/squadra idempotente (JSONL per lega; checksum)
+    - Metadati uniformi: {type, season, league, team, player, source_url, source_date, valid_from, valid_to}
+    - Rifiuto documenti stantii (trasferimenti > 8 settimane)
+  acceptance:
+    - `manage.py etl league --league "Serie A" --season 2025-26` gira senza errori
+    - 0 record con metadata None
+
+sprint_4_ui_compare_chat:
+  timeframe: 3-5 giorni
+  tasks:
+    - /api/compare: filtri ?role=&season=&league=; head-to-head + value ratio + risk
+    - UI: chip “duelli popolari”, confidence pill, citazioni con date
+  acceptance:
+    - Tasso di click “vedi fonti” > 30%
+    - Feedback “risposta ripetitiva” < 5%
+
+sprint_5_obs_ops:
+  timeframe: 3-5 giorni
+  tasks:
+    - Logs strutturati + Sentry
+    - /metrics: cache_hit_rate, rag_quality_bucket, web_fallback_rate
+    - Warm-up all’avvio + regression Q&A suite
+  acceptance:
+    - Errori 5xx < 0.5%
+    - Suite test verde su 25 domande canoniche
+
+ongoing:
+  - Aggiornare stoplist fuzzy matching e dizionari alias
+  - Manutenzione KB (vacuum/rebuild mensile)

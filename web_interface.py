@@ -27,7 +27,7 @@ def get_assistant():
     if assistant_instance is None:
         try:
             # IMPORTANTISSIMO: l'import non deve lanciare ETL/seed
-            from main import FantacalcioAssistant
+            from fantacalcio_assistant import FantacalcioAssistant
             logger.info("Initializing FantacalcioAssistant...")
             assistant_instance = FantacalcioAssistant()
             logger.info("FantacalcioAssistant initialized successfully")
