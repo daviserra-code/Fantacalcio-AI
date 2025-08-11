@@ -105,8 +105,7 @@ def get_assistant_players():
         # query "larga" per pescare giocatori recenti
         search_results = assistant.knowledge_manager.search_knowledge(
             "giocatore attaccante centrocampista difensore portiere fantamedia stagione",
-            n_results=400,
-            where=None  # Fix Chroma query issue
+            n_results=400
         )
         real_players = []
         for r in search_results:
@@ -329,6 +328,47 @@ def chat():
     except Exception as e:
         logger.error(f"Chat error: {e}")
         return jsonify({'error': 'Chat failed', 'response': 'Mi dispiace, si è verificato un errore.'}), 500
+
+@app.route('/api/search', methods=['POST'])
+def search_players():
+    """Search players endpoint"""
+    try:
+        data = request.get_json(silent=True) or {}
+        query = data.get('query', '').strip()
+        role_filter = data.get('role', '').strip().upper()
+        
+        if not query:
+            return jsonify({'error': 'No search query provided'}), 400
+        
+        all_players = get_all_players_merged()
+        results = []
+        
+        query_lower = query.lower()
+        for player in all_players:
+            if (query_lower in player['name'].lower() or 
+                query_lower in player['team'].lower()):
+                if not role_filter or player['role'] == role_filter:
+                    results.append({
+                        'name': player['name'],
+                        'team': player['team'], 
+                        'role': player['role'],
+                        'fantamedia': player['fantamedia'],
+                        'price': player['price'],
+                        'appearances': player['appearances']
+                    })
+        
+        # Limit results to avoid overwhelming response
+        results = results[:20]
+        
+        return jsonify({
+            'results': results,
+            'count': len(results),
+            'query': query
+        })
+        
+    except Exception as e:
+        logger.error(f"Search error: {e}")
+        return jsonify({'error': 'Search failed'}), 500
 
 @app.route('/api/reset-chat', methods=['POST'])
 def reset_chat():
