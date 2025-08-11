@@ -1,0 +1,10 @@
+{
+  "web_fallback_enabled": true,
+  "web_fallback_sources": ["wikipedia"], 
+  "web_fallback_timeout_s": 6,
+  "web_fallback_ttl_s": 86400,
+  "openai_model_primary": "gpt-4o-mini",
+  "temperature": 0.3,
+  "max_tokens": 700,
+  "chroma_collection": "fantacalcio_knowledge"
+}
