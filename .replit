@@ -27,7 +27,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python web_interface.py --port 8080"
+args = "python web_interface.py --port 5000"
 
 [[ports]]
 localPort = 5000
@@ -36,3 +36,7 @@ externalPort = 80
 [[ports]]
 localPort = 8000
 externalPort = 8000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
