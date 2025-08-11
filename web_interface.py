@@ -193,6 +193,24 @@ def log_request_info():
 def health():
     return {'status': 'healthy'}, 200
 
+@app.route('/api/test', methods=['GET', 'POST'])
+def test_endpoint():
+    """Simple test endpoint to verify API is working"""
+    if request.method == 'POST':
+        data = request.get_json()
+        return jsonify({
+            'status': 'success',
+            'method': 'POST',
+            'received_data': data,
+            'message': 'Test endpoint is working!'
+        })
+    else:
+        return jsonify({
+            'status': 'success',
+            'method': 'GET', 
+            'message': 'Test endpoint is working!'
+        })
+
 @app.route('/metrics')
 def metrics():
     assistant = get_assistant()
@@ -302,32 +320,47 @@ def compare_players_api():
 def chat():
     """Basic chat endpoint for the interface"""
     try:
+        logger.info(f"Chat request received from {request.remote_addr}")
         data = request.get_json()
+        logger.info(f"Request data: {data}")
+        
         if not data:
+            logger.error("No data provided in request")
             return jsonify({'error': 'No data provided'}), 400
             
         message = data.get('message', '').strip()
         mode = data.get('mode', 'classic')
         
+        logger.info(f"Processing message: '{message}' in mode: '{mode}'")
+        
         if not message:
+            logger.error("Empty message provided")
             return jsonify({'error': 'No message provided'}), 400
             
         assistant = get_assistant()
         if not assistant:
+            logger.error("Assistant not available")
             return jsonify({'response': '⚠️ Servizio temporaneamente non disponibile. Riprova più tardi.'}), 200
             
         # Get response from assistant
+        logger.info("Getting response from assistant...")
         response = assistant.get_response(message)
+        logger.info(f"Assistant response: {response[:100]}...")
         
-        return jsonify({
+        result = {
             'response': response,
             'mode': mode,
             'timestamp': datetime.now().isoformat()
-        })
+        }
+        
+        return jsonify(result)
         
     except Exception as e:
-        logger.error(f"Chat error: {e}")
-        return jsonify({'error': 'Chat failed', 'response': 'Mi dispiace, si è verificato un errore.'}), 500
+        logger.error(f"Chat error: {e}", exc_info=True)
+        return jsonify({
+            'error': 'Chat failed', 
+            'response': f'Mi dispiace, si è verificato un errore: {str(e)}'
+        }), 500
 
 @app.route('/api/search', methods=['POST'])
 def search_players():

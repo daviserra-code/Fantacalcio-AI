@@ -273,6 +273,7 @@
         <input type="number" id="participants" placeholder="{{ t.participants }}" value="8" min="4" max="20">
         <input type="number" id="budget" placeholder="{{ t.budget }}" value="500" min="100" max="1000">
         <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
+        <button class="btn btn-secondary" onclick="testAPI()" style="background: #dc3545;">🔧 Test API</button>
       </div>
 
       <div class="chat-container">
@@ -313,6 +314,7 @@
         <input type="number" id="participantsMantra" placeholder="{{ t.participants }}" value="8">
         <input type="number" id="budgetMantra" placeholder="{{ t.budget }}" value="500">
         <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
+        <button class="btn btn-secondary" onclick="testAPI()" style="background: #dc3545;">🔧 Test API</button>
       </div>
       <div class="chat-container">
         <div class="chat-header">
@@ -343,6 +345,7 @@
           <option value="linear">Linear Draft</option>
         </select>
         <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
+        <button class="btn btn-secondary" onclick="testAPI()" style="background: #dc3545;">🔧 Test API</button>
       </div>
       <div class="chat-container">
         <div class="chat-header"><div class="status-indicator"><span class="status-dot"></span><span>Modalità Draft Attiva</span></div></div>
@@ -363,6 +366,7 @@
         <input type="number" id="participantsSuper" placeholder="{{ t.participants }}" value="8">
         <input type="number" id="budgetSuper" placeholder="{{ t.budget }}" value="500">
         <button class="btn btn-secondary" onclick="resetChat()">{{ t.reset_chat }}</button>
+        <button class="btn btn-secondary" onclick="testAPI()" style="background: #dc3545;">🔧 Test API</button>
       </div>
       <div class="chat-container">
         <div class="chat-header"><div class="status-indicator"><span class="status-dot"></span><span>Modalità Superscudetto Attiva</span></div></div>
@@ -436,10 +440,10 @@
     // Chat functionality - complete implementation
     async function sendMessage(mode) {
         console.log('sendMessage called with mode:', mode);
-        
+
         // Map mode to correct element IDs
         let inputId, containerId, typingId;
-        
+
         switch(mode) {
             case 'classic':
                 inputId = 'messageInput';
@@ -465,43 +469,43 @@
                 console.error('Unknown mode:', mode);
                 return;
         }
-        
+
         console.log('Using elements:', { inputId, containerId, typingId });
-        
+
         const input = document.getElementById(inputId);
         const container = document.getElementById(containerId);
         const typing = document.getElementById(typingId);
-        
+
         console.log('Elements found:', { input: !!input, container: !!container, typing: !!typing });
-        
+
         if (!input || !container) {
             console.error('Required elements not found');
             return;
         }
-        
+
         const message = input.value.trim();
         console.log('Message:', message);
-        
+
         if (!message) {
             console.log('Empty message, returning');
             return;
         }
-        
+
         // Add user message to chat
         const userMsg = document.createElement('div');
         userMsg.className = 'message user-message';
         userMsg.textContent = message;
         container.appendChild(userMsg);
-        
+
         // Clear input
         input.value = '';
-        
+
         // Show typing indicator
         if (typing) typing.style.display = 'flex';
-        
+
         // Scroll to bottom
         container.scrollTop = container.scrollHeight;
-        
+
         try {
             console.log('Sending request to /api/chat');
             const response = await fetch('/api/chat', {
@@ -509,39 +513,52 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message, mode })
             });
-            
+
             console.log('Response status:', response.status);
             const data = await response.json();
             console.log('Response data:', data);
-            
+
             // Hide typing indicator
             if (typing) typing.style.display = 'none';
-            
+
             // Add assistant response
             const assistantMsg = document.createElement('div');
             assistantMsg.className = 'message assistant-message';
             assistantMsg.innerHTML = data.response || data.message || 'Risposta non disponibile';
             container.appendChild(assistantMsg);
-            
+
             // Scroll to bottom
             container.scrollTop = container.scrollHeight;
-            
+
         } catch (error) {
             console.error('Error sending message:', error);
-            
+
             // Hide typing indicator
             if (typing) typing.style.display = 'none';
-            
+
             // Show error message
             const errorMsg = document.createElement('div');
             errorMsg.className = 'message assistant-message';
             errorMsg.innerHTML = '❌ Errore di connessione. Riprova più tardi.';
             container.appendChild(errorMsg);
-            
+
             // Scroll to bottom
             container.scrollTop = container.scrollHeight;
         }
     }
+
+    async function testAPI() {
+        console.log('Testing API connection...');
+        try {
+            const response = await fetch('/api/test'); // Assuming a /api/test endpoint exists
+            const data = await response.json();
+            alert('API Test Successful: ' + JSON.stringify(data));
+        } catch (error) {
+            console.error('API Test Failed:', error);
+            alert('API Test Failed. Check console for details.');
+        }
+    }
+
     function askQuickQuestion(q){ const i=document.getElementById('messageInput'); i.value=q; sendMessage('classic'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
 
