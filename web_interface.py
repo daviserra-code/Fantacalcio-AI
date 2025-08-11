@@ -44,7 +44,18 @@ def create_mock_assistant():
             self.corrections_manager = None
 
         def get_response(self, message, context=None):
-            return "⚠️ Servizio temporaneamente non disponibile. Riprova più tardi."
+            # Provide helpful responses for common queries without OpenAI
+            message_lower = message.lower()
+            if any(word in message_lower for word in ['lautaro', 'martinez']):
+                return "🏆 Lautaro Martinez è uno dei migliori attaccanti della Serie A, gioca nell'Inter. Fantamedia alta e ottimo investimento."
+            elif any(word in message_lower for word in ['osimhen', 'napoli']):
+                return "⚽ Victor Osimhen è un top player del Napoli, uno dei migliori centravanti per il fantacalcio."
+            elif 'formazione' in message_lower:
+                return "📋 Per una buona formazione considera: 1 portiere titolare, difensori che giocano sempre, centrocampisti con bonus, attaccanti che segnano."
+            elif any(word in message_lower for word in ['consigli', 'suggerimenti']):
+                return "💡 Alcuni consigli: investi su giocatori titolari, bilancia il budget, segui gli infortuni e le squalifiche."
+            else:
+                return "⚠️ Servizio AI temporaneamente non disponibile. Per utilizzare tutte le funzionalità, configura la chiave OpenAI nelle variabili d'ambiente."
 
         def reset_conversation(self):
             return "Conversazione resettata (modalità limitata)."

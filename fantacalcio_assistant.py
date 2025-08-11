@@ -21,13 +21,29 @@ logger.setLevel(logging.INFO)
 def _load_app_config() -> Dict[str, Any]:
     path = os.path.join(os.getcwd(), "app_config.json")
     if not os.path.exists(path):
-        return {}
+        return {
+            "openai_model_primary": "gpt-4o-mini",
+            "temperature": 0.3,
+            "max_tokens": 600,
+            "web_fallback_enabled": False,
+            "web_fallback_sources": ["wikipedia"],
+            "web_fallback_timeout_s": 6,
+            "web_fallback_ttl_s": 86400
+        }
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"[Assistant] Impossibile leggere app_config.json: {e}")
-        return {}
+        return {
+            "openai_model_primary": "gpt-4o-mini",
+            "temperature": 0.3,
+            "max_tokens": 600,
+            "web_fallback_enabled": False,
+            "web_fallback_sources": ["wikipedia"],
+            "web_fallback_timeout_s": 6,
+            "web_fallback_ttl_s": 86400
+        }}
 
 
 def _build_system_prompt_from_json(prompt_path: str) -> Tuple[str, Dict[str, Any]]:
@@ -139,7 +155,94 @@ class FantacalcioAssistant:
 
         logger.info("[Assistant] Inizializzazione completata")
 
-    # ----------------- API PUBBLICHE (usate dalla webapp) -----------------
+    # ----------------- API PUBBLICHE (usate dalla webapp) -----------
+
+    def get_response(self, message: str, context: Optional[str] = None) -> str:
+        """Get response from the assistant"""
+        try:
+            if not message.strip():
+                return "Per favore, inserisci una domanda o richiesta."
+            
+            # Simple cache key
+            cache_key = f"{message.strip().lower()[:100]}"
+            if cache_key in self._resp_cache:
+                self._hits += 1
+                return self._resp_cache[cache_key]
+            
+            self._miss += 1
+            
+            # Get context from knowledge manager if available
+            kb_context = ""
+            if self.knowledge_manager:
+                try:
+                    kb_context = self.knowledge_manager.get_context_for_query(message, max_context_length=1200)
+                except Exception as e:
+                    logger.warning(f"Knowledge manager context error: {e}")
+            
+            # Generate response
+            response = self._llm_answer(message, kb_context)
+            
+            # Cache response (with limit)
+            if len(self._resp_cache) > 50:
+                # Remove oldest entry
+                oldest_key = next(iter(self._resp_cache))
+                self._resp_cache.pop(oldest_key)
+            
+            self._resp_cache[cache_key] = response
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error getting response: {e}")
+            return f"Mi dispiace, si è verificato un errore: {str(e)}"
+    
+    def reset_conversation(self) -> str:
+        """Reset conversation state"""
+        self._resp_cache.clear()
+        return "Conversazione resettata."
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get cache statistics"""
+        total_requests = self._hits + self._miss
+        hit_rate = (self._hits / total_requests * 100) if total_requests > 0 else 0
+        
+        return {
+            'hits': self._hits,
+            'misses': self._miss,
+            'hit_rate_percentage': round(hit_rate, 2),
+            'cache_size': len(self._resp_cache),
+            'max_cache_size': 50
+        }
+    
+    def _llm_answer(self, message: str, kb_context: str, intent: str = "general", added_from_web: List = None) -> str:
+        """Generate LLM response"""
+        try:
+            if not self.openai_client:
+                return "⚠️ Servizio AI temporaneamente non disponibile. Verifica la configurazione OpenAI."
+            
+            # Build prompt
+            system_prompt = """Sei un assistente esperto di fantacalcio italiano. 
+Rispondi in modo preciso e utile alle domande sui giocatori, le squadre, le formazioni e le strategie.
+Se hai informazioni dal database, usale. Altrimenti, usa la tua conoscenza generale."""
+            
+            user_prompt = message
+            if kb_context:
+                user_prompt = f"Contesto dal database:\n{kb_context}\n\nDomanda: {message}"
+            
+            response = self.openai_client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
+            )
+            
+            return response.choices[0].message.content
+            
+        except Exception as e:
+            logger.error(f"LLM error: {e}")
+            return f"Errore nella generazione della risposta: {str(e)}"------
 
     def get_cache_stats(self) -> Dict[str, Any]:
         total = self._hits + self._miss
