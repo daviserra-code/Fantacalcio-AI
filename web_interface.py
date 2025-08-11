@@ -334,38 +334,38 @@ def chat():
         logger.info(f"Chat request received from {request.remote_addr}")
         data = request.get_json()
         logger.info(f"Request data: {data}")
-        
+
         if not data:
             logger.error("No data provided in request")
             return jsonify({'error': 'No data provided'}), 400
-            
+
         message = data.get('message', '').strip()
         mode = data.get('mode', 'classic')
-        
+
         logger.info(f"Processing message: '{message}' in mode: '{mode}'")
-        
+
         if not message:
             logger.error("Empty message provided")
             return jsonify({'error': 'No message provided'}), 400
-            
+
         assistant = get_assistant()
         if not assistant:
             logger.error("Assistant not available")
             return jsonify({'response': '⚠️ Servizio temporaneamente non disponibile. Riprova più tardi.'}), 200
-            
+
         # Get response from assistant
         logger.info("Getting response from assistant...")
         response = assistant.get_response(message)
         logger.info(f"Assistant response: {response[:100]}...")
-        
+
         result = {
             'response': response,
             'mode': mode,
             'timestamp': datetime.now().isoformat()
         }
-        
+
         return jsonify(result)
-        
+
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         return jsonify({
@@ -380,13 +380,13 @@ def search_players():
         data = request.get_json(silent=True) or {}
         query = data.get('query', '').strip()
         role_filter = data.get('role', '').strip().upper()
-        
+
         if not query:
             return jsonify({'error': 'No search query provided'}), 400
-        
+
         all_players = get_all_players_merged()
         results = []
-        
+
         query_lower = query.lower()
         for player in all_players:
             if (query_lower in player['name'].lower() or 
@@ -400,16 +400,16 @@ def search_players():
                         'price': player['price'],
                         'appearances': player['appearances']
                     })
-        
+
         # Limit results to avoid overwhelming response
         results = results[:20]
-        
+
         return jsonify({
             'results': results,
             'count': len(results),
             'query': query
         })
-        
+
     except Exception as e:
         logger.error(f"Search error: {e}")
         return jsonify({'error': 'Search failed'}), 500
@@ -449,7 +449,14 @@ def after_request(response):
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get('PORT', 5000))
+        import sys
+        import argparse
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--port', type=int, default=int(os.environ.get('PORT', 8080)))
+        args = parser.parse_args()
+
+        port = args.port
         debug_mode = False
         logger.info("Starting Fantasy Football Assistant Web Interface")
         logger.info(f"Server: 0.0.0.0:{port}")
