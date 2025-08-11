@@ -1,420 +1,416 @@
-# knowledge_manager.py
-# -*- coding: utf-8 -*-
 import os
-import json
 import time
+import json
 import uuid
 import logging
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 import chromadb
-from chromadb.api import ClientAPI
-from chromadb.api.models.Collection import Collection
+from chromadb import PersistentClient
 from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
-def _safe_metadata(meta: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-    """
-    Chroma accetta solo str/int/float/bool per i metadati.
-    Converte None in stringa vuota e rimuove tipi non supportati.
-    """
-    if not meta:
-        return {}
-    safe: Dict[str, Any] = {}
-    for k, v in meta.items():
-        if isinstance(v, (str, int, float, bool)):
-            safe[k] = v
-        elif v is None:
-            safe[k] = ""
-        else:
-            # fallback: serializza in stringa breve
+def _to_float(x) -> Optional[float]:
+    if x is None:
+        return None
+    if isinstance(x, (int, float)):
+        try:
+            return float(x)
+        except Exception:
+            return None
+    if isinstance(x, str):
+        s = x.strip().replace(",", ".")
+        # rimuovi simboli tipo "€", "cred", ecc.
+        for tok in ["€", "cred", "crediti", "cr"]:
+            s = s.replace(tok, "")
+        try:
+            return float(s)
+        except Exception:
+            return None
+    return None
+
+
+def _parse_age(birthdate: Optional[str]) -> Optional[int]:
+    if not birthdate or not isinstance(birthdate, str):
+        return None
+    # formati comuni: YYYY-MM-DD o DD/MM/YYYY
+    try:
+        if "-" in birthdate:
+            dt = datetime.strptime(birthdate[:10], "%Y-%m-%d")
+        elif "/" in birthdate:
+            # prova due varianti
             try:
-                safe[k] = json.dumps(v)[:512]
+                dt = datetime.strptime(birthdate[:10], "%d/%m/%Y")
             except Exception:
-                safe[k] = str(v)[:512]
-    return safe
+                dt = datetime.strptime(birthdate[:10], "%Y/%m/%d")
+        else:
+            return None
+        today = datetime.utcnow().date()
+        years = today.year - dt.year - ((today.month, today.day) < (dt.month, dt.day))
+        return int(years)
+    except Exception:
+        return None
 
 
 class KnowledgeManager:
     """
-    Gestione KB (Chroma + SentenceTransformer) con:
-      - inizializzazione resiliente
-      - add (singolo e bulk)
-      - search_knowledge con patch NO-where quando vuoto
-      - caricamento da JSONL
-      - creazione contesto per LLM
+    Gestione del KB su Chroma + embedding locale (SentenceTransformer).
+    - Ricerca semantica
+    - Catalogo giocatori in RAM (normalizzato)
+    - Recommender per ruolo/budget (robusto ai dati mancanti)
+    NOTE: niente 'ids' negli include, per compatibilità con alcune versioni di Chroma.
     """
 
     def __init__(
         self,
         collection_name: str = "fantacalcio_knowledge",
         chroma_path: str = "./chroma_db",
-        embedding_model_name: str = "all-MiniLM-L6-v2",
-        query_cache_size: int = 100,
-    ) -> None:
+        embed_model_name: str = "all-MiniLM-L6-v2",
+    ):
         self.collection_name = collection_name
-        self.chroma_path = chroma_path
-        self.embedding_model_name = embedding_model_name
-        self.query_cache_size = query_cache_size
+        self._player_catalog: List[Dict[str, Any]] = []
+        self._catalog_built_ts: Optional[float] = None
 
-        self.client: Optional[ClientAPI] = None
-        self.collection: Optional[Collection] = None
-        self.embedding_model: Optional[SentenceTransformer] = None
-        self.embedding_disabled: bool = False
-        self.query_cache: Dict[str, List[Dict[str, Any]]] = {}
-
-        # 1) Inizializza client Chroma
-        self._init_chroma()
-
-        # 2) Inizializza embedding locale
-        self._init_embeddings()
-
-        # 3) Recupera o crea collection
-        self._init_collection()
-
-        # Log stato iniziale
+        # Init Chroma
         try:
-            count = self.count()
+            self.client: PersistentClient = chromadb.PersistentClient(path=chroma_path)
+        except Exception as e:
+            logger.error(f"[KM] Errore inizializzazione Chroma client: {e}")
+            raise
+
+        # Carica o crea collection
+        try:
+            self.collection = self.client.get_collection(collection_name)
+            logger.info(
+                f"[KM] Collection caricata: '{collection_name}', count={self.collection.count()}"
+            )
         except Exception:
-            count = 0
-        print(f"[RAG] Pipeline inizializzata. Collection='{self.collection_name}', documenti indicizzati: {count}")
+            self.collection = self.client.create_collection(
+                name=collection_name, metadata={"description": "Fantacalcio KB"}
+            )
+            logger.info(f"[KM] Collection creata: '{collection_name}'")
 
-    # --------------------------
-    # INIT
-    # --------------------------
-    def _init_chroma(self) -> None:
-        os.makedirs(self.chroma_path, exist_ok=True)
-        self.client = chromadb.PersistentClient(path=self.chroma_path)
-
-    def _init_embeddings(self) -> None:
-        max_attempts = 10
-        for attempt in range(1, max_attempts + 1):
+        # Init embedding con retry
+        self.embedder: Optional[SentenceTransformer] = None
+        for attempt in range(1, 6):
             try:
-                print(f"🔄 Initializing SentenceTransformer (attempt {attempt}/{max_attempts})...")
-                # Ambiente pulito CPU
                 os.environ["CUDA_VISIBLE_DEVICES"] = ""
                 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-                self.embedding_model = SentenceTransformer(self.embedding_model_name, device="cpu")
-
-                # Test rapido
-                _ = self.embedding_model.encode("fantacalcio test", show_progress_bar=False)
-                print("✅ SentenceTransformer initialized successfully on attempt 1")
-                return
+                self.embedder = SentenceTransformer(embed_model_name, device="cpu")
+                _ = self.embedder.encode("warmup", show_progress_bar=False)
+                logger.info("✅ SentenceTransformer initialized successfully on attempt %d", attempt)
+                break
             except Exception as e:
-                if attempt == max_attempts:
-                    logger.error(f"❌ Embedding init failed: {e}")
-                    self.embedding_disabled = True
-                else:
-                    time.sleep(0.6)
-
-    def _init_collection(self) -> None:
-        assert self.client is not None
-        try:
-            self.collection = self.client.get_collection(self.collection_name)
-        except Exception:
-            # create if not exists
-            try:
-                self.collection = self.client.create_collection(
-                    name=self.collection_name,
-                    metadata={"description": "Fantacalcio knowledge base for RAG"},
-                )
-            except Exception as e:
-                logger.error(f"❌ Cannot create collection '{self.collection_name}': {e}")
-                # fallback name
-                fallback = f"{self.collection_name}_{int(time.time())}"
-                self.collection = self.client.create_collection(name=fallback)
-                self.collection_name = fallback
+                logger.warning(f"[KM] Embedding init attempt {attempt} failed: {e}")
+                time.sleep(0.8)
+        if self.embedder is None:
+            raise RuntimeError("[KM] Impossibile inizializzare il modello di embedding")
 
     # --------------------------
-    # UTILS
+    # CRUD / ingest
     # --------------------------
-    def _encode(self, text: str) -> List[float]:
-        if self.embedding_disabled or self.embedding_model is None:
-            raise RuntimeError("Embeddings disabled or model not available.")
-        return self.embedding_model.encode(text, show_progress_bar=False).tolist()
 
-    def count(self) -> int:
-        return int(self.collection.count()) if self.collection else 0
-
-    # --------------------------
-    # ADD / BULK ADD
-    # --------------------------
     def add_knowledge(
         self,
         text: str,
         metadata: Optional[Dict[str, Any]] = None,
         doc_id: Optional[str] = None,
     ) -> str:
-        if not self.collection:
-            raise RuntimeError("Collection not initialized")
-
+        if not text:
+            raise ValueError("text richiesto")
+        metadata = metadata or {}
         doc_id = doc_id or str(uuid.uuid4())
         try:
-            emb = self._encode(text)
-            meta = _safe_metadata(metadata)
+            emb = self.embedder.encode(text, show_progress_bar=False).tolist()
             self.collection.add(
                 ids=[doc_id],
                 documents=[text],
+                metadatas=[metadata],
                 embeddings=[emb],
-                metadatas=[meta],
             )
+            # invalida catalogo se sembra record giocatore
+            t = (metadata.get("type") or "").lower()
+            if metadata.get("player") or t in ("player_info", "current_player"):
+                self._player_catalog = []
+                self._catalog_built_ts = None
             return doc_id
         except Exception as e:
-            logger.warning(f"⚠️ Error adding knowledge '{doc_id}': {e}")
-            return doc_id
-
-    def add_bulk(
-        self,
-        items: List[Dict[str, Any]],
-        batch_size: int = 64,
-    ) -> int:
-        """
-        items: [{"text": str, "metadata": dict, "id": optional_str}, ...]
-        """
-        if not self.collection:
-            raise RuntimeError("Collection not initialized")
-        if self.embedding_disabled or self.embedding_model is None:
-            logger.warning("⚠️ Embeddings disabled: bulk add skipped.")
-            return 0
-
-        added = 0
-        buf_ids, buf_docs, buf_metas, buf_embs = [], [], [], []
-
-        for it in items:
-            text = it.get("text", "")
-            if not text:
-                continue
-            mid = it.get("id") or str(uuid.uuid4())
-            meta = _safe_metadata(it.get("metadata", {}))
-
-            try:
-                emb = self._encode(text)
-            except Exception as e:
-                logger.warning(f"⚠️ Embedding failed for {mid}: {e}")
-                continue
-
-            buf_ids.append(mid)
-            buf_docs.append(text)
-            buf_metas.append(meta)
-            buf_embs.append(emb)
-
-            if len(buf_ids) >= batch_size:
-                try:
-                    self.collection.add(
-                        ids=buf_ids, documents=buf_docs, metadatas=buf_metas, embeddings=buf_embs
-                    )
-                    added += len(buf_ids)
-                except Exception as e:
-                    logger.warning(f"⚠️ Bulk add error: {e}")
-                buf_ids, buf_docs, buf_metas, buf_embs = [], [], [], []
-
-        if buf_ids:
-            try:
-                self.collection.add(
-                    ids=buf_ids, documents=buf_docs, metadatas=buf_metas, embeddings=buf_embs
-                )
-                added += len(buf_ids)
-            except Exception as e:
-                logger.warning(f"⚠️ Bulk add (final) error: {e}")
-
-        return added
+            logger.error(f"[KM] add_knowledge error: {e}")
+            raise
 
     # --------------------------
-    # SEARCH (PATCH NO-where)
+    # Ricerca semantica
     # --------------------------
+
     def search_knowledge(self, query: str, n_results: int = 8) -> List[Dict[str, Any]]:
-        """
-        Ricerca per similarità con massima compatibilità Chroma.
-        - NON passa where quando vuoto (evita: Expected where to have exactly one operator, got {}).
-        - Retry senza include se necessario.
-        """
-        if not self.collection or self.embedding_disabled or self.embedding_model is None:
+        if not query:
             return []
-
-        # Cache
-        cache_key = f"{query.lower().strip()}__{int(n_results)}"
-        if cache_key in self.query_cache:
-            return self.query_cache[cache_key]
-
-        # Embedding query
         try:
-            q_emb = self._encode(query)
-        except Exception as e:
-            logger.error(f"⚠️ Error generating query embedding: {e}")
-            return []
-
-        # Query Chroma
-        res = None
-        try:
+            q_emb = self.embedder.encode(query, show_progress_bar=False).tolist()
             res = self.collection.query(
                 query_embeddings=[q_emb],
-                n_results=int(n_results),
+                n_results=max(1, int(n_results)),
                 include=["documents", "metadatas", "distances"],
             )
-        except Exception as e:
-            err = str(e)
-            if "Expected where to have exactly one operator" in err or "where" in err:
-                # Retry senza include (massima compatibilità vecchie versioni)
-                try:
-                    res = self.collection.query(
-                        query_embeddings=[q_emb],
-                        n_results=int(n_results),
-                    )
-                except Exception as e2:
-                    logger.error(f"❌ Chroma retry failed: {e2}")
-                    return []
-            else:
-                logger.error(f"❌ Chroma query error: {e}")
-                return []
+            docs = res.get("documents", [[]])[0]
+            metas = res.get("metadatas", [[]])[0]
+            dists = res.get("distances", [[]])[0]
 
-        docs = res.get("documents", [[]])
-        metas = res.get("metadatas", [[]]) if "metadatas" in res else [[] for _ in docs]
-        dists = res.get("distances", [[]]) if "distances" in res else [[] for _ in docs]
-
-        formatted: List[Dict[str, Any]] = []
-        if docs and len(docs[0]) > 0:
-            L = len(docs[0])
-            for i in range(L):
-                text = docs[0][i] if i < len(docs[0]) else ""
-                meta = metas[0][i] if metas and metas[0] and i < len(metas[0]) else {}
-                dist = dists[0][i] if dists and dists[0] and i < len(dists[0]) else 1.0
-
-                # Similarità “safe”
-                if dist <= 1.0:
-                    sim = 1.0 - float(dist)
-                else:
-                    sim = max(0.0, 2.0 - float(dist))
-
-                # Boost parole chiave
-                q_tokens = query.lower().split()
-                kw = sum(1 for t in q_tokens if t in text.lower())
-                if kw:
-                    sim = min(1.0, sim + 0.1 * kw)
-
-                formatted.append(
+            out: List[Dict[str, Any]] = []
+            for i in range(len(docs)):
+                dist = float(dists[i])
+                sim = 1.0 - dist if dist <= 1.0 else max(0.0, 2.0 - dist)
+                out.append(
                     {
-                        "text": text,
-                        "metadata": meta or {},
-                        "distance": float(dist),
-                        "cosine_similarity": float(sim),
-                        "relevance_score": float(sim),
+                        "text": docs[i],
+                        "metadata": metas[i] or {},
+                        "distance": dist,
+                        "similarity": float(sim),
                     }
                 )
-
-        formatted.sort(key=lambda x: x["relevance_score"], reverse=True)
-
-        # Cache bounded
-        if len(self.query_cache) >= self.query_cache_size:
-            try:
-                self.query_cache.pop(next(iter(self.query_cache)))
-            except Exception:
-                self.query_cache.clear()
-        self.query_cache[cache_key] = formatted
-        return formatted
-
-    # --------------------------
-    # CONTEXT BUILDER
-    # --------------------------
-    def get_context_for_query(self, query: str, max_context_chars: int = 1200) -> (str, List[Dict[str, Any]]):
-        """
-        Costruisce un contesto testuale per LLM.
-        Ritorna (context_str, used_items).
-        """
-        results = []
-        try:
-            results = self.search_knowledge(query, n_results=12)
+            return out
         except Exception as e:
             logger.error(f"[KM] search_knowledge error: {e}")
-            results = []
+            return []
 
+    def build_context(self, query: str, max_parts: int = 6, min_sim: float = 0.15) -> str:
+        results = self.search_knowledge(query, n_results=max_parts * 2)
         if not results:
-            return "", []
-
-        # soglie leggere
-        good = [r for r in results if r["relevance_score"] >= 0.25]
-        if not good:
-            good = results[:3]
-
-        context_parts: List[str] = []
-        used: List[Dict[str, Any]] = []
-        curr = 0
-        for r in good:
-            chunk = r["text"].strip()
-            if not chunk:
-                continue
-            if curr + len(chunk) + 3 <= max_context_chars:
-                context_parts.append(f"- {chunk}")
-                used.append(r)
-                curr += len(chunk) + 3
-
-        if not context_parts and results:
-            # fallback: primi 2 piccoli
-            for r in results[:2]:
-                chunk = (r["text"] or "")[:max(0, max_context_chars // 2)]
-                if chunk:
-                    context_parts.append(f"- {chunk}")
-                    used.append(r)
-
-        context = "Informazioni verificate dal database:\n" + "\n".join(context_parts) if context_parts else ""
-        return context, used
+            return ""
+        kept = [r for r in results if r["similarity"] >= min_sim] or results[:max_parts]
+        kept.sort(key=lambda r: r["similarity"], reverse=True)
+        kept = kept[:max_parts]
+        parts = []
+        for r in kept:
+            m = r.get("metadata", {}) or {}
+            title = m.get("title") or m.get("player") or m.get("team") or "KB"
+            date = m.get("source_date") or m.get("updated_at") or m.get("date") or "n.d."
+            parts.append(f"- {r['text']} [Fonte: {title} — {date}]")
+        return "Informazioni verificate dal KB:\n" + "\n".join(parts)
 
     # --------------------------
-    # LOAD JSONL
+    # Catalogo giocatori
     # --------------------------
-    def load_from_jsonl(self, jsonl_path: str) -> int:
-        if not os.path.exists(jsonl_path):
-            logger.warning(f"❌ JSONL non trovato: {jsonl_path}")
-            return 0
 
-        to_add: List[Dict[str, Any]] = []
-        with open(jsonl_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    row = json.loads(line)
-                except Exception as e:
-                    logger.warning(f"⚠️ JSONL parse error: {e}")
-                    continue
+    def build_player_catalog(self, force: bool = False) -> int:
+        """
+        Scansiona la collection a pagine e costruisce un indice normalizzato.
+        Non usa 'where' e non richiede 'ids' in include.
+        """
+        if getattr(self, "_player_catalog", None) and not force:
+            return len(self._player_catalog)
 
-                text = row.get("text", "")
-                if not text:
-                    continue
-                meta = _safe_metadata(row.get("metadata", {}))
-                did = row.get("id") or str(uuid.uuid4())
+        self._player_catalog = []
+        self._catalog_built_ts = time.time()
 
-                to_add.append({"id": did, "text": text, "metadata": meta})
-
-        added = self.add_bulk(to_add, batch_size=64)
-        logger.info(f"✅ Loaded {added} items from {os.path.basename(jsonl_path)}")
-        return added
-
-    # --------------------------
-    # MAINTENANCE
-    # --------------------------
-    def reset_database(self) -> bool:
         try:
-            assert self.client is not None
-            self.client.reset()
-            self.collection = self.client.create_collection(
-                name=self.collection_name, metadata={"description": "Fantacalcio knowledge base for RAG"}
-            )
-            self.query_cache.clear()
-            return True
-        except Exception as e:
-            logger.error(f"❌ reset_database error: {e}")
-            return False
+            total = self.collection.count()
+            page_size = 500
+            offset = 0
 
-    def rebuild_database_from_jsonl(self, jsonl_files: List[str]) -> int:
-        if not self.reset_database():
+            while offset < total:
+                batch = self.collection.get(
+                    include=["metadatas"],
+                    limit=page_size,
+                    offset=offset,
+                )
+                metas = batch.get("metadatas", []) or []
+
+                for m in metas:
+                    md = m or {}
+                    # includi qualsiasi record che sembri "giocatore"
+                    if not (md.get("player") and md.get("role")):
+                        # accetta 'nome' come fallback
+                        if not (md.get("nome") and md.get("ruolo")):
+                            continue
+
+                    player_name = md.get("player") or md.get("nome")
+                    role = (md.get("role") or md.get("ruolo") or "").upper()
+                    team = md.get("team") or md.get("squadra")
+                    season = md.get("season")
+                    # normalizza numerici
+                    price = _to_float(
+                        md.get("price")
+                        or md.get("prezzo")
+                        or md.get("price_recommended")
+                        or md.get("prezzo_consigliato")
+                    )
+                    fantamedia = _to_float(
+                        md.get("fantamedia")
+                        or md.get("fm")
+                        or md.get("media")
+                        or md.get("fantavoto")
+                        or md.get("fanta_media")
+                    )
+                    appearances = _to_float(md.get("appearances") or md.get("presenze"))
+                    age = _to_float(md.get("age"))
+                    if age is None:
+                        age = _parse_age(md.get("birthdate") or md.get("data_nascita"))
+
+                    source_date = md.get("source_date") or md.get("updated_at") or md.get("date")
+
+                    # filtra ruoli noti
+                    if role not in ("P", "D", "C", "A"):
+                        continue
+
+                    rec = {
+                        "player": player_name,
+                        "team": team,
+                        "role": role,
+                        "season": season,
+                        "price": price,
+                        "fantamedia": fantamedia,
+                        "appearances": appearances,
+                        "age": age,
+                        "birthdate": md.get("birthdate") or md.get("data_nascita"),
+                        "source_date": source_date,
+                        "raw": md,
+                    }
+                    self._player_catalog.append(rec)
+
+                offset += page_size
+
+            logger.info("[KM] Player catalog costruito: %d record", len(self._player_catalog))
+            return len(self._player_catalog)
+        except Exception as e:
+            logger.error(f"[KM] build_player_catalog error: {e}")
+            self._player_catalog = []
+            self._catalog_built_ts = None
             return 0
-        total = 0
-        for fp in jsonl_files:
-            try:
-                total += self.load_from_jsonl(fp)
-            except Exception as e:
-                logger.error(f"❌ rebuild error for {fp}: {e}")
-        return total
+
+    def recommend_players(
+        self,
+        role: str,
+        budget: Optional[float],
+        n: int = 5,
+        season: Optional[str] = None,
+        under_age: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Raccomanda giocatori per ruolo + (opzionale) budget e under_age.
+        Strategia:
+          1) cap unitario in base al budget (o default se assente)
+          2) se pochi risultati: rilassa cap (x1.4, x1.8) poi ignora cap
+          3) se ancora pochi: ordina per sola fantamedia
+        """
+        if not getattr(self, "_player_catalog", None):
+            self.build_player_catalog()
+
+        r = (role or "").upper().strip()
+        if r not in ("P", "D", "C", "A"):
+            r = "A"
+
+        # cap di default quando budget assente (lega 500)
+        def default_cap(_r: str) -> float:
+            if _r == "A":
+                return 45.0
+            if _r == "C":
+                return 30.0
+            if _r == "D":
+                return 22.0
+            if _r == "P":
+                return 18.0
+            return 25.0
+
+        def unit_cap(_r: str, total: Optional[float]) -> float:
+            if total is None:
+                return default_cap(_r)
+            total = float(total)
+            if _r == "A":
+                return min(65.0, max(20.0, total / 2.4))
+            if _r == "C":
+                return min(45.0, max(12.0, total / 3.0))
+            if _r == "D":
+                return min(30.0, max(8.0, total / 4.0))
+            if _r == "P":
+                return min(28.0, max(8.0, total / 4.2))
+            return max(10.0, total / 4.0)
+
+        cap = unit_cap(r, budget)
+
+        def age_ok(p: Dict[str, Any]) -> bool:
+            if under_age is None:
+                return True
+            a = p.get("age")
+            if isinstance(a, (int, float)):
+                return a <= under_age
+            return True
+
+        # helper che costruisce lista candidati sotto un certo cap (o senza)
+        def collect(max_price: Optional[float]) -> List[Dict[str, Any]]:
+            out: List[Dict[str, Any]] = []
+            for p in self._player_catalog:
+                if (p.get("role") or "").upper() != r:
+                    continue
+                if season and p.get("season") and p.get("season") != season:
+                    continue
+                if not age_ok(p):
+                    continue
+                price = p.get("price")
+                fm = p.get("fantamedia")
+                # se chiediamo cap e non c'è price, salta in questa passata
+                if max_price is not None:
+                    if price is None:
+                        continue
+                    if float(price) > float(max_price):
+                        continue
+                # se manca fm, difficile stimare valore (verrà gestito dopo)
+                value = float(fm) / max(float(price), 1.0) if (fm is not None and price is not None) else None
+                p2 = dict(p)
+                p2["value"] = value
+                out.append(p2)
+            return out
+
+        # Passo 1: cap base
+        candidates = collect(cap)
+        # se pochi risultati, rilassa cap
+        if len(candidates) < n:
+            candidates = collect(cap * 1.4)
+        if len(candidates) < n:
+            candidates = collect(cap * 1.8)
+        # se ancora pochi, ignora cap
+        if len(candidates) < n:
+            candidates = collect(None)
+
+        # Ordinamento: prima per value noto, poi per fantamedia
+        def sort_key(p: Dict[str, Any]):
+            has_value = p.get("value") is not None
+            fm = p.get("fantamedia") or 0.0
+            val = p.get("value") or 0.0
+            return (1 if has_value else 0, float(val), float(fm))
+
+        candidates.sort(key=sort_key, reverse=True)
+
+        # deduplica per nome
+        seen = set()
+        dedup: List[Dict[str, Any]] = []
+        for c in candidates:
+            name = (c.get("player") or "").strip().lower()
+            if not name or name in seen:
+                continue
+            dedup.append(c)
+            seen.add(name)
+            if len(dedup) >= n:
+                break
+
+        # annota cap usato
+        for d in dedup:
+            d["unit_budget_cap"] = cap
+
+        return dedup
+
+    # --------------------------
+    # Utils
+    # --------------------------
+
+    def stats(self) -> Dict[str, Any]:
+        return {
+            "collection": self.collection_name,
+            "count": self.collection.count(),
+            "catalog_size": len(self._player_catalog),
+            "catalog_built_at": self._catalog_built_ts,
+        }
