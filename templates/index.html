@@ -433,8 +433,115 @@
       }
     }
 
-    // MOCK funzioni essenziali
-    async function sendMessage(mode){ /* chiamata API chat, invariato nel tuo backend */ }
+    // Chat functionality - complete implementation
+    async function sendMessage(mode) {
+        console.log('sendMessage called with mode:', mode);
+        
+        // Map mode to correct element IDs
+        let inputId, containerId, typingId;
+        
+        switch(mode) {
+            case 'classic':
+                inputId = 'messageInput';
+                containerId = 'chatContainer';
+                typingId = 'typingIndicator';
+                break;
+            case 'mantra':
+                inputId = 'messageInputMantra';
+                containerId = 'chatContainerMantra';
+                typingId = 'typingIndicatorMantra';
+                break;
+            case 'draft':
+                inputId = 'messageInputDraft';
+                containerId = 'chatContainerDraft';
+                typingId = 'typingIndicatorDraft';
+                break;
+            case 'superscudetto':
+                inputId = 'messageInputSuper';
+                containerId = 'chatContainerSuper';
+                typingId = 'typingIndicatorSuper';
+                break;
+            default:
+                console.error('Unknown mode:', mode);
+                return;
+        }
+        
+        console.log('Using elements:', { inputId, containerId, typingId });
+        
+        const input = document.getElementById(inputId);
+        const container = document.getElementById(containerId);
+        const typing = document.getElementById(typingId);
+        
+        console.log('Elements found:', { input: !!input, container: !!container, typing: !!typing });
+        
+        if (!input || !container) {
+            console.error('Required elements not found');
+            return;
+        }
+        
+        const message = input.value.trim();
+        console.log('Message:', message);
+        
+        if (!message) {
+            console.log('Empty message, returning');
+            return;
+        }
+        
+        // Add user message to chat
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message user-message';
+        userMsg.textContent = message;
+        container.appendChild(userMsg);
+        
+        // Clear input
+        input.value = '';
+        
+        // Show typing indicator
+        if (typing) typing.style.display = 'flex';
+        
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+        
+        try {
+            console.log('Sending request to /api/chat');
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, mode })
+            });
+            
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            // Hide typing indicator
+            if (typing) typing.style.display = 'none';
+            
+            // Add assistant response
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'message assistant-message';
+            assistantMsg.innerHTML = data.response || data.message || 'Risposta non disponibile';
+            container.appendChild(assistantMsg);
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+            
+        } catch (error) {
+            console.error('Error sending message:', error);
+            
+            // Hide typing indicator
+            if (typing) typing.style.display = 'none';
+            
+            // Show error message
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'message assistant-message';
+            errorMsg.innerHTML = '❌ Errore di connessione. Riprova più tardi.';
+            container.appendChild(errorMsg);
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+    }
     function askQuickQuestion(q){ const i=document.getElementById('messageInput'); i.value=q; sendMessage('classic'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
 
@@ -499,10 +606,28 @@
         .catch(err=>{ out.innerHTML = `❌ Errore: ${err.error||'imprevisto'}`; });
     }
 
+    // Add Enter key support for all message inputs
+    function addEnterKeySupport() {
+        const inputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
+        inputs.forEach((inputId, index) => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const modes = ['classic', 'mantra', 'draft', 'superscudetto'];
+                        sendMessage(modes[index]);
+                    }
+                });
+            }
+        });
+    }
+
     // Avvio: Classic di default
     document.addEventListener('DOMContentLoaded', ()=>{
       const firstTab=document.querySelector('.tabs .tab');
       switchTab('classic', firstTab);
+      addEnterKeySupport();
     });
 
     // Chiudi modali clic fuori
