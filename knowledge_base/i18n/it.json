@@ -1,0 +1,44 @@
+{
+  "title": "Fantacalcio Assistant",
+  "subtitle": "Consigli, strategie e dati per asta e giornata",
+  "placeholders": {
+    "input": "Scrivi qui la tua domanda…"
+  },
+  "buttons": {
+    "send": "Invia",
+    "clear": "Pulisci",
+    "reset": "Reset",
+    "export": "Esporta"
+  ,
+  "modes": {
+    "classic": "Classic",
+    "stats": "Statistiche",
+    "scouting": "Scouting",
+    "fixtures": "Calendario",
+    "market": "Mercato"
+  },
+  "sections": {
+    "quick_actions": "Azioni rapide",
+    "history": "Storico",
+    "output": "Risposta"
+  },
+  "quickActions": {
+    "topFwBudget": "Top attaccanti (budget 150)",
+    "lineup352_500": "Formazione 3-5-2 (500 crediti)",
+    "u21Def": "2-3 difensori Under 21",
+    "genoaTransfers": "Ultimi acquisti Genoa",
+    "juveTransfers": "Ultimi acquisti Juventus"
+  },
+  "labels": {
+    "mode": "Modalità",
+    "language": "Lingua"
+  },
+  "toasts": {
+    "error": "Errore imprevisto",
+    "empty": "Scrivi prima un messaggio",
+    "sent": "Richiesta inviata"
+  },
+  "footer": {
+    "disclaimer": "Consigli senza garanzia. Verifica i dati."
+  }
+}

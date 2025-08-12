@@ -1,467 +1,177 @@
-from flask import Flask, render_template, request, jsonify, session
+# web_interface.py
+# -*- coding: utf-8 -*-
+
 import os
 import json
 import logging
-from datetime import datetime
-import unicodedata
-from config import app_config
+from flask import Flask, request, jsonify, render_template
 
-# Silenzia i warning HNSW di Chroma (opzionale)
-logging.getLogger("chromadb.segment.impl.vector.local_persistent_hnsw").setLevel(logging.ERROR)
+from fantacalcio_assistant import FantacalcioAssistant
 
-# Configure logging
+APP_PORT = int(os.getenv("PORT", "5000"))
+APP_HOST = os.getenv("HOST", "0.0.0.0")
+
+LOG = logging.getLogger("web_interface")
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=os.environ.get("LOG_LEVEL", "INFO"),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
-logger = logging.getLogger(__name__)
 
-# Lazy loading globals
-FantacalcioAssistant = None
-assistant_instance = None
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
-def get_assistant():
-    """Lazy load and return the FantacalcioAssistant instance."""
-    global FantacalcioAssistant, assistant_instance
+_assistant = None
+_translations_cache = {}
 
-    if assistant_instance is None:
-        try:
-            # IMPORTANTISSIMO: l'import non deve lanciare ETL/seed
-            from fantacalcio_assistant import FantacalcioAssistant
-            logger.info("Initializing FantacalcioAssistant...")
-            assistant_instance = FantacalcioAssistant()
-            logger.info("FantacalcioAssistant initialized successfully")
-        except Exception as e:
-            logger.error(f"Failed to initialize FantacalcioAssistant: {e}")
-            assistant_instance = create_mock_assistant()
 
-    return assistant_instance if assistant_instance is not False else None
+def get_assistant() -> FantacalcioAssistant:
+    global _assistant
+    if _assistant is None:
+        _assistant = FantacalcioAssistant()
+    return _assistant
 
-def create_mock_assistant():
-    class MockAssistant:
-        def __init__(self):
-            self.knowledge_manager = None
-            self.corrections_manager = None
 
-        def get_response(self, message, context=None):
-            # Provide helpful responses for common queries without OpenAI
-            message_lower = message.lower()
-            if any(word in message_lower for word in ['lautaro', 'martinez']):
-                return "🏆 Lautaro Martinez è uno dei migliori attaccanti della Serie A, gioca nell'Inter. Fantamedia alta e ottimo investimento."
-            elif any(word in message_lower for word in ['osimhen', 'napoli']):
-                return "⚽ Victor Osimhen è un top player del Napoli, uno dei migliori centravanti per il fantacalcio."
-            elif 'formazione' in message_lower:
-                return "📋 Per una buona formazione considera: 1 portiere titolare, difensori che giocano sempre, centrocampisti con bonus, attaccanti che segnano."
-            elif any(word in message_lower for word in ['consigli', 'suggerimenti']):
-                return "💡 Alcuni consigli: investi su giocatori titolari, bilancia il budget, segui gli infortuni e le squalifiche."
-            else:
-                return "⚠️ Servizio AI temporaneamente non disponibile. Per utilizzare tutte le funzionalità, configura la chiave OpenAI nelle variabili d'ambiente."
+def _deep_merge(a: dict, b: dict) -> dict:
+    """
+    Merge profondo: b sovrascrive a, ma preserva chiavi mancanti.
+    """
+    out = dict(a)  # copia
+    for k, v in (b or {}).items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = _deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
 
-        def reset_conversation(self):
-            return "Conversazione resettata (modalità limitata)."
 
-        def get_cache_stats(self):
-            return {'hits': 0, 'misses': 0, 'hit_rate_percentage': 0, 'cache_size': 0, 'max_cache_size': 0}
-
-    return MockAssistant()
-
-# Helpers per normalizzazione nomi
-def _norm(s: str) -> str:
-    if not s:
-        return ""
-    s = s.strip().lower()
-    s = "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
-    return " ".join(s.split())
-
-def _surname(s: str) -> str:
-    parts = _norm(s).split()
-    return parts[-1] if parts else ""
-
-# Dati statici di fallback
-STATIC_PLAYERS_DATA = [
-    {'name': 'Victor Osimhen', 'team': 'Napoli', 'role': 'A', 'fantamedia': 8.2, 'price': 45, 'appearances': 32},
-    {'name': 'Lautaro Martinez', 'team': 'Inter', 'role': 'A', 'fantamedia': 8.1, 'price': 44, 'appearances': 34},
-    {'name': 'Dusan Vlahovic', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.8, 'price': 42, 'appearances': 35},
-    {'name': 'Khvicha Kvaratskhelia', 'team': 'Napoli', 'role': 'A', 'fantamedia': 7.9, 'price': 41, 'appearances': 31},
-    {'name': 'Rafael Leao', 'team': 'Milan', 'role': 'A', 'fantamedia': 7.6, 'price': 40, 'appearances': 30},
-    {'name': 'Marcus Thuram', 'team': 'Inter', 'role': 'A', 'fantamedia': 7.3, 'price': 38, 'appearances': 32},
-    {'name': 'Federico Chiesa', 'team': 'Juventus', 'role': 'A', 'fantamedia': 7.4, 'price': 37, 'appearances': 29},
-    {'name': 'Olivier Giroud', 'team': 'Milan', 'role': 'A', 'fantamedia': 7.1, 'price': 34, 'appearances': 28},
-
-    {'name': 'Nicolo Barella', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.5, 'price': 32, 'appearances': 35},
-    {'name': 'Hakan Calhanoglu', 'team': 'Inter', 'role': 'C', 'fantamedia': 7.1, 'price': 29, 'appearances': 32},
-    {'name': 'Tijjani Reijnders', 'team': 'Milan', 'role': 'C', 'fantamedia': 6.7, 'price': 28, 'appearances': 30},
-    {'name': 'Stanislav Lobotka', 'team': 'Napoli', 'role': 'C', 'fantamedia': 6.6, 'price': 26, 'appearances': 33},
-    {'name': 'Manuel Locatelli', 'team': 'Juventus', 'role': 'C', 'fantamedia': 6.5, 'price': 25, 'appearances': 31},
-
-    {'name': 'Theo Hernandez', 'team': 'Milan', 'role': 'D', 'fantamedia': 7.2, 'price': 32, 'appearances': 33},
-    {'name': 'Alessandro Bastoni', 'team': 'Inter', 'role': 'D', 'fantamedia': 7.0, 'price': 30, 'appearances': 32},
-    {'name': 'Federico Dimarco', 'team': 'Inter', 'role': 'D', 'fantamedia': 6.8, 'price': 26, 'appearances': 31},
-    {'name': 'Andrea Cambiaso', 'team': 'Juventus', 'role': 'D', 'fantamedia': 6.6, 'price': 24, 'appearances': 29},
-    {'name': 'Giovanni Di Lorenzo', 'team': 'Napoli', 'role': 'D', 'fantamedia': 6.5, 'price': 23, 'appearances': 34},
-
-    {'name': 'Mike Maignan', 'team': 'Milan', 'role': 'P', 'fantamedia': 6.8, 'price': 24, 'appearances': 36},
-    {'name': 'Yann Sommer', 'team': 'Inter', 'role': 'P', 'fantamedia': 6.6, 'price': 20, 'appearances': 35},
-    {'name': 'Alex Meret', 'team': 'Napoli', 'role': 'P', 'fantamedia': 6.4, 'price': 17, 'appearances': 32},
-    {'name': 'Mattia Perin', 'team': 'Juventus', 'role': 'P', 'fantamedia': 6.2, 'price': 15, 'appearances': 28}
-]
-
-def get_assistant_players():
-    """Legge dal KM se disponibile (senza scrivere su DB)."""
-    assistant = get_assistant()
-    if not assistant or not getattr(assistant, "knowledge_manager", None):
-        return []
-
-    try:
-        # query "larga" per pescare giocatori recenti
-        search_results = assistant.knowledge_manager.search_knowledge(
-            "giocatore attaccante centrocampista difensore portiere fantamedia stagione",
-            n_results=400
-        )
-        real_players = []
-        for r in search_results:
-            md = r.get("metadata", {})
-            if md.get("type") in ("current_player", "player_info"):
-                real_players.append({
-                    "name": md.get("player", md.get("title", "Unknown")),
-                    "team": md.get("team", "Unknown"),
-                    "role": md.get("role", "A"),
-                    "fantamedia": md.get("fantamedia", 6.0),
-                    "price": md.get("price", 20),
-                    "appearances": md.get("appearances", 30),
-                })
-        return real_players
-    except Exception as e:
-        logger.error(f"Failed to get real players data: {e}")
-        return []
-
-def get_all_players_merged():
-    """Unisce KB + statici e deduplica per nome normalizzato."""
-    real = get_assistant_players()
-    merged = {}
-    for p in (real or []):
-        merged[_norm(p['name'])] = p
-    for p in STATIC_PLAYERS_DATA:
-        key = _norm(p['name'])
-        if key not in merged:
-            merged[key] = p
-    return list(merged.values())
-
-# Multilingua minimale (usata dall'index.html)
-TRANSLATIONS = {
-    'it': {
-        'title': 'Assistente Fantacalcio Pro',
-        'subtitle': 'Il tuo consulente per vincere il fantacalcio',
-        'modes': {'classic': 'Classic', 'mantra': 'Mantra', 'draft': 'Draft', 'superscudetto': 'Superscudetto'},
-        'historical': 'Statistiche Storiche',
-        'search_placeholder': 'Cerca giocatore, squadra o campionato...',
-        'participants': 'Partecipanti',
-        'budget': 'Budget',
-        'reset_chat': 'Reset Chat',
-        'send': 'Invia',
-        'welcome': 'Ciao! Sono il tuo assistente fantacalcio professionale.',
-        'loading': 'Elaborando risposta...',
-        'filters': 'Filtri',
-        'all_roles': 'Tutti i ruoli',
-        'goalkeeper': 'Portieri',
-        'defender': 'Difensori',
-        'midfielder': 'Centrocampisti',
-        'forward': 'Attaccanti'
-    },
-    'en': {
-        'title': 'Fantasy Football Pro Assistant',
-        'subtitle': 'Your consultant to win fantasy football',
-        'modes': {'classic': 'Classic', 'mantra': 'Mantra', 'draft': 'Draft', 'superscudetto': 'Superscudetto'},
-        'historical': 'Historical Stats',
-        'search_placeholder': 'Search player, team or league...',
-        'participants': 'Participants',
-        'budget': 'Budget',
-        'reset_chat': 'Reset Chat',
-        'send': 'Send',
-        'welcome': 'Hello! I am your professional fantasy football assistant.',
-        'loading': 'Processing response...',
-        'filters': 'Filters',
-        'all_roles': 'All roles',
-        'goalkeeper': 'Goalkeepers',
-        'defender': 'Defenders',
-        'midfielder': 'Midfielders',
-        'forward': 'Forwards'
-    }
-}
-
-# Flask app
-app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'fantacalcio-dev-key-2024')
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 300
-app.config['JSON_SORT_KEYS'] = False
-
-@app.before_request
-def log_request_info():
-    logger.info(f"Request: {request.method} {request.path} from {request.remote_addr}")
-
-@app.route('/health')
-def health():
-    return {'status': 'healthy'}, 200
-
-@app.route('/api/test', methods=['GET', 'POST'])
-def test_endpoint():
-    """Simple test endpoint to verify API is working"""
-    if request.method == 'POST':
-        data = request.get_json()
-        return jsonify({
-            'status': 'success',
-            'method': 'POST',
-            'received_data': data,
-            'message': 'Test endpoint is working!'
-        })
-    else:
-        return jsonify({
-            'status': 'success',
-            'method': 'GET', 
-            'message': 'Test endpoint is working!'
-        })
-
-@app.route('/metrics')
-def metrics():
-    assistant = get_assistant()
-    cache_stats = assistant.get_cache_stats() if assistant else {}
+def _default_translations(lang: str) -> dict:
+    # Fallback completo per evitare UndefinedError in Jinja.
     return {
-        'uptime': 'running',
-        'assistant_status': 'available' if assistant else 'not_initialized',
-        'players_total': len(get_all_players_merged()),
-        'assistant_cache_stats': cache_stats
-    }, 200
-
-@app.route('/')
-def index():
-    if 'session_id' not in session:
-        session['session_id'] = os.urandom(16).hex()
-        session.permanent = True
-        logger.info(f"New session created: {session['session_id']}")
-    lang = request.args.get('lang', 'it')
-    if lang not in TRANSLATIONS:
-        lang = 'it'
-    session['lang'] = lang
-    logger.info(f"Page view: {session['session_id']}, lang: {lang}")
-    return render_template('index.html', lang=lang, t=TRANSLATIONS[lang])
-
-@app.route('/api/compare', methods=['POST', 'OPTIONS', 'GET'])
-@app.route('/api/player-comparison', methods=['POST', 'OPTIONS', 'GET'])
-def compare_players_api():
-    """Player comparison robusta + merge KB/statici, nessuna scrittura su Chroma."""
-    try:
-        if request.method == 'OPTIONS':
-            return ('', 204)
-        if request.method == 'GET':
-            sample = [p['name'] for p in get_all_players_merged()[:2]]
-            return jsonify({'status': 'ok', 'hint': 'POST JSON { "players": ["Nome1", "Nome2"] }', 'sample': sample})
-
-        data = request.get_json(silent=True) or {}
-        players = data.get('players', [])
-        logger.info(f"Comparing players: {players}")
-        if len(players) < 2:
-            return jsonify({'error': 'Need at least 2 players'}), 400
-
-        all_players = get_all_players_merged()
-        index = [{
-            "name": p["name"],
-            "norm": _norm(p["name"]),
-            "surname": _surname(p["name"]),
-            "data": p
-        } for p in all_players]
-
-        found_players = []
-        for q_raw in players:
-            q = _norm(q_raw)
-            q_surname = _surname(q_raw)
-            hit = None
-
-            # 1) match pieno o contenuto
-            for it in index:
-                if q and (q == it["norm"] or q in it["norm"] or it["norm"] in q):
-                    hit = it["data"]; break
-            # 2) cognome
-            if not hit and q_surname:
-                for it in index:
-                    if q_surname and q_surname == it["surname"]:
-                        hit = it["data"]; break
-            # 3) overlap token
-            if not hit and q:
-                q_tokens = set(q.split())
-                for it in index:
-                    if q_tokens & set(it["norm"].split()):
-                        hit = it["data"]; break
-
-            if hit:
-                p = hit
-                found_players.append({
-                    'name': p['name'],
-                    'team': p['team'],
-                    'role': p['role'],
-                    'fantamedia': p['fantamedia'],
-                    'price': p['price'],
-                    'appearances': p['appearances'],
-                    'value_ratio': round(p['fantamedia'] / max(p['price'], 1) * 100, 2)
-                })
-
-        requested_norm = [_norm(x) for x in players]
-        found_norm = [_norm(x['name']) for x in found_players]
-        missed = [players[i] for i, rn in enumerate(requested_norm) if rn not in set(found_norm)]
-        if missed:
-            logger.info(f"Compare miss: requested={players} missed={missed}")
-
-        logger.info(f"Found {len(found_players)} players")
-        if not found_players:
-            return jsonify({'error': 'No players found', 'available_players': [p['name'] for p in all_players[:10]]}), 404
-
-        metrics = {
-            'best_value': max(found_players, key=lambda x: x['value_ratio'])['name'],
-            'best_fantamedia': max(found_players, key=lambda x: x['fantamedia'])['name'],
-            'most_reliable': max(found_players, key=lambda x: x['appearances'])['name'],
-            'summary': f"Miglior rapporto qualità-prezzo: {max(found_players, key=lambda x: x['value_ratio'])['name']}"
+        "title": "Fantacalcio Assistant",
+        "subtitle": "Consigli, strategie e dati per asta e giornata",
+        "placeholders": {
+            "input": "Scrivi qui la tua domanda…"
+        },
+        "buttons": {
+            "send": "Invia",
+            "clear": "Pulisci",
+            "reset": "Reset",
+            "export": "Esporta"
+        },
+        "modes": {
+            "classic": "Classic",
+            "stats": "Statistiche",
+            "scouting": "Scouting",
+            "fixtures": "Calendario",
+            "market": "Mercato"
+        },
+        "sections": {
+            "quick_actions": "Azioni rapide",
+            "history": "Storico",
+            "output": "Risposta"
+        },
+        "quickActions": {
+            "topFwBudget": "Top attaccanti (budget 150)",
+            "lineup352_500": "Formazione 3-5-2 (500 crediti)",
+            "u21Def": "2-3 difensori Under 21",
+            "genoaTransfers": "Ultimi acquisti Genoa",
+            "juveTransfers": "Ultimi acquisti Juventus"
+        },
+        "labels": {
+            "mode": "Modalità",
+            "language": "Lingua"
+        },
+        "toasts": {
+            "error": "Errore imprevisto",
+            "empty": "Scrivi prima un messaggio",
+            "sent": "Richiesta inviata"
+        },
+        "footer": {
+            "disclaimer": "Consigli senza garanzia. Verifica i dati."
         }
-        return jsonify({'comparison': found_players, 'metrics': metrics, 'count': len(found_players)})
+    }
 
-    except Exception as e:
-        logger.error(f"Compare error: {e}")
-        return jsonify({'error': 'Comparison failed'}), 500
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    """Basic chat endpoint for the interface"""
+def _load_translations_from_file(lang: str) -> dict:
+    """
+    Prova a caricare ./i18n/<lang>.json (se esiste).
+    Unisce con il fallback per garantire tutte le chiavi usate dalla UI.
+    """
+    defaults = _default_translations(lang)
+    path = os.path.join("i18n", f"{lang}.json")
     try:
-        logger.info(f"Chat request received from {request.remote_addr}")
-        data = request.get_json()
-        logger.info(f"Request data: {data}")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, dict) and data:
+                return _deep_merge(defaults, data)
+    except Exception as e:
+        LOG.warning("Impossibile caricare %s: %s (uso fallback)", path, e)
+    return defaults
 
-        if not data:
-            logger.error("No data provided in request")
-            return jsonify({'error': 'No data provided'}), 400
 
-        message = data.get('message', '').strip()
-        mode = data.get('mode', 'classic')
+def get_translations(lang: str) -> dict:
+    """
+    Cache semplice per evitare IO ad ogni richiesta.
+    """
+    lang = (lang or "it").lower()
+    if lang in _translations_cache:
+        return _translations_cache[lang]
+    t = _load_translations_from_file(lang)
+    _translations_cache[lang] = t
+    return t
 
-        logger.info(f"Processing message: '{message}' in mode: '{mode}'")
+
+@app.route("/", methods=["GET"])
+def index():
+    lang = request.args.get("lang", "it")
+    LOG.info("Request: GET / from %s", request.remote_addr)
+    LOG.info("Page view: %s, lang: %s", os.urandom(16).hex(), lang)
+
+    t = get_translations(lang)
+    return render_template("index.html", lang=lang, t=t)
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    LOG.info("Request: POST /api/chat from %s", request.remote_addr)
+    try:
+        data = request.get_json(force=True) or {}
+        LOG.info("Chat request received from %s", request.remote_addr)
+        LOG.info("Request data: %s", data)
+        message = (data.get("message") or "").strip()
+        mode = (data.get("mode") or "classic").strip()
 
         if not message:
-            logger.error("Empty message provided")
-            return jsonify({'error': 'No message provided'}), 400
+            return jsonify({"response": "Dimmi pure la tua domanda 😉"}), 200
 
         assistant = get_assistant()
-        if not assistant:
-            logger.error("Assistant not available")
-            return jsonify({'response': '⚠️ Servizio temporaneamente non disponibile. Riprova più tardi.'}), 200
+        reply = assistant.get_response(message, mode=mode, context=None)
 
-        # Get response from assistant
-        logger.info("Getting response from assistant...")
-        response = assistant.get_response(message)
-        logger.info(f"Assistant response: {response[:100]}...")
-
-        result = {
-            'response': response,
-            'mode': mode,
-            'timestamp': datetime.now().isoformat()
-        }
-
-        return jsonify(result)
+        return jsonify({"response": reply}), 200
 
     except Exception as e:
-        logger.error(f"Chat error: {e}", exc_info=True)
-        return jsonify({
-            'error': 'Chat failed', 
-            'response': f'Mi dispiace, si è verificato un errore: {str(e)}'
-        }), 500
-
-@app.route('/api/search', methods=['POST'])
-def search_players():
-    """Search players endpoint"""
-    try:
-        data = request.get_json(silent=True) or {}
-        query = data.get('query', '').strip()
-        role_filter = data.get('role', '').strip().upper()
-
-        if not query:
-            return jsonify({'error': 'No search query provided'}), 400
-
-        all_players = get_all_players_merged()
-        results = []
-
-        query_lower = query.lower()
-        for player in all_players:
-            if (query_lower in player['name'].lower() or 
-                query_lower in player['team'].lower()):
-                if not role_filter or player['role'] == role_filter:
-                    results.append({
-                        'name': player['name'],
-                        'team': player['team'], 
-                        'role': player['role'],
-                        'fantamedia': player['fantamedia'],
-                        'price': player['price'],
-                        'appearances': player['appearances']
-                    })
-
-        # Limit results to avoid overwhelming response
-        results = results[:20]
-
-        return jsonify({
-            'results': results,
-            'count': len(results),
-            'query': query
-        })
-
-    except Exception as e:
-        logger.error(f"Search error: {e}")
-        return jsonify({'error': 'Search failed'}), 500
-
-@app.route('/api/reset-chat', methods=['POST'])
-def reset_chat():
-    """Reset chat conversation"""
-    try:
-        assistant = get_assistant()
-        if assistant:
-            result = assistant.reset_conversation()
-            return jsonify({'message': result})
-        return jsonify({'message': 'Chat resettata'})
-    except Exception as e:
-        logger.error(f"Reset chat error: {e}")
-        return jsonify({'error': 'Reset failed'}), 500
-
-# --- Endpoints base (chat, ecc.) opzionali: qui teniamo solo quelli utili alla comparison ---
-
-@app.errorhandler(404)
-def not_found(error):
-    logger.warning(f"404 error: {request.path}")
-    return jsonify({'error': 'Endpoint not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    logger.error(f"500 error: {error}")
-    return jsonify({'error': 'Internal server error'}), 500
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+        LOG.exception("Chat endpoint error: %s", e)
+        return jsonify({"response": "⚠️ Servizio momentaneamente non disponibile. Riprova tra poco."}), 200
 
 
-if __name__ == '__main__':
-    try:
-        import sys
-        import argparse
+@app.route("/api/reset-chat", methods=["POST"])
+def api_reset():
+    global _assistant
+    _assistant = None
+    return jsonify({"ok": True})
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--port', type=int, default=int(os.environ.get('PORT', 8080)))
-        args = parser.parse_args()
 
-        port = args.port
-        debug_mode = False
-        logger.info("Starting Fantasy Football Assistant Web Interface")
-        logger.info(f"Server: 0.0.0.0:{port}")
-        logger.info("App should be accessible at the preview URL")
-        app.run(host='0.0.0.0', port=port, debug=debug_mode, threaded=True, use_reloader=False)
-    except Exception as e:
-        logger.error(f"Failed to start server: {e}")
-        raise
+@app.route("/api/export-logs", methods=["GET"])
+def export_logs():
+    return jsonify({"response": "Esportazione log non configurata in questa build."})
+
+
+def main():
+    LOG.info("Starting Fantasy Football Assistant Web Interface")
+    LOG.info("Server: %s:%d", APP_HOST, APP_PORT)
+    LOG.info("App should be accessible at the preview URL")
+    app.run(host=APP_HOST, port=APP_PORT, debug=False)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,500 @@
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2024.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per due giornate dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Joshua Zirkzee è stato ceduto dal Bologna al Manchester United nel luglio 2025.", "metadata": {"type": "transfer", "player": "Joshua Zirkzee", "team": "Manchester United", "role": "A"}}
+{"text": "Albert Gudmundsson è al centro di rumors intensificati a luglio 2025, con l'Inter e il Napoli interessate.", "metadata": {"type": "transfer_rumor", "player": "Albert Gudmundsson", "team": "Genoa", "role": "A"}}
+{"text": "Buongiorno si è trasferito dal Torino al Napoli a luglio 2025.", "metadata": {"type": "transfer", "player": "Buongiorno", "team": "Napoli", "role": "D"}}
+{"text": "Lautaro Martinez ha chiuso la stagione 2024-25 con una fantamedia di 8.1, la più alta tra gli attaccanti.", "metadata": {"type": "player_stats", "player": "Lautaro Martinez", "team": "Inter", "role": "A"}}
+{"text": "Teun Koopmeiners ha totalizzato 9 gol e 6 assist nella stagione 2024-25, dimostrando grande continuità nella stagione 2025.", "metadata": {"type": "player_stats", "player": "Teun Koopmeiners", "team": "Atalanta", "role": "C"}}
+{"text": "Domenico Berardi è ancora in recupero programmato dopo la rottura del tendine d’Achille a inizio 2025.", "metadata": {"type": "injury", "player": "Domenico Berardi", "team": "Sassuolo", "role": "A"}}
+{"text": "Nicolò Barella è stato squalificato per una giornata dopo un cartellino rosso diretto contro la Roma.", "metadata": {"type": "suspension", "player": "Nicolo Barella", "team": "Inter", "role": "C"}}
+{"text": "Lewis Ferguson è monitorato da club inglesi, ma il Bologna vorrebbe trattenerlo.", "metadata": {"type": "transfer_rumor", "player": "Lewis Ferguson", "team": "Bologna", "role": "C"}}
+{"text": "Federico Chiesa ha mantenuto una fantamedia di 7.4 nonostante vari acciacchi fisici.", "metadata": {"type": "player_stats", "player": "Federico Chiesa", "team": "Juventus", "role": "A"}}
+{"text": "Isaksen ha riportato una lesione al legamento crociato e starà fuori almeno fino al 2026.", "metadata": {"type": "injury", "player": "Isaksen", "team": "Lazio", "role": "A"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una elongazione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2024 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato sospeso per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
+{"text": "Matías Soulé è seguito da diversi club francesi e inglesi, con la Juventus pronta ad ascoltare offerte.", "metadata": {"type": "transfer_rumor", "player": "Soulé", "team": "Juventus", "role": "A"}}
+{"text": "Alex Meret ha mantenuto una media di 0.9 gol subiti a partita nel campionato 2025 2024-25.", "metadata": {"type": "player_stats", "player": "Alex Meret", "team": "Napoli", "role": "P"}}
+{"text": "Leonardo Spinazzola ha subito una lesione muscolare durante il ritiro estivo.", "metadata": {"type": "injury", "player": "Leonardo Spinazzola", "team": "Lazio", "role": "D"}}
+{"text": "Bryan Cristante è stato squalificato per somma di ammonizioni dopo la gara contro la Fiorentina.", "metadata": {"type": "suspension", "player": "Bryan Cristante", "team": "Roma", "role": "C"}}
+{"text": "Andrea Colpani si è trasferito dal Monza alla Lazio a titolo definitivo a luglio 2025.", "metadata": {"type": "transfer", "player": "Andrea Colpani", "team": "Lazio", "role": "C"}}
