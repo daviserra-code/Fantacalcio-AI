@@ -214,9 +214,29 @@
     /* Mobile tweaks */
     @media (max-width:768px){
       .container{border-radius:0;min-height:100vh}
-      .tabs{overflow-x:auto}
+      .tabs{overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch}
       .tabs .swipe-hint{display:block}
-      .tab{min-width:100px}
+      .tab{min-width:100px; flex-shrink:0}
+    }
+    
+    /* Ensure tabs are always visible */
+    .tabs{
+      display:flex;
+      position:sticky; top:0; z-index:5;
+      background: var(--tabbar-bg);
+      border-bottom:1px solid var(--tab-border);
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+      min-height:48px;
+    }
+    .tab{
+      flex:1; padding:12px 8px; text-align:center; cursor:pointer;
+      background: var(--tab-inactive-bg);
+      color: var(--tab-inactive-fg);
+      font-weight:600; font-size:.85rem; border:0;
+      border-right:1px solid var(--tab-border);
+      transition: color .15s ease, background .15s ease, border-color .15s ease;
+      opacity:1;
+      min-width:90px;
     }
 
     /* Specific styles for Historical Stats */
@@ -400,11 +420,11 @@
     <!-- TAB BAR (sempre scura) -->
     <div class="tabs">
       <div class="swipe-hint">← Scorri per vedere tutte le modalità →</div>
-      <button class="tab active" onclick="switchTab('classic', this)">{{ t.modes.classic }}</button>
-      <button class="tab" onclick="switchTab('mantra', this)">{{ t.modes.mantra }}</button>
-      <button class="tab" onclick="switchTab('draft', this)">{{ t.modes.draft }}</button>
-      <button class="tab" onclick="switchTab('superscudetto', this)">{{ t.modes.superscudetto }}</button>
-      <button class="tab" onclick="switchTab('historical', this)">{{ t.historical }}</button>
+      <button class="tab active" onclick="switchTab('classic', this)">Classic</button>
+      <button class="tab" onclick="switchTab('mantra', this)">Mantra</button>
+      <button class="tab" onclick="switchTab('draft', this)">Draft</button>
+      <button class="tab" onclick="switchTab('superscudetto', this)">Superscudetto</button>
+      <button class="tab" onclick="switchTab('historical', this)">Statistiche</button>
     </div>
 
     <!-- Classic -->
