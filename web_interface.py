@@ -113,9 +113,14 @@ def api_peek_age():
 
 # --------- Server bootstrap ----------
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "3000")), help="Port to run the server on")
+    args = parser.parse_args()
+    
     LOG.info("Starting Fantasy Football Assistant Web Interface")
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "5000"))
+    port = args.port
     LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
     app.run(host=host, port=port, debug=False)
