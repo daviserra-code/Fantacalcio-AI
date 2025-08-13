@@ -1,89 +1,79 @@
-# age_index_cleaner.py
-import os, json, time, unicodedata
+# -*- coding: utf-8 -*-
+import os, json, re, unicodedata, sys
 
-AGE_INDEX_PATH = os.getenv("AGE_INDEX_PATH", "./data/age_index.json")
-AGE_INDEX_CLEANED_PATH = os.getenv("AGE_INDEX_CLEANED_PATH", "./data/age_index.cleaned.json")
-SERIE_A_TEAMS_PATH = os.getenv("SERIE_A_TEAMS_PATH", "./data/serie_a_teams_2025_26.json")
+IN_PATH = os.getenv("AGE_INDEX_PATH_RAW", "./data/age_index.json")
+OUT_PATH = os.getenv("AGE_INDEX_CLEANED_PATH", "./data/age_index.cleaned.json")
 
-def norm(s: str) -> str:
-    s = s.strip().lower()
+def norm_text(s: str) -> str:
+    s = (s or "").strip().lower()
     s = unicodedata.normalize("NFKD", s)
     s = "".join(c for c in s if not unicodedata.combining(c))
-    return " ".join(s.split())
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
 
-def parse_key(k: str):
-    k = k.strip()
-    if "@@" in k:
-        name, team = k.split("@@", 1)
-    elif "|" in k:
-        name, team = k.split("|", 1)
-    else:
-        # niente separatore → prova a usare tutto come nome e team sconosciuto
-        name, team = k, ""
-    return norm(name), norm(team)
+TEAM_ALIASES = {
+    "como 1907": "como",
+    "ss lazio": "lazio",
+    "s.s. lazio": "lazio",
+    "venezia fc": "venezia",
+}
 
-def load_serie_a(path):
+def norm_team(t: str) -> str:
+    t = norm_text(t)
+    t = re.sub(r"\b(football club|fc|ac|ss|usc|cfc|calcio|club)\b", "", t).strip()
+    t = re.sub(r"\b(18|19|20)\d{2}\b", "", t).strip()
+    t = re.sub(r"\s+", " ", t)
+    if t in TEAM_ALIASES:
+        t = TEAM_ALIASES[t]
+    return t or norm_text(t)
+
+def valid_by(v):
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        teams = set()
-        if isinstance(data, list):
-            for t in data:
-                if isinstance(t, str):
-                    teams.add(norm(t))
-                elif isinstance(t, dict):
-                    # supporta {"name":"Inter"} ecc.
-                    teams.add(norm(t.get("name","")))
-        return {x for x in teams if x}
-    except Exception:
-        return set()
+        v = int(v)
+    except:
+        return None
+    return v if 1975 <= v <= 2010 else None
 
 def main():
-    if not os.path.exists(AGE_INDEX_PATH):
-        print(f"❌ file non trovato: {AGE_INDEX_PATH}")
-        return
-    cur_year = time.localtime().tm_year
-    min_year = 1980
-    max_year = cur_year - 15  # esclude “nati 2015+” che sono under 10, improbabile per Serie A
+    if not os.path.exists(IN_PATH):
+        print(f"❌ file non trovato: {IN_PATH}")
+        sys.exit(1)
+    with open(IN_PATH, "r", encoding="utf-8") as f:
+        raw = json.load(f)
 
-    serie_a = load_serie_a(SERIE_A_TEAMS_PATH)
-    use_filter_teams = len(serie_a) > 0
+    out = {}
+    if isinstance(raw, dict):
+        items = raw.items()
+    elif isinstance(raw, list):
+        items = []
+        for row in raw:
+            if isinstance(row, dict):
+                k = row.get("key") or row.get("k") or ""
+                by = row.get("birth_year") or row.get("by")
+                if k and by:
+                    items.append((k, by))
+    else:
+        items = []
 
-    with open(AGE_INDEX_PATH, "r", encoding="utf-8") as f:
-        src = json.load(f)
-
-    cleaned = {}
-    kept = dropped = 0
-    for raw_k, v in src.items():
-        name, team = parse_key(raw_k)
-        # filtra team se disponibile la lista Serie A
-        if use_filter_teams and team and team not in serie_a:
-            dropped += 1
+    for k, v in items:
+        by = v.get("birth_year") if isinstance(v, dict) else v
+        by = valid_by(by)
+        if by is None:
             continue
-        by = None
-        if isinstance(v, dict) and "birth_year" in v:
-            by = v["birth_year"]
-        elif isinstance(v, int):
-            by = v
-        # valida anno
-        try:
-            by = int(by)
-        except Exception:
-            dropped += 1
-            continue
-        if not (min_year <= by <= max_year):
-            dropped += 1
-            continue
-        key = f"{name}@@{team}" if team else name
-        cleaned[key] = by
-        kept += 1
+        name, team = k, ""
+        if "@@" in k:
+            name, team = k.split("@@", 1)
+        elif "|" in k:
+            name, team = k.split("|", 1)
+        name = norm_text(name)
+        team = norm_team(team)
+        out[f"{name}@@{team}"] = by
 
-    os.makedirs(os.path.dirname(AGE_INDEX_CLEANED_PATH), exist_ok=True)
-    with open(AGE_INDEX_CLEANED_PATH, "w", encoding="utf-8") as f:
-        json.dump(cleaned, f, ensure_ascii=False, indent=2)
+    with open(OUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print(f"✅ Pulizia completata: tenuti {kept}, scartati {dropped}.")
-    print(f"➡️  Salvato in: {AGE_INDEX_CLEANED_PATH}")
+    print(f"✅ cleaned -> {OUT_PATH} ({len(out)} chiavi)")
 
 if __name__ == "__main__":
     main()

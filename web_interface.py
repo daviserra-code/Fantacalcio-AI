@@ -1,126 +1,166 @@
 # -*- coding: utf-8 -*-
 import os
+import uuid
 import json
-import time
 import logging
-import threading
 import subprocess
-from typing import Any, Dict
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, session, render_template
 
 from fantacalcio_assistant import FantacalcioAssistant
 
-LOG = logging.getLogger("web_interface")
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+LOG = logging.getLogger("web_interface")
 
-app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret")
+app = Flask(__name__, template_folder="templates", static_folder="static")
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret")  # necessario per session
 
-_ASSISTANT_SINGLETON = None
-_ASSISTANT_LOCK = threading.Lock()
-
+# ---------------- Singleton Assistant ----------------
+_assistant_singleton = None
 def get_assistant() -> FantacalcioAssistant:
-    global _ASSISTANT_SINGLETON
-    with _ASSISTANT_LOCK:
-        if _ASSISTANT_SINGLETON is None:
-            LOG.info("Initializing FantacalcioAssistant (singleton)...")
-            _ASSISTANT_SINGLETON = FantacalcioAssistant()
-    return _ASSISTANT_SINGLETON
+    global _assistant_singleton
+    if _assistant_singleton is None:
+        LOG.info("Initializing FantacalcioAssistant (singleton)...")
+        _assistant_singleton = FantacalcioAssistant()
+    return _assistant_singleton
 
+# ---------------- In-memory chat histories per session ----------------
+_chat_histories = {}  # sid -> list[ {role, content} ]
 
-# ----------------- UI -----------------
-def translate(lang: str) -> Dict[str, str]:
-    # dizionario minimo per evitare errori nel template
-    it = {
-        "title": "Fantasy Assistant",
-        "subtitle": "Consigli fantacalcio con dati locali e controlli anti-hallucination",
+def get_sid() -> str:
+    sid = session.get("sid")
+    if not sid:
+        sid = uuid.uuid4().hex[:16]
+        session["sid"] = sid
+    return sid
+
+# ---------------- Translations (minime) ----------------
+T = {
+    "it": {
+        "title": "Fantasy Football Assistant",
+        "subtitle": "Consigli per asta, formazioni e strategie",
         "participants": "Partecipanti",
         "budget": "Budget",
         "reset_chat": "Reset Chat",
+        "welcome": "Ciao! Sono qui per aiutarti con il fantacalcio.",
         "send": "Invia",
-        "welcome": "Benvenuto!",
-    }
-    en = {
-        "title": "Fantasy Assistant",
-        "subtitle": "Fantasy tips powered by your local data",
+        "search_placeholder": "Cerca giocatori/club/metriche",
+        "all_roles": "Tutti",
+        "goalkeeper": "Portiere",
+        "defender": "Difensore",
+        "midfielder": "Centrocampista",
+        "forward": "Attaccante",
+    },
+    "en": {
+        "title": "Fantasy Football Assistant",
+        "subtitle": "Auction tips, lineups & strategy",
         "participants": "Participants",
         "budget": "Budget",
         "reset_chat": "Reset Chat",
+        "welcome": "Hi! I can help with fantasy football.",
         "send": "Send",
-        "welcome": "Welcome!",
-    }
-    return it if lang == "it" else en
+        "search_placeholder": "Search players/clubs/metrics",
+        "all_roles": "All",
+        "goalkeeper": "Goalkeeper",
+        "defender": "Defender",
+        "midfielder": "Midfielder",
+        "forward": "Forward",
+    },
+}
 
-
-@app.route("/")
+# ---------------- Routes ----------------
+@app.route("/", methods=["GET"])
 def index():
     lang = request.args.get("lang", "it")
-    t = translate(lang)
+    if lang not in T: lang = "it"
+    page_id = uuid.uuid4().hex[:16]
     LOG.info("Request: GET / from %s", request.remote_addr)
-    LOG.info("Page view: %s, lang: %s", os.urandom(8).hex(), lang)
-    return render_template("index.html", lang=lang, t=t)
+    LOG.info("Page view: %s, lang: %s", page_id, lang)
+    return render_template("index.html", lang=lang, t=T[lang])
 
-
-# ----------------- API -----------------
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
     data = request.get_json(force=True, silent=True) or {}
-    message = data.get("message", "").strip()
-    mode = data.get("mode", "classic")
-    LOG.info("Request data: %s", {"message": message, "mode": mode})
+    msg = (data.get("message") or "").strip()
+    mode = (data.get("mode") or "classic").strip()
+    LOG.info("Request data: %s", data)
 
-    # fire-and-forget ETL refresh (non blocca la risposta)
+    # avvia ETL in background (non-bloccante)
     try:
-        LOG.info("[ETL] Refresh roster avviato (background via Popen)")
-        subprocess.Popen(["python", "etl_build_roster.py"])
+        import etl_runner  # se esiste
+        LOG.info("[ETL] Refresh roster avviato (background via etl_runner)")
+        etl_runner.refresh_roster_async()
         LOG.info("[ETL] Job di refresh lanciato")
     except Exception as e:
-        LOG.info("[ETL] Popen fallita: %s", e)
+        LOG.info("[ETL] Refresh roster avviato (background via Popen)")
+        try:
+            subprocess.Popen(["python", "etl_build_roster.py"])
+            LOG.info("[ETL] Job di refresh lanciato")
+        except Exception as e2:
+            LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
 
+    if not msg:
+        return jsonify({"response": "Scrivi un messaggio."})
+
+    # contesto di sessione
+    sid = get_sid()
+    hist = _chat_histories.setdefault(sid, [])
+    # (opzionale) mantieni le ultime n interazioni
+    context = {"history": hist[-8:]}  # per eventuale uso futuro
+
+    # assistant (singleton)
     assistant = get_assistant()
-    reply = assistant.get_response(message, mode=mode, context={})
+    reply = assistant.get_response(msg, mode=mode, context=context)
+
+    # salva cronologia
+    hist.append({"role": "user", "content": msg})
+    hist.append({"role": "assistant", "content": reply})
+
     return jsonify({"response": reply})
 
+@app.route("/api/reset-chat", methods=["POST"])
+def api_reset_chat():
+    sid = get_sid()
+    _chat_histories[sid] = []
+    return jsonify({"ok": True})
+
+@app.route("/api/test", methods=["GET"])
+def api_test():
+    a = get_assistant()
+    cov = a.get_age_coverage()
+    return jsonify({
+        "ok": True,
+        "season_filter": a.season_filter,
+        "age_index_size": len(a.age_index),
+        "overrides_size": len(a.overrides),
+        "filtered_pool": sum(v["total"] for v in cov.values()),
+    })
 
 @app.route("/api/age-coverage", methods=["GET"])
 def api_age_coverage():
     a = get_assistant()
-    res = a.count_age_coverage_by_role()
-    return jsonify(res)
-
+    return jsonify(a.get_age_coverage())
 
 @app.route("/api/debug-under", methods=["GET"])
 def api_debug_under():
-    role = request.args.get("role", "D")
-    max_age = int(request.args.get("max_age", "21"))
-    take = int(request.args.get("take", "8"))
+    role = (request.args.get("role") or "D").upper()[:1]
     a = get_assistant()
-    sample = a.debug_under_sample(role, max_age=max_age, take=take)
-    return jsonify({"role": role, "max_age": max_age, "count": len(sample), "items": sample})
-
+    return jsonify(a.debug_under(role))
 
 @app.route("/api/peek-age", methods=["GET"])
 def api_peek_age():
-    name = request.args.get("name", "")
-    team = request.args.get("team", "")
+    name = request.args.get("name","")
+    team = request.args.get("team","")
     a = get_assistant()
-    out = a.peek_age(name, team)
-    return jsonify(out)
+    return jsonify(a.peek_age(name, team))
 
-
-# --------- Server bootstrap ----------
+# ---------------- Main ----------------
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "3000")), help="Port to run the server on")
-    args = parser.parse_args()
-    
-    LOG.info("Starting Fantasy Football Assistant Web Interface")
     host = os.getenv("HOST", "0.0.0.0")
-    port = args.port
+    port = int(os.getenv("PORT", "5000"))
+    LOG.info("Starting Fantasy Football Assistant Web Interface")
     LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
-    app.run(host=host, port=port, debug=False)
+    app.run(host=host, port=port)
