@@ -1,11 +1,12 @@
 # knowledge_manager.py
 # -*- coding: utf-8 -*-
-
 import os
 import logging
 from typing import Any, Dict, List, Optional
 
 import chromadb
+from chromadb.config import Settings
+from chromadb.utils import embedding_functions
 from sentence_transformers import SentenceTransformer
 
 LOG = logging.getLogger("knowledge_manager")
@@ -14,167 +15,80 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
-
-def _abs_chroma_path() -> str:
-    """
-    Risolve CHROMA_PATH in un percorso assoluto stabile rispetto a questo file.
-    Evita che './chroma_db' punti a cartelle diverse se la cwd cambia.
-    """
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    env_path = os.getenv("CHROMA_PATH", "./chroma_db")  # tuo valore storico
-    path = env_path
-    if not os.path.isabs(env_path):
-        path = os.path.abspath(os.path.join(base_dir, env_path))
-    return path
-
-
-def _make_chroma_client():
-    """
-    Priorità:
-    - CHROMA_HOST/PORT => HttpClient
-    - altrimenti PersistentClient(path=CHROMA_PATH assoluto)
-    - fallback: Client() in-process (con log di warning)
-    """
-    host = os.getenv("CHROMA_HOST")
-    port = int(os.getenv("CHROMA_PORT", "8000"))
-    path = _abs_chroma_path()
-
-    if host:
-        try:
-            LOG.info("[KM] Using Chroma HttpClient %s:%d (CHROMA_PATH=%s non usato)", host, port, path)
-            return chromadb.HttpClient(host=host, port=port)
-        except Exception as e:
-            LOG.warning("[KM] HttpClient error: %s (fallback to persistent)", e)
-
-    try:
-        os.makedirs(path, exist_ok=True)
-        LOG.info("[KM] Using Chroma PersistentClient at %s", path)
-        return chromadb.PersistentClient(path=path)
-    except Exception as e:
-        LOG.warning("[KM] PersistentClient error: %s (fallback to in-process). PATH=%s", e, path)
-
-    LOG.warning("[KM] Using Chroma in-process Client() — dati NON persistenti!")
-    return chromadb.Client()
-
-
-_ALLOWED_INCLUDES = {"documents", "metadatas", "embeddings", "distances", "uris", "data"}
-
-def _sanitize_include(include: Optional[List[str]]) -> List[str]:
-    if not include:
-        return ["metadatas"]
-    out = [k for k in include if k in _ALLOWED_INCLUDES]
-    return out or ["metadatas"]
-
-
-def _normalize_where(where: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    """
-    Chroma >= 0.5 richiede un unico operatore top-level.
-    - None -> None
-    - già contiene $and/$or/$not -> ok
-    - dict con >1 chiave -> wrap in {"$and": [{k:v}, ...]}
-    """
-    if not where:
-        return None
-    if any(op in where for op in ("$and", "$or", "$not")):
-        return where
-    if len(where.keys()) <= 1:
-        return where
-    return {"$and": [{k: v} for k, v in where.items()]}
-
-
 class KnowledgeManager:
     """
-    Wrapper stabile per Chroma + SentenceTransformer.
+    Wrapper per Chroma con:
+    - PersistentClient (CHROMA_PATH)
+    - normalizzazione filtri (where) in sintassi valida ($and/$or/$eq/$in)
+    - metodi: get_by_filter, search_knowledge
     """
+    def __init__(self, collection_name: str = "fantacalcio_knowledge") -> None:
+        chroma_path = os.getenv("CHROMA_PATH", "./chroma_db")
+        self.client = chromadb.PersistentClient(path=chroma_path, settings=Settings(allow_reset=False))
+        LOG.info("[KM] Using Chroma PersistentClient at %s", os.path.abspath(chroma_path))
 
-    def __init__(self,
-                 collection_name: Optional[str] = None,
-                 embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
-        self.collection_name = collection_name or os.getenv("CHROMA_COLLECTION_NAME", "fantacalcio_knowledge")
-        self.client = _make_chroma_client()
+        self.collection = self.client.get_or_create_collection(name=collection_name)
+        LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, self.collection.count())
 
-        # log diagnostici
-        try:
-            import chromadb as _c
-            LOG.info("[KM] chromadb version: %s", getattr(_c, "__version__", "unknown"))
-        except Exception:
-            pass
-        LOG.info("[KM] Collection name: %s", self.collection_name)
-
-        self.collection = self.client.get_or_create_collection(
-            name=self.collection_name,
-            metadata={"hnsw:space": "cosine"}
-        )
-
+        # Embeddings
         LOG.info("🔄 Initializing SentenceTransformer (attempt 1/10)...")
-        self.model = SentenceTransformer(embedding_model_name)
+        self.model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
         LOG.info("✅ SentenceTransformer initialized successfully on attempt 1")
 
-        # Conteggio best-effort
-        try:
-            raw = self.collection.get(include=["metadatas"])
-            cnt = len(raw.get("metadatas", []) or [])
-            LOG.info("[KM] Collection caricata: '%s', count=%d", self.collection_name, cnt)
-        except Exception as e:
-            LOG.warning("[KM] Impossibile contare i documenti: %s", e)
+    # ---------- filter normalization ----------
+    def _normalize_where(self, where: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        if where is None:
+            return None
+        # se già contiene un operatore top-level supportato, passo through
+        if any(k in where for k in ("$and", "$or", "$nor", "$not")):
+            return where
 
-    def get_by_filter(self,
-                      where: Optional[Dict[str, Any]] = None,
-                      limit: int = 100,
-                      include: Optional[List[str]] = None) -> Dict[str, Any]:
-        include = _sanitize_include(include)
-        where = _normalize_where(where)
-        try:
-            return self.collection.get(where=where, limit=limit, include=include)
-        except Exception as e:
-            LOG.error("[KM] get_by_filter error: %s", e)
-            return {"metadatas": [], "documents": []}
+        # altrimenti converto chiavi semplici in $and di $eq
+        parts = []
+        for k, v in where.items():
+            if isinstance(v, dict):
+                parts.append({k: v})
+            else:
+                parts.append({k: {"$eq": v}})
+        if not parts:
+            return None
+        if len(parts) == 1:
+            return parts[0]
+        return {"$and": parts}
 
-    def query_by_text(self,
-                      text: str,
-                      where: Optional[Dict[str, Any]] = None,
-                      n_results: int = 10,
-                      include: Optional[List[str]] = None) -> Dict[str, Any]:
-        include = _sanitize_include(include)
-        where = _normalize_where(where)
-        if not text:
-            return {"metadatas": [], "documents": []}
-        try:
-            emb = self.model.encode([text]).tolist()
-            res = self.collection.query(
-                query_embeddings=emb,
-                where=where,
-                n_results=n_results,
-                include=include
-            )
-            # Flatten lists-of-lists
-            out: Dict[str, Any] = {}
-            for k, v in res.items():
-                if isinstance(v, list) and v and isinstance(v[0], list):
-                    out[k] = v[0]
-                else:
-                    out[k] = v
-            return out
-        except Exception as e:
-            LOG.error("[KM] query_by_text error: %s", e)
-            return {"metadatas": [], "documents": []}
+    # ---------- public ----------
+    def get_by_filter(self, where: Optional[Dict[str, Any]], limit: int = 100, include: Optional[List[str]] = None) -> Dict[str, Any]:
+        include = include or ["documents", "metadatas"]
+        include = [x for x in include if x in {"documents", "embeddings", "metadatas", "distances", "uris", "data"}]
+        where_n = self._normalize_where(where)
+        raw = self.collection.get(where=where_n, limit=limit, include=include)
+        # garantisco chiavi presenti
+        out = {k: raw.get(k) for k in include}
+        return out
 
     def search_knowledge(self,
                          text: Optional[str] = None,
                          where: Optional[Dict[str, Any]] = None,
-                         n_results: int = 10,
-                         include: Optional[List[str]] = None,
-                         **kwargs) -> Dict[str, Any]:
-        if text:
-            return self.query_by_text(text=text, where=where, n_results=n_results, include=include)
-        return self.get_by_filter(where=where, limit=n_results, include=include)
+                         n_results: int = 20,
+                         include: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Se text è None → usa get_by_filter; altrimenti (se disponibile) query per embeddings.
+        """
+        include = include or ["documents", "metadatas", "distances"]
+        include = [x for x in include if x in {"documents", "embeddings", "metadatas", "distances", "uris", "data"}]
 
-    def upsert(self,
-               ids: List[str],
-               documents: Optional[List[str]] = None,
-               metadatas: Optional[List[Dict[str, Any]]] = None,
-               embeddings: Optional[List[List[float]]] = None) -> None:
-        try:
-            self.collection.upsert(ids=ids, documents=documents, metadatas=metadatas, embeddings=embeddings)
-        except Exception as e:
-            LOG.error("[KM] upsert error: %s", e)
+        where_n = self._normalize_where(where)
+        if not text:
+            return self.get_by_filter(where=where_n, limit=n_results, include=include)
+
+        # query vettoriale
+        emb = self.model.encode([text]).tolist()
+        # Chroma 0.5+ usa 'query' in collection
+        res = self.collection.query(
+            query_embeddings=emb,
+            n_results=n_results,
+            where=where_n,
+            include=include
+        )
+        out = {k: res.get(k) for k in ("documents", "metadatas", "distances", "ids") if k in include or k == "ids"}
+        return out
