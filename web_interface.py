@@ -296,4 +296,13 @@ if __name__ == "__main__":
     port = args.port
     LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
-    app.run(host=host, port=port, debug=False)
+    
+    # Configure Flask for production deployment
+    app.run(
+        host=host, 
+        port=port, 
+        debug=False, 
+        threaded=True, 
+        use_reloader=False,
+        processes=1
+    )
