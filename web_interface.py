@@ -303,9 +303,7 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             except Exception as e:
                 return f"❌ Errore nel generare il report: {e}"
 
-    return None
-
-@app.route("/api/reset-chat", methods=["POST"])
+    return Noneapp.route("/api/reset-chat", methods=["POST"])
 def api_reset_chat():
     set_state({})
     return jsonify({"ok": True})
