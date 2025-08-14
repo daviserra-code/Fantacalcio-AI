@@ -113,11 +113,32 @@ def api_chat():
         set_state(state)
         return jsonify({"response": correction_response})
 
-    # Add conversation context
+    # Get relevant corrections for context
+    relevant_corrections = corrections_manager.get_relevant_corrections(msg, limit=5)
+    
+    # Add conversation context with corrections
     state.setdefault("conversation_history", [])
-    context_messages = state["conversation_history"][-10:]  # Keep last 10 messages
+    context_messages = state["conversation_history"][-8:]  # Keep last 8 messages for more space
+    
+    # Add corrections context if any
+    if relevant_corrections:
+        corrections_context = "CORREZIONI RECENTI:\n"
+        for corr in relevant_corrections[:3]:  # Top 3 most relevant
+            corrections_context += f"- {corr.get('wrong', '')} → {corr.get('correct', '')}\n"
+        
+        context_messages.insert(0, {
+            "role": "system",
+            "content": corrections_context
+        })
     
     reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+    
+    # Apply any corrections to the reply
+    corrected_reply, applied_corrections = corrections_manager.apply_corrections_to_text(reply)
+    
+    if applied_corrections:
+        LOG.info("Applied corrections to response: %s", applied_corrections)
+        reply = corrected_reply
     
     # Update conversation history
     new_state.setdefault("conversation_history", []).append({
