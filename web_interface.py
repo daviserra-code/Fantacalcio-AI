@@ -288,7 +288,7 @@ def api_get_corrections():
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=3000, help="Port to run the server on")
+    parser.add_argument("--port", type=int, default=5000, help="Port to run the server on")
     args = parser.parse_args()
 
     LOG.info("Starting Fantasy Football Assistant Web Interface")
