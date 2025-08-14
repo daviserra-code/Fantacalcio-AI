@@ -136,38 +136,64 @@ class CorrectionsManager:
             try:
                 wrong = correction.get("wrong", "")
                 correct = correction.get("correct", "")
+                context = correction.get("context", "")
 
-                if wrong and correct:
-                    # Extract player name and team info from correction
-                    correct_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+?)\s*->\s*(.+)', correct)
+                if not (wrong and correct):
+                    continue
 
-                    if correct_match:
-                        player_name = correct_match.group(1).strip()
-                        old_team = correct_match.group(2).strip()
-                        new_team = correct_match.group(3).strip()
+                # Extract player name and team info from correction
+                correct_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+?)\s*->\s*(.+)', correct)
 
-                        # Only apply correction if we find the exact player name in the text
-                        if player_name.lower() in corrected_text.lower():
-                            # Find and replace team information for this specific player
-                            # Look for player name followed by team in parentheses
-                            player_pattern = re.escape(player_name)
+                if correct_match:
+                    player_name = correct_match.group(1).strip()
+                    old_team = correct_match.group(2).strip()
+                    new_team = correct_match.group(3).strip()
 
-                            # Pattern to match "Player Name (Team)" format
-                            team_pattern = rf'(\*\*{player_pattern}\*\*)\s*\(([^)]+)\)'
+                    # Check if this player appears in the text
+                    if player_name.lower() in corrected_text.lower():
+                        
+                        # Pattern 1: "**Player Name** (Team)" format
+                        player_pattern = re.escape(player_name)
+                        team_pattern = rf'(\*\*{player_pattern}\*\*)\s*\(([^)]+)\)'
+                        
+                        def replace_team(match):
+                            player_part = match.group(1)
+                            current_team = match.group(2).strip()
+                            
+                            # Determine replacement team
+                            if new_team in ["trasferito", "nuovo club", "nuovo team"]:
+                                replacement_team = "nuovo club"
+                            else:
+                                replacement_team = new_team
+                                
+                            applied_corrections.append(f"Corrected {player_name}: {current_team} → {replacement_team}")
+                            return f"{player_part} ({replacement_team})"
 
-                            def replace_team(match):
-                                player_part = match.group(1)
-                                current_team = match.group(2).strip()
-
-                                # Replace with new team info
-                                replacement_team = new_team if new_team != "nuovo team" else "nuovo club"
-                                applied_corrections.append(f"Corrected {player_name}: {current_team} → {replacement_team}")
-                                return f"{player_part} ({replacement_team})"
-
-                            corrected_text = re.sub(team_pattern, replace_team, corrected_text, flags=re.IGNORECASE)
+                        # Apply the correction
+                        new_text = re.sub(team_pattern, replace_team, corrected_text, flags=re.IGNORECASE)
+                        if new_text != corrected_text:
+                            corrected_text = new_text
+                            continue
+                        
+                        # Pattern 2: More general pattern for any team name in parentheses after player
+                        general_pattern = rf'({re.escape(player_name)})\s*\(([^)]+)\)'
+                        
+                        def replace_general_team(match):
+                            player_part = match.group(1)
+                            current_team = match.group(2).strip()
+                            
+                            if new_team in ["trasferito", "nuovo club", "nuovo team"]:
+                                replacement_team = "nuovo club"
+                            else:
+                                replacement_team = new_team
+                                
+                            applied_corrections.append(f"Corrected {player_name}: {current_team} → {replacement_team}")
+                            return f"{player_part} ({replacement_team})"
+                        
+                        corrected_text = re.sub(general_pattern, replace_general_team, corrected_text, flags=re.IGNORECASE)
 
             except Exception as e:
-                logger.error(f"Error applying corrections: {e}")
+                logger.error(f"Error applying single correction: {e}")
 
         return corrected_text, applied_corrections
 

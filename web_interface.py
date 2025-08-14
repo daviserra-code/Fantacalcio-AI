@@ -103,11 +103,11 @@ def api_chat():
     if correction_response:
         # Add correction context to conversation history
         state.setdefault("conversation_history", []).append({
-            "role": "user", 
+            "role": "user",
             "content": msg
         })
         state["conversation_history"].append({
-            "role": "assistant", 
+            "role": "assistant",
             "content": correction_response
         })
         set_state(state)
@@ -115,61 +115,65 @@ def api_chat():
 
     # Get relevant corrections for context
     relevant_corrections = corrections_manager.get_relevant_corrections(msg, limit=5)
-    
+
     # Add conversation context with corrections
     state.setdefault("conversation_history", [])
     context_messages = state["conversation_history"][-8:]  # Keep last 8 messages for more space
-    
+
     # Add corrections context if any
     if relevant_corrections:
         corrections_context = "CORREZIONI RECENTI:\n"
         for corr in relevant_corrections[:3]:  # Top 3 most relevant
             corrections_context += f"- {corr.get('wrong', '')} → {corr.get('correct', '')}\n"
-        
+
         context_messages.insert(0, {
             "role": "system",
             "content": corrections_context
         })
-    
+
     reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
-    
+
     # Apply any corrections to the reply
-    corrected_reply, applied_corrections = corrections_manager.apply_corrections_to_text(reply)
-    
-    if applied_corrections:
-        LOG.info("Applied corrections to response: %s", applied_corrections)
-        reply = corrected_reply
-    
+    if corrections_manager:
+        try:
+            corrected_reply, applied_corrections = corrections_manager.apply_corrections_to_text(reply)
+            if applied_corrections:
+                LOG.info(f"Applied corrections: {applied_corrections}")
+                reply = corrected_reply
+        except Exception as e:
+            LOG.error(f"Error applying corrections: {e}")
+            # Continue with original reply if correction fails
+
     # Update conversation history
     new_state.setdefault("conversation_history", []).append({
-        "role": "user", 
+        "role": "user",
         "content": msg
     })
     new_state["conversation_history"].append({
-        "role": "assistant", 
+        "role": "assistant",
         "content": reply
     })
-    
+
     set_state(new_state)
     return jsonify({"response": reply})
 
 def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
     """Detect and handle correction statements"""
     msg_lower = msg.lower()
-    
+
     # Pattern: "X gioca ora nel/in Y" or "X non gioca più nel/in Y"
     if any(phrase in msg_lower for phrase in ["gioca ora nel", "gioca ora in", "non gioca più nel", "non gioca più in"]):
         import re
-        
+
         # Extract player and team
         pattern = r"(\w+(?:\s+\w+)*)\s+(gioca ora nel|gioca ora in|non gioca più nel|non gioca più in)\s+(\w+(?:\s+\w+)*)"
         match = re.search(pattern, msg, re.IGNORECASE)
-        
+
         if match:
             player = match.group(1).strip()
             action = match.group(2).strip()
             team = match.group(3).strip()
-            
+
             if "gioca ora" in action:
                 correction_id = corrections_manager.add_player_correction(
                     player_name=player,
@@ -179,7 +183,7 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
                     reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
                 )
                 return f"✅ **Correzione salvata**: {player} ora gioca nel {team}. Questa informazione è stata aggiunta al sistema per future ricerche."
-            
+
             elif "non gioca più" in action:
                 correction_id = corrections_manager.add_player_correction(
                     player_name=player,
@@ -189,16 +193,16 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
                     reason=f"Trasferimento confermato dall'utente: {player} ha lasciato {team}"
                 )
                 return f"✅ **Correzione salvata**: {player} non gioca più nel {team}. Questa informazione è stata aggiunta al sistema."
-    
+
     # Pattern: "X è stato trasferito a Y"
     if "trasferito" in msg_lower:
         pattern = r"(\w+(?:\s+\w+)*)\s+è stato trasferito\s+(?:a|al|alla|all')\s+(\w+(?:\s+\w+)*)"
         match = re.search(pattern, msg, re.IGNORECASE)
-        
+
         if match:
             player = match.group(1).strip()
             team = match.group(2).strip()
-            
+
             correction_id = corrections_manager.add_player_correction(
                 player_name=player,
                 field_name="team",
@@ -207,7 +211,7 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
                 reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
             )
             return f"✅ **Correzione salvata**: {player} è stato trasferito al {team}. Questa informazione è stata aggiunta al sistema."
-    
+
     return None
 
 @app.route("/api/reset-chat", methods=["POST"])
@@ -254,13 +258,13 @@ def api_add_correction():
     old_value = data.get("old_value", "")
     new_value = data.get("new_value", "")
     reason = data.get("reason", "")
-    
+
     if not player or not new_value:
         return jsonify({"error": "Player and new_value are required"}), 400
-    
+
     cm = get_corrections_manager()
     correction_id = cm.add_player_correction(player, field, old_value, new_value, reason)
-    
+
     if correction_id:
         return jsonify({"success": True, "id": correction_id})
     else:
