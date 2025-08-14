@@ -261,9 +261,13 @@ class CorrectionsManager:
                     CREATE TABLE IF NOT EXISTS corrections (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         player_name TEXT NOT NULL,
-                        field_name TEXT NOT NULL,
+                        correction_type TEXT NOT NULL,
                         old_value TEXT,
                         new_value TEXT NOT NULL,
+                        season TEXT DEFAULT '2024-25',
+                        persistent BOOLEAN DEFAULT TRUE,
+                        applied BOOLEAN DEFAULT FALSE,
+                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         reason TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
@@ -292,6 +296,35 @@ class CorrectionsManager:
                     )
                 ''')
                 conn.commit()
+                
+                # Add missing columns if they don't exist (for existing databases)
+                try:
+                    conn.execute("ALTER TABLE corrections ADD COLUMN correction_type TEXT")
+                except sqlite3.OperationalError:
+                    pass  # Column already exists
+                
+                try:
+                    conn.execute("ALTER TABLE corrections ADD COLUMN season TEXT DEFAULT '2024-25'")
+                except sqlite3.OperationalError:
+                    pass  # Column already exists
+                    
+                try:
+                    conn.execute("ALTER TABLE corrections ADD COLUMN persistent BOOLEAN DEFAULT TRUE")
+                except sqlite3.OperationalError:
+                    pass  # Column already exists
+                    
+                try:
+                    conn.execute("ALTER TABLE corrections ADD COLUMN applied BOOLEAN DEFAULT FALSE")
+                except sqlite3.OperationalError:
+                    pass  # Column already exists
+                    
+                try:
+                    conn.execute("ALTER TABLE corrections ADD COLUMN timestamp DATETIME DEFAULT CURRENT_TIMESTAMP")
+                except sqlite3.OperationalError:
+                    pass  # Column already exists
+                    
+                conn.commit()
+                
         except Exception as e:
             logger.error(f"Failed to initialize corrections database: {e}")
 
@@ -336,8 +369,7 @@ class CorrectionsManager:
             logger.error(f"Failed to get persistent corrections: {e}")
             return []
 
-    # Methods from the provided changes
-    def add_correction(self, player_name: str, correction_type: str, old_value: str = None, new_value: str = None, persistent: bool = True):
+    def add_correction_to_db(self, player_name: str, correction_type: str, old_value: str = None, new_value: str = None, persistent: bool = True):
         """Add correction to the database, with options for persistence and current season."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -384,13 +416,13 @@ class CorrectionsManager:
 
     def remove_player(self, player_name: str, reason: str = "User request"):
         """Permanently remove a player from all recommendations."""
-        self.add_correction(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
+        self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
         self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
         return f"Player {player_name} has been permanently excluded from all recommendations."
 
     def update_player_team(self, player_name: str, old_team: str, new_team: str):
         """Update player's team affiliation and log the change."""
-        self.add_correction(player_name, "TEAM_UPDATE", old_team, new_team, persistent=True)
+        self.add_correction_to_db(player_name, "TEAM_UPDATE", old_team, new_team, persistent=True)
         self.update_active_player(player_name, new_team)
         return f"Updated {player_name}: {old_team} → {new_team}"
 
