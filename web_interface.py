@@ -201,9 +201,8 @@ def handle_exclusion(msg: str, state: dict) -> str:
                 excluded_players = state.setdefault("excluded_players", [])
                 if player_name not in excluded_players:
                     excluded_players.append(player_name)
-
-return f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
-else:
+                    return f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+                else:
                     return f"**{player_name}** è già escluso dalle liste."
 
     return None
