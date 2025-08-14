@@ -161,57 +161,65 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
     """Detect and handle correction statements"""
     msg_lower = msg.lower()
 
-    # Pattern: "X gioca ora nel/in Y" or "X non gioca più nel/in Y"
-    if any(phrase in msg_lower for phrase in ["gioca ora nel", "gioca ora in", "non gioca più nel", "non gioca più in"]):
-        import re
+    # Pattern: "X non gioca più nel/in Y" or "X gioca nel/in Y in Francia/etc"
+    import re
 
-        # Extract player and team
-        pattern = r"(\w+(?:\s+\w+)*)\s+(gioca ora nel|gioca ora in|non gioca più nel|non gioca più in)\s+(\w+(?:\s+\w+)*)"
+    # Enhanced patterns for various correction formats
+    patterns = [
+        # "X non gioca più nel Y ma gioca nel Z"
+        r"(\w+(?:\s+\w+)*)\s+non\s+gioca\s+più\s+nel\s+(\w+)(?:\s+ma\s+gioca\s+(?:nel|in)\s+(\w+(?:\s+\w+)*))?",
+        # "X gioca ora nel Y"
+        r"(\w+(?:\s+\w+)*)\s+gioca\s+ora\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)",
+        # "X non gioca più nel Y"
+        r"(\w+(?:\s+\w+)*)\s+non\s+gioca\s+più\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)",
+        # "X gioca nel Y in Francia/etc"
+        r"(\w+(?:\s+\w+)*)\s+gioca\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)\s+in\s+(\w+(?:\s+\w+)*)",
+        # "X è stato trasferito al Y"
+        r"(\w+(?:\s+\w+)*)\s+è\s+stato\s+trasferito\s+(?:al|alla|all')\s+(\w+(?:\s+\w+)*)"
+    ]
+
+    for pattern in patterns:
         match = re.search(pattern, msg, re.IGNORECASE)
-
         if match:
             player = match.group(1).strip()
-            action = match.group(2).strip()
-            team = match.group(3).strip()
 
-            if "gioca ora" in action:
+            if len(match.groups()) >= 3 and match.group(3):  # Pattern with old and new team
+                old_team = match.group(2).strip()
+                new_team = match.group(3).strip()
+
                 correction_id = corrections_manager.add_player_correction(
                     player_name=player,
                     field_name="team",
-                    old_value="precedente team",
-                    new_value=team,
-                    reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
+                    old_value=old_team,
+                    new_value=new_team,
+                    reason=f"Trasferimento confermato dall'utente: {player} {old_team} -> {new_team}"
                 )
-                return f"✅ **Correzione salvata**: {player} ora gioca nel {team}. Questa informazione è stata aggiunta al sistema per future ricerche."
+                return f"✅ **Correzione salvata**: {player} è passato da {old_team} a {new_team}. Questa informazione è stata aggiunta al sistema."
 
-            elif "non gioca più" in action:
-                correction_id = corrections_manager.add_player_correction(
-                    player_name=player,
-                    field_name="team",
-                    old_value=team,
-                    new_value="nuovo team",
-                    reason=f"Trasferimento confermato dall'utente: {player} ha lasciato {team}"
-                )
-                return f"✅ **Correzione salvata**: {player} non gioca più nel {team}. Questa informazione è stata aggiunta al sistema."
+            elif len(match.groups()) >= 2:  # Pattern with just new team or old team
+                team = match.group(2).strip()
 
-    # Pattern: "X è stato trasferito a Y"
-    if "trasferito" in msg_lower:
-        pattern = r"(\w+(?:\s+\w+)*)\s+è stato trasferito\s+(?:a|al|alla|all')\s+(\w+(?:\s+\w+)*)"
-        match = re.search(pattern, msg, re.IGNORECASE)
+                if "non gioca più" in msg_lower:
+                    correction_id = corrections_manager.add_player_correction(
+                        player_name=player,
+                        field_name="team",
+                        old_value=team,
+                        new_value="nuovo club",
+                        reason=f"Trasferimento confermato dall'utente: {player} ha lasciato {team}"
+                    )
+                    return f"✅ **Correzione salvata**: {player} non gioca più nel {team}. Questa informazione è stata aggiunta al sistema."
 
-        if match:
-            player = match.group(1).strip()
-            team = match.group(2).strip()
+                else:  # "gioca ora nel" or "trasferito"
+                    correction_id = corrections_manager.add_player_correction(
+                        player_name=player,
+                        field_name="team",
+                        old_value="precedente team",
+                        new_value=team,
+                        reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
+                    )
+                    return f"✅ **Correzione salvata**: {player} ora gioca nel {team}. Questa informazione è stata aggiunta al sistema."
 
-            correction_id = corrections_manager.add_player_correction(
-                player_name=player,
-                field_name="team",
-                old_value="precedente team",
-                new_value=team,
-                reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
-            )
-            return f"✅ **Correzione salvata**: {player} è stato trasferito al {team}. Questa informazione è stata aggiunta al sistema."
-
+            break  # Exit after first match
     return None
 
 @app.route("/api/reset-chat", methods=["POST"])
