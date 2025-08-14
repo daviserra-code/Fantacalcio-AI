@@ -163,6 +163,12 @@ class FantacalcioAssistant:
         self.roster: List[Dict[str, Any]] = self._load_and_normalize_roster(self.roster_json_path)
         self.external_youth_cache: List[Dict[str, Any]] = self._load_external_youth_cache()
 
+        # Initialize missing attributes
+        self.season_filter = SEASON_FILTER or None
+        self.age_index = self._load_age_index(AGE_INDEX_PATH)
+        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH) 
+        self.guessed_age_index = {}
+
         # Apply data corrections
         if self.corrections_manager:
             self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
@@ -172,6 +178,34 @@ class FantacalcioAssistant:
         self._apply_ages_to_roster()
         self._make_filtered_roster()
         LOG.info("[Assistant] Inizializzazione completata")
+
+    def _load_prompt_json(self, path: str) -> str:
+        """Load system prompt from JSON file"""
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+        except Exception as e:
+            LOG.error("[Assistant] Errore caricamento prompt: %s", e)
+            return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
+                    "non inventare dati e dichiara incertezza se mancano fonti.")
+        
+        if isinstance(cfg, dict):
+            if "system" in cfg and isinstance(cfg["system"], dict):
+                sys = cfg["system"]
+                name = sys.get("name", "fantacalcio_system")
+                content = sys.get("content", "")
+                style = sys.get("style", "")
+                language = sys.get("language", "it")
+                system_text = f"[{name}] ({language}, {style})\n{content}".strip()
+                LOG.info("[Assistant] prompt.json caricato correttamente")
+                return system_text
+            if "prompt" in cfg and isinstance(cfg["prompt"], str):
+                LOG.info("[Assistant] prompt.json caricato correttamente")
+                return cfg["prompt"]
+        
+        LOG.error("[Assistant] prompt.json non contiene 'system' o 'prompt' validi")
+        return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
+                "non inventare dati e dichiara incertezza se mancano fonti.")
 
     # ---------- loaders ----------
     def _load_age_index(self, path: str) -> Dict[str,int]:
@@ -880,6 +914,13 @@ class FantacalcioAssistant:
         LOG.info("[Assistant] Fetching players from Knowledge Manager (placeholder)...")
         return []
 
+    def _is_serie_a_team(self, team: str) -> bool:
+        """Check if team is a Serie A team"""
+        if self.corrections_manager:
+            return self.corrections_manager.is_serie_a_team(team)
+        else:
+            return _norm_team(team) in SERIE_A_WHITELIST
+
     def _is_valid_player_data(self, player: Dict[str, Any]) -> bool:
         """Validate player data quality"""
         name = player.get("name", "").strip()
@@ -890,12 +931,8 @@ class FantacalcioAssistant:
             return False
 
         # Check if team is Serie A (if corrections manager available)
-        if self.corrections_manager:
-            # Only consider players from Serie A teams based on corrections manager
-            if not self.corrections_manager.is_serie_a_team(team):
-                return False
-        elif team and team.lower().strip() not in SERIE_A_WHITELIST: # Fallback if no corrections manager
-             return False
+        if not self._is_serie_a_team(team):
+            return False
 
         # Check for obviously invalid data patterns
         invalid_patterns = ["test", "example", "dummy", "placeholder", "sconosciuto"]

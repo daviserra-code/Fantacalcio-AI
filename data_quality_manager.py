@@ -10,6 +10,12 @@ import json
 import sqlite3
 from typing import Dict, List, Any
 from corrections_manager import CorrectionsManager
+
+# Import the correct FantacalcioAssistant
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from fantacalcio_assistant import FantacalcioAssistant
 
 class DataQualityManager:
