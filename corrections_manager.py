@@ -124,7 +124,7 @@ class CorrectionsManager:
         if not text:
             return text, []
 
-        corrections = self.get_all_corrections()
+        corrections = self.get_corrections()
         if not corrections:
             return text, []
 
