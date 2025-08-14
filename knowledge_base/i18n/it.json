@@ -27,7 +27,20 @@
     "lineup352_500": "Formazione 3-5-2 (500 crediti)",
     "u21Def": "2-3 difensori Under 21",
     "genoaTransfers": "Ultimi acquisti Genoa",
-    "juveTransfers": "Ultimi acquisti Juventus"
+    "juveTransfers": "Ultimi acquisti Juventus",
+    "topMidBudget": "Top centrocampisti (budget 120)",
+    "lineup433_600": "Formazione 4-3-3 (600 crediti)",
+    "u21Mid": "3 centrocampisti Under 21",
+    "topDefBudget": "Top difensori (budget 100)",
+    "u21Att": "2 attaccanti Under 21",
+    "strategiaAsta": "Strategia per l'asta",
+    "lineup451_450": "Formazione 4-5-1 (450 crediti)",
+    "interTransfers": "Ultimi acquisti Inter",
+    "milanTransfers": "Ultimi acquisti Milan",
+    "napoliTransfers": "Ultimi acquisti Napoli",
+    "lineup343_550": "Formazione 3-4-3 (550 crediti)",
+    "topPortieri": "Migliori portieri budget 40",
+    "u23All": "Giovani Under 23 tutti i ruoli"
   },
   "labels": {
     "mode": "Modalità",
