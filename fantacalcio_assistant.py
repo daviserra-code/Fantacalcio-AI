@@ -660,7 +660,7 @@ class FantacalcioAssistant:
         return intent
 
     # ---------- respond ----------
-    def respond(self, user_text: str, mode: str, state: Dict[str,Any]) -> Tuple[str, Dict[str,Any]]:
+    def respond(self, user_text: str, mode: str, state: Dict[str,Any], context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
         st = dict(state or {})
         st.setdefault("history", [])
         st["history"] = (st["history"] + [{"u":user_text}])[-10:]
@@ -684,8 +684,10 @@ class FantacalcioAssistant:
                      "2) Difesa a valore: esterni titolari con FM stabile.\n"
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
         else:
-            # NO LLM per quick actions; per altro testo libero puoi riattivarlo se vuoi
-            reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
+            # Use LLM for general questions with context
+            reply = self._llm_complete(user_text, context_messages or [])
+            if not reply or "non disponibile" in reply.lower():
+                reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
 
         st["last_intent"] = intent
         return reply, st
@@ -707,6 +709,75 @@ class FantacalcioAssistant:
                     if age<=23: u23+=1
             out[r]={"total":tot,"with_age":w,"u21":u21,"u23":u23}
         return out
+
+    def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None) -> str:
+        """Complete using LLM with context"""
+        if not self.openai_api_key:
+            return "⚠️ Servizio AI temporaneamente non disponibile. Configura OPENAI_API_KEY."
+        
+        try:
+            import httpx
+            
+            # Build messages with context
+            messages = [{"role": "system", "content": self._get_system_prompt()}]
+            
+            if context_messages:
+                messages.extend(context_messages)
+            
+            messages.append({"role": "user", "content": user_text})
+            
+            headers = {
+                "Authorization": f"Bearer {self.openai_api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": self.openai_model,
+                "temperature": self.openai_temperature,
+                "max_tokens": self.openai_max_tokens,
+                "messages": messages
+            }
+            
+            with httpx.Client(timeout=60.0) as client:
+                resp = client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers, 
+                    json=payload
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+                
+        except Exception as e:
+            LOG.error("[Assistant] Errore OpenAI: %s", e)
+            return "⚠️ Servizio momentaneamente non disponibile. Riprova tra poco."
+    
+    def _get_system_prompt(self) -> str:
+        """Get enhanced system prompt for LLM"""
+        return """Sei un assistente esperto di fantacalcio italiano. 
+
+CONOSCENZE:
+- Conosci tutti i giocatori di Serie A 2024-25 e 2025-26
+- Hai accesso a dati su formazioni, prezzi all'asta, fantamedie
+- Sai gestire trasferimenti e aggiornamenti di squadra
+- Conosci strategie per aste, formazioni e consigli
+
+COMPORTAMENTO:
+- Rispondi sempre in italiano
+- Sii conciso ma informativo  
+- Se non sei sicuro di un dato, dillo chiaramente
+- Per correzioni sui trasferimenti, conferma che hai preso nota
+- Mantieni il contesto della conversazione
+- Fornisci consigli pratici e actionable
+
+CAPACITÀ SPECIALI:
+- Suggerimenti per formazioni con budget
+- Consigli per Under 21/23
+- Strategie d'asta personalizzate
+- Analisi giocatori e alternative
+- Gestione trasferimenti e aggiornamenti squadre
+
+Rispondi come un esperto che conosce bene il fantacalcio italiano."""
 
     def debug_under(self, role: str, max_age: int = 21, take: int = 10) -> List[Dict[str,Any]]:
         role=(role or "").upper()[:1]
