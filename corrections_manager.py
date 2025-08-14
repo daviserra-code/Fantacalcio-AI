@@ -1,3 +1,4 @@
+
 import json
 import logging
 import re
@@ -177,15 +178,21 @@ class CorrectionsManager:
 
         try:
             where_filter = {"type": {"$eq": "correction"}}
-            results = self.knowledge_manager.get_by_filter(
+            results = self.knowledge_manager.search_knowledge(
+                text=None,
                 where=where_filter,
-                limit=limit,
+                n_results=limit,
                 include=["metadatas"]
             )
 
             corrections = []
             if results and "metadatas" in results:
-                for metadata in results["metadatas"]:
+                metadatas = results["metadatas"]
+                # Handle both single query and multiple query results
+                if isinstance(metadatas[0], list):
+                    metadatas = metadatas[0]
+                
+                for metadata in metadatas:
                     if metadata and metadata.get("type") == "correction":
                         corrections.append(metadata)
 
@@ -208,68 +215,3 @@ class CorrectionsManager:
     def get_corrections(self, limit: int = 50) -> List[Dict]:
         """Get all corrections"""
         return self.get_recent_corrections(limit)
-
-    def add_correction(self, user_input: str) -> bool:
-        """Extract and store correction from user input"""
-        try:
-            # Enhanced patterns for various correction formats
-            patterns = [
-                # Since/da patterns with specific time references
-                r'(\w+(?:\s+\w+)*)\s+(?:plays?|gioca)\s+since\s+(?:one\s+year|un\s+anno|\d+\s+(?:years?|anni?))\s+in\s+(.+?)(?:\s*$)',
-                r'(\w+(?:\s+\w+)*)\s+(?:da|since)\s+(?:un\s+anno|one\s+year|\d+\s+(?:anni?|years?))\s+(?:nel|in|at)\s+(.+?)(?:\s*$)',
-                # Basic team changes
-                r'(\w+(?:\s+\w+)*)\s+(?:ora\s+)?(?:gioca|plays?|è|is)\s+(?:nel|in|at|for|al)\s+(.+?)(?:\s+non\s+nel|\s+not\s+in|\s*$)',
-                r'(\w+(?:\s+\w+)*)\s+(?:non\s+gioca\s+più|no\s+longer\s+plays?|left)\s+(?:nel|in|at)\s+(.+?)(?:\s*$)',
-                r'(\w+(?:\s+\w+)*)\s+(?:è\s+andato|went|transferred|moved)\s+(?:al|to|at)\s+(.+?)(?:\s*$)',
-            ]
-
-            correction_found = False
-
-            for pattern in patterns:
-                match = re.search(pattern, user_input, re.IGNORECASE)
-                if match:
-                    player_name = match.group(1).strip()
-                    team_info = match.group(2).strip()
-
-                    # Clean team name and handle specific cases
-                    team_info = re.sub(r'^(il\s+|la\s+|the\s+)', '', team_info, flags=re.IGNORECASE).strip()
-
-                    # Handle specific team name mappings
-                    team_mappings = {
-                        'paris saint germain': 'Paris Saint-Germain',
-                        'psg': 'Paris Saint-Germain',
-                        'como': 'Como',
-                        'napoli': 'Napoli',
-                        'milan': 'Milan'
-                    }
-
-                    team_lower = team_info.lower()
-                    for key, value in team_mappings.items():
-                        if key in team_lower:
-                            team_info = value
-                            break
-
-                    # Create correction based on context
-                    if any(phrase in user_input.lower() for phrase in ["non gioca più", "no longer plays", "left"]):
-                        correction_text = f"{player_name} team: vecchio team -> nuovo team"
-                        wrong_info = f"{player_name} team: vecchio team"
-                    else:
-                        correction_text = f"{player_name} team: vecchio team -> {team_info}"
-                        wrong_info = f"{player_name} team: vecchio team"
-
-                    # Store correction
-                    self.cursor.execute(
-                        "INSERT OR REPLACE INTO corrections (wrong_info, correct_info, created_at) VALUES (?, ?, ?)",
-                        (wrong_info, correction_text, datetime.now().isoformat())
-                    )
-                    self.conn.commit()
-
-                    logger.info(f"Stored correction: {correction_text}")
-                    correction_found = True
-                    break
-
-            return correction_found
-
-        except Exception as e:
-            logger.error(f"Error adding correction: {e}")
-            return False
