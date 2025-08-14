@@ -133,23 +133,30 @@ class CorrectionsManager:
                 correct = correction.get("correct", "")
                 
                 if wrong and correct:
-                    # Try to extract key information to replace
-                    # Look for player names and team changes
-                    wrong_parts = wrong.split()
-                    correct_parts = correct.split()
+                    # Extract player name and team info more carefully
+                    # Look for patterns like "PlayerName team: OldTeam" -> "PlayerName team: NewTeam"
+                    wrong_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+)', wrong)
+                    correct_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+)', correct)
                     
-                    # Simple pattern matching for team changes
-                    for i, part in enumerate(wrong_parts):
-                        if part.lower() in corrected_text.lower():
-                            # If we find the wrong info, try to replace with correct
-                            if len(correct_parts) > i:
-                                corrected_text = re.sub(
-                                    re.escape(part), 
-                                    correct_parts[i], 
-                                    corrected_text, 
-                                    flags=re.IGNORECASE
-                                )
-                                applied_corrections.append(f"Corrected {part} → {correct_parts[i]}")
+                    if wrong_match and correct_match:
+                        player_name = wrong_match.group(1)
+                        old_team = wrong_match.group(2).strip()
+                        new_team = correct_match.group(2).strip()
+                        
+                        # Only apply correction if we find the exact player name in the text
+                        if player_name.lower() in corrected_text.lower():
+                            # Replace team name only when it appears with the player
+                            # Use word boundaries to avoid partial matches
+                            if old_team != "nuovo team" and len(old_team) > 2:
+                                pattern = r'\b' + re.escape(old_team) + r'\b'
+                                if re.search(pattern, corrected_text, re.IGNORECASE):
+                                    corrected_text = re.sub(
+                                        pattern, 
+                                        new_team if new_team != "nuovo team" else "nuovo club", 
+                                        corrected_text, 
+                                        flags=re.IGNORECASE
+                                    )
+                                    applied_corrections.append(f"Corrected {player_name}: {old_team} → {new_team}")
             
         except Exception as e:
             logger.error(f"Error applying corrections: {e}")
