@@ -1,33 +1,30 @@
 # -*- coding: utf-8 -*-
-import os
 import uuid
 import json
 import logging
 import subprocess
 from flask import Flask, request, jsonify, session, render_template
 
+from config import HOST, PORT, LOG_LEVEL
 from fantacalcio_assistant import FantacalcioAssistant
 
 logging.basicConfig(
-    level=os.environ.get("LOG_LEVEL", "INFO"),
+    level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 LOG = logging.getLogger("web_interface")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret")  # necessario per session
+app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
 
-# ---------------- Singleton Assistant ----------------
-_assistant_singleton = None
+# ---------- Singleton ----------
 def get_assistant() -> FantacalcioAssistant:
-    global _assistant_singleton
-    if _assistant_singleton is None:
+    inst = app.config.get("_assistant_instance")
+    if inst is None:
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        _assistant_singleton = FantacalcioAssistant()
-    return _assistant_singleton
-
-# ---------------- In-memory chat histories per session ----------------
-_chat_histories = {}  # sid -> list[ {role, content} ]
+        inst = FantacalcioAssistant()
+        app.config["_assistant_instance"] = inst
+    return inst
 
 def get_sid() -> str:
     sid = session.get("sid")
@@ -36,7 +33,13 @@ def get_sid() -> str:
         session["sid"] = sid
     return sid
 
-# ---------------- Translations (minime) ----------------
+def get_state() -> dict:
+    st = session.get("state")
+    return st if isinstance(st, dict) else {}
+
+def set_state(st: dict) -> None:
+    session["state"] = st
+
 T = {
     "it": {
         "title": "Fantasy Football Assistant",
@@ -52,78 +55,46 @@ T = {
         "defender": "Difensore",
         "midfielder": "Centrocampista",
         "forward": "Attaccante",
-    },
-    "en": {
-        "title": "Fantasy Football Assistant",
-        "subtitle": "Auction tips, lineups & strategy",
-        "participants": "Participants",
-        "budget": "Budget",
-        "reset_chat": "Reset Chat",
-        "welcome": "Hi! I can help with fantasy football.",
-        "send": "Send",
-        "search_placeholder": "Search players/clubs/metrics",
-        "all_roles": "All",
-        "goalkeeper": "Goalkeeper",
-        "defender": "Defender",
-        "midfielder": "Midfielder",
-        "forward": "Forward",
-    },
+    }
 }
 
-# ---------------- Routes ----------------
 @app.route("/", methods=["GET"])
 def index():
     lang = request.args.get("lang", "it")
-    if lang not in T: lang = "it"
     page_id = uuid.uuid4().hex[:16]
     LOG.info("Request: GET / from %s", request.remote_addr)
     LOG.info("Page view: %s, lang: %s", page_id, lang)
-    return render_template("index.html", lang=lang, t=T[lang])
+    return render_template("index.html", lang=lang, t=T.get(lang,T["it"]))
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
     data = request.get_json(force=True, silent=True) or {}
-    msg = (data.get("message") or "").strip()
+    msg  = (data.get("message") or "").strip()
     mode = (data.get("mode") or "classic").strip()
+
     LOG.info("Request data: %s", data)
 
-    # avvia ETL in background (non-bloccante)
+    # Best-effort: avvia ETL senza bloccare
     try:
-        import etl_runner  # se esiste
-        LOG.info("[ETL] Refresh roster avviato (background via etl_runner)")
-        etl_runner.refresh_roster_async()
+        subprocess.Popen(["python", "etl_build_roster.py"])
         LOG.info("[ETL] Job di refresh lanciato")
-    except Exception as e:
-        LOG.info("[ETL] Refresh roster avviato (background via Popen)")
-        try:
-            subprocess.Popen(["python", "etl_build_roster.py"])
-            LOG.info("[ETL] Job di refresh lanciato")
-        except Exception as e2:
-            LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
+    except Exception as e2:
+        LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
 
     if not msg:
         return jsonify({"response": "Scrivi un messaggio."})
 
-    # contesto di sessione
-    sid = get_sid()
-    hist = _chat_histories.setdefault(sid, [])
-    # (opzionale) mantieni le ultime n interazioni
-    context = {"history": hist[-8:]}  # per eventuale uso futuro
-
-    # assistant (singleton)
+    get_sid()
+    state = get_state()
     assistant = get_assistant()
-    reply = assistant.get_response(msg, mode=mode, context=context)
 
-    # salva cronologia
-    hist.append({"role": "user", "content": msg})
-    hist.append({"role": "assistant", "content": reply})
-
+    reply, new_state = assistant.respond(msg, mode=mode, state=state)
+    set_state(new_state)
     return jsonify({"response": reply})
 
 @app.route("/api/reset-chat", methods=["POST"])
 def api_reset_chat():
-    sid = get_sid()
-    _chat_histories[sid] = []
+    set_state({})
     return jsonify({"ok": True})
 
 @app.route("/api/test", methods=["GET"])
@@ -133,9 +104,10 @@ def api_test():
     return jsonify({
         "ok": True,
         "season_filter": a.season_filter,
-        "age_index_size": len(a.age_index),
+        "age_index_size": len(a.age_index) + len(a.guessed_age_index),
         "overrides_size": len(a.overrides),
-        "filtered_pool": sum(v["total"] for v in cov.values()),
+        "pool_size": len(a.filtered_roster),
+        "coverage": cov
     })
 
 @app.route("/api/age-coverage", methods=["GET"])
@@ -156,16 +128,8 @@ def api_peek_age():
     a = get_assistant()
     return jsonify(a.peek_age(name, team))
 
-# ---------------- Main ----------------
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "3000")), help="Port to run the server on")
-    args = parser.parse_args()
-
     LOG.info("Starting Fantasy Football Assistant Web Interface")
-    host = os.getenv("HOST", "0.0.0.0")
-    port = args.port
-    LOG.info("Server: %s:%d", host, port)
+    LOG.info("Server: %s:%d", HOST, PORT)
     LOG.info("App should be accessible at the preview URL")
-    app.run(host=host, port=port, debug=False)
+    app.run(host=HOST, port=PORT)

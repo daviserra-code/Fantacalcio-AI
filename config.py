@@ -1,83 +1,61 @@
-
+# -*- coding: utf-8 -*-
 import os
-from typing import Dict, Any
+import logging
 
-class AppConfig:
-    """Centralized configuration management"""
-    
-    def __init__(self):
-        self.config = self._load_default_config()
-        self._load_env_overrides()
-    
-    def _load_default_config(self) -> Dict[str, Any]:
-        return {
-            # AI Configuration
-            'openai_model_primary': 'gpt-4',
-            'openai_model_secondary': 'gpt-4o-mini',
-            'max_tokens': 500,
-            'temperature': 0.3,
-            'response_cache_size': 50,
-            
-            # Rate Limiting
-            'rate_limit_requests': 60,
-            'rate_limit_window': 60,
-            
-            # Search and Analytics
-            'search_cache_expiry': 300,
-            'max_search_results': 20,
-            'max_conversation_history': 6,
-            
-            # Features
-            'enable_voice_input': True,
-            'enable_real_time_updates': True,
-            'enable_advanced_analytics': True,
-            'enable_fixture_tracking': True,
-            
-            # League Defaults
-            'default_league_type': 'Classic',
-            'default_participants': 8,
-            'default_budget': 500,
-            
-            # UI/UX
-            'theme': 'dark',
-            'language': 'it',
-            'mobile_optimized': True
-        }
-    
-    def _load_env_overrides(self):
-        """Load configuration overrides from environment variables"""
-        env_mappings = {
-            'OPENAI_MODEL_PRIMARY': 'openai_model_primary',
-            'OPENAI_MODEL_SECONDARY': 'openai_model_secondary',
-            'MAX_TOKENS': ('max_tokens', int),
-            'TEMPERATURE': ('temperature', float),
-            'RATE_LIMIT_REQUESTS': ('rate_limit_requests', int),
-            'DEFAULT_LEAGUE_TYPE': 'default_league_type',
-            'ENABLE_VOICE_INPUT': ('enable_voice_input', bool),
-            'THEME': 'theme'
-        }
-        
-        for env_key, config_key in env_mappings.items():
-            env_value = os.environ.get(env_key)
-            if env_value:
-                if isinstance(config_key, tuple):
-                    key, converter = config_key
-                    try:
-                        self.config[key] = converter(env_value)
-                    except ValueError:
-                        continue
-                else:
-                    self.config[config_key] = env_value
-    
-    def get(self, key: str, default=None):
-        return self.config.get(key, default)
-    
-    def set(self, key: str, value: Any):
-        self.config[key] = value
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return self.config.copy()
+LOG = logging.getLogger("config")
 
-# Global config instance
-app_config = AppConfig()
+def _load_dotenv(path: str = ".env"):
+    if not os.path.exists(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line=line.strip()
+                if not line or line.startswith("#"): 
+                    continue
+                if "=" not in line:
+                    continue
+                k,v = line.split("=",1)
+                k=k.strip(); v=v.strip()
+                if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                    v=v[1:-1]
+                os.environ.setdefault(k, v)
+        LOG.info("[config] .env caricato")
+    except Exception as e:
+        LOG.warning("[config] .env non caricato: %s", e)
 
+_load_dotenv()
+
+def env_str(key: str, default: str) -> str:
+    return os.environ.get(key, default)
+
+def env_int(key: str, default: int) -> int:
+    try:
+        return int(os.environ.get(key, str(default)))
+    except Exception:
+        return default
+
+def env_bool(key: str, default: bool) -> bool:
+    val = os.environ.get(key)
+    if val is None: return default
+    return str(val).strip().lower() in {"1","true","yes","y","on"}
+
+# ---- Chiavi unificate ----
+HOST          = env_str("HOST", "0.0.0.0")
+PORT          = env_int("PORT", 5000)
+LOG_LEVEL     = env_str("LOG_LEVEL", "INFO")
+
+ROSTER_JSON_PATH   = env_str("ROSTER_JSON_PATH", "./season_roster.json")
+CHROMA_PATH        = env_str("CHROMA_PATH", "./chroma_db")
+SEASON_FILTER      = env_str("SEASON_FILTER", "")  # se vuoto auto-detect
+REF_YEAR           = env_int("REF_YEAR", 2025)
+
+AGE_INDEX_PATH     = env_str("AGE_INDEX_PATH", "./data/age_index.cleaned.json")
+AGE_OVERRIDES_PATH = env_str("AGE_OVERRIDES_PATH", "./data/age_overrides.json")
+
+ENABLE_WEB_FALLBACK = env_bool("ENABLE_WEB_FALLBACK", False)
+
+OPENAI_API_KEY     = env_str("OPENAI_API_KEY", "")
+OPENAI_MODEL       = env_str("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_TEMPERATURE = float(env_str("OPENAI_TEMPERATURE", "0.20"))
+OPENAI_MAX_TOKENS  = env_int("OPENAI_MAX_TOKENS", 600)
