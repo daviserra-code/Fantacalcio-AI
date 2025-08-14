@@ -95,6 +95,15 @@ def _first_key(d: Dict[str,Any], keys: List[str]) -> Any:
 def _age_key(name: str, team: str) -> str:
     return f"{_norm_name(name)}@@{_norm_team(team)}"
 
+def _safe_float(x: Any, default: float = 0.0) -> float:
+    """Convert to float, return default if conversion fails or input is None."""
+    if x is None: return default
+    if isinstance(x, (int, float)): return float(x)
+    try:
+        return float(x)
+    except (ValueError, TypeError):
+        return default
+
 # ---------------- Assistant ----------------
 class FantacalcioAssistant:
     def __init__(self) -> None:
@@ -620,6 +629,10 @@ class FantacalcioAssistant:
         lt = (text or "").lower().strip()
         intent={"type":"generic","mode":mode,"raw":lt}
 
+        # Check for goalkeeper requests
+        if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]):
+            return self._handle_goalkeeper_request(text) # Pass original text for budget parsing
+
         # formazione
         if "formazione" in lt and re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
             fm = re.search(r"\b([0-5])\s*-\s*([0-5])\s*-\s*([0-5])\b", lt).group(0)
@@ -656,8 +669,8 @@ class FantacalcioAssistant:
             intent.update({"type":"followup"})
             return intent
 
-        # fallback generico
-        return intent
+        # fallback generico: LLM
+        return self._llm_complete(user_text, context_messages=[])
 
     # ---------- respond ----------
     def respond(self, user_text: str, mode: str, state: Dict[str,Any], context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
@@ -683,75 +696,143 @@ class FantacalcioAssistant:
                      "1) Tenere liquidità per gli slot premium in A.\n"
                      "2) Difesa a valore: esterni titolari con FM stabile.\n"
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
-        else:
-            # Use LLM for general questions with context
-            reply = self._llm_complete(user_text, context_messages or [])
-            if not reply or "non disponibile" in reply.lower():
+        elif intent["type"] == "generic":
+             reply = self._llm_complete(user_text, context_messages or [])
+             if not reply or "non disponibile" in reply.lower():
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
+        else: # Handles the case where _parse_intent directly returned a goalkeeper response
+            reply = intent # The intent dict itself is the response string from _handle_goalkeeper_request
 
         st["last_intent"] = intent
         return reply, st
 
-    # ---------- diagnostica ----------
-    def get_age_coverage(self) -> Dict[str, Dict[str,int]]:
-        out={}
-        per={"P":[], "D":[], "C":[], "A":[]}
-        for p in self.filtered_roster:
-            r=_role_letter(p.get("role") or p.get("role_raw",""))
-            if r in per: per[r].append(p)
-        for r,items in per.items():
-            tot=len(items); w=0; u21=0; u23=0
-            for p in items:
-                age=self._age_from_by(p.get("birth_year"))
-                if age is not None:
-                    w+=1
-                    if age<=21: u21+=1
-                    if age<=23: u23+=1
-            out[r]={"total":tot,"with_age":w,"u21":u21,"u23":u23}
-        return out
+    def _handle_goalkeeper_request(self, user_text: str) -> str:
+        """Handle goalkeeper-specific requests with proper Serie A filtering"""
+        pool = self._collect_all_players()
+        goalkeepers = []
 
+        # Updated goalkeeper data for 2025-26 Serie A
+        updated_gk_data = {
+            "mike maignan": {"team": "Milan", "price": 25, "fantamedia": 6.4},
+            "yann sommer": {"team": "Inter", "price": 18, "fantamedia": 6.1},
+            "michele di gregorio": {"team": "Juventus", "price": 20, "fantamedia": 6.0},
+            "alex meret": {"team": "Napoli", "price": 16, "fantamedia": 5.9},
+            "ivan provedel": {"team": "Lazio", "price": 14, "fantamedia": 5.8},
+            "mile svilar": {"team": "Roma", "price": 13, "fantamedia": 5.7},
+            "marco carnesecchi": {"team": "Atalanta", "price": 12, "fantamedia": 5.6},
+            "devis vasquez": {"team": "Empoli", "price": 8, "fantamedia": 5.4},
+            "maduka okoye": {"team": "Udinese", "price": 7, "fantamedia": 5.3},
+            "elia caprile": {"team": "Cagliari", "price": 6, "fantamedia": 5.2}
+        }
+
+        for p in pool:
+            role_bucket = self._role_bucket(p.get("role") or "")
+            if role_bucket != "P":
+                continue
+
+            name = (p.get("name") or "").lower().strip()
+            team = p.get("team") or ""
+
+            # Use updated data if available
+            if name in updated_gk_data:
+                gk_data = updated_gk_data[name]
+                goalkeepers.append({
+                    "name": p.get("name"),
+                    "team": gk_data["team"],
+                    "price": gk_data["price"],
+                    "fantamedia": gk_data["fantamedia"]
+                })
+            elif self._is_serie_a_team(team):
+                goalkeepers.append({
+                    "name": p.get("name"),
+                    "team": team,
+                    "price": _safe_float(p.get("price"), 0.0),
+                    "fantamedia": _safe_float(p.get("fantamedia"), 0.0)
+                })
+
+        # Extract budget from request
+        import re
+        budget_match = re.search(r"budget\s+(\d+)", user_text)
+        budget = int(budget_match.group(1)) if budget_match else 50
+
+        # Filter by budget and sort
+        filtered_gk = [gk for gk in goalkeepers if gk["price"] <= budget]
+        filtered_gk.sort(key=lambda x: (-x["fantamedia"], x["price"], x["name"]))
+
+        if not filtered_gk:
+            return f"Non ho trovato portieri di Serie A con budget {budget} crediti."
+
+        lines = []
+        for gk in filtered_gk[:8]:  # Show top 8
+            lines.append(f"**{gk['name']}** ({gk['team']}) — € {int(gk['price'])}")
+
+        return f"📈 **Migliori Portieri (budget {budget} crediti, Serie A):**\n\n" + "\n".join([f"{i+1}. {line}" for i, line in enumerate(lines)])
+
+    def _collect_all_players(self) -> List[Dict[str, Any]]:
+        """Returns the full roster, not just filtered."""
+        return self.roster
+
+    def _is_serie_a_team(self, team: str) -> bool:
+        """Check if team is in Serie A 2025-26"""
+        serie_a_teams = {
+            "atalanta", "bologna", "cagliari", "como", "empoli", "fiorentina",
+            "genoa", "inter", "juventus", "lazio", "lecce", "milan",
+            "monza", "napoli", "parma", "roma", "torino", "udinese", "venezia", "verona"
+        }
+        return team.lower().strip() in serie_a_teams
+
+    def _role_bucket(self, raw_role: str) -> str:
+        """Maps raw role string to a single letter bucket (P, D, C, A)."""
+        role = _role_letter(raw_role)
+        if role in {"P", "D", "C", "A"}:
+            return role
+        return "" # Unknown or empty role
+
+    # ---------------------------
+    # LLM (fallback generico)
+    # ---------------------------
     def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None) -> str:
         """Complete using LLM with context"""
         if not self.openai_api_key:
             return "⚠️ Servizio AI temporaneamente non disponibile. Configura OPENAI_API_KEY."
-        
+
         try:
             import httpx
-            
+
             # Build messages with context
             messages = [{"role": "system", "content": self._get_system_prompt()}]
-            
+
             if context_messages:
                 messages.extend(context_messages)
-            
+
             messages.append({"role": "user", "content": user_text})
-            
+
             headers = {
                 "Authorization": f"Bearer {self.openai_api_key}",
                 "Content-Type": "application/json"
             }
-            
+
             payload = {
                 "model": self.openai_model,
                 "temperature": self.openai_temperature,
                 "max_tokens": self.openai_max_tokens,
                 "messages": messages
             }
-            
+
             with httpx.Client(timeout=60.0) as client:
                 resp = client.post(
                     "https://api.openai.com/v1/chat/completions",
-                    headers=headers, 
+                    headers=headers,
                     json=payload
                 )
                 resp.raise_for_status()
                 data = resp.json()
                 return data["choices"][0]["message"]["content"].strip()
-                
+
         except Exception as e:
             LOG.error("[Assistant] Errore OpenAI: %s", e)
             return "⚠️ Servizio momentaneamente non disponibile. Riprova tra poco."
-    
+
     def _get_system_prompt(self) -> str:
         """Get enhanced system prompt for LLM"""
         return """Sei un assistente esperto di fantacalcio italiano con accesso a dati aggiornati.

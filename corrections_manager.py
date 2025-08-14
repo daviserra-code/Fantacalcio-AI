@@ -2,6 +2,8 @@
 import json
 import logging
 import re
+import sqlite3
+import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 
@@ -13,6 +15,8 @@ class CorrectionsManager:
     def __init__(self, knowledge_manager=None):
         self.knowledge_manager = knowledge_manager
         self._correction_cache = {}  # Cache for faster lookups
+        self.db_path = "corrections.db"
+        self._init_db()
 
     def add_correction(self, correction_type: str, incorrect_info: str,
                       correct_info: str, context: str = None):
@@ -248,3 +252,63 @@ class CorrectionsManager:
     def get_corrections(self, limit: int = 50) -> List[Dict]:
         """Get all corrections"""
         return self.get_recent_corrections(limit)
+
+    def _init_db(self):
+        """Initialize SQLite database for persistent corrections"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS corrections (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        player_name TEXT NOT NULL,
+                        field_name TEXT NOT NULL,
+                        old_value TEXT,
+                        new_value TEXT NOT NULL,
+                        reason TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                conn.commit()
+        except Exception as e:
+            logger.error(f"Failed to initialize corrections database: {e}")
+
+    def add_persistent_correction(self, player_name: str, field_name: str, 
+                                old_value: str, new_value: str, reason: str = None):
+        """Add correction to persistent database"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("""
+                    INSERT INTO corrections (player_name, field_name, old_value, new_value, reason)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (player_name, field_name, old_value, new_value, reason))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Failed to add persistent correction: {e}")
+            return False
+
+    def get_persistent_corrections(self, limit: int = 50) -> List[Dict]:
+        """Get corrections from persistent database"""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    SELECT player_name, field_name, old_value, new_value, reason, created_at
+                    FROM corrections 
+                    ORDER BY created_at DESC 
+                    LIMIT ?
+                """, (limit,))
+                
+                corrections = []
+                for row in cursor.fetchall():
+                    corrections.append({
+                        "player_name": row[0],
+                        "field_name": row[1], 
+                        "old_value": row[2],
+                        "new_value": row[3],
+                        "reason": row[4],
+                        "created_at": row[5]
+                    })
+                return corrections
+        except Exception as e:
+            logger.error(f"Failed to get persistent corrections: {e}")
+            return []

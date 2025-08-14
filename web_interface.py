@@ -98,7 +98,13 @@ def api_chat():
     assistant = get_assistant()
     corrections_manager = get_corrections_manager()
 
-    # Check for corrections first
+    # Handle exclusions (rimuovi/escludi commands)
+    exclusion_response = handle_exclusion(msg, state)
+    if exclusion_response:
+        set_state(state)
+        return jsonify({"response": exclusion_response})
+
+    # Check for corrections
     correction_response = handle_correction(msg, corrections_manager)
     if correction_response:
         # Add correction context to conversation history
@@ -131,7 +137,20 @@ def api_chat():
             "content": corrections_context
         })
 
+    # Add exclusions to context
+    excluded_players = state.get("excluded_players", [])
+    if excluded_players:
+        exclusions_context = f"GIOCATORI ESCLUSI: {', '.join(excluded_players)}"
+        context_messages.insert(0, {
+            "role": "system", 
+            "content": exclusions_context
+        })
+
     reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+
+    # Apply exclusions to the reply
+    if excluded_players:
+        reply = apply_exclusions_to_text(reply, excluded_players)
 
     # Apply any corrections to the reply
     if corrections_manager:
@@ -156,6 +175,59 @@ def api_chat():
 
     set_state(new_state)
     return jsonify({"response": reply})
+
+def handle_exclusion(msg: str, state: dict) -> str:
+    """Handle player exclusions (rimuovi/escludi commands)"""
+    msg_lower = msg.lower()
+    
+    # Pattern: "rimuovi/escludi [player name]"
+    import re
+    
+    patterns = [
+        r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)",
+        r"escludi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)"
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, msg, re.IGNORECASE)
+        if match:
+            player_name = match.group(1).strip()
+            
+            # Clean up common words that might be captured
+            player_name = re.sub(r'\b(dalla?|lista|squadre?|non|di|serie|a)\b', '', player_name, flags=re.IGNORECASE).strip()
+            
+            if len(player_name) > 2:  # Avoid very short matches
+                excluded_players = state.setdefault("excluded_players", [])
+                if player_name not in excluded_players:
+                    excluded_players.append(player_name)
+                    
+                return f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+                else:
+                    return f"**{player_name}** è già escluso dalle liste."
+    
+    return None
+
+def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
+    """Remove excluded players from response text"""
+    if not excluded_players:
+        return text
+    
+    lines = text.split('\n')
+    filtered_lines = []
+    
+    for line in lines:
+        # Skip lines that contain excluded players
+        should_exclude = False
+        for excluded in excluded_players:
+            # Case-insensitive check
+            if excluded.lower() in line.lower():
+                should_exclude = True
+                break
+        
+        if not should_exclude:
+            filtered_lines.append(line)
+    
+    return '\n'.join(filtered_lines)
 
 def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
     """Detect and handle correction statements"""
@@ -194,6 +266,14 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
                     new_value=new_team,
                     reason=f"Trasferimento confermato dall'utente: {player} {old_team} -> {new_team}"
                 )
+                # Also add to persistent database
+                corrections_manager.add_persistent_correction(
+                    player_name=player,
+                    field_name="team", 
+                    old_value=old_team,
+                    new_value=new_team,
+                    reason=f"Trasferimento confermato dall'utente: {player} {old_team} -> {new_team}"
+                )
                 return f"✅ **Correzione salvata**: {player} è passato da {old_team} a {new_team}. Questa informazione è stata aggiunta al sistema."
 
             elif len(match.groups()) >= 2:  # Pattern with just new team or old team
@@ -226,6 +306,13 @@ def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
 def api_reset_chat():
     set_state({})
     return jsonify({"ok": True})
+
+@app.route("/api/reset-exclusions", methods=["POST"])
+def api_reset_exclusions():
+    state = get_state()
+    state.pop("excluded_players", None)
+    set_state(state)
+    return jsonify({"ok": True, "message": "Esclusioni rimosse"})
 
 @app.route("/api/test", methods=["GET"])
 def api_test():
