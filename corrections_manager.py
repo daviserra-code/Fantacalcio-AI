@@ -30,7 +30,7 @@ class CorrectionsManager:
                 "created_at": datetime.now().isoformat(),
                 "priority": "high"
             }
-            
+
             # Add to Chroma collection directly
             import uuid
             doc_id = str(uuid.uuid4())
@@ -39,10 +39,10 @@ class CorrectionsManager:
                 metadatas=[metadata],
                 ids=[doc_id]
             )
-            
+
             # Update cache
             self._update_correction_cache(incorrect_info, correct_info)
-            
+
             logger.info(f"Added correction: {correction_text}")
             return doc_id
         except Exception as e:
@@ -84,24 +84,24 @@ class CorrectionsManager:
                     {"priority": {"$eq": "high"}}
                 ]
             }
-            
+
             results = self.knowledge_manager.search_knowledge(
                 text=query,
                 where=where_filter,
                 n_results=limit,
                 include=["documents", "metadatas"]
             )
-            
+
             corrections = []
             if results and "metadatas" in results:
                 metadatas = results["metadatas"]
                 documents = results.get("documents", [])
-                
+
                 # Handle both single query and multiple query results
                 if isinstance(metadatas[0], list):
                     metadatas = metadatas[0]
                     documents = documents[0] if documents else []
-                
+
                 for i, metadata in enumerate(metadatas):
                     if metadata and metadata.get("type") == "correction":
                         correction = {
@@ -112,55 +112,62 @@ class CorrectionsManager:
                             "document": documents[i] if i < len(documents) else ""
                         }
                         corrections.append(correction)
-            
+
             return corrections
-            
+
         except Exception as e:
             logger.error(f"Failed to get relevant corrections: {e}")
             return []
 
     def apply_corrections_to_text(self, text: str) -> Tuple[str, List[str]]:
-        """Apply known corrections to a text and return corrected text + applied corrections"""
+        """Apply stored corrections to text"""
+        if not text:
+            return text, []
+
+        corrections = self.get_all_corrections()
+        if not corrections:
+            return text, []
+
         corrected_text = text
         applied_corrections = []
-        
-        try:
-            # Get recent corrections
-            recent_corrections = self.get_recent_corrections(limit=50)
-            
-            for correction in recent_corrections:
+
+        for correction in corrections:
+            try:
                 wrong = correction.get("wrong", "")
                 correct = correction.get("correct", "")
-                
+
                 if wrong and correct:
-                    # Extract player name and team info more carefully
-                    # Look for patterns like "PlayerName team: OldTeam" -> "PlayerName team: NewTeam"
-                    wrong_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+)', wrong)
-                    correct_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+)', correct)
-                    
-                    if wrong_match and correct_match:
-                        player_name = wrong_match.group(1)
-                        old_team = wrong_match.group(2).strip()
-                        new_team = correct_match.group(2).strip()
-                        
+                    # Extract player name and team info from correction
+                    correct_match = re.search(r'(\w+(?:\s+\w+)*)\s+team:\s*(.+?)\s*->\s*(.+)', correct)
+
+                    if correct_match:
+                        player_name = correct_match.group(1).strip()
+                        old_team = correct_match.group(2).strip()
+                        new_team = correct_match.group(3).strip()
+
                         # Only apply correction if we find the exact player name in the text
                         if player_name.lower() in corrected_text.lower():
-                            # Replace team name only when it appears with the player
-                            # Use word boundaries to avoid partial matches
-                            if old_team != "nuovo team" and len(old_team) > 2:
-                                pattern = r'\b' + re.escape(old_team) + r'\b'
-                                if re.search(pattern, corrected_text, re.IGNORECASE):
-                                    corrected_text = re.sub(
-                                        pattern, 
-                                        new_team if new_team != "nuovo team" else "nuovo club", 
-                                        corrected_text, 
-                                        flags=re.IGNORECASE
-                                    )
-                                    applied_corrections.append(f"Corrected {player_name}: {old_team} → {new_team}")
-            
-        except Exception as e:
-            logger.error(f"Error applying corrections: {e}")
-        
+                            # Find and replace team information for this specific player
+                            # Look for player name followed by team in parentheses
+                            player_pattern = re.escape(player_name)
+
+                            # Pattern to match "Player Name (Team)" format
+                            team_pattern = rf'(\*\*{player_pattern}\*\*)\s*\(([^)]+)\)'
+
+                            def replace_team(match):
+                                player_part = match.group(1)
+                                current_team = match.group(2).strip()
+
+                                # Replace with new team info
+                                replacement_team = new_team if new_team != "nuovo team" else "nuovo club"
+                                applied_corrections.append(f"Corrected {player_name}: {current_team} → {replacement_team}")
+                                return f"{player_part} ({replacement_team})"
+
+                            corrected_text = re.sub(team_pattern, replace_team, corrected_text, flags=re.IGNORECASE)
+
+            except Exception as e:
+                logger.error(f"Error applying corrections: {e}")
+
         return corrected_text, applied_corrections
 
     def get_recent_corrections(self, limit: int = 20) -> List[Dict]:
@@ -175,21 +182,21 @@ class CorrectionsManager:
                 limit=limit,
                 include=["metadatas"]
             )
-            
+
             corrections = []
             if results and "metadatas" in results:
                 for metadata in results["metadatas"]:
                     if metadata and metadata.get("type") == "correction":
                         corrections.append(metadata)
-            
+
             # Sort by creation time (most recent first)
             corrections.sort(
                 key=lambda x: x.get("created_at", ""),
                 reverse=True
             )
-            
+
             return corrections[:limit]
-            
+
         except Exception as e:
             logger.error(f"Failed to get recent corrections: {e}")
             return []
@@ -201,3 +208,68 @@ class CorrectionsManager:
     def get_corrections(self, limit: int = 50) -> List[Dict]:
         """Get all corrections"""
         return self.get_recent_corrections(limit)
+
+    def add_correction(self, user_input: str) -> bool:
+        """Extract and store correction from user input"""
+        try:
+            # Enhanced patterns for various correction formats
+            patterns = [
+                # Since/da patterns with specific time references
+                r'(\w+(?:\s+\w+)*)\s+(?:plays?|gioca)\s+since\s+(?:one\s+year|un\s+anno|\d+\s+(?:years?|anni?))\s+in\s+(.+?)(?:\s*$)',
+                r'(\w+(?:\s+\w+)*)\s+(?:da|since)\s+(?:un\s+anno|one\s+year|\d+\s+(?:anni?|years?))\s+(?:nel|in|at)\s+(.+?)(?:\s*$)',
+                # Basic team changes
+                r'(\w+(?:\s+\w+)*)\s+(?:ora\s+)?(?:gioca|plays?|è|is)\s+(?:nel|in|at|for|al)\s+(.+?)(?:\s+non\s+nel|\s+not\s+in|\s*$)',
+                r'(\w+(?:\s+\w+)*)\s+(?:non\s+gioca\s+più|no\s+longer\s+plays?|left)\s+(?:nel|in|at)\s+(.+?)(?:\s*$)',
+                r'(\w+(?:\s+\w+)*)\s+(?:è\s+andato|went|transferred|moved)\s+(?:al|to|at)\s+(.+?)(?:\s*$)',
+            ]
+
+            correction_found = False
+
+            for pattern in patterns:
+                match = re.search(pattern, user_input, re.IGNORECASE)
+                if match:
+                    player_name = match.group(1).strip()
+                    team_info = match.group(2).strip()
+
+                    # Clean team name and handle specific cases
+                    team_info = re.sub(r'^(il\s+|la\s+|the\s+)', '', team_info, flags=re.IGNORECASE).strip()
+
+                    # Handle specific team name mappings
+                    team_mappings = {
+                        'paris saint germain': 'Paris Saint-Germain',
+                        'psg': 'Paris Saint-Germain',
+                        'como': 'Como',
+                        'napoli': 'Napoli',
+                        'milan': 'Milan'
+                    }
+
+                    team_lower = team_info.lower()
+                    for key, value in team_mappings.items():
+                        if key in team_lower:
+                            team_info = value
+                            break
+
+                    # Create correction based on context
+                    if any(phrase in user_input.lower() for phrase in ["non gioca più", "no longer plays", "left"]):
+                        correction_text = f"{player_name} team: vecchio team -> nuovo team"
+                        wrong_info = f"{player_name} team: vecchio team"
+                    else:
+                        correction_text = f"{player_name} team: vecchio team -> {team_info}"
+                        wrong_info = f"{player_name} team: vecchio team"
+
+                    # Store correction
+                    self.cursor.execute(
+                        "INSERT OR REPLACE INTO corrections (wrong_info, correct_info, created_at) VALUES (?, ?, ?)",
+                        (wrong_info, correction_text, datetime.now().isoformat())
+                    )
+                    self.conn.commit()
+
+                    logger.info(f"Stored correction: {correction_text}")
+                    correction_found = True
+                    break
+
+            return correction_found
+
+        except Exception as e:
+            logger.error(f"Error adding correction: {e}")
+            return False
