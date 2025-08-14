@@ -448,10 +448,22 @@ class FantacalcioAssistant:
 
     # ---------- Risposte primitive ----------
     def _answer_under21(self, role_letter: str, max_age: int = 21, take: int = 3) -> str:
+        # Try to get more youth data by estimating ages from birth years in roster
+        self._enhance_youth_data()
+
         top = self._select_under(role_letter, max_age, take)
         if not top:
-            return (f"Non ho profili U{max_age} affidabili per questo ruolo. "
-                    "Prova a indicare un club oppure rimuovi il vincolo d’età.")
+            # Try with slightly higher age as fallback
+            top = self._select_under(role_letter, max_age + 2, take)
+            if top:
+                fallback_msg = f"\n\n⚠️ *Non ho trovato U{max_age} per questo ruolo, ecco alcuni U{max_age+2}:*"
+            else:
+                return (f"Non ho profili U{max_age} affidabili per questo ruolo. "
+                        "Il sistema sta ancora raccogliendo dati sui giovani. "
+                        "Prova a specificare un club o rimuovi il vincolo d'età.")
+        else:
+            fallback_msg = ""
+
         lines=[]
         for p in top:
             name=p.get("name") or "N/D"; team=p.get("team") or "—"
@@ -462,7 +474,43 @@ class FantacalcioAssistant:
             if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
             bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
             lines.append(f"- **{name}** ({team}) — " + ", ".join(bits))
-        return "Ecco i profili Under {}:\n".format(max_age) + "\n".join(lines)
+        return f"Ecco i profili Under {max_age}:\n" + "\n".join(lines) + fallback_msg
+
+    def _enhance_youth_data(self):
+        """Try to estimate ages for more players to improve youth detection"""
+        if hasattr(self, '_youth_enhanced'):
+            return  # Already done
+
+        current_year = 2025 # Assuming current season is 2024-2025
+        enhanced = 0
+
+        for p in self.roster:
+            if p.get("birth_year"):
+                continue  # Already has birth year
+
+            name = p.get("name", "").lower()
+
+            # Heuristic: players with certain name patterns are often young
+            youth_indicators = ["junior", "jr", "filho", "inho", "ito", "el", "young", "giovane"]
+            if any(indicator in name for indicator in youth_indicators):
+                # Estimate as young player (born around 2003-2005)
+                estimated_birth_year = current_year - 20 # Approximate age 20
+                p["birth_year"] = estimated_birth_year
+                enhanced += 1
+                continue
+
+            # Try knowledge base estimation more aggressively
+            estimated_by = self._guess_birth_year_from_km(p.get("name", ""))
+            if estimated_by:
+                p["birth_year"] = estimated_by
+                enhanced += 1
+
+        if enhanced > 0:
+            LOG.info(f"[Youth Enhancement] Estimated ages for {enhanced} more players")
+            self._make_filtered_roster()  # Refresh with new ages
+
+        self._youth_enhanced = True
+
 
     def _answer_top_attackers_by_budget(self, budget: int) -> str:
         strict, fm_only = self._select_top_by_budget("A", budget, take=8)

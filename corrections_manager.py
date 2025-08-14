@@ -19,18 +19,25 @@ class CorrectionsManager:
 
         try:
             correction_text = f"CORREZIONE: Sostituisci '{incorrect_info}' con '{correct_info}'"
-            correction_id = self.knowledge_manager.add_knowledge(
-                correction_text,
-                {
-                    "type": "correction",
-                    "correction_type": correction_type,
-                    "wrong": incorrect_info,
-                    "correct": correct_info,
-                    "context": context,
-                    "created_at": datetime.now().isoformat()
-                }
+            metadata = {
+                "type": "correction",
+                "correction_type": correction_type,
+                "wrong": incorrect_info,
+                "correct": correct_info,
+                "context": context,
+                "created_at": datetime.now().isoformat()
+            }
+            
+            # Add to Chroma collection directly
+            import uuid
+            doc_id = str(uuid.uuid4())
+            self.knowledge_manager.collection.add(
+                documents=[correction_text],
+                metadatas=[metadata],
+                ids=[doc_id]
             )
-            return correction_id
+            logger.info(f"Added correction: {correction_text}")
+            return doc_id
         except Exception as e:
             logger.error(f"Failed to add correction: {e}")
             return None

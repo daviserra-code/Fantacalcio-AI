@@ -129,7 +129,14 @@ def api_peek_age():
     return jsonify(a.peek_age(name, team))
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=3000, help="Port to run the server on")
+    args = parser.parse_args()
+
     LOG.info("Starting Fantasy Football Assistant Web Interface")
-    LOG.info("Server: %s:%d", HOST, PORT)
+    host = "0.0.0.0"
+    port = args.port
+    LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
-    app.run(host=HOST, port=PORT)
+    app.run(host=host, port=port, debug=False)
