@@ -14,6 +14,24 @@ from config import (
 )
 from knowledge_manager import KnowledgeManager
 
+# Dummy function to satisfy the import if corrections_manager is not available
+try:
+    from corrections_manager import CorrectionsManager
+except ImportError:
+    LOG.warning("[Assistant] Could not import CorrectionsManager, using dummy.")
+    class CorrectionsManager:
+        def __init__(self): pass
+        def apply_corrections_to_data(self, data): return data
+        def update_player_team(self, *args): pass
+        def add_correction(self, *args): pass
+        def remove_player(self, *args): return "Corrections manager not available."
+        def get_data_quality_report(self): return {"error": "Corrections manager not available"}
+        def is_serie_a_team(self, team): return True # Assume valid if not implemented
+
+# Helper function to check environment variables for boolean true
+def _env_true(value: str) -> bool:
+    return value.lower() in ("true", "1", "yes", "y")
+
 LOG = logging.getLogger("fantacalcio_assistant")
 
 # ---------------- Normalizzazione ----------------
@@ -108,24 +126,48 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
 class FantacalcioAssistant:
     def __init__(self) -> None:
         LOG.info("Initializing FantacalcioAssistant...")
-        self.enable_web_fallback = ENABLE_WEB_FALLBACK
 
-        self.roster_json_path = ROSTER_JSON_PATH
-        self.openai_api_key = OPENAI_API_KEY
-        self.openai_model = OPENAI_MODEL
-        self.openai_temperature = OPENAI_TEMPERATURE
-        self.openai_max_tokens = OPENAI_MAX_TOKENS
+        self.enable_web_fallback: bool = _env_true(os.getenv("ENABLE_WEB_FALLBACK", "0"))
+        LOG.info("[Assistant] ENABLE_WEB_FALLBACK raw='%s' parsed=%s",
+                 os.getenv("ENABLE_WEB_FALLBACK", "0"), self.enable_web_fallback)
 
-        self.km = KnowledgeManager()
+        self.roster_json_path: str = os.getenv("ROSTER_JSON_PATH", "./season_roster.json")
+        LOG.info("[Assistant] ROSTER_JSON_PATH=%s", self.roster_json_path)
+
+        self.external_youth_cache_path: str = os.getenv(
+            "EXTERNAL_YOUTH_CACHE", "./cache/under21_cache.json"
+        )
+        LOG.info("[Assistant] EXTERNAL_YOUTH_CACHE=%s", self.external_youth_cache_path)
+
+        self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
+        self.openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.openai_temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.20"))
+        self.openai_max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "600"))
+        LOG.info("[Assistant] OpenAI model=%s temp=%.2f max_tokens=%d",
+                 self.openai_model, self.openai_temperature, self.openai_max_tokens)
+
+        self.system_prompt: str = self._load_prompt_json("./prompt.json")
+
+        # Initialize corrections manager for data quality
+        try:
+            from corrections_manager import CorrectionsManager
+            self.corrections_manager = CorrectionsManager()
+            LOG.info("[Assistant] CorrectionsManager initialized")
+        except Exception as e:
+            LOG.warning("[Assistant] Could not initialize CorrectionsManager: %s", e)
+            self.corrections_manager = None
+
+        self.km: KnowledgeManager = KnowledgeManager()
         LOG.info("[Assistant] KnowledgeManager attivo")
 
-        self.season_filter = SEASON_FILTER.strip()  # può essere vuoto, in quel caso auto-detect
+        self.roster: List[Dict[str, Any]] = self._load_and_normalize_roster(self.roster_json_path)
+        self.external_youth_cache: List[Dict[str, Any]] = self._load_external_youth_cache()
 
-        self.age_index = self._load_age_index(AGE_INDEX_PATH)
-        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
-        self.guessed_age_index: Dict[str,int] = {}  # stime persistite in memoria
+        # Apply data corrections
+        if self.corrections_manager:
+            self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+            LOG.info("[Assistant] Applied data corrections to roster")
 
-        self.roster = self._load_and_normalize_roster(self.roster_json_path)
         self._auto_detect_season()
         self._apply_ages_to_roster()
         self._make_filtered_roster()
@@ -206,6 +248,13 @@ class FantacalcioAssistant:
             price_raw = _first_key(it, price_keys := price_keys)
             fm_raw    = _first_key(it, fm_keys := fm_keys)
 
+            # Apply corrections early to raw data if possible
+            if self.corrections_manager:
+                corrected_name = self.corrections_manager.get_corrected_name(name)
+                corrected_team = self.corrections_manager.get_corrected_team(name, team)
+                name = corrected_name if corrected_name else name
+                team = corrected_team if corrected_team else team
+
             roster.append({
                 "name": name, "role": _role_letter(role_raw), "role_raw": role_raw,
                 "team": team, "season": season,
@@ -215,6 +264,20 @@ class FantacalcioAssistant:
             })
         LOG.info("[Assistant] Roster normalizzato: %d/%d record utili", len(roster), len(data))
         return roster
+
+    def _load_external_youth_cache(self) -> List[Dict[str, Any]]:
+        """Load youth data from an external cache file."""
+        if not os.path.exists(self.external_youth_cache_path):
+            LOG.info("[Assistant] External youth cache not found: %s", self.external_youth_cache_path)
+            return []
+        try:
+            with open(self.external_youth_cache_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            LOG.info("[Assistant] Loaded %d players from external youth cache.", len(data))
+            return data
+        except Exception as e:
+            LOG.error("[Assistant] Error loading external youth cache: %s", e)
+            return []
 
     def _auto_detect_season(self) -> None:
         if self.season_filter:
@@ -255,7 +318,11 @@ class FantacalcioAssistant:
         LOG.info("[Assistant] Età arricchite su %d record", enriched)
 
     def _team_ok(self, team: str) -> bool:
-        return _norm_team(team) in SERIE_A_WHITELIST
+        # Use corrections_manager if available for team validation
+        if self.corrections_manager:
+            return self.corrections_manager.is_serie_a_team(team)
+        else:
+            return _norm_team(team) in SERIE_A_WHITELIST
 
     def _make_filtered_roster(self) -> None:
         out=[]
@@ -316,7 +383,7 @@ class FantacalcioAssistant:
                 by=self.guessed_age_index[k]
             else:
                 by = self._guess_birth_year_from_km(p.get("name",""))
-                if by: 
+                if by:
                     self.guessed_age_index[k]=by
             if by:
                 p["birth_year"]=by
@@ -394,7 +461,7 @@ class FantacalcioAssistant:
         w={}
         for r,std in {"P":1,"D":3,"C":4,"A":3}.items():
             w[r] = (base[r]/base_sum) * (slots[r]/std if std>0 else 1.0)
-        s=sum(w.values()); 
+        s=sum(w.values());
         for r in w: w[r] = w[r]/s if s>0 else 0.25
         role_budget = {r:int(round(budget*w[r])) for r in w}
         diff = budget - sum(role_budget.values())
@@ -629,7 +696,7 @@ class FantacalcioAssistant:
         lt = (text or "").lower().strip()
         intent={"type":"generic","mode":mode,"raw":lt}
 
-        # Check for goalkeeper requests
+        # Check for goalkeeper requests FIRST, as they might contain budget numbers
         if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]):
             return self._handle_goalkeeper_request(text) # Pass original text for budget parsing
 
@@ -711,7 +778,8 @@ class FantacalcioAssistant:
         pool = self._collect_all_players()
         goalkeepers = []
 
-        # Updated goalkeeper data for 2025-26 Serie A
+        # Updated goalkeeper data for 2025-26 Serie A season
+        # These are approximate values and might need further refinement
         updated_gk_data = {
             "mike maignan": {"team": "Milan", "price": 25, "fantamedia": 6.4},
             "yann sommer": {"team": "Inter", "price": 18, "fantamedia": 6.1},
@@ -720,7 +788,7 @@ class FantacalcioAssistant:
             "ivan provedel": {"team": "Lazio", "price": 14, "fantamedia": 5.8},
             "mile svilar": {"team": "Roma", "price": 13, "fantamedia": 5.7},
             "marco carnesecchi": {"team": "Atalanta", "price": 12, "fantamedia": 5.6},
-            "devis vasquez": {"team": "Empoli", "price": 8, "fantamedia": 5.4},
+            "devis vasquez": {"team": "Empoli", "price": 8, "fantamedia": 5.4}, # Loan/transfer status might vary
             "maduka okoye": {"team": "Udinese", "price": 7, "fantamedia": 5.3},
             "elia caprile": {"team": "Cagliari", "price": 6, "fantamedia": 5.2}
         }
@@ -733,7 +801,7 @@ class FantacalcioAssistant:
             name = (p.get("name") or "").lower().strip()
             team = p.get("team") or ""
 
-            # Use updated data if available
+            # Use updated data if available, otherwise fallback to general data
             if name in updated_gk_data:
                 gk_data = updated_gk_data[name]
                 goalkeepers.append({
@@ -750,8 +818,7 @@ class FantacalcioAssistant:
                     "fantamedia": _safe_float(p.get("fantamedia"), 0.0)
                 })
 
-        # Extract budget from request
-        import re
+        # Extract budget from request, default to 50 if not found
         budget_match = re.search(r"budget\s+(\d+)", user_text)
         budget = int(budget_match.group(1)) if budget_match else 50
 
@@ -769,24 +836,135 @@ class FantacalcioAssistant:
         return f"📈 **Migliori Portieri (budget {budget} crediti, Serie A):**\n\n" + "\n".join([f"{i+1}. {line}" for i, line in enumerate(lines)])
 
     def _collect_all_players(self) -> List[Dict[str, Any]]:
-        """Returns the full roster, not just filtered."""
-        return self.roster
+        """
+        Collects all available player data, combining roster, external cache, and KM.
+        Applies corrections and deduplication.
+        """
+        all_players = list(self.roster)
+        try:
+            km_players = self._km_fetch_players()
+            # Apply corrections to KM data as well
+            if self.corrections_manager:
+                km_players = self.corrections_manager.apply_corrections_to_data(km_players)
+            all_players.extend(km_players)
+        except Exception as e:
+            LOG.error("[Assistant] errore nel fetch KM: %s", e)
 
-    def _is_serie_a_team(self, team: str) -> bool:
-        """Check if team is in Serie A 2025-26"""
-        serie_a_teams = {
-            "atalanta", "bologna", "cagliari", "como", "empoli", "fiorentina",
-            "genoa", "inter", "juventus", "lazio", "lecce", "milan",
-            "monza", "napoli", "parma", "roma", "torino", "udinese", "venezia", "verona"
-        }
-        return team.lower().strip() in serie_a_teams
+        seen = set()
+        deduped: List[Dict[str, Any]] = []
+        for p in all_players:
+            if not isinstance(p, dict):
+                continue
+            name = (p.get("name") or "").strip()
+            team = (p.get("team") or "").strip()
+            if not name:
+                continue
 
-    def _role_bucket(self, raw_role: str) -> str:
-        """Maps raw role string to a single letter bucket (P, D, C, A)."""
-        role = _role_letter(raw_role)
-        if role in {"P", "D", "C", "A"}:
-            return role
-        return "" # Unknown or empty role
+            # Enhanced deduplication with team consideration
+            key = f"{name.lower()}_{team.lower()}"
+            if key in seen:
+                continue
+            seen.add(key)
+
+            # Additional data quality checks
+            if self._is_valid_player_data(p):
+                deduped.append(p)
+
+        return deduped
+
+    def _km_fetch_players(self) -> List[Dict[str, Any]]:
+        """Fetches player data from Knowledge Manager, applies basic normalization."""
+        # This is a placeholder. A real implementation would query KM for player data.
+        # For now, it returns an empty list as KM integration is complex and context-specific.
+        # Example: Query KM for all players with 'Serie A' in their description or team.
+        LOG.info("[Assistant] Fetching players from Knowledge Manager (placeholder)...")
+        return []
+
+    def _is_valid_player_data(self, player: Dict[str, Any]) -> bool:
+        """Validate player data quality"""
+        name = player.get("name", "").strip()
+        team = player.get("team", "").strip()
+
+        # Basic validation
+        if not name or len(name) < 2:
+            return False
+
+        # Check if team is Serie A (if corrections manager available)
+        if self.corrections_manager:
+            # Only consider players from Serie A teams based on corrections manager
+            if not self.corrections_manager.is_serie_a_team(team):
+                return False
+        elif team and team.lower().strip() not in SERIE_A_WHITELIST: # Fallback if no corrections manager
+             return False
+
+        # Check for obviously invalid data patterns
+        invalid_patterns = ["test", "example", "dummy", "placeholder", "sconosciuto"]
+        if any(pattern in name.lower() for pattern in invalid_patterns):
+            return False
+
+        return True
+
+    def update_player_data(self, player_name: str, **updates):
+        """Update player data with corrections tracking"""
+        if not self.corrections_manager:
+            return "Corrections manager not available"
+
+        for field, new_value in updates.items():
+            if field == "team":
+                # Find old team value
+                old_team = None
+                for p in self.roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        old_team = p.get("team", "")
+                        break
+                # Use the corrected team name if available before updating
+                corrected_team_name = self.corrections_manager.get_corrected_team(player_name, new_value)
+                final_new_value = corrected_team_name if corrected_team_name else new_value
+
+                self.corrections_manager.update_player_team(player_name, old_team or "Unknown", final_new_value)
+            else:
+                self.corrections_manager.add_correction(player_name, f"{field.upper()}_UPDATE", None, str(new_value))
+
+        # Refresh data
+        self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+        LOG.info(f"[Assistant] Applied updates for {player_name}: {updates}")
+        return f"Updated {player_name}: {updates}"
+
+    def remove_player_permanently(self, player_name: str):
+        """Permanently remove player from all recommendations"""
+        if not self.corrections_manager:
+            return "Corrections manager not available"
+
+        result = self.corrections_manager.remove_player(player_name)
+        # Refresh data
+        self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+        LOG.info(f"[Assistant] Removed player permanently: {player_name}")
+        return result
+
+    def get_data_quality_report(self):
+        """Get comprehensive data quality report"""
+        if not self.corrections_manager:
+            return {"error": "Corrections manager not available"}
+
+        report = self.corrections_manager.get_data_quality_report()
+
+        # Add roster statistics
+        total_players = len(self.roster)
+        serie_a_players = len([p for p in self.roster if self.corrections_manager.is_serie_a_team(p.get("team", ""))])
+        players_with_price = len([p for p in self.roster if p.get("price") is not None])
+        players_with_fm = len([p for p in self.roster if p.get("fantamedia") is not None])
+
+        report.update({
+            "roster_stats": {
+                "total_players": total_players,
+                "serie_a_players": serie_a_players,
+                "players_with_price": players_with_price,
+                "players_with_fantamedia": players_with_fm,
+                "data_completeness": round((players_with_price + players_with_fm) / (total_players * 2) * 100, 1) if total_players > 0 else 0
+            }
+        })
+
+        return report
 
     # ---------------------------
     # LLM (fallback generico)
@@ -794,6 +972,7 @@ class FantacalcioAssistant:
     def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None) -> str:
         """Complete using LLM with context"""
         if not self.openai_api_key:
+            LOG.warning("[Assistant] OPENAI_API_KEY not set, cannot use LLM.")
             return "⚠️ Servizio AI temporaneamente non disponibile. Configura OPENAI_API_KEY."
 
         try:
@@ -802,8 +981,14 @@ class FantacalcioAssistant:
             # Build messages with context
             messages = [{"role": "system", "content": self._get_system_prompt()}]
 
+            # Add recent user/assistant turns for context
             if context_messages:
                 messages.extend(context_messages)
+            elif hasattr(self, 'st') and self.st.get('history'):
+                 for turn in self.st['history'][-3:]: # Last 3 turns for context
+                    if 'u' in turn: messages.append({"role": "user", "content": turn['u']})
+                    if 'a' in turn: messages.append({"role": "assistant", "content": turn['a']})
+
 
             messages.append({"role": "user", "content": user_text})
 
@@ -819,6 +1004,8 @@ class FantacalcioAssistant:
                 "messages": messages
             }
 
+            LOG.debug("[Assistant] Calling OpenAI API with prompt: %s", messages)
+
             with httpx.Client(timeout=60.0) as client:
                 resp = client.post(
                     "https://api.openai.com/v1/chat/completions",
@@ -827,7 +1014,9 @@ class FantacalcioAssistant:
                 )
                 resp.raise_for_status()
                 data = resp.json()
-                return data["choices"][0]["message"]["content"].strip()
+                response_content = data["choices"][0]["message"]["content"].strip()
+                LOG.debug("[Assistant] OpenAI API response: %s", response_content)
+                return response_content
 
         except Exception as e:
             LOG.error("[Assistant] Errore OpenAI: %s", e)
@@ -835,35 +1024,43 @@ class FantacalcioAssistant:
 
     def _get_system_prompt(self) -> str:
         """Get enhanced system prompt for LLM"""
-        return """Sei un assistente esperto di fantacalcio italiano con accesso a dati aggiornati.
+        # This prompt is critical for guiding the LLM's behavior and data interpretation.
+        # It emphasizes data accuracy, handling corrections, and specific fantacalcio tasks.
+        return """Sei un assistente esperto di fantacalcio italiano con accesso a dati aggiornati e la capacità di applicare correzioni in tempo reale.
 
 DATI E AGGIORNAMENTI:
-- Hai accesso a dati di Serie A 2024-25 e 2025-26
-- Le informazioni sui trasferimenti vengono aggiornate costantemente
-- Se nell'input trovi "CORREZIONI RECENTI", usa SEMPRE quelle informazioni come priorità assoluta
-- Non inventare mai dati su trasferimenti - se non sei sicuro, dillo chiaramente
+- Hai accesso a dati di giocatori di Serie A aggiornati per la stagione 2024-2025 e 2025-2026.
+- Le informazioni sui trasferimenti dei giocatori sono applicate con priorità.
+- Se trovi nel tuo contesto o nell'input dell'utente "CORREZIONI RECENTI" o simili, usale SEMPRE come fonte prioritaria per dati specifici (es. squadre, ruoli).
+- Non inventare mai dati sui trasferimenti o sulle performance; se non sei sicuro, ammettilo chiaramente.
 
-GESTIONE TRASFERIMENTI:
-- Morata è stato trasferito al Como (non gioca più nel Milan)
-- Kvaratskhelia non gioca più nel Napoli
-- Usa sempre le correzioni più recenti quando disponibili
-- Se un giocatore è stato trasferito, aggiorna le tue risposte di conseguenza
+GESTIONE TRASFERIMENTI E CORREZIONI:
+- Applicare le seguenti correzioni note:
+    - Morata: ora gioca nel Como (non più nel Milan).
+    - Kvaratskhelia: non gioca più nel Napoli.
+- Se l'utente fornisce correzioni specifiche, integrarle immediatamente nella tua conoscenza per le risposte successive.
 
-COMPORTAMENTO:
-- Rispondi sempre in italiano
-- Sii preciso sui dati dei giocatori e delle squadre
-- Se ricevi correzioni, applicale immediatamente
-- Per i giovani Under 21, verifica sempre l'età reale
-- Mantieni il contesto della conversazione
-- Fornisci consigli pratici basati su dati corretti
+COMPORTAMENTO GENERALE:
+- Rispondi sempre in italiano.
+- Sii preciso sui dati dei giocatori (nome, squadra, ruolo, fantamedia, prezzo) e delle squadre.
+- Prioritizza le informazioni corrette e aggiornate.
+- Per i giocatori giovani (Under 21/23), verifica e indica l'età reale se disponibile.
+- Mantieni il contesto della conversazione per fornire risposte coerenti.
+- Fornisci consigli pratici basati su dati corretti, come suggerimenti per formazioni o strategie d'asta.
 
-CAPACITÀ SPECIALI:
-- Suggerimenti per formazioni con budget
-- Consigli per Under 21/23 (solo se effettivamente giovani)
-- Strategie d'asta personalizzate
-- Analisi giocatori e alternative aggiornate
+CAPACITÀ SPECIFICHE:
+- Suggerire formazioni ottimizzate per budget e modulo.
+- Identificare giocatori giovani promettenti (Under 21/23).
+- Fornire strategie d'asta efficaci.
+- Analizzare giocatori e suggerire alternative basate sui dati più recenti.
 
-PRIORITÀ: Correzioni utente > Dati aggiornati > Dati storici"""
+PRIORITÀ DELLE INFORMAZIONI:
+1. Correzioni utente/di sistema esplicite.
+2. Dati di roster aggiornati e puliti.
+3. Dati da Knowledge Manager (se integrato e rilevante).
+4. Inferenze basate su pattern generali (solo se necessario e con cautela).
+
+Il tuo obiettivo è fornire un'analisi precisa e utile per le decisioni di fantacalcio, tenendo conto della qualità e dell'aggiornamento dei dati."""
 
     def debug_under(self, role: str, max_age: int = 21, take: int = 10) -> List[Dict[str,Any]]:
         role=(role or "").upper()[:1]

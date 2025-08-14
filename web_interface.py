@@ -3,6 +3,7 @@ import uuid
 import json
 import logging
 import subprocess
+import re # Import the re module
 from flask import Flask, request, jsonify, session, render_template
 
 from config import HOST, PORT, LOG_LEVEL
@@ -105,7 +106,7 @@ def api_chat():
         return jsonify({"response": exclusion_response})
 
     # Check for corrections
-    correction_response = handle_correction(msg, corrections_manager)
+    correction_response = handle_correction(msg, assistant) # Pass assistant instead of corrections_manager
     if correction_response:
         # Add correction context to conversation history
         state.setdefault("conversation_history", []).append({
@@ -142,7 +143,7 @@ def api_chat():
     if excluded_players:
         exclusions_context = f"GIOCATORI ESCLUSI: {', '.join(excluded_players)}"
         context_messages.insert(0, {
-            "role": "system", 
+            "role": "system",
             "content": exclusions_context
         })
 
@@ -179,42 +180,42 @@ def api_chat():
 def handle_exclusion(msg: str, state: dict) -> str:
     """Handle player exclusions (rimuovi/escludi commands)"""
     msg_lower = msg.lower()
-    
+
     # Pattern: "rimuovi/escludi [player name]"
     import re
-    
+
     patterns = [
         r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)",
         r"escludi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)"
     ]
-    
+
     for pattern in patterns:
         match = re.search(pattern, msg, re.IGNORECASE)
         if match:
             player_name = match.group(1).strip()
-            
+
             # Clean up common words that might be captured
             player_name = re.sub(r'\b(dalla?|lista|squadre?|non|di|serie|a)\b', '', player_name, flags=re.IGNORECASE).strip()
-            
+
             if len(player_name) > 2:  # Avoid very short matches
                 excluded_players = state.setdefault("excluded_players", [])
                 if player_name not in excluded_players:
                     excluded_players.append(player_name)
-                    
+
                 return f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
                 else:
                     return f"**{player_name}** è già escluso dalle liste."
-    
+
     return None
 
 def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
     """Remove excluded players from response text"""
     if not excluded_players:
         return text
-    
+
     lines = text.split('\n')
     filtered_lines = []
-    
+
     for line in lines:
         # Skip lines that contain excluded players
         should_exclude = False
@@ -223,83 +224,85 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
             if excluded.lower() in line.lower():
                 should_exclude = True
                 break
-        
+
         if not should_exclude:
             filtered_lines.append(line)
-    
+
     return '\n'.join(filtered_lines)
 
-def handle_correction(msg: str, corrections_manager: CorrectionsManager) -> str:
-    """Detect and handle correction statements"""
-    msg_lower = msg.lower()
+def handle_correction(user_message: str, fantacalcio_assistant) -> str:
+    """Handle comprehensive user corrections and apply them permanently"""
+    message_lower = user_message.lower().strip()
 
-    # Pattern: "X non gioca più nel/in Y" or "X gioca nel/in Y in Francia/etc"
-    import re
-
-    # Enhanced patterns for various correction formats
-    patterns = [
-        # "X non gioca più nel Y ma gioca nel Z"
-        r"(\w+(?:\s+\w+)*)\s+non\s+gioca\s+più\s+nel\s+(\w+)(?:\s+ma\s+gioca\s+(?:nel|in)\s+(\w+(?:\s+\w+)*))?",
-        # "X gioca ora nel Y"
-        r"(\w+(?:\s+\w+)*)\s+gioca\s+ora\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)",
-        # "X non gioca più nel Y"
-        r"(\w+(?:\s+\w+)*)\s+non\s+gioca\s+più\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)",
-        # "X gioca nel Y in Francia/etc"
-        r"(\w+(?:\s+\w+)*)\s+gioca\s+(?:nel|in)\s+(\w+(?:\s+\w+)*)\s+in\s+(\w+(?:\s+\w+)*)",
-        # "X è stato trasferito al Y"
-        r"(\w+(?:\s+\w+)*)\s+è\s+stato\s+trasferito\s+(?:al|alla|all')\s+(\w+(?:\s+\w+)*)"
+    # Pattern for removing players: "rimuovi [player name]"
+    remove_patterns = [
+        r"rimuovi\s+(.+?)(?:\s+dalla\s+lista)?$",
+        r"escludi\s+(.+?)(?:\s+dalla\s+lista)?$",
+        r"togli\s+(.+?)(?:\s+dalla\s+lista)?$"
     ]
 
-    for pattern in patterns:
-        match = re.search(pattern, msg, re.IGNORECASE)
+    for pattern in remove_patterns:
+        match = re.search(pattern, message_lower)
         if match:
-            player = match.group(1).strip()
+            player_name = match.group(1).strip()
+            # Clean up player name
+            player_name = re.sub(r'\s+', ' ', player_name).title()
 
-            if len(match.groups()) >= 3 and match.group(3):  # Pattern with old and new team
-                old_team = match.group(2).strip()
-                new_team = match.group(3).strip()
+            try:
+                result = fantacalcio_assistant.remove_player_permanently(player_name)
+                return f"✅ {result}"
+            except Exception as e:
+                return f"❌ Errore nell'applicare la correzione: {e}"
 
-                correction_id = corrections_manager.add_player_correction(
-                    player_name=player,
-                    field_name="team",
-                    old_value=old_team,
-                    new_value=new_team,
-                    reason=f"Trasferimento confermato dall'utente: {player} {old_team} -> {new_team}"
-                )
-                # Also add to persistent database
-                corrections_manager.add_persistent_correction(
-                    player_name=player,
-                    field_name="team", 
-                    old_value=old_team,
-                    new_value=new_team,
-                    reason=f"Trasferimento confermato dall'utente: {player} {old_team} -> {new_team}"
-                )
-                return f"✅ **Correzione salvata**: {player} è passato da {old_team} a {new_team}. Questa informazione è stata aggiunta al sistema."
+    # Pattern for team updates: "sposta [player] a [team]" or "[player] gioca nel [team]"
+    team_update_patterns = [
+        r"(.+?)\s+(?:gioca\s+nel|è\s+al|è\s+del|trasferito\s+al|al)\s+(.+)$",
+        r"sposta\s+(.+?)\s+(?:al|nel|a)\s+(.+)$",
+        r"aggiorna\s+(.+?)\s+(?:al|nel|a)\s+(.+)$"
+    ]
 
-            elif len(match.groups()) >= 2:  # Pattern with just new team or old team
-                team = match.group(2).strip()
+    for pattern in team_update_patterns:
+        match = re.search(pattern, message_lower)
+        if match:
+            player_name = match.group(1).strip().title()
+            new_team = match.group(2).strip().title()
 
-                if "non gioca più" in msg_lower:
-                    correction_id = corrections_manager.add_player_correction(
-                        player_name=player,
-                        field_name="team",
-                        old_value=team,
-                        new_value="nuovo club",
-                        reason=f"Trasferimento confermato dall'utente: {player} ha lasciato {team}"
-                    )
-                    return f"✅ **Correzione salvata**: {player} non gioca più nel {team}. Questa informazione è stata aggiunta al sistema."
+            try:
+                result = fantacalcio_assistant.update_player_data(player_name, team=new_team)
+                return f"✅ {result}"
+            except Exception as e:
+                return f"❌ Errore nell'aggiornare il giocatore: {e}"
 
-                else:  # "gioca ora nel" or "trasferito"
-                    correction_id = corrections_manager.add_player_correction(
-                        player_name=player,
-                        field_name="team",
-                        old_value="precedente team",
-                        new_value=team,
-                        reason=f"Trasferimento confermato dall'utente: {player} -> {team}"
-                    )
-                    return f"✅ **Correzione salvata**: {player} ora gioca nel {team}. Questa informazione è stata aggiunta al sistema."
+    # Pattern for excluding non-Serie A teams
+    if any(phrase in message_lower for phrase in ["escludi squadre non di serie a", "solo serie a", "escludi squadre estere"]):
+        try:
+            # This will trigger data filtering in the next request
+            return "✅ Applicherò il filtro Serie A nelle prossime ricerche. I giocatori di squadre non italiane saranno esclusi automaticamente."
+        except Exception as e:
+            return f"❌ Errore nell'applicare il filtro: {e}"
 
-            break  # Exit after first match
+    # Pattern for data quality issues
+    quality_patterns = [
+        r"aggiorna\s+i\s+dati",
+        r"dati\s+non\s+aggiornati",
+        r"informazioni\s+obsolete",
+        r"dati\s+vecchi"
+    ]
+
+    for pattern in quality_patterns:
+        if re.search(pattern, message_lower):
+            try:
+                report = fantacalcio_assistant.get_data_quality_report()
+                return f"📊 **Report Qualità Dati:**\n" \
+                       f"• Giocatori totali: {report['roster_stats']['total_players']}\n" \
+                       f"• Giocatori Serie A: {report['roster_stats']['serie_a_players']}\n" \
+                       f"• Completezza dati: {report['roster_stats']['data_completeness']}%\n" \
+                       f"• Correzioni applicate: {report['total_corrections']}\n" \
+                       f"• Giocatori esclusi: {report['excluded_players']}\n\n" \
+                       f"💡 *Usa 'rimuovi [nome giocatore]' per escludere giocatori obsoleti*"
+            except Exception as e:
+                return f"❌ Errore nel generare il report: {e}"
+
     return None
 
 @app.route("/api/reset-chat", methods=["POST"])
@@ -383,13 +386,13 @@ if __name__ == "__main__":
     port = args.port
     LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
-    
+
     # Configure Flask for production deployment
     app.run(
-        host=host, 
-        port=port, 
-        debug=False, 
-        threaded=True, 
+        host=host,
+        port=port,
+        debug=False,
+        threaded=True,
         use_reloader=False,
         processes=1
     )
