@@ -479,6 +479,30 @@ class CorrectionsManager:
         }
         return team.lower().strip() in serie_a_teams
 
+    def get_corrected_name(self, name: str) -> Optional[str]:
+        """Get the corrected name for a player if one exists"""
+        try:
+            corrections = self.get_corrections(persistent_only=True)
+            for correction in corrections:
+                if len(correction) > 4 and correction[2] == "NAME_UPDATE" and correction[1] == name:
+                    return correction[4]  # new_value
+            return None
+        except Exception as e:
+            logger.error(f"Error getting corrected name for {name}: {e}")
+            return None
+
+    def get_corrected_team(self, player_name: str, current_team: str) -> Optional[str]:
+        """Get the corrected team for a player if one exists"""
+        try:
+            corrections = self.get_corrections(persistent_only=True)
+            for correction in corrections:
+                if len(correction) > 4 and correction[2] == "TEAM_UPDATE" and correction[1] == player_name:
+                    return correction[4]  # new_value
+            return None
+        except Exception as e:
+            logger.error(f"Error getting corrected team for {player_name}: {e}")
+            return None
+
     def get_data_quality_report(self):
         """Generate a comprehensive report on data quality issues and corrections."""
         conn = sqlite3.connect(self.db_path)
