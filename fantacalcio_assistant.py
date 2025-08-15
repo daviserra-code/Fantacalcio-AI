@@ -771,7 +771,8 @@ class FantacalcioAssistant:
             return intent
 
         # fallback generico: LLM
-        return self._llm_complete(text, context_messages=[])
+        intent.update({"type": "generic"})
+        return intent
 
     # ---------- respond ----------
     def respond(self, user_text: str, mode: str, state: Dict[str,Any], context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
@@ -920,6 +921,23 @@ class FantacalcioAssistant:
             return self.corrections_manager.is_serie_a_team(team)
         else:
             return _norm_team(team) in SERIE_A_WHITELIST
+
+    def _role_bucket(self, raw_role: str) -> str:
+        """Convert role to standardized bucket (P, D, C, A)"""
+        r = (raw_role or "").strip().upper()
+        if not r:
+            return ""
+        if r in {"P", "GK", "POR", "PORTIERE"}:
+            return "P"
+        if r in {"D", "DEF", "DC", "CB", "RB", "LB", "TD", "TS", "BR", "DIFENSORE"}:
+            return "D"
+        if r in {"C", "CM", "MED", "M", "MEZ", "RM", "LM", "CC", "TQ", "AM", "TRE", "CENTROCAMPISTA"}:
+            return "C"
+        if r in {"A", "ATT", "ST", "SS", "PUN", "EST", "W", "LW", "RW", "ATTACCANTE"}:
+            return "A"
+        if r and r[0] in {"P", "D", "C", "A"}:
+            return r[0]
+        return ""
 
     def _is_valid_player_data(self, player: Dict[str, Any]) -> bool:
         """Validate player data quality"""
