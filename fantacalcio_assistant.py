@@ -771,7 +771,7 @@ class FantacalcioAssistant:
             return intent
 
         # fallback generico: LLM
-        return self._llm_complete(user_text, context_messages=[])
+        return self._llm_complete(text, context_messages=[])
 
     # ---------- respond ----------
     def respond(self, user_text: str, mode: str, state: Dict[str,Any], context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
