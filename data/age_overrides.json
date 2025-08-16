@@ -1,199 +1,747 @@
+
 {
-  "Honest Ahanor@@Atalanta": 2008,
-  "Giovanni Bonfanti@@Atalanta": 2003,
-  "Marco Palestra@@Atalanta": 2005,
-  "Giorgio Scalvini@@Atalanta": 2003,
-  "Ibrahim Sulemana@@Atalanta": 2003,
-  "Santiago Castro@@Bologna": 2004,
-  "Tommaso Corazza@@Bologna": 2004,
-  "Benja Domínguez@@Bologna": 2003,
-  "Giovanni Fabbian@@Bologna": 2003,
-  "Mihajlo Ilić@@Bologna": 2003,
-  "Kacper Urbanski@@Bologna": 2004,
-  "Martin Vitík@@Bologna": 2003,
-  "Alessandro Bolzan@@Cagliari": 2005,
-  "Nicolò Cavuoti@@Cagliari": 2003,
-  "Riyad Idrissi@@Cagliari": 2005,
-  "Semih Kılıçsoy@@Cagliari": 2005,
-  "Nicola Pintus@@Cagliari": 2005,
-  "Matteo Prati@@Cagliari": 2003,
-  "Davide Veroli@@Cagliari": 2003,
-  "Alessandro Vinciguerra@@Cagliari": 2005,
-  "Jayden Addai@@Como": 2005,
-  "Assane Diao@@Como": 2005,
-  "Fellipe Jack@@Como": 2006,
-  "Ali Jasim@@Como": 2004,
-  "Giuseppe Mazzaglia@@Como": 2006,
-  "Nico Paz@@Como": 2004,
-  "Máximo Perrone@@Como": 2003,
-  "Jacobo Ramón@@Como": 2005,
-  "Naj Razi@@Como": 2006,
-  "Jesús Rodríguez@@Como": 2005,
-  "Álex Valle@@Como": 2004,
-  "Ank Asmussen@@Empoli": 2005,
-  "Thomas Campaniello@@Empoli": 2008,
-  "Gabriele Guarino@@Empoli": 2004,
-  "Rareș Ilie@@Empoli": 2003,
-  "Lorenzo Ignacchiti@@Empoli": 2004,
-  "Iwo Kaczmarski@@Empoli": 2004,
-  "Ismaël Konaté@@Empoli": 2006,
-  "Brando Moruzzi@@Empoli": 2004,
-  "Stiven Shpendi@@Empoli": 2003,
-  "Andrea Sodero@@Empoli": 2004,
-  "Lovro Stubljar@@Empoli": 2004,
-  "Lorenzo Tosto@@Empoli": 2005,
-  "Maat Daniel Caprini@@Fiorentina": 2005,
-  "Pietro Comuzzo@@Fiorentina": 2005,
-  "Jacopo Fazzini@@Fiorentina": 2003,
-  "Niccolò Fortini@@Fiorentina": 2006,
-  "Gino Infantino@@Fiorentina": 2003,
-  "Michael Kayode@@Fiorentina": 2004,
-  "Eman Kospo@@Fiorentina": 2007,
-  "Tommaso Martinelli@@Fiorentina": 2006,
-  "Cher Ndour@@Fiorentina": 2004,
-  "Tommaso Rubino@@Fiorentina": 2006,
-  "Valentín Carboni@@Genoa": 2005,
-  "Hugo Cuenca@@Genoa": 2005,
-  "Jeff Ekhator@@Genoa": 2006,
-  "Seydou Fini@@Genoa": 2006,
-  "Lior Kassa@@Genoa": 2005,
-  "Alan Matturro@@Genoa": 2004,
-  "Fabio Miretti@@Genoa": 2003,
-  "Brooke Norton-Cuffy@@Genoa": 2004,
-  "Sebastian Otoa@@Genoa": 2004,
-  "Christos Papadopoulos@@Genoa": 2004,
-  "Lorenzo Venturino@@Genoa": 2006,
-  "Junior Ajayi@@Hellas Verona": 2004,
-  "Fallou Cham@@Hellas Verona": 2006,
-  "Alphadjo Cissè@@Hellas Verona": 2006,
-  "Diego Coppola@@Hellas Verona": 2003,
-  "Christian Corradi@@Hellas Verona": 2005,
-  "Mathis Lambourde@@Hellas Verona": 2006,
-  "Federico Magro@@Hellas Verona": 2005,
-  "Tobias Slotsager@@Hellas Verona": 2006,
-  "Mike Aidoo@@Inter Milan": 2004,
-  "Ebenezer Akinsanmiro@@Inter Milan": 2004,
-  "Ange-Yoan Bonny@@Inter Milan": 2003,
-  "Franco Carboni@@Inter Milan": 2003,
-  "Pio Esposito@@Inter Milan": 2005,
-  "Tomás Palacios@@Inter Milan": 2003,
-  "Petar Sučić@@Inter Milan": 2003,
-  "Vasilije Adžić@@Juventus": 2006,
-  "Alberto Costa@@Juventus": 2004,
-  "Facundo González@@Juventus": 2003,
-  "Dean Huijsen@@Juventus": 2005,
-  "Samuel Mbangula@@Juventus": 2004,
-  "Jonas Rouhi@@Juventus": 2004,
-  "Nicolò Savona@@Juventus": 2003,
-  "Renato Veiga@@Juventus": 2003,
-  "Kenan Yıldız@@Juventus": 2005,
-  "Reda Belahyane@@Lazio": 2004,
-  "Filipe Bordon@@Lazio": 2005,
-  "Saná Fernandes@@Lazio": 2006,
-  "Diego González@@Lazio": 2003,
-  "Arijon Ibrahimovic@@Lazio": 2005,
-  "Cristo Muñoz@@Lazio": 2005,
-  "Romano Floriani Mussolini@@Lazio": 2003,
-  "Davide Renzetti@@Lazio": 2006,
-  "Fabio Andrea Ruggeri@@Lazio": 2004,
-  "Vernon Addo@@Lecce": 2005,
-  "Medon Berisha@@Lecce": 2003,
-  "Francesco Camarda@@Lecce": 2008,
-  "Giacomo Faticanti@@Lecce": 2004,
-  "Olaf Gorter@@Lecce": 2005,
-  "Lovro Herceg@@Lecce": 2005,
-  "Niko Kovač@@Lecce": 2005,
-  "Ed McJannet@@Lecce": 2004,
-  "Matías Pérez@@Lecce": 2005,
-  "Daniel Samek@@Lecce": 2004,
-  "Jasper Samooja@@Lecce": 2003,
-  "Tiago Gabriel@@Lecce": 2004,
-  "Yacine Adli@@AC Milan": 2000,
-  "Zachary Athekame@@AC Milan": 2004,
-  "Davide Bartesaghi@@AC Milan": 2005,
-  "Warren Bondo@@AC Milan": 2003,
-  "Álex Jiménez@@AC Milan": 2005,
-  "Luka Romero@@AC Milan": 2004,
-  "Jan-Carlo Simić@@AC Milan": 2005,
-  "Lorenzo Torriani@@AC Milan": 2005,
-  "Chaka Traorè@@AC Milan": 2004,
-  "Kevin Zeroli@@AC Milan": 2005,
-  "Leonardo Colombo@@Monza": 2005,
-  "Omari Forson@@Monza": 2004,
-  "Stefan Leković@@Monza": 2004,
-  "Kevin Martins@@Monza": 2005,
-  "Andrea Mazza@@Monza": 2004,
-  "Kacper Urbanski@@Monza": 2004,
-  "Samuele Vignato@@Monza": 2004,
-  "Giuseppe Ambrosino@@Napoli": 2003,
-  "Mathias Ferrante@@Napoli": 2006,
-  "Luis Hasa@@Napoli": 2004,
-  "Luca Marianucci@@Napoli": 2004,
-  "Nosa Edward Obaretin@@Napoli": 2003,
-  "Antonio Vergara@@Napoli": 2003,
-  "Nathan Buayi-Kiala@@Parma": 2004,
-  "Anas Haj Mohamed@@Parma": 2005,
-  "Mateusz Kowalski@@Parma": 2005,
-  "Giovanni Leoni@@Parma": 2006,
-  "Daniel Mikolajewski@@Parma": 2006,
-  "Manuel Moretta@@Parma": 2005,
-  "Elia Plicco@@Parma": 2006,
-  "Dario Sits@@Parma": 2004,
-  "Nicolas Trabucchi@@Parma": 2007,
-  "Antonello Vona@@Parma": 2004,
-  "Tommaso Baldanzi@@AS Roma": 2003,
-  "Luigi Cherubini@@AS Roma": 2004,
-  "João Costa@@AS Roma": 2005,
-  "Evan Ferguson@@AS Roma": 2004,
-  "Daniele Ghilardi@@AS Roma": 2003,
-  "Mattia Mannini@@AS Roma": 2006,
-  "Riccardo Pagano@@AS Roma": 2004,
-  "Niccolò Pisilli@@AS Roma": 2004,
-  "Matteo Plaia@@AS Roma": 2006,
-  "Devyne Rensch@@AS Roma": 2003,
-  "Buba Sangaré@@AS Roma": 2007,
-  "Matías Soulé@@AS Roma": 2003,
-  "Wesley@@AS Roma": 2003,
-  "Radoslaw Zelezny@@AS Roma": 2006,
-  "Côme Bianay Balcot@@Torino": 2005,
-  "Aaron Ciammaglichella@@Torino": 2005,
-  "Ali Dembélé@@Torino": 2004,
-  "Gvidas Gineitis@@Torino": 2004,
-  "Emirhan İlkhan@@Torino": 2004,
-  "Senan Mullen@@Torino": 2005,
-  "Alieu Njie@@Torino": 2005,
-  "Sergiu Perciun@@Torino": 2006,
-  "Francesco Plaia@@Torino": 2006,
-  "Zanos Savva@@Torino": 2005,
-  "Arthur Atta@@Udinese": 2003,
-  "Nicolò Bertola@@Udinese": 2003,
-  "Iker Bravo@@Udinese": 2005,
-  "Sekou Diawara@@Udinese": 2004,
-  "Gonçalo Esteves@@Udinese": 2004,
-  "Saba Goglichidze@@Udinese": 2004,
-  "Lennon Miller@@Udinese": 2006,
-  "Alessandro Nunziante@@Udinese": 2007,
-  "Simone Pafundi@@Udinese": 2006,
-  "Matteo Palma@@Udinese": 2008,
-  "David Pejičić@@Udinese": 2007,
-  "Damián Pizarro@@Udinese": 2005,
-  "Vivaldo Semedo@@Udinese": 2005,
-  "Issa Doumbia@@Venezia": 2003,
-  "Saad El Haddad@@Venezia": 2005,
-  "Alessandro Pietrelli@@Venezia": 2003,
-  "Richie Sagrado@@Venezia": 2004,
-  "Federico Tavernaro@@Venezia": 2005,
-  "Alvin Okoro@@Venezia": 2005,
-  "Nicolò Fagioli@@Juventus": 2001,
-  "Cesare Casadei@@Chelsea": 2003,
-  "Fabio Miretti@@Genoa": 2003,
-  "Giovanni Fabbian@@Bologna": 2003,
-  "Kacper Urbanski@@Bologna": 2004,
-  "Matteo Prati@@Cagliari": 2003,
-  "Nico Paz@@Como": 2004,
-  "Máximo Perrone@@Como": 2003,
-  "Reda Belahyane@@Lazio": 2004,
-  "Luis Hasa@@Napoli": 2004,
-  "Nicolò Pisilli@@AS Roma": 2004,
-  "Gvidas Gineitis@@Torino": 2004
+  "Honest Ahanor@@Atalanta": {
+    "year": 2008,
+    "role": "D"
+  },
+  "Giovanni Bonfanti@@Atalanta": {
+    "year": 2003,
+    "role": "P"
+  },
+  "Marco Palestra@@Atalanta": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Giorgio Scalvini@@Atalanta": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Ibrahim Sulemana@@Atalanta": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Santiago Castro@@Bologna": {
+    "year": 2004,
+    "role": "A"
+  },
+  "Tommaso Corazza@@Bologna": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Benja Domínguez@@Bologna": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Giovanni Fabbian@@Bologna": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Mihajlo Ilić@@Bologna": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Kacper Urbanski@@Bologna": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Martin Vitík@@Bologna": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Alessandro Bolzan@@Cagliari": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Nicolò Cavuoti@@Cagliari": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Riyad Idrissi@@Cagliari": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Semih Kılıçsoy@@Cagliari": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Nicola Pintus@@Cagliari": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Matteo Prati@@Cagliari": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Davide Veroli@@Cagliari": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Alessandro Vinciguerra@@Cagliari": {
+    "year": 2005,
+    "role": "P"
+  },
+  "Jayden Addai@@Como": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Assane Diao@@Como": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Fellipe Jack@@Como": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Ali Jasim@@Como": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Giuseppe Mazzaglia@@Como": {
+    "year": 2006,
+    "role": "P"
+  },
+  "Nico Paz@@Como": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Máximo Perrone@@Como": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Jacobo Ramón@@Como": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Naj Razi@@Como": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Jesús Rodríguez@@Como": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Álex Valle@@Como": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Ank Asmussen@@Empoli": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Thomas Campaniello@@Empoli": {
+    "year": 2008,
+    "role": "P"
+  },
+  "Gabriele Guarino@@Empoli": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Rareș Ilie@@Empoli": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Lorenzo Ignacchiti@@Empoli": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Iwo Kaczmarski@@Empoli": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Ismaël Konaté@@Empoli": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Brando Moruzzi@@Empoli": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Stiven Shpendi@@Empoli": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Andrea Sodero@@Empoli": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Lovro Stubljar@@Empoli": {
+    "year": 2004,
+    "role": "P"
+  },
+  "Lorenzo Tosto@@Empoli": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Maat Daniel Caprini@@Fiorentina": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Pietro Comuzzo@@Fiorentina": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Jacopo Fazzini@@Fiorentina": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Niccolò Fortini@@Fiorentina": {
+    "year": 2006,
+    "role": "D"
+  },
+  "Gino Infantino@@Fiorentina": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Michael Kayode@@Fiorentina": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Eman Kospo@@Fiorentina": {
+    "year": 2007,
+    "role": "A"
+  },
+  "Tommaso Martinelli@@Fiorentina": {
+    "year": 2006,
+    "role": "P"
+  },
+  "Cher Ndour@@Fiorentina": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Tommaso Rubino@@Fiorentina": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Valentín Carboni@@Genoa": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Hugo Cuenca@@Genoa": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Jeff Ekhator@@Genoa": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Seydou Fini@@Genoa": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Lior Kassa@@Genoa": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Alan Matturro@@Genoa": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Fabio Miretti@@Genoa": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Brooke Norton-Cuffy@@Genoa": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Sebastian Otoa@@Genoa": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Christos Papadopoulos@@Genoa": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Lorenzo Venturino@@Genoa": {
+    "year": 2006,
+    "role": "P"
+  },
+  "Junior Ajayi@@Hellas Verona": {
+    "year": 2004,
+    "role": "A"
+  },
+  "Fallou Cham@@Hellas Verona": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Alphadjo Cissè@@Hellas Verona": {
+    "year": 2006,
+    "role": "D"
+  },
+  "Diego Coppola@@Hellas Verona": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Christian Corradi@@Hellas Verona": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Mathis Lambourde@@Hellas Verona": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Federico Magro@@Hellas Verona": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Tobias Slotsager@@Hellas Verona": {
+    "year": 2006,
+    "role": "P"
+  },
+  "Mike Aidoo@@Inter Milan": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Ebenezer Akinsanmiro@@Inter Milan": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Ange-Yoan Bonny@@Inter Milan": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Franco Carboni@@Inter Milan": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Pio Esposito@@Inter Milan": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Tomás Palacios@@Inter Milan": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Petar Sučić@@Inter Milan": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Vasilije Adžić@@Juventus": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Alberto Costa@@Juventus": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Facundo González@@Juventus": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Dean Huijsen@@Juventus": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Samuel Mbangula@@Juventus": {
+    "year": 2004,
+    "role": "A"
+  },
+  "Jonas Rouhi@@Juventus": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Nicolò Savona@@Juventus": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Renato Veiga@@Juventus": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Kenan Yıldız@@Juventus": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Reda Belahyane@@Lazio": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Filipe Bordon@@Lazio": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Saná Fernandes@@Lazio": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Diego González@@Lazio": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Arijon Ibrahimovic@@Lazio": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Cristo Muñoz@@Lazio": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Romano Floriani Mussolini@@Lazio": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Davide Renzetti@@Lazio": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Fabio Andrea Ruggeri@@Lazio": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Vernon Addo@@Lecce": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Medon Berisha@@Lecce": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Francesco Camarda@@Lecce": {
+    "year": 2008,
+    "role": "A"
+  },
+  "Giacomo Faticanti@@Lecce": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Olaf Gorter@@Lecce": {
+    "year": 2005,
+    "role": "P"
+  },
+  "Lovro Herceg@@Lecce": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Niko Kovač@@Lecce": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Ed McJannet@@Lecce": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Matías Pérez@@Lecce": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Daniel Samek@@Lecce": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Jasper Samooja@@Lecce": {
+    "year": 2003,
+    "role": "P"
+  },
+  "Tiago Gabriel@@Lecce": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Yacine Adli@@AC Milan": {
+    "year": 2000,
+    "role": "C"
+  },
+  "Zachary Athekame@@AC Milan": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Davide Bartesaghi@@AC Milan": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Warren Bondo@@AC Milan": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Álex Jiménez@@AC Milan": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Luka Romero@@AC Milan": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Jan-Carlo Simić@@AC Milan": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Lorenzo Torriani@@AC Milan": {
+    "year": 2005,
+    "role": "P"
+  },
+  "Chaka Traorè@@AC Milan": {
+    "year": 2004,
+    "role": "A"
+  },
+  "Kevin Zeroli@@AC Milan": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Leonardo Colombo@@Monza": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Omari Forson@@Monza": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Stefan Leković@@Monza": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Kevin Martins@@Monza": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Andrea Mazza@@Monza": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Samuele Vignato@@Monza": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Giuseppe Ambrosino@@Napoli": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Mathias Ferrante@@Napoli": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Luis Hasa@@Napoli": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Luca Marianucci@@Napoli": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Nosa Edward Obaretin@@Napoli": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Antonio Vergara@@Napoli": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Nathan Buayi-Kiala@@Parma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Anas Haj Mohamed@@Parma": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Mateusz Kowalski@@Parma": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Giovanni Leoni@@Parma": {
+    "year": 2006,
+    "role": "D"
+  },
+  "Daniel Mikolajewski@@Parma": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Manuel Moretta@@Parma": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Elia Plicco@@Parma": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Dario Sits@@Parma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Nicolas Trabucchi@@Parma": {
+    "year": 2007,
+    "role": "P"
+  },
+  "Antonello Vona@@Parma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Tommaso Baldanzi@@AS Roma": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Luigi Cherubini@@AS Roma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "João Costa@@AS Roma": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Evan Ferguson@@AS Roma": {
+    "year": 2004,
+    "role": "A"
+  },
+  "Daniele Ghilardi@@AS Roma": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Mattia Mannini@@AS Roma": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Riccardo Pagano@@AS Roma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Niccolò Pisilli@@AS Roma": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Matteo Plaia@@AS Roma": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Devyne Rensch@@AS Roma": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Buba Sangaré@@AS Roma": {
+    "year": 2007,
+    "role": "A"
+  },
+  "Matías Soulé@@AS Roma": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Wesley@@AS Roma": {
+    "year": 2003,
+    "role": "A"
+  },
+  "Radoslaw Zelezny@@AS Roma": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Côme Bianay Balcot@@Torino": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Aaron Ciammaglichella@@Torino": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Ali Dembélé@@Torino": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Gvidas Gineitis@@Torino": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Emirhan İlkhan@@Torino": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Senan Mullen@@Torino": {
+    "year": 2005,
+    "role": "D"
+  },
+  "Alieu Njie@@Torino": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Sergiu Perciun@@Torino": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Francesco Plaia@@Torino": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Zanos Savva@@Torino": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Arthur Atta@@Udinese": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Nicolò Bertola@@Udinese": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Iker Bravo@@Udinese": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Sekou Diawara@@Udinese": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Gonçalo Esteves@@Udinese": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Saba Goglichidze@@Udinese": {
+    "year": 2004,
+    "role": "D"
+  },
+  "Lennon Miller@@Udinese": {
+    "year": 2006,
+    "role": "C"
+  },
+  "Alessandro Nunziante@@Udinese": {
+    "year": 2007,
+    "role": "P"
+  },
+  "Simone Pafundi@@Udinese": {
+    "year": 2006,
+    "role": "A"
+  },
+  "Matteo Palma@@Udinese": {
+    "year": 2008,
+    "role": "C"
+  },
+  "David Pejičić@@Udinese": {
+    "year": 2007,
+    "role": "C"
+  },
+  "Damián Pizarro@@Udinese": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Vivaldo Semedo@@Udinese": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Issa Doumbia@@Venezia": {
+    "year": 2003,
+    "role": "C"
+  },
+  "Saad El Haddad@@Venezia": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Alessandro Pietrelli@@Venezia": {
+    "year": 2003,
+    "role": "D"
+  },
+  "Richie Sagrado@@Venezia": {
+    "year": 2004,
+    "role": "C"
+  },
+  "Federico Tavernaro@@Venezia": {
+    "year": 2005,
+    "role": "C"
+  },
+  "Alvin Okoro@@Venezia": {
+    "year": 2005,
+    "role": "A"
+  },
+  "Nicolò Fagioli@@Juventus": {
+    "year": 2001,
+    "role": "C"
+  },
+  "Cesare Casadei@@Chelsea": {
+    "year": 2003,
+    "role": "C"
+  }
 }

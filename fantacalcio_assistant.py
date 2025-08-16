@@ -173,6 +173,7 @@ class FantacalcioAssistant:
         # Initialize missing attributes
         self.season_filter = SEASON_FILTER or None
         self.age_index = self._load_age_index(AGE_INDEX_PATH)
+        self.override_roles = {}  # Initialize before loading overrides
         self.overrides = self._load_overrides(AGE_OVERRIDES_PATH) 
         self.guessed_age_index = {}
 
@@ -238,26 +239,36 @@ class FantacalcioAssistant:
 
     def _load_overrides(self, path: str) -> Dict[str,int]:
         out={}
+        self.override_roles = {}  # Store role information separately
         try:
             with open(path,"r",encoding="utf-8") as f:
                 raw = json.load(f)
             if isinstance(raw,dict):
                 for k,v in raw.items():
-                    by = v.get("birth_year") if isinstance(v,dict) else v
-                    by = _valid_birth_year(by)
+                    # Handle both old format (just year) and new format (dict with year and role)
+                    if isinstance(v, dict):
+                        by = _valid_birth_year(v.get("year") or v.get("birth_year"))
+                        role = v.get("role", "")
+                    else:
+                        by = _valid_birth_year(v)
+                        role = ""
+                    
                     if by is None: continue
+                    
                     # Store the key exactly as it appears in the JSON file
                     out[k] = by
-                    # Also create normalized versions for better matching
-                    if "@@" in k:
-                        name, team = k.split("@@", 1)
-                        norm_key = f"{_norm_name(name)}@@{_norm_team(team)}"
-                        out[norm_key] = by
+                    if role:
+                        self.override_roles[k] = _role_letter(role)
+                    
+                    # NO MORE NORMALIZATION to prevent duplicates
+                    # The matching logic will handle normalization when searching
         except FileNotFoundError:
             LOG.info("[Assistant] overrides non trovato: %s (opzionale)", path)
         except Exception as e:
             LOG.error("[Assistant] errore lettura overrides %s: %s", path, e)
         LOG.info("[Assistant] overrides caricato: %d chiavi", len(out))
+        if hasattr(self, 'override_roles'):
+            LOG.info("[Assistant] override roles caricati: %d", len(self.override_roles))
         return out
 
     def _load_and_normalize_roster(self, path: str) -> List[Dict[str,Any]]:
@@ -373,23 +384,36 @@ class FantacalcioAssistant:
         processed_override_players = set()
         
         # First, create all players from overrides that might not be in roster
+        processed_players = set()  # Track to prevent duplicates
+        
         for key, birth_year in self.overrides.items():
             if "@@" in key:
                 name, team = key.split("@@", 1)
+                
+                # Create unique identifier to prevent duplicates
+                player_id = f"{_norm_name(name)}_{_norm_team(team)}"
+                if player_id in processed_players:
+                    continue
+                processed_players.add(player_id)
+                
                 # Create a synthetic player record for override entries not in roster
                 found_in_roster = False
                 for p in self.roster:
-                    if (p.get("name", "").strip() == name and 
-                        p.get("team", "").strip() == team):
+                    p_name = _norm_name(p.get("name", "").strip())
+                    p_team = _norm_team(p.get("team", "").strip())
+                    if p_name == _norm_name(name) and p_team == _norm_team(team):
                         found_in_roster = True
                         break
                 
                 if not found_in_roster:
+                    # Get role from override data, default to "C"
+                    role = self.override_roles.get(key, "C")
+                    
                     # Create synthetic player from override
                     synthetic_player = {
                         "name": name,
                         "team": team,
-                        "role": "C",  # Default role, will be corrected if known
+                        "role": role,
                         "birth_year": birth_year,
                         "price": None,
                         "fantamedia": None,
@@ -540,48 +564,63 @@ class FantacalcioAssistant:
         role_matches = 0
         age_matches = 0
         final_matches = 0
+        seen_players = set()  # Prevent duplicate entries
         
         for p in self.filtered_roster:
-            # Check role - be more flexible with role detection
+            # Create unique identifier for this player
+            name = p.get("name", "").strip()
+            team = p.get("team", "").strip()
+            player_id = f"{_norm_name(name)}_{_norm_team(team)}"
+            
+            if player_id in seen_players:
+                continue
+            seen_players.add(player_id)
+            
+            # Check role - use override role if available, otherwise use player role
             player_role = p.get("role", "").strip().upper()
             role_raw = p.get("role_raw", "").strip().upper()
             
-            # More comprehensive role matching
+            # Check if we have role info from overrides
+            override_role = None
+            for key in self.overrides.keys():
+                if "@@" in key:
+                    key_name, key_team = key.split("@@", 1)
+                    if (_norm_name(key_name) == _norm_name(name) and 
+                        _norm_team(key_team) == _norm_team(team)):
+                        override_role = self.override_roles.get(key)
+                        break
+            
+            # Use override role if available, otherwise use player role
+            effective_role = override_role or player_role
+            
+            # Role matching
             is_role_match = False
             if r == "D":
-                is_role_match = (player_role in ["D"] or 
+                is_role_match = (effective_role == "D" or player_role in ["D"] or 
                                any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS"]))
             elif r == "C":
-                is_role_match = (player_role in ["C"] or 
+                is_role_match = (effective_role == "C" or player_role in ["C"] or 
                                any(x in role_raw for x in ["CENTROCAMP", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ"]))
             elif r == "A":
-                is_role_match = (player_role in ["A"] or 
+                is_role_match = (effective_role == "A" or player_role in ["A"] or 
                                any(x in role_raw for x in ["ATTACC", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN"]))
             elif r == "P":
-                is_role_match = (player_role in ["P"] or 
+                is_role_match = (effective_role == "P" or player_role in ["P"] or 
                                any(x in role_raw for x in ["PORTIER", "GK", "POR"]))
             
             if is_role_match:
                 role_matches += 1
                 
-                # Check age
-                name = p.get("name", "").strip()
-                team = p.get("team", "").strip()
-                
-                # Try multiple key formats for better matching
-                possible_keys = [
-                    f"{name}@@{team}",
-                    f"{_norm_name(name)}@@{_norm_team(team)}",
-                    _age_key(name, team)
-                ]
-                
+                # Check age - try to find birth year from overrides first
                 birth_year = p.get("birth_year")
-                for key in possible_keys:
-                    override_birth_year = self.overrides.get(key) or self.age_index.get(key)
-                    if override_birth_year:
-                        birth_year = override_birth_year
-                        p["birth_year"] = birth_year  # Update player record
-                        break
+                for key in self.overrides.keys():
+                    if "@@" in key:
+                        key_name, key_team = key.split("@@", 1)
+                        if (_norm_name(key_name) == _norm_name(name) and 
+                            _norm_team(key_team) == _norm_team(team)):
+                            birth_year = self.overrides[key]
+                            p["birth_year"] = birth_year
+                            break
                 
                 if birth_year and _valid_birth_year(birth_year):
                     age = self._age_from_by(birth_year)
@@ -589,7 +628,7 @@ class FantacalcioAssistant:
                         age_matches += 1
                         pool.append(p)
                         final_matches += 1
-                        LOG.info(f"[Under21] MATCH: {name} ({team}) - role: {player_role}/{role_raw}, age: {age}")
+                        LOG.info(f"[Under21] MATCH: {name} ({team}) - role: {effective_role}, age: {age}")
         
         LOG.info(f"[Under21] Summary - Role matches: {role_matches}, Age matches: {age_matches}, Final: {final_matches}")
         
