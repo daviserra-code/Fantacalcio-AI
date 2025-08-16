@@ -20,13 +20,15 @@ try:
 except ImportError:
     LOG.warning("[Assistant] Could not import CorrectionsManager, using dummy.")
     class CorrectionsManager:
-        def __init__(self): pass
+        def __init__(self, knowledge_manager=None): pass
         def apply_corrections_to_data(self, data): return data
         def update_player_team(self, *args): pass
         def add_correction(self, *args): pass
         def remove_player(self, *args): return "Corrections manager not available."
         def get_data_quality_report(self): return {"error": "Corrections manager not available"}
         def is_serie_a_team(self, team): return True # Assume valid if not implemented
+        def get_corrected_name(self, name): return None
+        def get_corrected_team(self, name, team): return None
 
 # Helper function to check environment variables for boolean true
 def _env_true(value: str) -> bool:
@@ -128,6 +130,51 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
         return float(x)
     except (ValueError, TypeError):
         return default
+
+def create_fallback_assistant():
+    """Create a minimal assistant that can handle basic requests without full initialization"""
+    class FallbackAssistant:
+        def __init__(self):
+            self.openai_api_key = os.getenv("OPENAI_API_KEY", "")
+            self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+            self.openai_temperature = float(os.getenv("OPENAI_TEMPERATURE", "0.20"))
+            self.openai_max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", "600"))
+            self.system_prompt = "Sei un assistente fantacalcio. Rispondi in italiano."
+            
+        def respond(self, user_text: str, mode: str = "classic", state: Dict[str,Any] = None, context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
+            state = state or {}
+            if not self.openai_api_key:
+                return "⚠️ Sistema in manutenzione. Configura OPENAI_API_KEY per ripristinare il servizio.", state
+            
+            try:
+                import httpx
+                messages = [{"role": "system", "content": self.system_prompt}]
+                if context_messages:
+                    messages.extend(context_messages[-3:])  # Last 3 for context
+                messages.append({"role": "user", "content": user_text})
+                
+                headers = {
+                    "Authorization": f"Bearer {self.openai_api_key}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "model": self.openai_model,
+                    "temperature": self.openai_temperature,
+                    "max_tokens": self.openai_max_tokens,
+                    "messages": messages
+                }
+                
+                with httpx.Client(timeout=30.0) as client:
+                    resp = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    reply = data["choices"][0]["message"]["content"].strip()
+                    return reply, state
+            except Exception as e:
+                LOG.error("Fallback assistant error: %s", e)
+                return f"⚠️ Servizio temporaneamente limitato. Riprova tra poco. ({str(e)[:50]})", state
+                
+    return FallbackAssistant()
 
 # ---------------- Assistant ----------------
 class FantacalcioAssistant:

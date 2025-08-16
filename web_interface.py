@@ -25,22 +25,41 @@ def get_assistant() -> FantacalcioAssistant:
     inst = app.config.get("_assistant_instance")
     if inst is None:
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        try:
-            inst = FantacalcioAssistant()
-            app.config["_assistant_instance"] = inst
-            LOG.info("FantacalcioAssistant initialized successfully")
-        except Exception as e:
-            LOG.error("Failed to initialize FantacalcioAssistant: %s", e)
-            # Create a minimal fallback instance
-            inst = None
-            app.config["_assistant_instance"] = inst
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                inst = FantacalcioAssistant()
+                app.config["_assistant_instance"] = inst
+                LOG.info("FantacalcioAssistant initialized successfully")
+                break
+            except Exception as e:
+                LOG.error("Failed to initialize FantacalcioAssistant (attempt %d/%d): %s", attempt + 1, max_retries, e)
+                if attempt == max_retries - 1:
+                    # Create a minimal fallback instance that can handle basic requests
+                    from fantacalcio_assistant import create_fallback_assistant
+                    try:
+                        inst = create_fallback_assistant()
+                        app.config["_assistant_instance"] = inst
+                        LOG.warning("Using fallback assistant due to initialization errors")
+                    except Exception as fallback_error:
+                        LOG.error("Even fallback assistant failed: %s", fallback_error)
+                        inst = None
+                        app.config["_assistant_instance"] = inst
+                else:
+                    import time
+                    time.sleep(1)  # Brief delay before retry
     return inst
 
 def get_corrections_manager() -> CorrectionsManager:
     cm = app.config.get("_corrections_manager")
     if cm is None:
         assistant = get_assistant()
-        cm = CorrectionsManager(knowledge_manager=assistant.km)
+        if assistant and hasattr(assistant, 'km'):
+            cm = CorrectionsManager(knowledge_manager=assistant.km)
+        else:
+            # Fallback corrections manager without KM
+            cm = CorrectionsManager()
+            LOG.warning("Created corrections manager without knowledge manager due to assistant initialization issues")
         app.config["_corrections_manager"] = cm
     return cm
 
@@ -159,7 +178,16 @@ def api_chat():
             "content": exclusions_context
         })
 
-    reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+    if assistant:
+        try:
+            reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+        except Exception as e:
+            LOG.error("Error during assistant response: %s", e)
+            reply = f"⚠️ Errore temporaneo del servizio. Messaggio: {msg[:50]}... - Riprova tra poco."
+            new_state = state
+    else:
+        reply = "⚠️ Servizio temporaneamente non disponibile. Il sistema si sta inizializzando, riprova tra qualche secondo."
+        new_state = state
 
     # Apply exclusions to the reply
     if excluded_players:
