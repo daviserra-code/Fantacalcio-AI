@@ -4,6 +4,7 @@ import json
 import logging
 import subprocess
 import re # Import the re module
+from datetime import datetime
 from flask import Flask, request, jsonify, session, render_template
 
 from config import HOST, PORT, LOG_LEVEL
@@ -24,8 +25,15 @@ def get_assistant() -> FantacalcioAssistant:
     inst = app.config.get("_assistant_instance")
     if inst is None:
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        inst = FantacalcioAssistant()
-        app.config["_assistant_instance"] = inst
+        try:
+            inst = FantacalcioAssistant()
+            app.config["_assistant_instance"] = inst
+            LOG.info("FantacalcioAssistant initialized successfully")
+        except Exception as e:
+            LOG.error("Failed to initialize FantacalcioAssistant: %s", e)
+            # Create a minimal fallback instance
+            inst = None
+            app.config["_assistant_instance"] = inst
     return inst
 
 def get_corrections_manager() -> CorrectionsManager:
@@ -67,6 +75,10 @@ T = {
         "forward": "Attaccante",
     }
 }
+
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
 
 @app.route("/", methods=["GET"])
 def index():
@@ -386,12 +398,30 @@ if __name__ == "__main__":
     LOG.info("Server: %s:%d", host, port)
     LOG.info("App should be accessible at the preview URL")
 
-    # Configure Flask for production deployment
-    app.run(
-        host=host,
-        port=port,
-        debug=False,
-        threaded=True,
-        use_reloader=False,
-        processes=1
-    )
+    # Use Gunicorn for production deployment
+    import gunicorn.app.wsgiapplication
+    
+    class StandaloneApplication(gunicorn.app.wsgiapplication.WSGIApplication):
+        def __init__(self, app, options=None):
+            self.options = options or {}
+            self.application = app
+            super().__init__()
+
+        def load_config(self):
+            config = dict([(key, value) for key, value in self.options.items()
+                          if key in self.cfg.settings and value is not None])
+            for key, value in config.items():
+                self.cfg.set(key.lower(), value)
+
+        def load(self):
+            return self.application
+
+    options = {
+        'bind': f'{host}:{port}',
+        'workers': 1,
+        'timeout': 120,
+        'keepalive': 2,
+        'max_requests': 1000,
+        'preload_app': True,
+    }
+    StandaloneApplication(app, options).run()
