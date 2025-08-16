@@ -117,7 +117,8 @@ def _first_key(d: Dict[str,Any], keys: List[str]) -> Any:
     return None
 
 def _age_key(name: str, team: str) -> str:
-    return f"{_norm_name(name)}@@{_norm_team(team)}"
+    # Use the exact format from age_overrides.json (no normalization for team names)
+    return f"{name}@@{team}"
 
 def _safe_float(x: Any, default: float = 0.0) -> float:
     """Convert to float, return default if conversion fails or input is None."""
@@ -245,10 +246,13 @@ class FantacalcioAssistant:
                     by = v.get("birth_year") if isinstance(v,dict) else v
                     by = _valid_birth_year(by)
                     if by is None: continue
-                    if "@@" in k: name,team = k.split("@@",1)
-                    elif "|" in k: name,team = k.split("|",1)
-                    else: name,team = k,""
-                    out[_age_key(name,team)] = by
+                    # Store the key exactly as it appears in the JSON file
+                    out[k] = by
+                    # Also create normalized versions for better matching
+                    if "@@" in k:
+                        name, team = k.split("@@", 1)
+                        norm_key = f"{_norm_name(name)}@@{_norm_team(team)}"
+                        out[norm_key] = by
         except FileNotFoundError:
             LOG.info("[Assistant] overrides non trovato: %s (opzionale)", path)
         except Exception as e:
@@ -471,9 +475,18 @@ class FantacalcioAssistant:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
             
-            # Check age overrides for exact match
-            age_key = _age_key(name, team)
-            birth_year = self.overrides.get(age_key) or self.age_index.get(age_key)
+            # Try multiple key formats for better matching
+            possible_keys = [
+                f"{name}@@{team}",  # Exact format
+                f"{_norm_name(name)}@@{_norm_team(team)}",  # Normalized format
+                _age_key(name, team)  # Current format
+            ]
+            
+            birth_year = None
+            for key in possible_keys:
+                birth_year = self.overrides.get(key) or self.age_index.get(key)
+                if birth_year:
+                    break
             
             if birth_year:
                 age = self._age_from_by(birth_year)
