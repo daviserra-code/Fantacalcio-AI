@@ -138,11 +138,17 @@
     .btn-secondary{background:#6c757d;color:#fff;font-size:.85rem;padding:8px 14px}
 
     .quick-actions{
-      padding:14px 16px;border-top:1px solid #f0f0f0;display:flex;gap:10px;flex-wrap:wrap;background:#e9ecef
+      padding:16px;border-top:1px solid #f0f0f0;background:#e9ecef;
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:stretch
     }
     .quick-action-btn{
       background:linear-gradient(135deg,#00c851,#007e33)!important;border:2px solid #00c851!important;border-radius:14px;
-      padding:8px 12px;font-size:.85rem;color:#fff!important;font-weight:600;box-shadow:0 2px 4px rgba(0,200,81,.2)
+      padding:10px 14px;font-size:.85rem;color:#fff!important;font-weight:600;box-shadow:0 2px 4px rgba(0,200,81,.2);
+      text-align:center;display:flex;align-items:center;justify-content:center;min-height:42px;cursor:pointer;
+      transition:transform .15s ease,box-shadow .15s ease
+    }
+    .quick-action-btn:hover{
+      transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,200,81,.3)
     }
 
     /* Section for Historical Stats */
@@ -217,6 +223,12 @@
       .tabs{overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch}
       .tabs .swipe-hint{display:block}
       .tab{min-width:100px; flex-shrink:0}
+      .quick-actions{
+        grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:12px
+      }
+      .quick-action-btn{
+        padding:8px 10px;font-size:.8rem;min-height:38px
+      }
     }
     
     /* Ensure tabs are always visible */
