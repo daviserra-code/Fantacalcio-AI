@@ -80,9 +80,15 @@ def _role_letter(raw: str) -> str:
     return r[:1] if r else ""
 
 def _valid_birth_year(by: Optional[int]) -> Optional[int]:
-    try: by = int(by)
-    except Exception: return None
-    return by if 1975 <= by <= 2010 else None
+    try: 
+        by = int(by)
+        # Updated range for current players: born between 1975-2010 makes sense
+        # Players born in 2010 would be ~15 years old in 2025
+        if 1975 <= by <= 2010:
+            return by
+        return None
+    except Exception: 
+        return None
 
 def _to_float(x: Any) -> Optional[float]:
     if x is None: return None
@@ -432,27 +438,56 @@ class FantacalcioAssistant:
         return [p for p in self.filtered_roster if _role_letter(p.get("role") or p.get("role_raw",""))==r]
 
     def _age_from_by(self, by: Optional[int]) -> Optional[int]:
-        try: return REF_YEAR - int(by)
-        except Exception: return None
+        try: 
+            age = REF_YEAR - int(by)
+            # Sanity check: age should be reasonable for professional players
+            if age < 15 or age > 45:
+                return None
+            return age
+        except Exception: 
+            return None
 
     # ---------- Selettori ----------
     def _select_under(self, r: str, max_age: int = 21, take: int = 3) -> List[Dict[str,Any]]:
         pool=[]
         base = self._pool_by_role(r)
-        # Prima usa ciò che c'è
+        
+        # Check age overrides first
         for p in base:
-            age = self._age_from_by(p.get("birth_year"))
-            if age is not None and age <= max_age:
-                pool.append(p)
-        # Se vuoto, prova a stimare in batch
+            name = p.get("name", "").strip()
+            team = p.get("team", "").strip()
+            
+            # Check age overrides for exact match
+            age_key = _age_key(name, team)
+            birth_year = self.overrides.get(age_key) or self.age_index.get(age_key)
+            
+            if birth_year:
+                age = self._age_from_by(birth_year)
+                LOG.debug(f"[Under21] {name} ({team}): birth_year={birth_year}, age={age}")
+                if age is not None and age <= max_age:
+                    # Update the player record with correct age
+                    p["birth_year"] = birth_year
+                    pool.append(p)
+            else:
+                # Fallback to existing birth_year
+                age = self._age_from_by(p.get("birth_year"))
+                if age is not None and age <= max_age:
+                    pool.append(p)
+        
+        # If still empty, try age estimation
         if not pool:
+            LOG.info(f"[Under21] No {r} players found under {max_age}, trying age estimation...")
             self._ensure_guessed_ages_for_role(r, limit=200)
             base = self._pool_by_role(r)
             for p in base:
                 age = self._age_from_by(p.get("birth_year"))
                 if age is not None and age <= max_age:
                     pool.append(p)
+        
+        # Sort by fantamedia descending, then price ascending
         pool.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9_999.0)))
+        
+        LOG.info(f"[Under21] Found {len(pool)} {r} players under {max_age}")
         return pool[:take]
 
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
@@ -569,21 +604,33 @@ class FantacalcioAssistant:
                 fallback_msg = f"\n\n⚠️ *Non ho trovato U{max_age} per questo ruolo, ecco alcuni U{max_age+2}:*"
             else:
                 return (f"Non ho profili U{max_age} affidabili per questo ruolo. "
-                        "Il sistema sta ancora raccogliendo dati sui giovani. "
-                        "Prova a specificare un club o rimuovi il vincolo d'età.")
+                        f"Verifica che i dati in age_overrides.json siano corretti e che i giocatori abbiano birth_year validi (1995-2010 per U21).")
         else:
             fallback_msg = ""
 
         lines=[]
         for p in top:
             name=p.get("name") or "N/D"; team=p.get("team") or "—"
-            age=self._age_from_by(p.get("birth_year"))
+            birth_year = p.get("birth_year")
+            age=self._age_from_by(birth_year)
             fm=p.get("_fm"); pr=p.get("_price")
             bits=[]
-            if age is not None: bits.append(f"{age} anni")
+            
+            # Verify age is actually under the limit
+            if age is not None and age <= max_age: 
+                bits.append(f"{age} anni")
+            else:
+                # Skip this player if age verification fails
+                LOG.warning(f"[Under21] Skipping {name} - age {age} exceeds {max_age}")
+                continue
+                
             if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
             bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
             lines.append(f"- **{name}** ({team}) — " + ", ".join(bits))
+        
+        if not lines:
+            return f"Non ho trovato giocatori U{max_age} validi. Controlla i dati in age_overrides.json."
+            
         return f"Ecco i profili Under {max_age}:\n" + "\n".join(lines) + fallback_msg
 
     def _enhance_youth_data(self):
