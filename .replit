@@ -14,7 +14,7 @@ language = "python3"
 REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
 
 [deployment]
-run = ["sh", "-c", "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --preload web_interface:app"]
+run = ["sh", "-c", "python web_interface.py --port 5000"]
 deploymentTarget = "cloudrun"
 
 [workflows]
@@ -27,7 +27,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 120 --preload web_interface:app"
+args = "python web_interface.py --port 5000"
 
 [[ports]]
 localPort = 5000
