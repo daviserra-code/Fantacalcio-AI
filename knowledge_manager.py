@@ -46,26 +46,27 @@ class KnowledgeManager:
             self.client = chromadb.PersistentClient(path=db_path)
             LOG.info("[KM] Created fresh ChromaDB at %s", db_path)
 
+        # Try to get existing collection, create if doesn't exist or is corrupted
         try:
             self.collection = self.client.get_collection(name=collection_name)
             # Test if collection is accessible
+            count = self.collection.count()
+            LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, count)
+        except Exception as e:
+            LOG.info("[KM] Collection non trovata o corrotta (%s), creazione: '%s'", e, collection_name)
+            # Try to delete any existing corrupted collection
             try:
-                count = self.collection.count()
-                LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, count)
-            except Exception as e:
-                LOG.warning("[KM] Collection corrupted, recreating: %s", e)
                 self.client.delete_collection(name=collection_name)
-                self.collection = self.client.create_collection(
-                    name=collection_name,
-                    metadata={"description": "Fantacalcio knowledge base for RAG"}
-                )
-                LOG.info("[KM] Fresh collection created: '%s'", collection_name)
-        except ValueError:
-            LOG.info("[KM] Collection non trovata, creazione: '%s'", collection_name)
+                LOG.info("[KM] Deleted corrupted collection")
+            except Exception:
+                pass  # Ignore errors when deleting
+
+            # Create fresh collection
             self.collection = self.client.create_collection(
                 name=collection_name,
                 metadata={"description": "Fantacalcio knowledge base for RAG"}
             )
+            LOG.info("[KM] Fresh collection created: '%s'", collection_name)
 
         self.collection_name = collection_name
 
