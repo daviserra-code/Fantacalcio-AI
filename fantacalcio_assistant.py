@@ -80,14 +80,14 @@ def _role_letter(raw: str) -> str:
     return r[:1] if r else ""
 
 def _valid_birth_year(by: Optional[int]) -> Optional[int]:
-    try: 
+    try:
         by = int(by)
         # Updated range for current players: born between 1975-2010 makes sense
         # Players born in 2010 would be ~15 years old in 2025
         if 1975 <= by <= 2010:
             return by
         return None
-    except Exception: 
+    except Exception:
         return None
 
 def _to_float(x: Any) -> Optional[float]:
@@ -174,7 +174,7 @@ class FantacalcioAssistant:
         self.season_filter = SEASON_FILTER or None
         self.age_index = self._load_age_index(AGE_INDEX_PATH)
         self.override_roles = {}  # Initialize before loading overrides
-        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH) 
+        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
         self.guessed_age_index = {}
 
         # Apply data corrections
@@ -196,7 +196,7 @@ class FantacalcioAssistant:
             LOG.error("[Assistant] Errore caricamento prompt: %s", e)
             return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
                     "non inventare dati e dichiara incertezza se mancano fonti.")
-        
+
         if isinstance(cfg, dict):
             if "system" in cfg and isinstance(cfg["system"], dict):
                 sys = cfg["system"]
@@ -210,7 +210,7 @@ class FantacalcioAssistant:
             if "prompt" in cfg and isinstance(cfg["prompt"], str):
                 LOG.info("[Assistant] prompt.json caricato correttamente")
                 return cfg["prompt"]
-        
+
         LOG.error("[Assistant] prompt.json non contiene 'system' o 'prompt' validi")
         return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
                 "non inventare dati e dichiara incertezza se mancano fonti.")
@@ -252,14 +252,14 @@ class FantacalcioAssistant:
                     else:
                         by = _valid_birth_year(v)
                         role = ""
-                    
+
                     if by is None: continue
-                    
+
                     # Store the key exactly as it appears in the JSON file
                     out[k] = by
                     if role:
                         self.override_roles[k] = _role_letter(role)
-                    
+
                     # NO MORE NORMALIZATION to prevent duplicates
                     # The matching logic will handle normalization when searching
         except FileNotFoundError:
@@ -373,29 +373,77 @@ class FantacalcioAssistant:
         LOG.info("[Assistant] Età arricchite su %d record", enriched)
 
     def _team_ok(self, team: str) -> bool:
-        # Use corrections_manager if available for team validation
-        if self.corrections_manager:
-            return self.corrections_manager.is_serie_a_team(team)
-        else:
-            return _norm_team(team) in SERIE_A_WHITELIST
+        """Check if team is Serie A 2024-25."""
+        if not team:
+            return False
+        team_norm = team.strip().lower()
+
+        # Current Serie A 2024-25 teams
+        serie_a_teams = {
+            "atalanta", "bologna", "cagliari", "como", "empoli", "fiorentina",
+            "genoa", "inter", "juventus", "lazio", "lecce", "milan",
+            "monza", "napoli", "parma", "roma", "torino", "udinese",
+            "venezia", "verona", "hellas verona"
+        }
+
+        # Handle common variations
+        team_mappings = {
+            "hellas verona": "verona",
+            "ac milan": "milan",
+            "fc inter": "inter",
+            "internazionale": "inter",
+            "juventus fc": "juventus",
+            "as roma": "roma",
+            "ss lazio": "lazio",
+            "ssc napoli": "napoli",
+            "atalanta bc": "atalanta",
+            "bologna fc": "bologna",
+            "cagliari calcio": "cagliari",
+            "como 1907": "como",
+            "empoli fc": "empoli",
+            "acf fiorentina": "fiorentina",
+            "genoa cfc": "genoa",
+            "us lecce": "lecce",
+            "ac monza": "monza",
+            "parma calcio": "parma",
+            "torino fc": "torino",
+            "udinese calcio": "udinese",
+            "venezia fc": "venezia"
+        }
+
+        # Check direct match
+        if team_norm in serie_a_teams:
+            return True
+
+        # Check mappings
+        mapped_team = team_mappings.get(team_norm)
+        if mapped_team and mapped_team in serie_a_teams:
+            return True
+
+        # Check partial matches for common abbreviations
+        for serie_a_team in serie_a_teams:
+            if serie_a_team in team_norm or team_norm in serie_a_team:
+                return True
+
+        return False
 
     def _make_filtered_roster(self) -> None:
         out=[]
         processed_override_players = set()
-        
+
         # First, create all players from overrides that might not be in roster
         processed_players = set()  # Track to prevent duplicates
-        
+
         for key, birth_year in self.overrides.items():
             if "@@" in key:
                 name, team = key.split("@@", 1)
-                
+
                 # Create unique identifier to prevent duplicates
                 player_id = f"{_norm_name(name)}_{_norm_team(team)}"
                 if player_id in processed_players:
                     continue
                 processed_players.add(player_id)
-                
+
                 # Create a synthetic player record for override entries not in roster
                 found_in_roster = False
                 for p in self.roster:
@@ -404,11 +452,11 @@ class FantacalcioAssistant:
                     if p_name == _norm_name(name) and p_team == _norm_team(team):
                         found_in_roster = True
                         break
-                
+
                 if not found_in_roster:
                     # Get role from override data, default to "C"
                     role = self.override_roles.get(key, "C")
-                    
+
                     # Create synthetic player from override
                     synthetic_player = {
                         "name": name,
@@ -424,19 +472,19 @@ class FantacalcioAssistant:
                     }
                     out.append(synthetic_player)
                     processed_override_players.add(key)
-        
+
         # Then process regular roster with override matching
         for p in self.roster:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
-            
+
             # Check if player has verified age in overrides with multiple key formats
             possible_keys = [
                 f"{name}@@{team}",
                 f"{_norm_name(name)}@@{_norm_team(team)}",
                 _age_key(name, team)
             ]
-            
+
             has_verified_age = False
             for key in possible_keys:
                 if key in self.overrides or key in self.age_index:
@@ -446,29 +494,29 @@ class FantacalcioAssistant:
                     if birth_year:
                         p["birth_year"] = birth_year
                     break
-            
+
             if has_verified_age:
                 out.append(p)
                 continue
-                
+
             # Standard filtering for other players
             if not self._team_ok(p.get("team","")): continue
-            
+
             # For young players (Under 25), be more lenient with season filtering
             by = _valid_birth_year(p.get("birth_year"))
             is_young = by is not None and (REF_YEAR - by) <= 25
-            
+
             if self.season_filter and not is_young:
                 if (p.get("season") or "").strip() != self.season_filter:
                     continue
-            
+
             if by is not None and (REF_YEAR - by) > 36:  # taglio hard vecchissimi
                 continue
             out.append(p)
-            
+
         self.filtered_roster = out
         override_count = len([p for p in out if p.get("_source") == "override_synthetic"])
-        LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s, %d da overrides)", 
+        LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s, %d da overrides)",
                 len(out), self.season_filter or "ANY", override_count)
 
     # ---------- KM guess ----------
@@ -531,97 +579,108 @@ class FantacalcioAssistant:
         return [p for p in self.filtered_roster if _role_letter(p.get("role") or p.get("role_raw",""))==r]
 
     def _age_from_by(self, by: Optional[int]) -> Optional[int]:
-        try: 
+        try:
             age = REF_YEAR - int(by)
             # Sanity check: age should be reasonable for professional players
             if age < 15 or age > 45:
                 return None
             return age
-        except Exception: 
+        except Exception:
             return None
 
     # ---------- Selettori ----------
     def _select_under(self, r: str, max_age: int = 21, take: int = 3) -> List[Dict[str,Any]]:
         pool=[]
-        
+
         # Get ALL players from filtered roster and check role + age
         LOG.info(f"[Under21] Looking for {r} players under {max_age} in {len(self.filtered_roster)} total players")
-        
+
         # Debug: check all override players for this role
         override_matches = []
         for key, birth_year in self.overrides.items():
             if "@@" in key:
                 name, team = key.split("@@", 1)
-                age = self._age_from_by(birth_year)
-                if age is not None and age <= max_age:
-                    override_matches.append(f"{name} ({team}) - age {age}")
-        
+
+                # Create unique identifier for this player
+                player_id = f"{_norm_name(name)}_{_norm_team(team)}"
+
+                # Check role, matching logic needs to be consistent
+                role = self.override_roles.get(key)
+                is_role_match = False
+                if role == r:
+                    is_role_match = True
+
+                if is_role_match:
+                    age = self._age_from_by(birth_year)
+                    if age is not None and age <= max_age:
+                        override_matches.append(f"{name} ({team}) - age {age}")
+
         LOG.info(f"[Under21] Total U{max_age} players in overrides: {len(override_matches)}")
         if override_matches[:5]:  # Show first 5
             LOG.info(f"[Under21] Examples: {', '.join(override_matches[:5])}")
-        
+
         # Check each player in filtered roster
         role_matches = 0
         age_matches = 0
         final_matches = 0
         seen_players = set()  # Prevent duplicate entries
-        
+
         for p in self.filtered_roster:
             # Create unique identifier for this player
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
             player_id = f"{_norm_name(name)}_{_norm_team(team)}"
-            
+
             if player_id in seen_players:
                 continue
             seen_players.add(player_id)
-            
+
             # Check role - use override role if available, otherwise use player role
             player_role = p.get("role", "").strip().upper()
             role_raw = p.get("role_raw", "").strip().upper()
-            
+
             # Check if we have role info from overrides
             override_role = None
             for key in self.overrides.keys():
                 if "@@" in key:
                     key_name, key_team = key.split("@@", 1)
-                    if (_norm_name(key_name) == _norm_name(name) and 
+                    if (_norm_name(key_name) == _norm_name(name) and
                         _norm_team(key_team) == _norm_team(team)):
                         override_role = self.override_roles.get(key)
                         break
-            
+
             # Use override role if available, otherwise use player role
             effective_role = override_role or player_role
-            
+
             # Role matching
             is_role_match = False
             if r == "D":
-                is_role_match = (effective_role == "D" or player_role in ["D"] or 
+                is_role_match = (effective_role == "D" or player_role in ["D"] or
                                any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS"]))
             elif r == "C":
-                is_role_match = (effective_role == "C" or player_role in ["C"] or 
+                is_role_match = (effective_role == "C" or player_role in ["C"] or
                                any(x in role_raw for x in ["CENTROCAMP", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ"]))
             elif r == "A":
-                is_role_match = (effective_role == "A" or player_role in ["A"] or 
+                is_role_match = (effective_role == "A" or player_role in ["A"] or
                                any(x in role_raw for x in ["ATTACC", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN"]))
             elif r == "P":
-                is_role_match = (effective_role == "P" or player_role in ["P"] or 
+                is_role_match = (effective_role == "P" or player_role in ["P"] or
                                any(x in role_raw for x in ["PORTIER", "GK", "POR"]))
-            
+
             if is_role_match:
                 role_matches += 1
-                
+
                 # Check age - try to find birth year from overrides first
                 birth_year = p.get("birth_year")
                 for key in self.overrides.keys():
                     if "@@" in key:
                         key_name, key_team = key.split("@@", 1)
-                        if (_norm_name(key_name) == _norm_name(name) and 
+                        if (_norm_name(key_name) == _norm_name(name) and
                             _norm_team(key_team) == _norm_team(team)):
                             birth_year = self.overrides[key]
                             p["birth_year"] = birth_year
                             break
-                
+
                 if birth_year and _valid_birth_year(birth_year):
                     age = self._age_from_by(birth_year)
                     if age is not None and age <= max_age:
@@ -629,12 +688,12 @@ class FantacalcioAssistant:
                         pool.append(p)
                         final_matches += 1
                         LOG.info(f"[Under21] MATCH: {name} ({team}) - role: {effective_role}, age: {age}")
-        
+
         LOG.info(f"[Under21] Summary - Role matches: {role_matches}, Age matches: {age_matches}, Final: {final_matches}")
-        
+
         # Sort by fantamedia descending, then price ascending
         pool.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9_999.0)))
-        
+
         return pool[:take]
 
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
@@ -762,22 +821,22 @@ class FantacalcioAssistant:
             age=self._age_from_by(birth_year)
             fm=p.get("_fm"); pr=p.get("_price")
             bits=[]
-            
+
             # Verify age is actually under the limit
-            if age is not None and age <= max_age: 
+            if age is not None and age <= max_age:
                 bits.append(f"{age} anni")
             else:
                 # Skip this player if age verification fails
                 LOG.warning(f"[Under21] Skipping {name} - age {age} exceeds {max_age}")
                 continue
-                
+
             if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
             bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
             lines.append(f"- **{name}** ({team}) — " + ", ".join(bits))
-        
+
         if not lines:
             return f"Non ho trovato giocatori U{max_age} validi. Controlla i dati in age_overrides.json."
-            
+
         return f"Ecco i profili Under {max_age}:\n" + "\n".join(lines) + fallback_msg
 
     def _enhance_youth_data(self):
@@ -803,7 +862,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): bits.append(f"€ {int(round(pr))}")
                 if isinstance(vr,(int,float)): bits.append(f"Q/P {(vr*100):.1f}%")
                 lines.append(f"- **{p.get('name','N/D')}** ({p.get('team','—')}) — " + ", ".join(bits))
-            sections.append(f"🎯 **Entro {budget} crediti (ordine Q/P)**\n" + "\n".join(lines))
+            sections.append("🎯 **Entro {budget} crediti (ordine Q/P)**\n" + "\n".join(lines))
         if fm_only:
             lines=[]
             for p in fm_only:

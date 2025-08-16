@@ -3,6 +3,8 @@
 import os
 import logging
 from typing import Any, Dict, List, Optional
+import time
+import shutil
 
 import chromadb
 from chromadb.config import Settings
@@ -22,13 +24,51 @@ class KnowledgeManager:
     - normalizzazione filtri (where) in sintassi valida ($and/$or/$eq/$in)
     - metodi: get_by_filter, search_knowledge
     """
-    def __init__(self, collection_name: str = "fantacalcio_knowledge") -> None:
-        chroma_path = os.getenv("CHROMA_PATH", "./chroma_db")
-        self.client = chromadb.PersistentClient(path=chroma_path, settings=Settings(allow_reset=False))
-        LOG.info("[KM] Using Chroma PersistentClient at %s", os.path.abspath(chroma_path))
+    def __init__(self) -> None:
+        LOG.info("[KM] Initializing KnowledgeManager...")
+        db_path = os.getenv("CHROMA_DB_PATH", "./chroma_db")
+        collection_name = os.getenv("CHROMA_COLLECTION_NAME", "fantacalcio_knowledge")
 
-        self.collection = self.client.get_or_create_collection(name=collection_name)
-        LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, self.collection.count())
+        try:
+            self.client = chromadb.PersistentClient(path=db_path)
+            LOG.info("[KM] Using Chroma PersistentClient at %s", db_path)
+        except Exception as e:
+            LOG.error("[KM] ChromaDB corruption detected: %s", e)
+            # Try to backup and recreate
+            backup_path = f"{db_path}_backup_{int(time.time())}"
+            try:
+                shutil.move(db_path, backup_path)
+                LOG.info("[KM] Backed up corrupted DB to %s", backup_path)
+            except Exception:
+                pass
+
+            # Create fresh client
+            self.client = chromadb.PersistentClient(path=db_path)
+            LOG.info("[KM] Created fresh ChromaDB at %s", db_path)
+
+        try:
+            self.collection = self.client.get_collection(name=collection_name)
+            # Test if collection is accessible
+            try:
+                count = self.collection.count()
+                LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, count)
+            except Exception as e:
+                LOG.warning("[KM] Collection corrupted, recreating: %s", e)
+                self.client.delete_collection(name=collection_name)
+                self.collection = self.client.create_collection(
+                    name=collection_name,
+                    metadata={"description": "Fantacalcio knowledge base for RAG"}
+                )
+                LOG.info("[KM] Fresh collection created: '%s'", collection_name)
+        except ValueError:
+            LOG.info("[KM] Collection non trovata, creazione: '%s'", collection_name)
+            self.collection = self.client.create_collection(
+                name=collection_name,
+                metadata={"description": "Fantacalcio knowledge base for RAG"}
+            )
+
+        self.collection_name = collection_name
+
 
         # Embeddings
         LOG.info("🔄 Initializing SentenceTransformer (attempt 1/10)...")

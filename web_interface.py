@@ -153,16 +153,37 @@ def api_chat():
     if excluded_players:
         reply = apply_exclusions_to_text(reply, excluded_players)
 
-    # Apply any corrections to the reply
-    if corrections_manager:
-        try:
-            corrected_reply, applied_corrections = corrections_manager.apply_corrections_to_text(reply)
-            if applied_corrections:
-                LOG.info(f"Applied corrections: {applied_corrections}")
-                reply = corrected_reply
-        except Exception as e:
-            LOG.error(f"Error applying corrections: {e}")
-            # Continue with original reply if correction fails
+    # Apply corrections and data validation to response
+    try:
+        corrected_response, applied_corrections = corrections_manager.apply_corrections_to_text(reply)
+        if applied_corrections:
+            LOG.info("Applied %d corrections to response", len(applied_corrections))
+            reply = corrected_response
+
+        # Additional validation: remove mentions of non-Serie A teams
+        non_serie_a_patterns = [
+            r'\b(Newcastle|PSG|Paris Saint-Germain|Al Hilal|Tottenham|Arsenal|Manchester United|Manchester City|Chelsea|Liverpool|Real Madrid|Barcelona|Atletico Madrid|Bayern Munich|Borussia Dortmund)\b',
+            r'\(Newcastle\)',
+            r'\(PSG\)',
+            r'\(Al Hilal\)',
+            r'\(Tottenham\)',
+            r'\(Premier League\)',
+            r'\(La Liga\)',
+            r'\(Bundesliga\)',
+            r'\(Ligue 1\)'
+        ]
+
+        import re
+        for pattern in non_serie_a_patterns:
+            reply = re.sub(pattern, '', reply, flags=re.IGNORECASE)
+
+        # Clean up multiple spaces and empty lines
+        reply = re.sub(r'\s+', ' ', reply)
+        reply = re.sub(r'\n\s*\n', '\n', reply)
+        reply = reply.strip()
+
+    except Exception as e:
+        LOG.error("Error applying corrections: %s", e)
 
     # Update conversation history
     new_state.setdefault("conversation_history", []).append({

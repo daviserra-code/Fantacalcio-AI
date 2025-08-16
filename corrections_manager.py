@@ -502,14 +502,77 @@ class CorrectionsManager:
 
     def is_serie_a_team(self, team: str) -> bool:
         """Check if a given team name is part of the current Serie A league."""
-        # Note: This list should be updated annually or as league compositions change.
+        if not team:
+            return False
+            
+        team_norm = team.lower().strip()
+        
+        # Current Serie A 2024-25 teams
         serie_a_teams = {
             "atalanta", "bologna", "cagliari", "como", "empoli", "fiorentina",
             "genoa", "inter", "juventus", "lazio", "lecce", "milan",
-            "monza", "napoli", "parma", "roma", "torino", "udinese", 
+            "monza", "napoli", "parma", "roma", "torino", "udinese",
             "venezia", "verona", "hellas verona"
         }
-        return team.lower().strip() in serie_a_teams
+        
+        # Handle common variations and full names
+        team_mappings = {
+            "hellas verona": "verona",
+            "ac milan": "milan",
+            "fc inter": "inter", 
+            "internazionale": "inter",
+            "inter milan": "inter",
+            "juventus fc": "juventus",
+            "as roma": "roma",
+            "ss lazio": "lazio",
+            "ssc napoli": "napoli",
+            "atalanta bc": "atalanta",
+            "bologna fc": "bologna",
+            "cagliari calcio": "cagliari",
+            "como 1907": "como",
+            "empoli fc": "empoli",
+            "acf fiorentina": "fiorentina",
+            "genoa cfc": "genoa",
+            "us lecce": "lecce",
+            "ac monza": "monza",
+            "parma calcio": "parma",
+            "torino fc": "torino",
+            "udinese calcio": "udinese",
+            "venezia fc": "venezia",
+            # International teams that should be excluded
+            "newcastle": False,
+            "newcastle united": False,
+            "psg": False,
+            "paris saint-germain": False,
+            "al hilal": False,
+            "tottenham": False,
+            "tottenham hotspur": False,
+            "arsenal": False,
+            "manchester united": False,
+            "manchester city": False,
+            "chelsea": False,
+            "liverpool": False,
+            "real madrid": False,
+            "barcelona": False,
+            "atletico madrid": False,
+            "bayern munich": False,
+            "borussia dortmund": False
+        }
+        
+        # Check direct exclusions first
+        if team_mappings.get(team_norm) is False:
+            return False
+            
+        # Check direct match
+        if team_norm in serie_a_teams:
+            return True
+            
+        # Check mappings
+        mapped_team = team_mappings.get(team_norm)
+        if mapped_team and mapped_team in serie_a_teams:
+            return True
+            
+        return False
 
     def get_corrected_name(self, name: str) -> Optional[str]:
         """Get the corrected name for a player if one exists"""
