@@ -368,10 +368,15 @@ class FantacalcioAssistant:
         out=[]
         for p in self.roster:
             if not self._team_ok(p.get("team","")): continue
-            if self.season_filter:
+            
+            # For young players (Under 25), be more lenient with season filtering
+            by = _valid_birth_year(p.get("birth_year"))
+            is_young = by is not None and (REF_YEAR - by) <= 25
+            
+            if self.season_filter and not is_young:
                 if (p.get("season") or "").strip() != self.season_filter:
                     continue
-            by = _valid_birth_year(p.get("birth_year"))
+            
             if by is not None and (REF_YEAR - by) > 36:  # taglio hard vecchissimi
                 continue
             out.append(p)
@@ -452,6 +457,15 @@ class FantacalcioAssistant:
         pool=[]
         base = self._pool_by_role(r)
         
+        LOG.info(f"[Under21] Starting with {len(base)} {r} players in filtered roster")
+        
+        # Debug: log some examples of what we have
+        for i, p in enumerate(base[:3]):
+            name = p.get("name", "").strip()
+            team = p.get("team", "").strip()
+            age_key = _age_key(name, team)
+            LOG.info(f"[Under21] Example {i+1}: {name} ({team}) key='{age_key}'")
+        
         # Check age overrides first
         for p in base:
             name = p.get("name", "").strip()
@@ -463,7 +477,7 @@ class FantacalcioAssistant:
             
             if birth_year:
                 age = self._age_from_by(birth_year)
-                LOG.debug(f"[Under21] {name} ({team}): birth_year={birth_year}, age={age}")
+                LOG.info(f"[Under21] Found in overrides: {name} ({team}): birth_year={birth_year}, age={age}")
                 if age is not None and age <= max_age:
                     # Update the player record with correct age
                     p["birth_year"] = birth_year
@@ -474,6 +488,7 @@ class FantacalcioAssistant:
                 if existing_birth_year and _valid_birth_year(existing_birth_year):
                     age = self._age_from_by(existing_birth_year)
                     if age is not None and age <= max_age:
+                        LOG.info(f"[Under21] Found existing birth_year: {name} ({team}): birth_year={existing_birth_year}, age={age}")
                         pool.append(p)
         
         # Remove the automatic age estimation fallback as it's causing wrong results
