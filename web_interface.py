@@ -147,7 +147,12 @@ def api_chat():
             "content": exclusions_context
         })
 
-    reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+    try:
+        reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
+    except Exception as e:
+        LOG.error("Error in assistant.respond: %s", e, exc_info=True)
+        reply = f"⚠️ Errore temporaneo del servizio. Messaggio: {msg[:50]}... - Riprova tra poco."
+        new_state = state
 
     # Apply exclusions to the reply
     if excluded_players:

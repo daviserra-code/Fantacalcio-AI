@@ -467,6 +467,7 @@ class FantacalcioAssistant:
                     role = self.override_roles.get(key, "C")
 
                     # Only add synthetic players for Under21 tracking, mark them clearly
+                    # Don't add them to the main pool to avoid forcing them in regular queries
                     synthetic_player = {
                         "name": name,
                         "team": team,
@@ -480,7 +481,10 @@ class FantacalcioAssistant:
                         "_source": "override_synthetic",
                         "_for_under21_only": True  # Mark these as Under21-only
                     }
-                    out.append(synthetic_player)
+                    # Store separately for Under21 queries only
+                    if not hasattr(self, '_synthetic_under21_players'):
+                        self._synthetic_under21_players = []
+                    self._synthetic_under21_players.append(synthetic_player)
                     processed_override_players.add(key)
 
         # Then process regular roster with override matching
@@ -525,10 +529,9 @@ class FantacalcioAssistant:
             out.append(p)
 
         self.filtered_roster = out
-        override_count = len([p for p in out if p.get("_source") == "override_synthetic"])
-        real_data_count = len([p for p in out if p.get("_source") != "override_synthetic"])
-        LOG.info("[Assistant] Pool filtrato: %d record totali (%d reali + %d synthetic da overrides, stagione=%s)",
-                len(out), real_data_count, override_count, self.season_filter or "ANY")
+        synthetic_count = len(getattr(self, '_synthetic_under21_players', []))
+        LOG.info("[Assistant] Pool filtrato: %d record principali + %d synthetic U21, stagione=%s",
+                len(out), synthetic_count, self.season_filter or "ANY")
 
     # ---------- KM guess ----------
     def _guess_birth_year_from_km(self, name: str) -> Optional[int]:
@@ -630,13 +633,18 @@ class FantacalcioAssistant:
         if override_matches[:5]:  # Show first 5
             LOG.info(f"[Under21] Examples: {', '.join(override_matches[:5])}")
 
-        # Check each player in filtered roster
+        # Check each player in filtered roster + synthetic under21 players
         role_matches = 0
         age_matches = 0
         final_matches = 0
         seen_players = set()  # Prevent duplicate entries
 
-        for p in self.filtered_roster:
+        # Combine regular roster with synthetic under21 players for this query
+        all_players = list(self.filtered_roster)
+        if hasattr(self, '_synthetic_under21_players'):
+            all_players.extend(self._synthetic_under21_players)
+
+        for p in all_players:
             # Create unique identifier for this player
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
@@ -995,7 +1003,8 @@ class FantacalcioAssistant:
 
         # Check for goalkeeper requests FIRST, as they might contain budget numbers
         if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]):
-            return self._handle_goalkeeper_request(text) # Pass original text for budget parsing
+            intent.update({"type": "goalkeeper", "original_text": text})
+            return intent
 
         # formazione
         if "formazione" in lt and re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
@@ -1056,6 +1065,8 @@ class FantacalcioAssistant:
             fm_text = intent["formation_text"]
             budget = intent.get("budget", 500)
             reply = self._answer_build_xi(f"{fm_text} {budget}")
+        elif intent["type"] == "goalkeeper":
+            reply = self._handle_goalkeeper_request(intent.get("original_text", user_text))
         elif intent["type"] == "asta":
             reply = ("🧭 **Strategia Asta (Classic)**\n"
                      "1) Tenere liquidità per gli slot premium in A.\n"
@@ -1065,8 +1076,8 @@ class FantacalcioAssistant:
              reply = self._llm_complete(user_text, context_messages or [])
              if not reply or "non disponibile" in reply.lower():
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
-        else: # Handles the case where _parse_intent directly returned a goalkeeper response
-            reply = intent # The intent dict itself is the response string from _handle_goalkeeper_request
+        else:
+            reply = "Non ho capito la richiesta. Prova con: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
 
         st["last_intent"] = intent
         return reply, st
