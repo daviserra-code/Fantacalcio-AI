@@ -469,25 +469,20 @@ class FantacalcioAssistant:
                     p["birth_year"] = birth_year
                     pool.append(p)
             else:
-                # Fallback to existing birth_year
-                age = self._age_from_by(p.get("birth_year"))
-                if age is not None and age <= max_age:
-                    pool.append(p)
+                # Fallback to existing birth_year, but be strict about validation
+                existing_birth_year = p.get("birth_year")
+                if existing_birth_year and _valid_birth_year(existing_birth_year):
+                    age = self._age_from_by(existing_birth_year)
+                    if age is not None and age <= max_age:
+                        pool.append(p)
         
-        # If still empty, try age estimation
-        if not pool:
-            LOG.info(f"[Under21] No {r} players found under {max_age}, trying age estimation...")
-            self._ensure_guessed_ages_for_role(r, limit=200)
-            base = self._pool_by_role(r)
-            for p in base:
-                age = self._age_from_by(p.get("birth_year"))
-                if age is not None and age <= max_age:
-                    pool.append(p)
+        # Remove the automatic age estimation fallback as it's causing wrong results
+        # Only use verified ages from overrides/age_index
         
         # Sort by fantamedia descending, then price ascending
         pool.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9_999.0)))
         
-        LOG.info(f"[Under21] Found {len(pool)} {r} players under {max_age}")
+        LOG.info(f"[Under21] Found {len(pool)} {r} players under {max_age} with verified ages")
         return pool[:take]
 
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
@@ -634,38 +629,13 @@ class FantacalcioAssistant:
         return f"Ecco i profili Under {max_age}:\n" + "\n".join(lines) + fallback_msg
 
     def _enhance_youth_data(self):
-        """Try to estimate ages for more players to improve youth detection"""
+        """Try to estimate ages for more players to improve youth detection - DISABLED for accuracy"""
+        # Disable automatic age estimation as it was causing incorrect results
+        # Only use verified ages from age_overrides.json and age_index.json
         if hasattr(self, '_youth_enhanced'):
             return  # Already done
 
-        current_year = 2025 # Assuming current season is 2024-2025
-        enhanced = 0
-
-        for p in self.roster:
-            if p.get("birth_year"):
-                continue  # Already has birth year
-
-            name = p.get("name", "").lower()
-
-            # Heuristic: players with certain name patterns are often young
-            youth_indicators = ["junior", "jr", "filho", "inho", "ito", "el", "young", "giovane"]
-            if any(indicator in name for indicator in youth_indicators):
-                # Estimate as young player (born around 2003-2005)
-                estimated_birth_year = current_year - 20 # Approximate age 20
-                p["birth_year"] = estimated_birth_year
-                enhanced += 1
-                continue
-
-            # Try knowledge base estimation more aggressively
-            estimated_by = self._guess_birth_year_from_km(p.get("name", ""))
-            if estimated_by:
-                p["birth_year"] = estimated_by
-                enhanced += 1
-
-        if enhanced > 0:
-            LOG.info(f"[Youth Enhancement] Estimated ages for {enhanced} more players")
-            self._make_filtered_roster()  # Refresh with new ages
-
+        LOG.info("[Youth Enhancement] Automatic age estimation disabled - using only verified ages from overrides")
         self._youth_enhanced = True
 
 
