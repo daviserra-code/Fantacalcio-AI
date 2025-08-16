@@ -370,7 +370,36 @@ class FantacalcioAssistant:
 
     def _make_filtered_roster(self) -> None:
         out=[]
+        
+        # First, add all players with verified ages from overrides (regardless of team/season)
         for p in self.roster:
+            name = p.get("name", "").strip()
+            team = p.get("team", "").strip()
+            
+            # Check if player has verified age in overrides
+            possible_keys = [
+                f"{name}@@{team}",
+                f"{_norm_name(name)}@@{_norm_team(team)}",
+                _age_key(name, team)
+            ]
+            
+            has_verified_age = False
+            for key in possible_keys:
+                if key in self.overrides or key in self.age_index:
+                    has_verified_age = True
+                    break
+            
+            if has_verified_age:
+                # Update birth_year from overrides if needed
+                for key in possible_keys:
+                    birth_year = self.overrides.get(key) or self.age_index.get(key)
+                    if birth_year:
+                        p["birth_year"] = birth_year
+                        break
+                out.append(p)
+                continue
+                
+            # Standard filtering for other players
             if not self._team_ok(p.get("team","")): continue
             
             # For young players (Under 25), be more lenient with season filtering
@@ -384,6 +413,7 @@ class FantacalcioAssistant:
             if by is not None and (REF_YEAR - by) > 36:  # taglio hard vecchissimi
                 continue
             out.append(p)
+            
         self.filtered_roster = out
         LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s)", len(out), self.season_filter or "ANY")
 
@@ -511,6 +541,14 @@ class FantacalcioAssistant:
         pool.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9_999.0)))
         
         LOG.info(f"[Under21] Found {len(pool)} {r} players under {max_age} with verified ages")
+        
+        # Debug: show what we found
+        for i, p in enumerate(pool[:5]):
+            name = p.get("name", "")
+            team = p.get("team", "")
+            age = self._age_from_by(p.get("birth_year"))
+            LOG.info(f"[Under21] Result {i+1}: {name} ({team}), age={age}")
+            
         return pool[:take]
 
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
