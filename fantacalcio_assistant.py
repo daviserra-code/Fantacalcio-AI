@@ -432,6 +432,7 @@ class FantacalcioAssistant:
         processed_override_players = set()
 
         # First, create all players from overrides that might not be in roster
+        # BUT only include them for Under21 queries, not for budget-based formations
         processed_players = set()  # Track to prevent duplicates
 
         for key, birth_year in self.overrides.items():
@@ -457,7 +458,7 @@ class FantacalcioAssistant:
                     # Get role from override data, default to "C"
                     role = self.override_roles.get(key, "C")
 
-                    # Create synthetic player from override
+                    # Only add synthetic players for Under21 tracking, mark them clearly
                     synthetic_player = {
                         "name": name,
                         "team": team,
@@ -468,7 +469,8 @@ class FantacalcioAssistant:
                         "_price": None,
                         "_fm": None,
                         "season": "2025-26",
-                        "_source": "override_synthetic"
+                        "_source": "override_synthetic",
+                        "_for_under21_only": True  # Mark these as Under21-only
                     }
                     out.append(synthetic_player)
                     processed_override_players.add(key)
@@ -516,8 +518,9 @@ class FantacalcioAssistant:
 
         self.filtered_roster = out
         override_count = len([p for p in out if p.get("_source") == "override_synthetic"])
-        LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s, %d da overrides)",
-                len(out), self.season_filter or "ANY", override_count)
+        real_data_count = len([p for p in out if p.get("_source") != "override_synthetic"])
+        LOG.info("[Assistant] Pool filtrato: %d record totali (%d reali + %d synthetic da overrides, stagione=%s)",
+                len(out), real_data_count, override_count, self.season_filter or "ANY")
 
     # ---------- KM guess ----------
     def _guess_birth_year_from_km(self, name: str) -> Optional[int]:
@@ -720,6 +723,11 @@ class FantacalcioAssistant:
         pool=[]
         for p in self._pool_by_role(r):
             fm = p.get("_fm"); pr = p.get("_price")
+            
+            # Skip players without essential data for budget formations
+            if p.get("_source") == "override_synthetic" and (fm is None or pr is None):
+                continue
+                
             fm_ok = float(fm) if isinstance(fm,(int,float)) else 0.0
             denom = pr if isinstance(pr,(int,float)) else 100.0
             vr = fm_ok / max(denom, 1.0)
@@ -748,17 +756,36 @@ class FantacalcioAssistant:
         def pick(r: str):
             need = slots[r]; cap = max(1, role_budget[r]); cap_slot = cap/need
             pool = self._select_top_role_any(r, take=600)
-            chosen=[]
+            
+            # Filter out players without price/fantamedia data for budget-based formations
+            valid_pool = []
             for p in pool:
+                # Skip synthetic override players that have no real data
+                if p.get("_source") == "override_synthetic":
+                    continue
+                # Only include players with both price and fantamedia for budget calculations
+                if p.get("_price") is not None and p.get("_fm") is not None:
+                    valid_pool.append(p)
+            
+            # Sort by value ratio (fantamedia/price) for budget efficiency
+            valid_pool.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
+            
+            chosen=[]
+            # First pass: try to fit within budget with high-value players
+            for p in valid_pool:
                 if len(chosen)>=need: break
                 if p.get("name") in used: continue
                 pr = p.get("_price")
-                if isinstance(pr,(int,float)) and pr <= cap_slot*1.10:
+                if isinstance(pr,(int,float)) and pr <= cap_slot*1.2:  # Allow 20% over slot budget
                     chosen.append(p); used.add(p.get("name"))
-            for p in pool:
-                if len(chosen)>=need: break
-                if p.get("name") in used: continue
-                chosen.append(p); used.add(p.get("name"))
+            
+            # Second pass: fill remaining slots with best available (if budget allows)
+            if len(chosen) < need:
+                for p in valid_pool:
+                    if len(chosen)>=need: break
+                    if p.get("name") in used: continue
+                    chosen.append(p); used.add(p.get("name"))
+                    
             picks[r]=chosen[:need]
 
         for r in ["P","D","C","A"]:
