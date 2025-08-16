@@ -370,13 +370,43 @@ class FantacalcioAssistant:
 
     def _make_filtered_roster(self) -> None:
         out=[]
+        processed_override_players = set()
         
-        # First, add all players with verified ages from overrides (regardless of team/season)
+        # First, create all players from overrides that might not be in roster
+        for key, birth_year in self.overrides.items():
+            if "@@" in key:
+                name, team = key.split("@@", 1)
+                # Create a synthetic player record for override entries not in roster
+                found_in_roster = False
+                for p in self.roster:
+                    if (p.get("name", "").strip() == name and 
+                        p.get("team", "").strip() == team):
+                        found_in_roster = True
+                        break
+                
+                if not found_in_roster:
+                    # Create synthetic player from override
+                    synthetic_player = {
+                        "name": name,
+                        "team": team,
+                        "role": "C",  # Default role, will be corrected if known
+                        "birth_year": birth_year,
+                        "price": None,
+                        "fantamedia": None,
+                        "_price": None,
+                        "_fm": None,
+                        "season": "2025-26",
+                        "_source": "override_synthetic"
+                    }
+                    out.append(synthetic_player)
+                    processed_override_players.add(key)
+        
+        # Then process regular roster with override matching
         for p in self.roster:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
             
-            # Check if player has verified age in overrides
+            # Check if player has verified age in overrides with multiple key formats
             possible_keys = [
                 f"{name}@@{team}",
                 f"{_norm_name(name)}@@{_norm_team(team)}",
@@ -387,15 +417,13 @@ class FantacalcioAssistant:
             for key in possible_keys:
                 if key in self.overrides or key in self.age_index:
                     has_verified_age = True
-                    break
-            
-            if has_verified_age:
-                # Update birth_year from overrides if needed
-                for key in possible_keys:
+                    # Update birth_year from overrides
                     birth_year = self.overrides.get(key) or self.age_index.get(key)
                     if birth_year:
                         p["birth_year"] = birth_year
-                        break
+                    break
+            
+            if has_verified_age:
                 out.append(p)
                 continue
                 
@@ -415,7 +443,9 @@ class FantacalcioAssistant:
             out.append(p)
             
         self.filtered_roster = out
-        LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s)", len(out), self.season_filter or "ANY")
+        override_count = len([p for p in out if p.get("_source") == "override_synthetic"])
+        LOG.info("[Assistant] Pool filtrato: %d record (stagione=%s, %d da overrides)", 
+                len(out), self.season_filter or "ANY", override_count)
 
     # ---------- KM guess ----------
     def _guess_birth_year_from_km(self, name: str) -> Optional[int]:
@@ -489,66 +519,83 @@ class FantacalcioAssistant:
     # ---------- Selettori ----------
     def _select_under(self, r: str, max_age: int = 21, take: int = 3) -> List[Dict[str,Any]]:
         pool=[]
-        base = self._pool_by_role(r)
         
-        LOG.info(f"[Under21] Starting with {len(base)} {r} players in filtered roster")
+        # Get ALL players from filtered roster and check role + age
+        LOG.info(f"[Under21] Looking for {r} players under {max_age} in {len(self.filtered_roster)} total players")
         
-        # Debug: log some examples of what we have
-        for i, p in enumerate(base[:3]):
-            name = p.get("name", "").strip()
-            team = p.get("team", "").strip()
-            age_key = _age_key(name, team)
-            LOG.info(f"[Under21] Example {i+1}: {name} ({team}) key='{age_key}'")
-        
-        # Check age overrides first
-        for p in base:
-            name = p.get("name", "").strip()
-            team = p.get("team", "").strip()
-            
-            # Try multiple key formats for better matching
-            possible_keys = [
-                f"{name}@@{team}",  # Exact format
-                f"{_norm_name(name)}@@{_norm_team(team)}",  # Normalized format
-                _age_key(name, team)  # Current format
-            ]
-            
-            birth_year = None
-            for key in possible_keys:
-                birth_year = self.overrides.get(key) or self.age_index.get(key)
-                if birth_year:
-                    break
-            
-            if birth_year:
+        # Debug: check all override players for this role
+        override_matches = []
+        for key, birth_year in self.overrides.items():
+            if "@@" in key:
+                name, team = key.split("@@", 1)
                 age = self._age_from_by(birth_year)
-                LOG.info(f"[Under21] Found in overrides: {name} ({team}): birth_year={birth_year}, age={age}")
                 if age is not None and age <= max_age:
-                    # Update the player record with correct age
-                    p["birth_year"] = birth_year
-                    pool.append(p)
-            else:
-                # Fallback to existing birth_year, but be strict about validation
-                existing_birth_year = p.get("birth_year")
-                if existing_birth_year and _valid_birth_year(existing_birth_year):
-                    age = self._age_from_by(existing_birth_year)
-                    if age is not None and age <= max_age:
-                        LOG.info(f"[Under21] Found existing birth_year: {name} ({team}): birth_year={existing_birth_year}, age={age}")
-                        pool.append(p)
+                    override_matches.append(f"{name} ({team}) - age {age}")
         
-        # Remove the automatic age estimation fallback as it's causing wrong results
-        # Only use verified ages from overrides/age_index
+        LOG.info(f"[Under21] Total U{max_age} players in overrides: {len(override_matches)}")
+        if override_matches[:5]:  # Show first 5
+            LOG.info(f"[Under21] Examples: {', '.join(override_matches[:5])}")
+        
+        # Check each player in filtered roster
+        role_matches = 0
+        age_matches = 0
+        final_matches = 0
+        
+        for p in self.filtered_roster:
+            # Check role - be more flexible with role detection
+            player_role = p.get("role", "").strip().upper()
+            role_raw = p.get("role_raw", "").strip().upper()
+            
+            # More comprehensive role matching
+            is_role_match = False
+            if r == "D":
+                is_role_match = (player_role in ["D"] or 
+                               any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS"]))
+            elif r == "C":
+                is_role_match = (player_role in ["C"] or 
+                               any(x in role_raw for x in ["CENTROCAMP", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ"]))
+            elif r == "A":
+                is_role_match = (player_role in ["A"] or 
+                               any(x in role_raw for x in ["ATTACC", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN"]))
+            elif r == "P":
+                is_role_match = (player_role in ["P"] or 
+                               any(x in role_raw for x in ["PORTIER", "GK", "POR"]))
+            
+            if is_role_match:
+                role_matches += 1
+                
+                # Check age
+                name = p.get("name", "").strip()
+                team = p.get("team", "").strip()
+                
+                # Try multiple key formats for better matching
+                possible_keys = [
+                    f"{name}@@{team}",
+                    f"{_norm_name(name)}@@{_norm_team(team)}",
+                    _age_key(name, team)
+                ]
+                
+                birth_year = p.get("birth_year")
+                for key in possible_keys:
+                    override_birth_year = self.overrides.get(key) or self.age_index.get(key)
+                    if override_birth_year:
+                        birth_year = override_birth_year
+                        p["birth_year"] = birth_year  # Update player record
+                        break
+                
+                if birth_year and _valid_birth_year(birth_year):
+                    age = self._age_from_by(birth_year)
+                    if age is not None and age <= max_age:
+                        age_matches += 1
+                        pool.append(p)
+                        final_matches += 1
+                        LOG.info(f"[Under21] MATCH: {name} ({team}) - role: {player_role}/{role_raw}, age: {age}")
+        
+        LOG.info(f"[Under21] Summary - Role matches: {role_matches}, Age matches: {age_matches}, Final: {final_matches}")
         
         # Sort by fantamedia descending, then price ascending
         pool.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9_999.0)))
         
-        LOG.info(f"[Under21] Found {len(pool)} {r} players under {max_age} with verified ages")
-        
-        # Debug: show what we found
-        for i, p in enumerate(pool[:5]):
-            name = p.get("name", "")
-            team = p.get("team", "")
-            age = self._age_from_by(p.get("birth_year"))
-            LOG.info(f"[Under21] Result {i+1}: {name} ({team}), age={age}")
-            
         return pool[:take]
 
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
