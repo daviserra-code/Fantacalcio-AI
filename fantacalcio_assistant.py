@@ -281,6 +281,14 @@ class FantacalcioAssistant:
                 data = json.load(f)
         except Exception as e:
             LOG.error("[Assistant] Errore apertura roster: %s", e)
+            # Create backup of corrupted file
+            backup_path = f"{path}.corrupted.{int(time.time())}"
+            try:
+                import shutil
+                shutil.copy2(path, backup_path)
+                LOG.warning("[Assistant] File corrotto salvato come backup: %s", backup_path)
+            except Exception:
+                pass
             return roster
         if not isinstance(data, list):
             return roster

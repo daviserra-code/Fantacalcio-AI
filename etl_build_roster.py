@@ -68,6 +68,19 @@ def main():
         seen.add(key)
         clean.append(p)
 
+    # Don't overwrite if we have 0 players (likely indicates data issue)
+    if len(clean) == 0:
+        LOG.warning("[ETL] Non sovrascrivo %s - 0 giocatori trovati (possibile problema dati)", OUT_PATH)
+        # Check if file exists and has content
+        try:
+            with open(OUT_PATH, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+            if isinstance(existing, list) and len(existing) > 0:
+                LOG.info("[ETL] Mantengo roster esistente con %d giocatori", len(existing))
+                return
+        except Exception:
+            pass
+    
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(clean, f, ensure_ascii=False, indent=2)
     LOG.info("[ETL] Salvato %s con %d giocatori", OUT_PATH, len(clean))
