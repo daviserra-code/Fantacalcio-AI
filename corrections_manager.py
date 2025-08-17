@@ -416,9 +416,15 @@ class CorrectionsManager:
 
     def remove_player(self, player_name: str, reason: str = "User request"):
         """Permanently remove a player from all recommendations."""
-        self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
-        self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
-        return f"Player {player_name} has been permanently excluded from all recommendations."
+        # Add to corrections database with persistent flag
+        success = self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
+        if success:
+            self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
+            # Force immediate application by clearing any cached data
+            self._clear_correction_cache()
+            return f"✅ {player_name} è stato rimosso permanentemente da tutte le raccomandazioni (persistente tra sessioni)."
+        else:
+            return f"❌ Errore nel rimuovere {player_name} dal database."
 
     def update_player_team(self, player_name: str, old_team: str, new_team: str):
         """Update player's team affiliation and log the change."""
@@ -460,14 +466,28 @@ class CorrectionsManager:
 
     def get_excluded_players(self):
         """Retrieve a list of player names marked for exclusion."""
-        # Fetch all persistent corrections
-        all_corrections = self.get_corrections(persistent_only=True)
-        excluded = []
-        for correction in all_corrections:
-            # Check if it's a REMOVE correction with new_value "EXCLUDED"
-            if correction[2] == "REMOVE" and correction[4] == "EXCLUDED":  # correction_type and new_value
-                excluded.append(correction[1])  # player_name
-        return excluded
+        # Use cached version if available
+        if hasattr(self, '_excluded_players_cache'):
+            return self._excluded_players_cache
+            
+        # Fetch all persistent corrections from database
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT player_name FROM corrections 
+                    WHERE correction_type = 'REMOVE' 
+                    AND new_value = 'EXCLUDED' 
+                    AND persistent = TRUE
+                """)
+                excluded = [row[0] for row in cursor.fetchall()]
+                
+                # Cache the result
+                self._excluded_players_cache = excluded
+                return excluded
+        except Exception as e:
+            logger.error(f"Error retrieving excluded players: {e}")
+            return []
 
     def apply_corrections_to_data(self, players_data: list):
         """Apply all persistent corrections and filters to a list of player dictionaries."""
@@ -486,8 +506,8 @@ class CorrectionsManager:
         for player in players_data:
             player_name = player.get("name", "")
 
-            # Skip players marked for exclusion
-            if player_name in excluded_players:
+            # Skip players marked for exclusion (case-insensitive matching)
+            if any(player_name.lower() == excluded.lower() for excluded in excluded_players):
                 continue
 
             # Apply team updates if available
@@ -499,6 +519,13 @@ class CorrectionsManager:
                 filtered_data.append(player)
 
         return filtered_data
+
+    def _clear_correction_cache(self):
+        """Clear any internal correction caches to force fresh data loading."""
+        self._correction_cache = {}
+        # Force re-initialization of any cached data
+        if hasattr(self, '_excluded_players_cache'):
+            delattr(self, '_excluded_players_cache')
 
     def is_serie_a_team(self, team: str) -> bool:
         """Check if a given team name is part of the current Serie A league."""

@@ -180,7 +180,8 @@ class FantacalcioAssistant:
         # Apply data corrections
         if self.corrections_manager:
             self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
-            LOG.info("[Assistant] Applied data corrections to roster")
+            excluded_count = len(self.corrections_manager.get_excluded_players())
+            LOG.info("[Assistant] Applied data corrections to roster, %d players excluded", excluded_count)
 
         self._auto_detect_season()
         self._apply_ages_to_roster()

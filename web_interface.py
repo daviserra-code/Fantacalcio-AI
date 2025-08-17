@@ -275,7 +275,10 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
 
             try:
                 result = fantacalcio_assistant.remove_player_permanently(player_name)
-                return f"✅ {result}"
+                # Force reload of the assistant's data to apply changes immediately
+                fantacalcio_assistant.roster = fantacalcio_assistant.corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
+                fantacalcio_assistant._make_filtered_roster()
+                return result
             except Exception as e:
                 return f"❌ Errore nell'applicare la correzione: {e}"
 
