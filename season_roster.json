@@ -5,7 +5,7 @@
     "team": "Atalanta",
     "birth_year": 2001,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 5.4,
     "appearances": 0
   },
   {
@@ -122,7 +122,7 @@
     "team": "Atalanta",
     "birth_year": 1995,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 6.34,
     "appearances": 0
   },
   {
@@ -779,7 +779,7 @@
     "team": "Fiorentina",
     "birth_year": 1996,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.21,
     "appearances": 0
   },
   {
@@ -788,7 +788,7 @@
     "team": "Fiorentina",
     "birth_year": 1992,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.0,
     "appearances": 0
   },
   {
@@ -851,7 +851,7 @@
     "team": "Fiorentina",
     "birth_year": 1998,
     "price": 15,
-    "fantamedia": 0.0,
+    "fantamedia": 6.06,
     "appearances": 0
   },
   {
@@ -1490,7 +1490,7 @@
     "team": "Lazio",
     "birth_year": 1993,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 5.85,
     "appearances": 0
   },
   {
@@ -1499,7 +1499,7 @@
     "team": "Lazio",
     "birth_year": 1995,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.03,
     "appearances": 0
   },
   {
@@ -1508,7 +1508,7 @@
     "team": "Lazio",
     "birth_year": 1998,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 5.53,
     "appearances": 0
   },
   {
@@ -1535,7 +1535,7 @@
     "team": "Lazio",
     "birth_year": 1994,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.52,
     "appearances": 0
   },
   {
@@ -1571,7 +1571,7 @@
     "team": "Lazio",
     "birth_year": 1993,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 6.64,
     "appearances": 0
   },
   {
@@ -1985,7 +1985,7 @@
     "team": "Napoli",
     "birth_year": 1994,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 6.16,
     "appearances": 0
   },
   {
@@ -2291,7 +2291,7 @@
     "team": "Roma",
     "birth_year": 1999,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 6.26,
     "appearances": 0
   },
   {
@@ -2372,7 +2372,7 @@
     "team": "Roma",
     "birth_year": 1995,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.41,
     "appearances": 0
   },
   {
@@ -2381,7 +2381,7 @@
     "team": "Roma",
     "birth_year": 1994,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.68,
     "appearances": 0
   },
   {
@@ -2588,7 +2588,7 @@
     "team": "Torino",
     "birth_year": 1999,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 6.41,
     "appearances": 0
   },
   {
@@ -2642,7 +2642,7 @@
     "team": "Torino",
     "birth_year": 2001,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.03,
     "appearances": 0
   },
   {
@@ -2723,7 +2723,7 @@
     "team": "Udinese",
     "birth_year": 1999,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 5.85,
     "appearances": 0
   },
   {
@@ -2732,7 +2732,7 @@
     "team": "Udinese",
     "birth_year": 2000,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.0,
     "appearances": 0
   },
   {
