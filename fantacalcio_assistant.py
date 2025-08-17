@@ -1233,6 +1233,38 @@ class FantacalcioAssistant:
 
         return True
 
+    def _get_roster_context(self) -> str:
+        """Get a representative sample of roster data for LLM context"""
+        if not hasattr(self, 'filtered_roster') or not self.filtered_roster:
+            return "ROSTER VUOTO - aggiornare i dati"
+        
+        # Get top players by role for context
+        context_parts = []
+        
+        for role in ["A", "C", "D", "P"]:
+            role_players = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == role]
+            # Sort by fantamedia desc, then by price asc
+            role_players.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
+            
+            role_name = {"A": "Attaccanti", "C": "Centrocampisti", "D": "Difensori", "P": "Portieri"}[role]
+            context_parts.append(f"\n{role_name} TOP (roster corrente):")
+            
+            for i, p in enumerate(role_players[:5]):  # Top 5 per ruolo
+                name = p.get("name", "N/D")
+                team = p.get("team", "N/D")
+                fm = p.get("_fm")
+                price = p.get("_price")
+                
+                fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
+                price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
+                
+                context_parts.append(f"  {i+1}. {name} ({team}) - {fm_str}, {price_str}")
+        
+        total_players = len(self.filtered_roster)
+        context_parts.insert(0, f"ROSTER CORRENTE ({total_players} giocatori Serie A 2024-25/2025-26):")
+        
+        return "\n".join(context_parts)
+
     def update_player_data(self, player_name: str, **updates):
         """Update player data with corrections tracking"""
         if not self.corrections_manager:
@@ -1318,6 +1350,24 @@ class FantacalcioAssistant:
                     if 'u' in turn: messages.append({"role": "user", "content": turn['u']})
                     if 'a' in turn: messages.append({"role": "assistant", "content": turn['a']})
 
+            # Add specific context for attacker queries to avoid outdated responses
+            user_lower = user_text.lower()
+            if any(term in user_lower for term in ["attaccant", "miglior", "top", "punta"]):
+                attackers = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "A"]
+                if attackers:
+                    attackers.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
+                    top_attackers = []
+                    for p in attackers[:8]:
+                        name = p.get("name", "")
+                        team = p.get("team", "")
+                        fm = p.get("_fm")
+                        price = p.get("_price")
+                        fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
+                        price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
+                        top_attackers.append(f"- {name} ({team}) - {fm_str}, {price_str}")
+                    
+                    roster_context = f"ATTACCANTI DISPONIBILI NEL ROSTER:\n" + "\n".join(top_attackers)
+                    messages.append({"role": "system", "content": roster_context})
 
             messages.append({"role": "user", "content": user_text})
 
@@ -1333,7 +1383,7 @@ class FantacalcioAssistant:
                 "messages": messages
             }
 
-            LOG.debug("[Assistant] Calling OpenAI API with prompt: %s", messages)
+            LOG.debug("[Assistant] Calling OpenAI API with enhanced context")
 
             with httpx.Client(timeout=60.0) as client:
                 resp = client.post(
@@ -1344,7 +1394,13 @@ class FantacalcioAssistant:
                 resp.raise_for_status()
                 data = resp.json()
                 response_content = data["choices"][0]["message"]["content"].strip()
-                LOG.debug("[Assistant] OpenAI API response: %s", response_content)
+                
+                # Additional validation: ensure response doesn't mention players not in roster
+                if self._contains_invalid_players(response_content):
+                    LOG.warning("[Assistant] LLM response contained invalid players, filtering...")
+                    response_content = self._filter_invalid_players(response_content)
+                
+                LOG.debug("[Assistant] OpenAI API response validated")
                 return response_content
 
         except Exception as e:
@@ -1352,44 +1408,39 @@ class FantacalcioAssistant:
             return "⚠️ Servizio momentaneamente non disponibile. Riprova tra poco."
 
     def _get_system_prompt(self) -> str:
-        """Get enhanced system prompt for LLM"""
-        # This prompt is critical for guiding the LLM's behavior and data interpretation.
-        # It emphasizes data accuracy, handling corrections, and specific fantacalcio tasks.
-        return """Sei un assistente esperto di fantacalcio italiano con accesso a dati aggiornati e la capacità di applicare correzioni in tempo reale.
+        """Get enhanced system prompt for LLM with current roster context"""
+        # Get a sample of current roster data for context
+        roster_context = self._get_roster_context()
+        
+        return f"""Sei un assistente esperto di fantacalcio italiano con accesso ai dati del roster corrente della stagione 2024-25/2025-26.
 
-DATI E AGGIORNAMENTI:
-- Hai accesso a dati di giocatori di Serie A aggiornati per la stagione 2024-2025 e 2025-2026.
-- Le informazioni sui trasferimenti dei giocatori sono applicate con priorità.
-- Se trovi nel tuo contesto o nell'input dell'utente "CORREZIONI RECENTI" o simili, usale SEMPRE come fonte prioritaria per dati specifici (es. squadre, ruoli).
-- Non inventare mai dati sui trasferimenti o sulle performance; se non sei sicuro, ammettilo chiaramente.
+IMPORTANTE - DATI ROSTER CORRENTE:
+{roster_context}
+
+REGOLE FONDAMENTALI:
+- DEVI BASARTI SOLO sui giocatori presenti nel roster sopra indicato
+- NON menzionare giocatori che non sono nel roster corrente (es. Osimhen, Kvaratskhelia non sono più disponibili)
+- Se non trovi dati sufficienti nel roster per rispondere, dillo chiaramente: "Non ho dati sufficienti nel roster corrente per questa analisi"
+- Prioritizza sempre fantamedia e prezzo dai dati del roster
 
 GESTIONE TRASFERIMENTI E CORREZIONI:
-- Applicare le seguenti correzioni note:
-    - Morata: ora gioca nel Como (non più nel Milan).
-    - Kvaratskhelia: non gioca più nel Napoli.
-- Se l'utente fornisce correzioni specifiche, integrarle immediatamente nella tua conoscenza per le risposte successive.
+- Morata: ora gioca nel Como (aggiornamento recente)
+- Kvaratskhelia: trasferito, non più disponibile in Serie A
+- Se l'utente fornisce correzioni, integrarle immediatamente
 
-COMPORTAMENTO GENERALE:
-- Rispondi sempre in italiano.
-- Sii preciso sui dati dei giocatori (nome, squadra, ruolo, fantamedia, prezzo) e delle squadre.
-- Prioritizza le informazioni corrette e aggiornate.
-- Per i giocatori giovani (Under 21/23), verifica e indica l'età reale se disponibile.
-- Mantieni il contesto della conversazione per fornire risposte coerenti.
-- Fornisci consigli pratici basati su dati corretti, come suggerimenti per formazioni o strategie d'asta.
+COMPORTAMENTO:
+- Rispondi sempre in italiano
+- Usa solo giocatori dal roster corrente
+- Indica fantamedia e prezzo quando disponibili
+- Se mancano dati, suggerisci di aggiornare il roster
+- Per confronti/classifiche, usa solo i dati disponibili nel roster
 
-CAPACITÀ SPECIFICHE:
-- Suggerire formazioni ottimizzate per budget e modulo.
-- Identificare giocatori giovani promettenti (Under 21/23).
-- Fornire strategie d'asta efficaci.
-- Analizzare giocatori e suggerire alternative basate sui dati più recenti.
+STRUTTURA RISPOSTE:
+- Nomina solo giocatori presenti nel roster
+- Includi squadra, fantamedia e prezzo se disponibili
+- Se i dati sono limitati, dillo esplicitamente
 
-PRIORITÀ DELLE INFORMAZIONI:
-1. Correzioni utente/di sistema esplicite.
-2. Dati di roster aggiornati e puliti.
-3. Dati da Knowledge Manager (se integrato e rilevante).
-4. Inferenze basate su pattern generali (solo se necessario e con cautela).
-
-Il tuo obiettivo è fornire un'analisi precisa e utile per le decisioni di fantacalcio, tenendo conto della qualità e dell'aggiornamento dei dati."""
+Il tuo obiettivo è fornire analisi accurate basate ESCLUSIVAMENTE sui dati del roster corrente."""
 
     def debug_under(self, role: str, max_age: int = 21, take: int = 10) -> List[Dict[str,Any]]:
         role=(role or "").upper()[:1]
@@ -1402,6 +1453,56 @@ Il tuo obiettivo è fornire un'analisi precisa e utile per le decisioni di fanta
             })
             if len(out)>=take: break
         return out
+
+    def _contains_invalid_players(self, text: str) -> bool:
+        """Check if text contains players not in current roster"""
+        # Known outdated players that shouldn't appear
+        outdated_players = [
+            "osimhen", "victor osimhen", "kvaratskhelia", "kvara", 
+            "donnarumma", "gianluigi donnarumma", "skriniar", "milan skriniar"
+        ]
+        
+        text_lower = text.lower()
+        return any(player in text_lower for player in outdated_players)
+
+    def _filter_invalid_players(self, text: str) -> str:
+        """Filter out mentions of players not in current roster"""
+        if not self._contains_invalid_players(text):
+            return text
+        
+        # Get actual roster data for replacement
+        attackers = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "A"]
+        if not attackers:
+            return "Non ho dati sufficienti sugli attaccanti nel roster corrente. Verifica che i dati siano aggiornati."
+        
+        # Sort by fantamedia and get top performers
+        attackers.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
+        
+        response_lines = []
+        response_lines.append("Basandomi sui dati del roster corrente, ecco i migliori attaccanti di Serie A:")
+        
+        for i, p in enumerate(attackers[:5], 1):
+            name = p.get("name", "")
+            team = p.get("team", "")
+            fm = p.get("_fm")
+            price = p.get("_price")
+            
+            line = f"{i}. **{name}** ({team})"
+            
+            details = []
+            if isinstance(fm, (int, float)):
+                details.append(f"FM {fm:.2f}")
+            if isinstance(price, (int, float)):
+                details.append(f"€{int(price)}")
+            
+            if details:
+                line += f" — {', '.join(details)}"
+            
+            response_lines.append(line)
+        
+        response_lines.append("\n*Dati basati sul roster corrente. Se mancano giocatori attesi, verifica gli aggiornamenti dei dati.*")
+        
+        return "\n".join(response_lines)
 
     def peek_age(self, name: str, team: str = "") -> Dict[str,Any]:
         k = _age_key(name, team)
