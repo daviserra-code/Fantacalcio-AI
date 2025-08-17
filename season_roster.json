@@ -4,7 +4,7 @@
     "role": "P",
     "team": "Atalanta",
     "birth_year": 2001,
-    "price": 10,
+    "price": 11,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -18,12 +18,21 @@
     "appearances": 0
   },
   {
+    "name": "Francesco Rossi",
+    "role": "P",
+    "team": "Atalanta",
+    "birth_year": 1991,
+    "price": 4,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Rafael Toloi",
     "role": "D",
     "team": "Atalanta",
     "birth_year": 1990,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 5.9,
     "appearances": 0
   },
   {
@@ -32,6 +41,15 @@
     "team": "Atalanta",
     "birth_year": 1993,
     "price": 8,
+    "fantamedia": 6.13,
+    "appearances": 0
+  },
+  {
+    "name": "Isak Hien",
+    "role": "D",
+    "team": "Atalanta",
+    "birth_year": 1999,
+    "price": 9,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -40,8 +58,8 @@
     "role": "D",
     "team": "Atalanta",
     "birth_year": 2003,
-    "price": 11,
-    "fantamedia": 0.0,
+    "price": 12,
+    "fantamedia": 5.09,
     "appearances": 0
   },
   {
@@ -54,11 +72,20 @@
     "appearances": 0
   },
   {
-    "name": "Ederson",
-    "role": "C",
+    "name": "Matteo Ruggeri",
+    "role": "D",
     "team": "Atalanta",
-    "birth_year": 1999,
-    "price": 13,
+    "birth_year": 2002,
+    "price": 7,
+    "fantamedia": 6.16,
+    "appearances": 0
+  },
+  {
+    "name": "Hans Hateboer",
+    "role": "D",
+    "team": "Atalanta",
+    "birth_year": 1994,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -68,16 +95,7 @@
     "team": "Atalanta",
     "birth_year": 1991,
     "price": 12,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
-    "name": "Mario Pašalić",
-    "role": "C",
-    "team": "Atalanta",
-    "birth_year": 1995,
-    "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 6.59,
     "appearances": 0
   },
   {
@@ -85,16 +103,34 @@
     "role": "C",
     "team": "Atalanta",
     "birth_year": 1998,
-    "price": 21,
+    "price": 22,
+    "fantamedia": 6.27,
+    "appearances": 28
+  },
+  {
+    "name": "Ederson",
+    "role": "C",
+    "team": "Atalanta",
+    "birth_year": 1999,
+    "price": 15,
+    "fantamedia": 6.42,
+    "appearances": 0
+  },
+  {
+    "name": "Mario Pašalić",
+    "role": "C",
+    "team": "Atalanta",
+    "birth_year": 1995,
+    "price": 11,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Ademola Lookman",
-    "role": "A",
+    "name": "Aleksey Miranchuk",
+    "role": "C",
     "team": "Atalanta",
-    "birth_year": 1997,
-    "price": 20,
+    "birth_year": 1995,
+    "price": 8,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -104,8 +140,17 @@
     "team": "Atalanta",
     "birth_year": 1999,
     "price": 18,
-    "fantamedia": 0.0,
+    "fantamedia": 6.2,
     "appearances": 0
+  },
+  {
+    "name": "Ademola Lookman",
+    "role": "A",
+    "team": "Atalanta",
+    "birth_year": 1997,
+    "price": 20,
+    "fantamedia": 7.89,
+    "appearances": 31
   },
   {
     "name": "Charles De Ketelaere",
@@ -113,6 +158,15 @@
     "team": "Atalanta",
     "birth_year": 2001,
     "price": 15,
+    "fantamedia": 6.95,
+    "appearances": 0
+  },
+  {
+    "name": "El Bilal Touré",
+    "role": "A",
+    "team": "Atalanta",
+    "birth_year": 2001,
+    "price": 9,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -126,11 +180,20 @@
     "appearances": 0
   },
   {
-    "name": "Stefano Turati",
+    "name": "Federico Ravaglia",
     "role": "P",
     "team": "Bologna",
-    "birth_year": 2001,
+    "birth_year": 1999,
     "price": 5,
+    "fantamedia": 4.92,
+    "appearances": 0
+  },
+  {
+    "name": "Tommaso Bagnolini",
+    "role": "P",
+    "team": "Bologna",
+    "birth_year": 2004,
+    "price": 4,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -140,7 +203,7 @@
     "team": "Bologna",
     "birth_year": 1997,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 5.83,
     "appearances": 0
   },
   {
@@ -148,7 +211,25 @@
     "role": "D",
     "team": "Bologna",
     "birth_year": 1998,
-    "price": 7,
+    "price": 8,
+    "fantamedia": 5.9,
+    "appearances": 0
+  },
+  {
+    "name": "Jhon Lucumí",
+    "role": "D",
+    "team": "Bologna",
+    "birth_year": 1998,
+    "price": 8,
+    "fantamedia": 5.67,
+    "appearances": 0
+  },
+  {
+    "name": "Victor Kristiansen",
+    "role": "D",
+    "team": "Bologna",
+    "birth_year": 2002,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -162,21 +243,12 @@
     "appearances": 0
   },
   {
-    "name": "Victor Kristiansen",
-    "role": "D",
-    "team": "Bologna",
-    "birth_year": 2002,
-    "price": 6,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
     "name": "Remo Freuler",
     "role": "C",
     "team": "Bologna",
     "birth_year": 1992,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.04,
     "appearances": 0
   },
   {
@@ -185,16 +257,7 @@
     "team": "Bologna",
     "birth_year": 2003,
     "price": 9,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
-    "name": "Lewis Ferguson",
-    "role": "C",
-    "team": "Bologna",
-    "birth_year": 1999,
-    "price": 14,
-    "fantamedia": 0.0,
+    "fantamedia": 6.07,
     "appearances": 0
   },
   {
@@ -207,12 +270,39 @@
     "appearances": 0
   },
   {
+    "name": "Nikola Moro",
+    "role": "C",
+    "team": "Bologna",
+    "birth_year": 1998,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Oussama El Azzouzi",
+    "role": "C",
+    "team": "Bologna",
+    "birth_year": 2001,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Lewis Ferguson",
+    "role": "C",
+    "team": "Bologna",
+    "birth_year": 1999,
+    "price": 14,
+    "fantamedia": 6.19,
+    "appearances": 0
+  },
+  {
     "name": "Riccardo Orsolini",
     "role": "A",
     "team": "Bologna",
     "birth_year": 1997,
     "price": 16,
-    "fantamedia": 0.0,
+    "fantamedia": 8.13,
     "appearances": 0
   },
   {
@@ -221,6 +311,15 @@
     "team": "Bologna",
     "birth_year": 2000,
     "price": 11,
+    "fantamedia": 7.19,
+    "appearances": 0
+  },
+  {
+    "name": "Santiago Castro",
+    "role": "A",
+    "team": "Bologna",
+    "birth_year": 2004,
+    "price": 9,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -230,7 +329,7 @@
     "team": "Bologna",
     "birth_year": 1999,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.76,
     "appearances": 0
   },
   {
@@ -261,15 +360,6 @@
     "appearances": 0
   },
   {
-    "name": "Gabriele Zappa",
-    "role": "D",
-    "team": "Cagliari",
-    "birth_year": 1999,
-    "price": 6,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
     "name": "Yerry Mina",
     "role": "D",
     "team": "Cagliari",
@@ -279,10 +369,46 @@
     "appearances": 0
   },
   {
+    "name": "Adam Obert",
+    "role": "D",
+    "team": "Cagliari",
+    "birth_year": 2002,
+    "price": 6,
+    "fantamedia": 6.0,
+    "appearances": 0
+  },
+  {
     "name": "Tommaso Augello",
     "role": "D",
     "team": "Cagliari",
     "birth_year": 1994,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Gabriele Zappa",
+    "role": "D",
+    "team": "Cagliari",
+    "birth_year": 1999,
+    "price": 6,
+    "fantamedia": 6.0,
+    "appearances": 0
+  },
+  {
+    "name": "Pantelís Chatzidiákos",
+    "role": "D",
+    "team": "Cagliari",
+    "birth_year": 1997,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Ibrahim Sulemana",
+    "role": "C",
+    "team": "Cagliari",
+    "birth_year": 2003,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
@@ -302,6 +428,15 @@
     "team": "Cagliari",
     "birth_year": 1998,
     "price": 8,
+    "fantamedia": 5.8,
+    "appearances": 0
+  },
+  {
+    "name": "Alessandro Deiola",
+    "role": "C",
+    "team": "Cagliari",
+    "birth_year": 1995,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -360,29 +495,65 @@
     "appearances": 0
   },
   {
+    "name": "Matteo Ghidotti",
+    "role": "P",
+    "team": "Como",
+    "birth_year": 1999,
+    "price": 4,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Cas Odenthal",
+    "role": "D",
+    "team": "Como",
+    "birth_year": 2000,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Nikola Katić",
+    "role": "D",
+    "team": "Como",
+    "birth_year": 1996,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Marco Curto",
     "role": "D",
     "team": "Como",
     "birth_year": 1999,
-    "price": 6,
+    "price": 5,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Edoardo Goldaniga",
+    "name": "Giacomo Quagliata",
     "role": "D",
     "team": "Como",
-    "birth_year": 1993,
+    "birth_year": 2000,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Cesc Fabregas",
+    "name": "Tommaso Cassandro",
+    "role": "D",
+    "team": "Como",
+    "birth_year": 2000,
+    "price": 5,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Alessandro Bellemo",
     "role": "C",
     "team": "Como",
-    "birth_year": 1987,
-    "price": 5,
+    "birth_year": 1995,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -396,10 +567,10 @@
     "appearances": 0
   },
   {
-    "name": "Kone Moussa",
+    "name": "Moussa Koné",
     "role": "C",
     "team": "Como",
-    "birth_year": 2000,
+    "birth_year": 1990,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
@@ -409,7 +580,7 @@
     "role": "A",
     "team": "Como",
     "birth_year": 1998,
-    "price": 9,
+    "price": 10,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -432,19 +603,19 @@
     "appearances": 0
   },
   {
-    "name": "Luca Vignali",
-    "role": "D",
+    "name": "Jean-Pierre Nsamé",
+    "role": "A",
     "team": "Como",
-    "birth_year": 1996,
-    "price": 5,
+    "birth_year": 1993,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Ionuț Nedelcearu",
-    "role": "D",
+    "name": "Alessandro Gabrielloni",
+    "role": "A",
     "team": "Como",
-    "birth_year": 1996,
+    "birth_year": 1994,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
@@ -486,6 +657,15 @@
     "appearances": 0
   },
   {
+    "name": "Leonardo Sernicola",
+    "role": "D",
+    "team": "Cremonese",
+    "birth_year": 1997,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Emanuele Valeri",
     "role": "D",
     "team": "Cremonese",
@@ -495,11 +675,11 @@
     "appearances": 0
   },
   {
-    "name": "Leonardo Sernicola",
+    "name": "Paolo Ghiglione",
     "role": "D",
     "team": "Cremonese",
     "birth_year": 1997,
-    "price": 6,
+    "price": 5,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -513,20 +693,20 @@
     "appearances": 0
   },
   {
-    "name": "Luca Zanimacchia",
+    "name": "Marco Benassi",
     "role": "C",
     "team": "Cremonese",
-    "birth_year": 1998,
+    "birth_year": 1994,
     "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Cristian Buonaiuto",
+    "name": "Luca Zanimacchia",
     "role": "C",
     "team": "Cremonese",
-    "birth_year": 1992,
-    "price": 6,
+    "birth_year": 1998,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -554,6 +734,15 @@
     "team": "Cremonese",
     "birth_year": 2003,
     "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Frank Tsadjout",
+    "role": "A",
+    "team": "Cremonese",
+    "birth_year": 1999,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -603,10 +792,19 @@
     "appearances": 0
   },
   {
-    "name": "Dodo",
+    "name": "Dodô",
     "role": "D",
     "team": "Fiorentina",
     "birth_year": 1998,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Fabiano Parisi",
+    "role": "D",
+    "team": "Fiorentina",
+    "birth_year": 2000,
     "price": 8,
     "fantamedia": 0.0,
     "appearances": 0
@@ -639,6 +837,15 @@
     "appearances": 0
   },
   {
+    "name": "Arthur Melo",
+    "role": "C",
+    "team": "Fiorentina",
+    "birth_year": 1996,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Nicolás González",
     "role": "A",
     "team": "Fiorentina",
@@ -653,6 +860,15 @@
     "team": "Fiorentina",
     "birth_year": 1998,
     "price": 9,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Christian Kouamé",
+    "role": "A",
+    "team": "Fiorentina",
+    "birth_year": 1997,
+    "price": 8,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -675,11 +891,11 @@
     "appearances": 0
   },
   {
-    "name": "Stefano Sabelli",
-    "role": "D",
+    "name": "Nicola Leali",
+    "role": "P",
     "team": "Genoa",
     "birth_year": 1993,
-    "price": 6,
+    "price": 5,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -689,6 +905,33 @@
     "team": "Genoa",
     "birth_year": 1998,
     "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Koni De Winter",
+    "role": "D",
+    "team": "Genoa",
+    "birth_year": 2002,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Stefano Sabelli",
+    "role": "D",
+    "team": "Genoa",
+    "birth_year": 1993,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Ridgeciano Haps",
+    "role": "D",
+    "team": "Genoa",
+    "birth_year": 1993,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -716,8 +959,8 @@
     "team": "Genoa",
     "birth_year": 2001,
     "price": 9,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.24,
+    "appearances": 35
   },
   {
     "name": "Kevin Strootman",
@@ -729,11 +972,20 @@
     "appearances": 0
   },
   {
+    "name": "Junior Messias",
+    "role": "A",
+    "team": "Genoa",
+    "birth_year": 1991,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Albert Guðmundsson",
     "role": "A",
     "team": "Genoa",
     "birth_year": 1997,
-    "price": 15,
+    "price": 17,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -751,9 +1003,9 @@
     "role": "A",
     "team": "Genoa",
     "birth_year": 1999,
-    "price": 13,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "price": 14,
+    "fantamedia": 8.67,
+    "appearances": 36
   },
   {
     "name": "Lorenzo Montipò",
@@ -765,10 +1017,28 @@
     "appearances": 0
   },
   {
-    "name": "Pawel Dawidowicz",
+    "name": "Simone Perilli",
+    "role": "P",
+    "team": "Hellas Verona",
+    "birth_year": 1996,
+    "price": 4,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Paweł Dawidowicz",
     "role": "D",
     "team": "Hellas Verona",
     "birth_year": 1995,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Diego Coppola",
+    "role": "D",
+    "team": "Hellas Verona",
+    "birth_year": 2003,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
@@ -810,15 +1080,6 @@
     "appearances": 0
   },
   {
-    "name": "Adrien Tameze",
-    "role": "C",
-    "team": "Hellas Verona",
-    "birth_year": 1994,
-    "price": 7,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
     "name": "Michael Folorunsho",
     "role": "C",
     "team": "Hellas Verona",
@@ -833,6 +1094,15 @@
     "team": "Hellas Verona",
     "birth_year": 1997,
     "price": 7,
+    "fantamedia": 6.2,
+    "appearances": 0
+  },
+  {
+    "name": "Stefan Mitrović",
+    "role": "C",
+    "team": "Hellas Verona",
+    "birth_year": 2002,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -860,7 +1130,7 @@
     "team": "Inter",
     "birth_year": 1988,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 5.34,
     "appearances": 0
   },
   {
@@ -873,12 +1143,21 @@
     "appearances": 0
   },
   {
+    "name": "Raffaele Di Gennaro",
+    "role": "P",
+    "team": "Inter",
+    "birth_year": 1993,
+    "price": 4,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Alessandro Bastoni",
     "role": "D",
     "team": "Inter",
     "birth_year": 1999,
     "price": 14,
-    "fantamedia": 0.0,
+    "fantamedia": 6.35,
     "appearances": 0
   },
   {
@@ -887,7 +1166,7 @@
     "team": "Inter",
     "birth_year": 1988,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 6.09,
     "appearances": 0
   },
   {
@@ -896,7 +1175,7 @@
     "team": "Inter",
     "birth_year": 1992,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.6,
     "appearances": 0
   },
   {
@@ -905,7 +1184,7 @@
     "team": "Inter",
     "birth_year": 1996,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 5.94,
     "appearances": 0
   },
   {
@@ -914,8 +1193,8 @@
     "team": "Inter",
     "birth_year": 1997,
     "price": 13,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.91,
+    "appearances": 31
   },
   {
     "name": "Denzel Dumfries",
@@ -923,8 +1202,8 @@
     "team": "Inter",
     "birth_year": 1996,
     "price": 10,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.98,
+    "appearances": 29
   },
   {
     "name": "Matteo Darmian",
@@ -932,7 +1211,7 @@
     "team": "Inter",
     "birth_year": 1989,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 6.44,
     "appearances": 0
   },
   {
@@ -941,7 +1220,7 @@
     "team": "Inter",
     "birth_year": 1994,
     "price": 18,
-    "fantamedia": 0.0,
+    "fantamedia": 6.73,
     "appearances": 0
   },
   {
@@ -950,8 +1229,8 @@
     "team": "Inter",
     "birth_year": 1997,
     "price": 18,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.65,
+    "appearances": 33
   },
   {
     "name": "Henrikh Mkhitaryan",
@@ -959,7 +1238,7 @@
     "team": "Inter",
     "birth_year": 1989,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.24,
     "appearances": 0
   },
   {
@@ -977,7 +1256,7 @@
     "team": "Inter",
     "birth_year": 2002,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.38,
     "appearances": 0
   },
   {
@@ -986,7 +1265,7 @@
     "team": "Inter",
     "birth_year": 1999,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.55,
     "appearances": 0
   },
   {
@@ -995,7 +1274,7 @@
     "team": "Inter",
     "birth_year": 1997,
     "price": 23,
-    "fantamedia": 0.0,
+    "fantamedia": 7.49,
     "appearances": 0
   },
   {
@@ -1004,8 +1283,8 @@
     "team": "Inter",
     "birth_year": 1997,
     "price": 19,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.75,
+    "appearances": 32
   },
   {
     "name": "Marko Arnautović",
@@ -1013,7 +1292,7 @@
     "team": "Inter",
     "birth_year": 1989,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 7.13,
     "appearances": 0
   },
   {
@@ -1040,6 +1319,15 @@
     "team": "Juventus",
     "birth_year": 1992,
     "price": 6,
+    "fantamedia": 5.66,
+    "appearances": 0
+  },
+  {
+    "name": "Carlo Pinsoglio",
+    "role": "P",
+    "team": "Juventus",
+    "birth_year": 1990,
+    "price": 3,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1058,7 +1346,7 @@
     "team": "Juventus",
     "birth_year": 1997,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 6.1,
     "appearances": 0
   },
   {
@@ -1067,7 +1355,7 @@
     "team": "Juventus",
     "birth_year": 1998,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.1,
     "appearances": 0
   },
   {
@@ -1076,7 +1364,7 @@
     "team": "Juventus",
     "birth_year": 2000,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.12,
     "appearances": 0
   },
   {
@@ -1085,7 +1373,7 @@
     "team": "Juventus",
     "birth_year": 2000,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 6.53,
     "appearances": 0
   },
   {
@@ -1094,7 +1382,7 @@
     "team": "Juventus",
     "birth_year": 1998,
     "price": 14,
-    "fantamedia": 0.0,
+    "fantamedia": 6.17,
     "appearances": 0
   },
   {
@@ -1112,7 +1400,7 @@
     "team": "Juventus",
     "birth_year": 1998,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.15,
     "appearances": 0
   },
   {
@@ -1148,8 +1436,8 @@
     "team": "Juventus",
     "birth_year": 1997,
     "price": 15,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.38,
+    "appearances": 32
   },
   {
     "name": "Dušan Vlahović",
@@ -1157,7 +1445,7 @@
     "team": "Juventus",
     "birth_year": 2000,
     "price": 20,
-    "fantamedia": 0.0,
+    "fantamedia": 7.18,
     "appearances": 0
   },
   {
@@ -1233,6 +1521,15 @@
     "appearances": 0
   },
   {
+    "name": "Patric",
+    "role": "D",
+    "team": "Lazio",
+    "birth_year": 1993,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Danilo Cataldi",
     "role": "C",
     "team": "Lazio",
@@ -1251,20 +1548,20 @@
     "appearances": 0
   },
   {
-    "name": "Toma Bašić",
+    "name": "Daichi Kamada",
     "role": "C",
     "team": "Lazio",
     "birth_year": 1996,
-    "price": 7,
+    "price": 10,
     "fantamedia": 0.0,
     "appearances": 0
   },
   {
-    "name": "Mattia Zaccagni",
-    "role": "A",
+    "name": "Luis Alberto",
+    "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
-    "price": 13,
+    "birth_year": 1992,
+    "price": 11,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1278,13 +1575,22 @@
     "appearances": 0
   },
   {
+    "name": "Mattia Zaccagni",
+    "role": "A",
+    "team": "Lazio",
+    "birth_year": 1995,
+    "price": 13,
+    "fantamedia": 7.01,
+    "appearances": 34
+  },
+  {
     "name": "Ciro Immobile",
     "role": "A",
     "team": "Lazio",
     "birth_year": 1990,
     "price": 14,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.26,
+    "appearances": 29
   },
   {
     "name": "Gustav Isaksen",
@@ -1314,10 +1620,28 @@
     "appearances": 0
   },
   {
+    "name": "Federico Brancolini",
+    "role": "P",
+    "team": "Lecce",
+    "birth_year": 2001,
+    "price": 4,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Lorenzo Venuti",
     "role": "D",
     "team": "Lecce",
     "birth_year": 1995,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Ahmed Touba",
+    "role": "D",
+    "team": "Lecce",
+    "birth_year": 1998,
     "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
@@ -1328,7 +1652,7 @@
     "team": "Lecce",
     "birth_year": 1996,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 6.1,
     "appearances": 0
   },
   {
@@ -1373,7 +1697,7 @@
     "team": "Lecce",
     "birth_year": 1999,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 5.55,
     "appearances": 0
   },
   {
@@ -1391,16 +1715,16 @@
     "team": "Lecce",
     "birth_year": 1997,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.83,
     "appearances": 0
   },
   {
-    "name": "Nikola Krstovic",
+    "name": "Nikola Krstović",
     "role": "A",
     "team": "Lecce",
     "birth_year": 2000,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.91,
     "appearances": 0
   },
   {
@@ -1418,8 +1742,8 @@
     "team": "Milan",
     "birth_year": 1995,
     "price": 11,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 5.18,
+    "appearances": 37
   },
   {
     "name": "Marco Sportiello",
@@ -1427,6 +1751,15 @@
     "team": "Milan",
     "birth_year": 1992,
     "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Lapo Nava",
+    "role": "P",
+    "team": "Milan",
+    "birth_year": 2004,
+    "price": 3,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1444,8 +1777,8 @@
     "role": "D",
     "team": "Milan",
     "birth_year": 1997,
-    "price": 15,
-    "fantamedia": 0.0,
+    "price": 16,
+    "fantamedia": 6.4,
     "appearances": 0
   },
   {
@@ -1454,7 +1787,7 @@
     "team": "Milan",
     "birth_year": 1997,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 5.76,
     "appearances": 0
   },
   {
@@ -1463,7 +1796,7 @@
     "team": "Milan",
     "birth_year": 2001,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.25,
     "appearances": 0
   },
   {
@@ -1472,6 +1805,15 @@
     "team": "Milan",
     "birth_year": 1999,
     "price": 7,
+    "fantamedia": 6.35,
+    "appearances": 0
+  },
+  {
+    "name": "Jan-Carlo Simic",
+    "role": "D",
+    "team": "Milan",
+    "birth_year": 2005,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1490,7 +1832,7 @@
     "team": "Milan",
     "birth_year": 1998,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 7.21,
     "appearances": 0
   },
   {
@@ -1508,7 +1850,7 @@
     "team": "Milan",
     "birth_year": 1996,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 5.86,
     "appearances": 0
   },
   {
@@ -1526,7 +1868,7 @@
     "team": "Milan",
     "birth_year": 1999,
     "price": 20,
-    "fantamedia": 0.0,
+    "fantamedia": 7.16,
     "appearances": 0
   },
   {
@@ -1535,8 +1877,8 @@
     "team": "Milan",
     "birth_year": 1998,
     "price": 14,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.49,
+    "appearances": 34
   },
   {
     "name": "Samuel Chukwueze",
@@ -1544,7 +1886,7 @@
     "team": "Milan",
     "birth_year": 1999,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 6.86,
     "appearances": 0
   },
   {
@@ -1557,12 +1899,21 @@
     "appearances": 0
   },
   {
+    "name": "Luka Jović",
+    "role": "A",
+    "team": "Milan",
+    "birth_year": 1997,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Alex Meret",
     "role": "P",
     "team": "Napoli",
     "birth_year": 1997,
     "price": 8,
-    "fantamedia": 0.0,
+    "fantamedia": 5.74,
     "appearances": 0
   },
   {
@@ -1580,8 +1931,8 @@
     "team": "Napoli",
     "birth_year": 1993,
     "price": 11,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 6.41,
+    "appearances": 35
   },
   {
     "name": "Amir Rrahmani",
@@ -1589,7 +1940,7 @@
     "team": "Napoli",
     "birth_year": 1994,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.33,
     "appearances": 0
   },
   {
@@ -1616,7 +1967,7 @@
     "team": "Napoli",
     "birth_year": 1997,
     "price": 7,
-    "fantamedia": 0.0,
+    "fantamedia": 5.93,
     "appearances": 0
   },
   {
@@ -1661,8 +2012,8 @@
     "team": "Napoli",
     "birth_year": 2001,
     "price": 20,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.24,
+    "appearances": 17
   },
   {
     "name": "Giacomo Raspadori",
@@ -1670,7 +2021,7 @@
     "team": "Napoli",
     "birth_year": 2000,
     "price": 12,
-    "fantamedia": 0.0,
+    "fantamedia": 7.27,
     "appearances": 0
   },
   {
@@ -1679,7 +2030,7 @@
     "team": "Napoli",
     "birth_year": 1993,
     "price": 11,
-    "fantamedia": 0.0,
+    "fantamedia": 6.53,
     "appearances": 0
   },
   {
@@ -1688,8 +2039,8 @@
     "team": "Napoli",
     "birth_year": 1998,
     "price": 23,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.82,
+    "appearances": 25
   },
   {
     "name": "Jesper Lindstrøm",
@@ -1746,6 +2097,24 @@
     "appearances": 0
   },
   {
+    "name": "Enrico Delprato",
+    "role": "D",
+    "team": "Parma",
+    "birth_year": 1999,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Ange-Yoan Bonny",
+    "role": "A",
+    "team": "Parma",
+    "birth_year": 2003,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Dennis Man",
     "role": "A",
     "team": "Parma",
@@ -1773,6 +2142,15 @@
     "appearances": 0
   },
   {
+    "name": "Hernani",
+    "role": "C",
+    "team": "Parma",
+    "birth_year": 1994,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Adrián Bernabé",
     "role": "C",
     "team": "Parma",
@@ -1782,11 +2160,11 @@
     "appearances": 0
   },
   {
-    "name": "Hernani",
+    "name": "Simon Sohm",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1994,
-    "price": 8,
+    "birth_year": 2001,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1800,16 +2178,7 @@
     "appearances": 0
   },
   {
-    "name": "Wylan Cyprien",
-    "role": "C",
-    "team": "Parma",
-    "birth_year": 1995,
-    "price": 6,
-    "fantamedia": 0.0,
-    "appearances": 0
-  },
-  {
-    "name": "Nicolàs Andrade",
+    "name": "Nicolas Andrade",
     "role": "P",
     "team": "Pisa",
     "birth_year": 1988,
@@ -1845,6 +2214,15 @@
     "appearances": 0
   },
   {
+    "name": "Tomas Esteves",
+    "role": "D",
+    "team": "Pisa",
+    "birth_year": 2002,
+    "price": 6,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Marius Marin",
     "role": "C",
     "team": "Pisa",
@@ -1872,11 +2250,11 @@
     "appearances": 0
   },
   {
-    "name": "Lorenzo Lucca",
-    "role": "A",
+    "name": "Emanuel Vignato",
+    "role": "C",
     "team": "Pisa",
     "birth_year": 2000,
-    "price": 9,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1899,11 +2277,11 @@
     "appearances": 0
   },
   {
-    "name": "Joseph Alfred Duncan",
-    "role": "C",
+    "name": "Giuseppe Sibilli",
+    "role": "A",
     "team": "Pisa",
-    "birth_year": 1993,
-    "price": 6,
+    "birth_year": 1996,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1913,6 +2291,15 @@
     "team": "Roma",
     "birth_year": 1999,
     "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Rui Patrício",
+    "role": "P",
+    "team": "Roma",
+    "birth_year": 1988,
+    "price": 5,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -1971,6 +2358,15 @@
     "appearances": 0
   },
   {
+    "name": "Angeliño",
+    "role": "D",
+    "team": "Roma",
+    "birth_year": 1997,
+    "price": 8,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Bryan Cristante",
     "role": "C",
     "team": "Roma",
@@ -1998,13 +2394,22 @@
     "appearances": 0
   },
   {
+    "name": "Houssem Aouar",
+    "role": "C",
+    "team": "Roma",
+    "birth_year": 1998,
+    "price": 9,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Lorenzo Pellegrini",
     "role": "C",
     "team": "Roma",
     "birth_year": 1996,
     "price": 14,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 5.94,
+    "appearances": 25
   },
   {
     "name": "Paulo Dybala",
@@ -2012,8 +2417,8 @@
     "team": "Roma",
     "birth_year": 1993,
     "price": 17,
-    "fantamedia": 0.0,
-    "appearances": 0
+    "fantamedia": 7.53,
+    "appearances": 20
   },
   {
     "name": "Tammy Abraham",
@@ -2061,6 +2466,15 @@
     "appearances": 0
   },
   {
+    "name": "Martin Erlić",
+    "role": "D",
+    "team": "Sassuolo",
+    "birth_year": 1998,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Ruan Tressoldi",
     "role": "D",
     "team": "Sassuolo",
@@ -2070,10 +2484,19 @@
     "appearances": 0
   },
   {
-    "name": "Martin Erlić",
+    "name": "Jeremy Toljan",
     "role": "D",
     "team": "Sassuolo",
-    "birth_year": 1998,
+    "birth_year": 1994,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Matías Viña",
+    "role": "D",
+    "team": "Sassuolo",
+    "birth_year": 1997,
     "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
@@ -2133,11 +2556,29 @@
     "appearances": 0
   },
   {
+    "name": "Agustín Álvarez",
+    "role": "A",
+    "team": "Sassuolo",
+    "birth_year": 2001,
+    "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
     "name": "Vanja Milinković-Savić",
     "role": "P",
     "team": "Torino",
     "birth_year": 1997,
     "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Luca Gemello",
+    "role": "P",
+    "team": "Torino",
+    "birth_year": 2000,
+    "price": 4,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -2187,6 +2628,15 @@
     "appearances": 0
   },
   {
+    "name": "Adrien Tameze",
+    "role": "C",
+    "team": "Torino",
+    "birth_year": 1994,
+    "price": 7,
+    "fantamedia": 5.76,
+    "appearances": 0
+  },
+  {
     "name": "Samuele Ricci",
     "role": "C",
     "team": "Torino",
@@ -2219,7 +2669,7 @@
     "team": "Torino",
     "birth_year": 1997,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 6.9,
     "appearances": 0
   },
   {
@@ -2228,7 +2678,7 @@
     "team": "Torino",
     "birth_year": 1991,
     "price": 13,
-    "fantamedia": 0.0,
+    "fantamedia": 8.0,
     "appearances": 0
   },
   {
@@ -2291,7 +2741,7 @@
     "team": "Udinese",
     "birth_year": 1995,
     "price": 6,
-    "fantamedia": 0.0,
+    "fantamedia": 5.7,
     "appearances": 0
   },
   {
@@ -2300,6 +2750,15 @@
     "team": "Udinese",
     "birth_year": 2002,
     "price": 7,
+    "fantamedia": 0.0,
+    "appearances": 0
+  },
+  {
+    "name": "Enzo Ebosse",
+    "role": "D",
+    "team": "Udinese",
+    "birth_year": 1999,
+    "price": 6,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -2327,6 +2786,15 @@
     "team": "Udinese",
     "birth_year": 2002,
     "price": 11,
+    "fantamedia": 6.22,
+    "appearances": 0
+  },
+  {
+    "name": "Oier Zarraga",
+    "role": "C",
+    "team": "Udinese",
+    "birth_year": 1999,
+    "price": 7,
     "fantamedia": 0.0,
     "appearances": 0
   },
@@ -2336,7 +2804,7 @@
     "team": "Udinese",
     "birth_year": 1993,
     "price": 10,
-    "fantamedia": 0.0,
+    "fantamedia": 7.3,
     "appearances": 0
   },
   {
@@ -2354,7 +2822,7 @@
     "team": "Udinese",
     "birth_year": 2000,
     "price": 9,
-    "fantamedia": 0.0,
+    "fantamedia": 7.0,
     "appearances": 0
   }
 ]
