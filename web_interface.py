@@ -352,20 +352,33 @@ def api_reset_exclusions():
 @app.route("/api/test", methods=["GET"])
 def api_test():
     a = get_assistant()
-    cov = a.get_age_coverage()
     return jsonify({
         "ok": True,
         "season_filter": a.season_filter,
         "age_index_size": len(a.age_index) + len(a.guessed_age_index),
         "overrides_size": len(a.overrides),
         "pool_size": len(a.filtered_roster),
-        "coverage": cov
+        "status": "Assistant loaded successfully"
     })
 
 @app.route("/api/age-coverage", methods=["GET"])
 def api_age_coverage():
     a = get_assistant()
-    return jsonify(a.get_age_coverage())
+    # Calculate age coverage manually
+    total_players = len(a.filtered_roster)
+    players_with_age = len([p for p in a.filtered_roster if p.get("birth_year")])
+    coverage_percent = (players_with_age / total_players * 100) if total_players > 0 else 0
+    
+    return jsonify({
+        "total_players": total_players,
+        "players_with_age": players_with_age,
+        "coverage_percent": round(coverage_percent, 1),
+        "age_sources": {
+            "age_index": len(a.age_index),
+            "overrides": len(a.overrides),
+            "guessed": len(a.guessed_age_index)
+        }
+    })
 
 @app.route("/api/debug-under", methods=["GET"])
 def api_debug_under():
