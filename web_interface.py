@@ -274,11 +274,15 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             player_name = re.sub(r'\s+', ' ', player_name).title()
 
             try:
-                result = fantacalcio_assistant.remove_player_permanently(player_name)
-                # Force reload of the assistant's data to apply changes immediately
-                fantacalcio_assistant.roster = fantacalcio_assistant.corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
-                fantacalcio_assistant._make_filtered_roster()
-                return result
+                # Use corrections manager directly for persistent removal
+                if fantacalcio_assistant.corrections_manager:
+                    result = fantacalcio_assistant.corrections_manager.remove_player(player_name, "Web interface user request")
+                    # Force reload of the assistant's data to apply changes immediately
+                    fantacalcio_assistant.roster = fantacalcio_assistant.corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
+                    fantacalcio_assistant._make_filtered_roster()
+                    return result
+                else:
+                    return "❌ Sistema di correzioni non disponibile"
             except Exception as e:
                 return f"❌ Errore nell'applicare la correzione: {e}"
 

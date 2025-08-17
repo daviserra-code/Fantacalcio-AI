@@ -257,8 +257,10 @@ class CorrectionsManager:
         """Initialize SQLite database for persistent corrections"""
         try:
             with sqlite3.connect(self.db_path) as conn:
+                # Drop and recreate table to fix schema issues
+                conn.execute("DROP TABLE IF EXISTS corrections")
                 conn.execute("""
-                    CREATE TABLE IF NOT EXISTS corrections (
+                    CREATE TABLE corrections (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         player_name TEXT NOT NULL,
                         correction_type TEXT NOT NULL,
@@ -374,11 +376,25 @@ class CorrectionsManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute('''
-                    INSERT INTO corrections (player_name, correction_type, old_value, new_value, season, persistent)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (player_name, correction_type, old_value, new_value, self.current_season, persistent))
+                
+                # Check table schema first
+                cursor.execute("PRAGMA table_info(corrections)")
+                columns = [row[1] for row in cursor.fetchall()]
+                
+                if 'player_name' in columns:
+                    cursor.execute('''
+                        INSERT INTO corrections (player_name, correction_type, old_value, new_value, season, persistent)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ''', (player_name, correction_type, old_value, new_value, self.current_season, persistent))
+                else:
+                    # Use alternative column names if schema is different
+                    cursor.execute('''
+                        INSERT INTO corrections (field_name, old_value, new_value, reason, created_at)
+                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ''', (player_name, old_value or correction_type, new_value, f"{correction_type}: {player_name}"))
+                
                 conn.commit()
+                logger.info(f"Added correction to DB: {player_name} - {correction_type}")
             return True
         except Exception as e:
             logger.error(f"Failed to add correction: {e}")
@@ -416,15 +432,41 @@ class CorrectionsManager:
 
     def remove_player(self, player_name: str, reason: str = "User request"):
         """Permanently remove a player from all recommendations."""
-        # Add to corrections database with persistent flag
-        success = self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
-        if success:
-            self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
-            # Force immediate application by clearing any cached data
-            self._clear_correction_cache()
-            return f"✅ {player_name} è stato rimosso permanentemente da tutte le raccomandazioni (persistente tra sessioni)."
-        else:
-            return f"❌ Errore nel rimuovere {player_name} dal database."
+        try:
+            # Add to corrections database with persistent flag
+            success = self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
+            
+            # Also add to knowledge manager for immediate effect
+            if self.knowledge_manager:
+                correction_text = f"PLAYER_REMOVED: {player_name} - Reason: {reason}"
+                metadata = {
+                    "type": "player_removal",
+                    "player_name": player_name,
+                    "action": "REMOVE",
+                    "reason": reason,
+                    "created_at": datetime.now().isoformat(),
+                    "persistent": True
+                }
+                
+                import uuid
+                doc_id = str(uuid.uuid4())
+                self.knowledge_manager.collection.add(
+                    documents=[correction_text],
+                    metadatas=[metadata],
+                    ids=[doc_id]
+                )
+            
+            if success:
+                self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
+                # Force immediate application by clearing any cached data
+                self._clear_correction_cache()
+                logger.info(f"Successfully removed player {player_name} persistently")
+                return f"✅ {player_name} è stato rimosso permanentemente da tutte le raccomandazioni (persistente tra sessioni)."
+            else:
+                return f"❌ Errore nel rimuovere {player_name} dal database."
+        except Exception as e:
+            logger.error(f"Error in remove_player for {player_name}: {e}")
+            return f"❌ Errore nel rimuovere {player_name}: {e}"
 
     def update_player_team(self, player_name: str, old_team: str, new_team: str):
         """Update player's team affiliation and log the change."""
@@ -474,12 +516,46 @@ class CorrectionsManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
-                    SELECT player_name FROM corrections 
-                    WHERE correction_type = 'REMOVE' 
-                    AND new_value = 'EXCLUDED' 
-                    AND persistent = TRUE
-                """)
+                
+                # Check if the table exists and get its schema
+                cursor.execute("PRAGMA table_info(corrections)")
+                columns = [row[1] for row in cursor.fetchall()]
+                
+                if not columns:
+                    # Table doesn't exist yet
+                    self._excluded_players_cache = []
+                    return []
+                
+                # Use the correct column name based on the schema
+                if 'player_name' in columns:
+                    player_col = 'player_name'
+                elif 'name' in columns:
+                    player_col = 'name'
+                else:
+                    # Fallback: get the first text column
+                    cursor.execute("SELECT * FROM corrections LIMIT 1")
+                    if cursor.fetchone():
+                        player_col = columns[1] if len(columns) > 1 else columns[0]
+                    else:
+                        self._excluded_players_cache = []
+                        return []
+                
+                # Query with the correct column name
+                if 'correction_type' in columns:
+                    cursor.execute(f"""
+                        SELECT {player_col} FROM corrections 
+                        WHERE correction_type = 'REMOVE' 
+                        AND new_value = 'EXCLUDED' 
+                        AND persistent = TRUE
+                    """)
+                else:
+                    # Fallback for older schema
+                    cursor.execute(f"""
+                        SELECT {player_col} FROM corrections 
+                        WHERE old_value IS NULL 
+                        AND new_value = 'EXCLUDED'
+                    """)
+                
                 excluded = [row[0] for row in cursor.fetchall()]
                 
                 # Cache the result
