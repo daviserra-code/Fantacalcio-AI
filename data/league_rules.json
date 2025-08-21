@@ -1,0 +1,165 @@
+{
+  "league_info": {
+    "name": "FantaTSS",
+    "season": "2024-25",
+    "participants": 10,
+    "league_type": "Classic",
+    "created_date": "2025-08-21T13:48:07.390579",
+    "last_updated": "2025-08-21T14:10:07.026317"
+  },
+  "roster_composition": {
+    "portieri": 3,
+    "difensori": 8,
+    "centrocampisti": 8,
+    "attaccanti": 6,
+    "total_players": 25
+  },
+  "budget_rules": {
+    "total_budget": 450,
+    "currency": "crediti",
+    "minimum_bid": 1,
+    "bid_increment": 1
+  },
+  "auction_rules": {
+    "auction_type": "Classic",
+    "time_per_player": 120,
+    "nomination_order": "snake",
+    "max_same_team_players": 3,
+    "bench_players": 7
+  },
+  "formation_rules": {
+    "allowed_formations": [],
+    "default_formation": "3-5-2",
+    "captain_multiplier": 2.0,
+    "vice_captain_multiplier": 1.5
+  },
+  "scoring_system": {
+    "fantamedia_base": true,
+    "bonus_gol": 4.2,
+    "bonus_assist": 1,
+    "bonus_rigore_parato": 3,
+    "bonus_rigore_sbagliato": -3,
+    "bonus_autogol": -2,
+    "bonus_espulsione": -1,
+    "bonus_ammonizione": -0.5,
+    "clean_sheet_portiere": 1,
+    "clean_sheet_difensore": 1
+  },
+  "transfer_rules": {
+    "transfer_windows": [],
+    "max_transfers_per_window": 3,
+    "transfer_cost": 2,
+    "free_transfers_per_season": 2
+  },
+  "playoff_rules": {
+    "playoff_teams": 4,
+    "playoff_format": "Single elimination",
+    "playoff_start_gameweek": 35,
+    "championship_weeks": [
+      36,
+      37,
+      38
+    ]
+  },
+  "special_rules": {
+    "injury_replacement": true,
+    "covid_replacement": true,
+    "postponed_match_policy": "Average of last 3 games",
+    "technical_fouls": true
+  },
+  "penalties": {
+    "late_formation": 2,
+    "missing_formation": 10,
+    "invalid_formation": 5,
+    "roster_violation": 25
+  },
+  "custom_rules": {
+    "notes": [
+      "1.Il fantacalcio è un gioco e come tale va interpretato e vissuto.",
+      "Le sessioni plenarie sono quelle decise dai presidenti e sono di solito l’asta di inizio  anno e l’asta di riparazione di febbraio",
+      "L’allestimento e la data dell’asta di inizio anno è di responsabilità di tutti ed è doveroso rendersi disponibili per poter fare l’asta.",
+      "2 primavera (opzionali) in qualsiasi ruolo (NO portiere)",
+      "3.1.2 Primavera",
+      "Non è comunque obbligatorio acquistarne, né acquistarne per forza due.",
+      "anno, secondo la logica seguente (a partire dall’anno 2025-2026, senza considerare gli anni di contratto precedentemente accumulati):",
+      "1° anno di conferma (anno di contratto 2): stesso valore di acquisto",
+      "2° anno di conferma (anno di contratto 3): conferma al 20% FVMp o al valore di  acquisto, se più elevato (es. valore acquisto 7, FMVp 5 -> conferma a 7)",
+      "3° anno di conferma (anno di contratto 4): conferma al 40% FVMp o al valore di  acquisto, se più elevato (es. valore acquisto 7, FMVp 10 -> conferma a 10)",
+      "4° anno di conferma (anno di contratto 5): conferma al 60% FVMp o al valore di  acquisto, se più elevato",
+      "5° anno di conferma (anno di contratto 6(*)): conferma al 80% FVMp o al valore di acquisto, se più elevato",
+      "6° o successivi anno di conferma (anno di contratto 7(*)): conferma all’100% FVMp o al valore di acquisto, se più elevato",
+      "Nel calcolo di progressione precedente occorre tenere conto che l’FVMp, parametro  calcolato autonomamente dal sito FANTACALCIO.it, varia di anno in anno e che  potrebbe aumentare o diminuire di anno in anno.",
+      "Il parametro varia anche in stagione da giornata a giornata: per il calcolo delle  riconferme vale quello calcolato nella giornata PRE-ASTA estiva (o in casi eccezionali, a discrezione degli admin, quello della giornata dell’asta, per ragioni tecniche)",
+      "(**): sia questo che il soprastante sono debitamente registrati in un apposito foglio  Excel tenuto dal segretario",
+      "Per ogni squadra il Numero delle riconferme è il seguente:",
+      "9 - massimo 1P-3D-3C-2A.",
+      "Per i due retrocessi 7 - massimo 1P-2D-2C-2A",
+      "Gli eventuali due U21 (vedi definizione di U21 a 3.1.2) si possono  acquistare/confermare fuori dal limite di 9 (o 7 per i retrocessi)",
+      "L’asta comincia con 10 chiamate libere da parte di ogni presidente a turno",
+      "Il secondo “giro” o turno dell’asta, si svolge in modalità “draft”:",
+      "Una volta terminati tutti i ruoli, se NON acquistati già precedentemente, i  presidenti possono provvedere a chiamare U21",
+      "Una volta terminate tutte le rose l’asta termina",
+      "Qualora si realizzi la cosa una volta terminata l’asta sul giocatore o alla fine dell’asta  stessa, il giocatore verrà multato di 2€.",
+      "4.2 MERCATO(I) DI RIPARAZIONE",
+      "4.2.1 FINESTRE DI MERCATO POST-ASTA INIZIO ANNO",
+      "Quindi eventuali finestre aperte tra la fine di dicembre e la fine di gennaio non  saranno più con accesso al mercato libero ma solo scambi (a parte casi eccezionali a  discrezione degli admin)",
+      "Quest’ultima condizione è eccezionale ai mercati di riparazione",
+      "Durante le finestre di mercato della stagione non è possibile svincolare un giocatore e  riacquistarlo nella stessa sessione di mercato (“lodo Zaniolo”)",
+      "È possibile svincolare un giocatore in una sessione di mercato e riacquistarlo in una  successiva",
+      "Ogni cessione è a titolo definitivo",
+      "In riferimento a 4.2.9",
+      "Partita persa per il la squadra che lo schiera",
+      "Penalizzazione crescente per ogni giornata in cui è stato schierato ( -1 punto in",
+      "classifica per ogni giornata in cui è stato schierato)",
+      "4.3 ASTA DI RIPARAZIONE",
+      "Non è possibile svincolare un giocatore e riacquistarlo in questa stessa sessione di  mercato così come in 4.1.4 (“lodo Zaniolo”)",
+      "L’asta di riparazione si svolge in modalità LIVE sia in presenza o in remoto con  meeting Teams/Zoom",
+      "La modalità d’asta è di tipo “asta classica libera” e si può avvalere di tool di supporto come Fantalab nel caso di asta in remoto.rico",
+      "Prima dell’inizio dell’asta possono essere effettuati scambi così come dopo la chiusura fino al termine della sessione",
+      "5. COMPETIZIONI",
+      "SUPERCOPPA TSS (“Supercoppa”)",
+      "Trattasi di competizione riservata ai vincitori della stagione precedente delle seguenti  competizioni",
+      "La prima giornata di tale manifestazione corrisponde alla giornata X di serie A e si  svolge in continuità con quest’ ultima",
+      "5.3.1 MODULI CONSENTITI",
+      "Sono consentiti tutti i moduli consentiti dalla piattaforma FANTACALCIO.IT 5.3.2 SOSTITUZIONI",
+      "Sono consentiti fino ad un massimo di 5 sostituzioni per giornata",
+      "Oltre la 5° sostituzione, un giocatore non è più sostituito e assommerà ZERO nel  calcolo del risultato di giornata",
+      "L’ordine di sostituzione è l’ordine di panchina",
+      "Nel effettuare le sostituzioni in automatico, il sistema può comportare un",
+      "5.4 CALCOLO DEI RISULTATI",
+      "Al termine di ogni giornata di serie A, la piattaforma eroga i voti ufficiali di ogni partita (ne esiste una versione LIVE temporanea)",
+      "5.4.1 PUNTEGGI ASSEGNATI e RISULTATI",
+      "In caso entrambe le squadre segnino lo stesso numero di GOALS ma la",
+      "5.4.3 MODIFICATORI",
+      "Modificatore Centrocampo",
+      "Modificatore Difesa",
+      "Modificatore Attacco",
+      "6. CASI STRAORDINARI",
+      "In questo capitolo ci occupiamo di situazioni straordinarie e particolari",
+      "6.1 PARTITE SOSPESE O RINVIATE",
+      "In caso di partite di Serie A rinviate ad una data successiva a quella della",
+      "giornata seguente",
+      "b) se la partita è unica si attende il risultato della stessa per completare la",
+      "c) nel caso di cui b) ma che si tratti di una giornata rilevante per la decisione  della composizione del tabellone di “COBRAM” o ove si giochino turni a eliminazione",
+      "alla cauzione)",
+      "disponibili : -2€. (vedi 4.1.11)",
+      "8.2 PENALIZZAZIONI",
+      "generale ogni 2 formazioni non date",
+      "8.2 SANZIONI Per la “Coppa TSS” o la “COBRAM”",
+      "punto per ogni domenica in cui è stato schierato + partita persa"
+    ],
+    "house_rules": [
+      {
+        "description": "Under 21 Players: a minimum of 2 Under 21 player per team",
+        "added_date": "2025-08-21T14:10:07.026278",
+        "active": true
+      }
+    ],
+    "modifications": []
+  },
+  "document_import": {
+    "imported_at": "2025-08-21T13:48:07.567264",
+    "source_file": "Regolamento LEGA FANTATSS_202508210948339773_1755783342170.docx",
+    "raw_content": "REGOLAMENTO FANTATSS\nPREMESSA\n1.Il fantacalcio è un gioco e come tale va interpretato e vissuto.\n2. Lo scopo, è quello di conseguire la vittoria nelle varie competizioni organizzate dalla lega, rispettando lo spirito del gioco e le regole: all’interno di questi limiti ogni  Presidente ha la libertà di costruire e gestire la squadra a seconda delle proprie idee e  dei propri obiettivi.\n3.Questo fantacalcio è di tipo MANAGERIALE, quindi persegue lo scopo di gestire la  rosa attraverso le annate come una vera società di calcio, permettendo e valorizzando  gli investimenti attraverso gli anni e il ricambio al vertice\n4. I componenti la lega sono chiamati presidenti o componenti e sono tutti coloro che  sono regolarmente iscritti alla lega ed al portale FANTACALCIO.IT\n1. OGGETTO\n1.1\nIl presente regolamento, in conformità ai criteri generali stabiliti dall’insieme dei  partecipanti nel rispetto delle disposizioni di legge, disciplina l’ordinamento della Lega, e ne determina l’azione degli admin\n1.2\nIl presidente si prende cura della comunicazione e dell’assetto della lega, il segretario  si preoccupa di tenere conto delle impostazioni di lega e di guardare la cassa della  lega\nGli altri admin coadiuvano e aiutano nella gestione della lega\n1.3\nIl presidente di lega è eletto a maggioranza e rimane in carica in modo perpetuo fino a quando un partecipante alla lega ne richieda la rimozione. Le elezioni sono tenute  nell’asta plenaria successiva\n1.4\nIl segretario di lega è eletto in modo perpetuo, fino a volontario abbandono:  attualmente è lo stimato sig. Pezzi\n1.5\nGli admin della lega sono a discrezione del segretario di lega (in numero variabile  sempre a discrezione). Il segretario è il superadmin della lega\n1.6\nLe lega “FANTATSS” si appoggia alla piattaforma digitale “FANTACALCIO.it” e ne  sfrutta le caratteristiche e si adatta al cambiamento della piattaforma fino a decisione  contraria ed esplicita\n1.7\nLa lega “FANTATSS” è una lega di fantacalcio di tipo MANAGERIALE (ve..."
+  }
+}
