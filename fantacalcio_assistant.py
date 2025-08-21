@@ -755,42 +755,55 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
-        # More realistic budget distribution - allocate more budget to key positions
-        base = {"P":0.08,"D":0.28,"C":0.35,"A":0.29}
+        # More aggressive budget distribution to utilize most of the budget
+        base = {"P":0.06,"D":0.30,"C":0.35,"A":0.29}
         slots = dict(formation)
         
-        # Calculate weights based on formation and adjust for actual slots needed
+        # Calculate weights based on formation slots
         w={}
-        total_field_players = slots["D"] + slots["C"] + slots["A"]
+        total_slots = slots["P"] + slots["D"] + slots["C"] + slots["A"]
         
-        # Distribute budget more evenly but with slight preference for attack/midfield
-        w["P"] = base["P"]
-        w["D"] = base["D"] * (slots["D"] / 3.0) if slots["D"] > 0 else 0
-        w["C"] = base["C"] * (slots["C"] / 4.0) if slots["C"] > 0 else 0
+        # Base allocation, then adjust for formation
+        w["P"] = base["P"] + (slots["P"] - 1) * 0.02 if slots["P"] > 1 else base["P"]
+        w["D"] = base["D"] * (slots["D"] / 4.0) if slots["D"] > 0 else 0
+        w["C"] = base["C"] * (slots["C"] / 5.0) if slots["C"] > 0 else 0
         w["A"] = base["A"] * (slots["A"] / 3.0) if slots["A"] > 0 else 0
         
-        # Normalize weights
+        # Normalize weights to ensure they sum to 1
         s=sum(w.values())
         for r in w: w[r] = w[r]/s if s>0 else 0.25
         
-        # Allocate budget with minimum thresholds to ensure we spend more
+        # Allocate budget more aggressively - aim to spend 90-95% of budget
+        target_spend = int(budget * 0.92)  # Target 92% utilization
         role_budget = {}
         for r in w:
-            role_budget[r] = max(int(round(budget * w[r])), slots[r] * 8)  # Minimum 8 credits per player
+            # Higher minimum per player to encourage better spending
+            min_per_player = 15 if r in ["C", "A"] else 12 if r == "D" else 8
+            role_budget[r] = max(int(round(target_spend * w[r])), slots[r] * min_per_player)
         
-        # Adjust total to match budget exactly
-        diff = budget - sum(role_budget.values())
-        if diff != 0:
-            # Distribute the difference proportionally, starting with the role with most slots
-            roles_by_slots = sorted(["D", "C", "A"], key=lambda x: slots[x], reverse=True)
-            role_budget[roles_by_slots[0]] += diff
+        # If we're still under budget, distribute the remainder to key positions
+        current_total = sum(role_budget.values())
+        remaining = budget - current_total
+        
+        if remaining > 0:
+            # Prioritize attack and midfield for extra budget
+            priority_roles = ["A", "C", "D", "P"]
+            for role in priority_roles:
+                if remaining <= 0:
+                    break
+                role_slots = slots[role]
+                extra_per_slot = remaining // (role_slots * len(priority_roles))
+                if extra_per_slot > 0:
+                    allocation = min(extra_per_slot * role_slots, remaining)
+                    role_budget[role] += allocation
+                    remaining -= allocation
 
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used=set()
 
         def pick(r: str):
             need = slots[r]; cap = max(1, role_budget[r]); cap_slot = cap/need
-            pool = self._select_top_role_any(r, take=600)
+            pool = self._select_top_role_any(r, take=800)
             
             # Filter out players without price/fantamedia data for budget-based formations
             valid_pool = []
@@ -802,63 +815,71 @@ class FantacalcioAssistant:
                 if p.get("_price") is not None and p.get("_fm") is not None:
                     valid_pool.append(p)
             
-            # Separate players into price tiers to better utilize budget
+            # More aggressive price tiers to utilize budget better
             affordable_players = []
             mid_tier_players = []
             premium_players = []
+            elite_players = []
             
             for p in valid_pool:
                 pr = p.get("_price", 0)
-                if pr <= cap_slot * 0.5:  # Cheap players
+                if pr <= cap_slot * 0.4:  # Very cheap players
                     affordable_players.append(p)
-                elif pr <= cap_slot * 1.5:  # Mid-tier players
+                elif pr <= cap_slot * 0.8:  # Mid-tier players
                     mid_tier_players.append(p)
-                else:  # Premium players
+                elif pr <= cap_slot * 1.4:  # Premium players
                     premium_players.append(p)
+                else:  # Elite players
+                    elite_players.append(p)
             
             # Sort each tier by value ratio
-            for tier in [affordable_players, mid_tier_players, premium_players]:
+            for tier in [elite_players, premium_players, mid_tier_players, affordable_players]:
                 tier.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
             
             chosen = []
             remaining_budget = cap
             
-            # Strategy: Mix of tiers to use more budget while maintaining value
-            # First, try to get at least one premium player if budget allows
-            if need > 1 and premium_players and remaining_budget > cap_slot:
+            # New strategy: Aim to spend most of the budget
+            # Start with one premium/elite player if budget allows
+            if elite_players and remaining_budget >= elite_players[0].get("_price", 0):
+                best_elite = elite_players[0]
+                if best_elite.get("name") not in used:
+                    chosen.append(best_elite)
+                    used.add(best_elite.get("name"))
+                    remaining_budget -= best_elite.get("_price", 0)
+            elif premium_players and remaining_budget >= premium_players[0].get("_price", 0):
                 best_premium = premium_players[0]
-                if best_premium.get("name") not in used and best_premium.get("_price", 0) <= remaining_budget * 0.6:
+                if best_premium.get("name") not in used:
                     chosen.append(best_premium)
                     used.add(best_premium.get("name"))
                     remaining_budget -= best_premium.get("_price", 0)
             
-            # Fill remaining slots with mix of mid-tier and affordable players
-            all_remaining = [p for p in mid_tier_players + affordable_players if p.get("name") not in used]
+            # Fill remaining slots, preferring higher-tier players within budget
+            all_remaining = [p for p in premium_players + mid_tier_players + affordable_players if p.get("name") not in used]
             
-            # Prefer mid-tier players to use more budget
             for p in all_remaining:
                 if len(chosen) >= need:
                     break
                 if p.get("name") in used:
                     continue
+                    
                 pr = p.get("_price", 0)
-                # Allow spending up to remaining budget per slot
                 slots_left = need - len(chosen)
-                budget_per_remaining_slot = remaining_budget / slots_left if slots_left > 0 else remaining_budget
                 
-                if pr <= budget_per_remaining_slot * 1.3:  # Allow some flexibility
-                    chosen.append(p)
-                    used.add(p.get("name"))
-                    remaining_budget -= pr
-            
-            # If still need players, fill with cheapest available
-            if len(chosen) < need:
-                for p in affordable_players:
-                    if len(chosen) >= need:
-                        break
-                    if p.get("name") not in used:
+                # More generous budget per remaining slot to encourage spending
+                if slots_left > 0:
+                    budget_per_slot = remaining_budget / slots_left
+                    if pr <= budget_per_slot * 1.5:  # Allow overspending per slot to utilize budget
                         chosen.append(p)
                         used.add(p.get("name"))
+                        remaining_budget -= pr
+            
+            # If still need players, fill with any available (fallback)
+            if len(chosen) < need:
+                all_available = [p for p in valid_pool if p.get("name") not in used]
+                for p in all_available[:need - len(chosen)]:
+                    chosen.append(p)
+                    used.add(p.get("name"))
                         
             picks[r] = chosen[:need]
 
