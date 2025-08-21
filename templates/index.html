@@ -188,27 +188,31 @@
     .comparison-player{font-weight:700;color:#22d3ee}
     .comparison-summary{margin-top:14px;padding:12px;background:#0b1220;border-left:4px solid #22d3ee;border-radius:6px;color:#e5e7eb}
 
-    /* Mantra/Draft/Superscudetto: contenuto scuro */
+    /* Mantra/Draft/Superscudetto/League-Rules: contenuto scuro */
     body.mode-mantra .container,
     body.mode-draft .container,
-    body.mode-superscudetto .container{
+    body.mode-superscudetto .container,
+    body.mode-league-rules .container{
       background: var(--dark-page-bg);
       color:#e5e7eb;
       box-shadow:0 10px 30px rgba(0,0,0,.35);
     }
     body.mode-mantra .assistant-message,
     body.mode-draft .assistant-message,
-    body.mode-superscudetto .assistant-message{
+    body.mode-superscudetto .assistant-message,
+    body.mode-league-rules .assistant-message{
       background: var(--bubble-dark); color:#e5e7eb;
     }
     body.mode-mantra .typing-indicator,
     body.mode-draft .typing-indicator,
-    body.mode-superscudetto .typing-indicator{
+    body.mode-superscudetto .typing-indicator,
+    body.mode-league-rules .typing-indicator{
       background: var(--bubble-dark); color:#e5e7eb;
     }
     body.mode-mantra .player-card,
     body.mode-draft .player-card,
-    body.mode-superscudetto .player-card{
+    body.mode-superscudetto .player-card,
+    body.mode-league-rules .player-card{
       background: var(--dark-card-bg); border-color:#1f2937; color:#e5e7eb;
     }
 
@@ -664,6 +668,7 @@
       <button class="tab" onclick="switchTab('draft', this)">Draft</button>
       <button class="tab" onclick="switchTab('superscudetto', this)">Superscudetto</button>
       <button class="tab" onclick="switchTab('historical', this)">Statistiche</button>
+      <button class="tab" onclick="switchTab('league-rules', this)">Regole Lega</button>
     </div>
 
     <!-- Classic -->
@@ -958,6 +963,25 @@
                     <div class="col-md-6">
                         <div class="card mb-3">
                             <div class="card-header">
+                                <h5><i class="fas fa-upload"></i> Import from Document</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Import rules from your uploaded DOCX or TXT file</p>
+                                <div class="mb-3">
+                                    <label for="document-file-select" class="form-label">Select Document:</label>
+                                    <select class="form-select" id="document-file-select">
+                                        <option value="">Choose a file...</option>
+                                        <option value="Regolamento LEGA FANTATSS_202508210948339773_1755783342170.docx">League Rules DOCX</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="importRulesDocument()">
+                                    <i class="fas fa-upload"></i> Import Rules
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
                                 <h5><i class="fas fa-plus"></i> Add Custom Rule</h5>
                             </div>
                             <div class="card-body">
@@ -1035,7 +1059,7 @@
 
     function switchTab(name, btn){
       // body class per tema contenuto
-      document.body.classList.remove('mode-classic','mode-mantra','mode-draft','mode-superscudetto','mode-historical');
+      document.body.classList.remove('mode-classic','mode-mantra','mode-draft','mode-superscudetto','mode-historical','mode-league-rules');
       document.body.classList.add('mode-'+name);
 
       // mostra contenuto
@@ -1048,6 +1072,11 @@
       if(btn) btn.classList.add('active');
 
       currentTab=name;
+
+      // Load rules summary when switching to league-rules tab
+      if(name === 'league-rules') {
+        loadRulesSummary();
+      }
 
       // scroll al tab su mobile
       const bar=document.querySelector('.tabs');
@@ -1507,6 +1536,38 @@
                 console.error('Error checking transfer window:', error);
                 showAlert(`Error checking transfer window status: ${error.message || error}`, 'danger');
             });
+    }
+
+    function importRulesDocument() {
+        const fileName = document.getElementById('document-file-select').value;
+
+        if (!fileName) {
+            showAlert('Please select a document file first', 'warning');
+            return;
+        }
+
+        fetch('/api/rules/import', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ file_path: fileName })
+        })
+        .then(response => response.ok ? response.json() : response.json().then(err => Promise.reject(err)))
+        .then(result => {
+            if (result.success) {
+                showAlert('Rules imported successfully! The page will refresh to show updated rules.', 'success');
+                setTimeout(() => {
+                    loadRulesSummary(); // Refresh the rules display
+                }, 2000);
+            } else {
+                showAlert(result.error || 'Failed to import rules', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error importing document:', error);
+            showAlert(`Error importing document: ${error.message || error}`, 'danger');
+        });
     }
 
     // Historical stats specific functions

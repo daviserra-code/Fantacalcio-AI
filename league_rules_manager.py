@@ -4,6 +4,7 @@ import os
 import logging
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from document_parser import DocumentParser
 
 LOG = logging.getLogger("league_rules_manager")
 
@@ -229,6 +230,50 @@ class LeagueRulesManager:
                 return True
         return False
     
+    def import_from_document(self, file_path: str) -> bool:
+        """Import rules from a document file (DOCX or TXT)"""
+        try:
+            parser = DocumentParser()
+            result = parser.parse_file(file_path)
+            
+            if "error" in result:
+                LOG.error(f"[RulesManager] Document parsing error: {result['error']}")
+                return False
+            
+            structured_rules = result.get("structured_rules", {})
+            
+            # Update existing rules with parsed data
+            for section_name, section_data in structured_rules.items():
+                if section_data and section_name in self.rules:
+                    # Merge with existing rules
+                    if isinstance(self.rules[section_name], dict) and isinstance(section_data, dict):
+                        self.rules[section_name].update(section_data)
+                    else:
+                        self.rules[section_name] = section_data
+            
+            # Add raw text to custom rules for reference
+            raw_text = result.get("raw_text", "")
+            if raw_text:
+                if "document_import" not in self.rules:
+                    self.rules["document_import"] = {}
+                
+                self.rules["document_import"] = {
+                    "imported_at": datetime.now().isoformat(),
+                    "source_file": os.path.basename(file_path),
+                    "raw_content": raw_text[:2000] + ("..." if len(raw_text) > 2000 else "")  # Truncate for storage
+                }
+            
+            # Save updated rules
+            success = self.save_rules()
+            if success:
+                LOG.info(f"[RulesManager] Successfully imported rules from {file_path}")
+            
+            return success
+            
+        except Exception as e:
+            LOG.error(f"[RulesManager] Error importing document: {e}")
+            return False
+
     def export_rules_txt(self) -> str:
         """Export rules as formatted text for easy reading"""
         lines = []

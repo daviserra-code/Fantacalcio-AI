@@ -517,6 +517,30 @@ def api_check_transfer_window():
     is_open = rm.is_transfer_window_open(date_str)
     return jsonify({"transfer_window_open": is_open, "date": date_str or "today"})
 
+@app.route("/api/rules/import", methods=["POST"])
+def api_import_rules_document():
+    """Import rules from uploaded document"""
+    data = request.get_json()
+    if not data or "file_path" not in data:
+        return jsonify({"error": "File path required"}), 400
+
+    file_path = data["file_path"]
+    
+    # Security check - ensure file is in attached_assets
+    if not file_path.startswith("attached_assets/"):
+        file_path = f"attached_assets/{file_path}"
+    
+    if not os.path.exists(file_path):
+        return jsonify({"error": "File not found"}), 404
+
+    rm = get_rules_manager()
+    success = rm.import_from_document(file_path)
+
+    if success:
+        return jsonify({"message": "Rules imported successfully!", "success": True})
+    else:
+        return jsonify({"error": "Failed to import rules document"}), 500
+
 
 if __name__ == "__main__":
     import argparse
