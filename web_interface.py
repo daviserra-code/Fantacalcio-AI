@@ -3,6 +3,7 @@ import uuid
 import json
 import logging
 import subprocess
+import os
 import re # Import the re module
 from flask import Flask, request, jsonify, session, render_template, g # Import g for application context
 from flask import Response # Import Response for exporting rules
