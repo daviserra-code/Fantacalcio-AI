@@ -4,11 +4,14 @@ import json
 import logging
 import subprocess
 import re # Import the re module
-from flask import Flask, request, jsonify, session, render_template
+from flask import Flask, request, jsonify, session, render_template, g # Import g for application context
+from flask import Response # Import Response for exporting rules
 
 from config import HOST, PORT, LOG_LEVEL
 from fantacalcio_assistant import FantacalcioAssistant
 from corrections_manager import CorrectionsManager
+# Assuming LeagueRulesManager is in a separate file named league_rules_manager.py
+from league_rules_manager import LeagueRulesManager
 
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -21,20 +24,27 @@ app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
 
 # ---------- Singleton ----------
 def get_assistant() -> FantacalcioAssistant:
-    inst = app.config.get("_assistant_instance")
-    if inst is None:
+    # Use Flask's application context (g) for singletons
+    if not hasattr(g, 'assistant'):
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        inst = FantacalcioAssistant()
-        app.config["_assistant_instance"] = inst
-    return inst
+        g.assistant = FantacalcioAssistant()
+    return g.assistant
 
 def get_corrections_manager() -> CorrectionsManager:
-    cm = app.config.get("_corrections_manager")
+    # Use Flask's application context (g) for singletons
+    cm = g.get('_corrections_manager')
     if cm is None:
         assistant = get_assistant()
         cm = CorrectionsManager(knowledge_manager=assistant.km)
-        app.config["_corrections_manager"] = cm
+        g._corrections_manager = cm
     return cm
+
+def get_rules_manager() -> LeagueRulesManager:
+    # Use Flask's application context (g) for singletons
+    if not hasattr(g, 'rules_manager'):
+        LOG.info("Initializing LeagueRulesManager (singleton)...")
+        g.rules_manager = LeagueRulesManager()
+    return g.rules_manager
 
 def get_sid() -> str:
     sid = session.get("sid")
@@ -368,7 +378,7 @@ def api_age_coverage():
     total_players = len(a.filtered_roster)
     players_with_age = len([p for p in a.filtered_roster if p.get("birth_year")])
     coverage_percent = (players_with_age / total_players * 100) if total_players > 0 else 0
-    
+
     return jsonify({
         "total_players": total_players,
         "players_with_age": players_with_age,
@@ -382,9 +392,11 @@ def api_age_coverage():
 
 @app.route("/api/debug-under", methods=["GET"])
 def api_debug_under():
-    role = (request.args.get("role") or "D").upper()[:1]
     a = get_assistant()
-    return jsonify(a.debug_under(role))
+    role = request.args.get("role", "A")
+    max_age = int(request.args.get("max_age", 21))
+    take = int(request.args.get("take", 10))
+    return jsonify(a.debug_under(role, max_age, take))
 
 @app.route("/api/peek-age", methods=["GET"])
 def api_peek_age():
@@ -419,6 +431,92 @@ def api_get_corrections():
     cm = get_corrections_manager()
     corrections = cm.get_corrections(limit)
     return jsonify({"corrections": corrections})
+
+# League Rules Management Endpoints
+@app.route("/api/rules", methods=["GET"])
+def api_get_rules():
+    """Get all league rules"""
+    rm = get_rules_manager()
+    return jsonify(rm.get_rules())
+
+@app.route("/api/rules/summary", methods=["GET"])
+def api_get_rules_summary():
+    """Get rules summary"""
+    rm = get_rules_manager()
+    return jsonify(rm.get_rules_summary())
+
+@app.route("/api/rules/section/<section_name>", methods=["GET"])
+def api_get_rules_section(section_name):
+    """Get a specific rules section"""
+    rm = get_rules_manager()
+    section = rm.get_section(section_name)
+    if section is None:
+        return jsonify({"error": f"Section {section_name} not found"}), 404
+    return jsonify(section)
+
+@app.route("/api/rules/section/<section_name>", methods=["PUT"])
+def api_update_rules_section(section_name):
+    """Update a specific rules section"""
+    rm = get_rules_manager()
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    success = rm.update_section(section_name, data)
+    if success:
+        return jsonify({"message": f"Section {section_name} updated successfully"})
+    else:
+        return jsonify({"error": f"Failed to update section {section_name}"}), 500
+
+@app.route("/api/rules/custom", methods=["POST"])
+def api_add_custom_rule():
+    """Add a custom rule"""
+    rm = get_rules_manager()
+    data = request.get_json()
+    if not data or "description" not in data:
+        return jsonify({"error": "Rule description required"}), 400
+
+    rule_type = data.get("type", "house_rules")
+    success = rm.add_custom_rule(data["description"], rule_type)
+
+    if success:
+        return jsonify({"message": "Custom rule added successfully"})
+    else:
+        return jsonify({"error": "Failed to add custom rule"}), 500
+
+@app.route("/api/rules/export", methods=["GET"])
+def api_export_rules():
+    """Export rules as formatted text"""
+    rm = get_rules_manager()
+    export_format = request.args.get("format", "txt")
+
+    if export_format == "txt":
+        content = rm.export_rules_txt()
+        return Response(content, mimetype="text/plain")
+    elif export_format == "json":
+        return jsonify(rm.get_rules())
+    else:
+        return jsonify({"error": "Unsupported format"}), 400
+
+@app.route("/api/rules/validate-formation", methods=["POST"])
+def api_validate_formation():
+    """Validate if a formation is allowed"""
+    rm = get_rules_manager()
+    data = request.get_json()
+    if not data or "formation" not in data:
+        return jsonify({"error": "Formation required"}), 400
+
+    is_valid = rm.validate_formation(data["formation"])
+    return jsonify({"formation": data["formation"], "valid": is_valid})
+
+@app.route("/api/rules/transfer-window", methods=["GET"])
+def api_check_transfer_window():
+    """Check if transfer window is open"""
+    rm = get_rules_manager()
+    date_str = request.args.get("date")  # Optional: check specific date
+    is_open = rm.is_transfer_window_open(date_str)
+    return jsonify({"transfer_window_open": is_open, "date": date_str or "today"})
+
 
 if __name__ == "__main__":
     import argparse
