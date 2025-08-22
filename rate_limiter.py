@@ -30,21 +30,44 @@ class RateLimiter:
         return any(deployment_indicators)
     
     def _get_client_key(self, request) -> str:
-        """Generate a unique key for the client"""
+        """Generate a unique key for the client based on IP address"""
         # Try to get real IP from headers (in case of proxy/load balancer)
-        real_ip = (
-            request.headers.get('X-Forwarded-For', '').split(',')[0].strip() or
-            request.headers.get('X-Real-IP', '') or
-            request.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() or
-            request.remote_addr or
-            'unknown'
-        )
+        real_ip = None
+        
+        # Check various headers for the real IP
+        forwarded_for = request.headers.get('X-Forwarded-For', '')
+        if forwarded_for:
+            # Take the first IP in the chain (original client)
+            real_ip = forwarded_for.split(',')[0].strip()
+        
+        if not real_ip:
+            real_ip = request.headers.get('X-Real-IP', '')
+        
+        if not real_ip:
+            real_ip = request.environ.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+        
+        if not real_ip:
+            real_ip = request.environ.get('REMOTE_ADDR', '')
+        
+        if not real_ip:
+            real_ip = request.remote_addr
+        
+        # Clean up the IP address
+        if real_ip:
+            real_ip = real_ip.strip()
+            # Remove port if present (e.g., "192.168.1.1:8080" -> "192.168.1.1")
+            if ':' in real_ip and not real_ip.startswith('['):  # Not IPv6
+                real_ip = real_ip.split(':')[0]
         
         # In development, use a default key to avoid rate limiting
         if not self.is_deployed:
             return "dev_environment"
-            
-        return real_ip
+        
+        # Use IP as the key, fallback to 'unknown' if we can't determine it
+        client_key = real_ip or 'unknown'
+        
+        LOG.debug(f"Client key determined: {client_key} from request headers")
+        return client_key
     
     def _cleanup_old_requests(self, client_key: str) -> None:
         """Remove requests older than time window"""
@@ -58,6 +81,7 @@ class RateLimiter:
         """Check if request is allowed based on rate limits"""
         # Skip rate limiting in development
         if not self.is_deployed:
+            LOG.debug("Rate limiting disabled in development environment")
             return True
             
         client_key = self._get_client_key(request)
@@ -68,13 +92,21 @@ class RateLimiter:
         
         # Check if under limit
         client_requests = self.requests[client_key]
-        if len(client_requests) >= self.max_requests:
-            LOG.warning(f"Rate limit exceeded for client {client_key}: {len(client_requests)} requests in window")
+        requests_count = len(client_requests)
+        
+        if requests_count >= self.max_requests:
+            LOG.warning(f"Rate limit exceeded for client {client_key}: {requests_count}/{self.max_requests} requests in window")
+            # Log the timestamps of existing requests for debugging
+            if client_requests:
+                oldest = min(client_requests)
+                newest = max(client_requests)
+                window_used = newest - oldest
+                LOG.warning(f"Client {client_key} request window: {window_used:.1f}s (oldest: {oldest}, newest: {newest})")
             return False
         
         # Add current request
         client_requests.append(current_time)
-        LOG.debug(f"Request allowed for client {client_key}: {len(client_requests)}/{self.max_requests}")
+        LOG.info(f"Request allowed for client {client_key}: {requests_count + 1}/{self.max_requests}")
         return True
     
     def get_remaining_requests(self, request) -> int:

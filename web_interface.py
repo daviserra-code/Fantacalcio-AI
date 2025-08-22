@@ -93,16 +93,23 @@ def index():
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
+    # Log client info for debugging
+    client_ip = rate_limiter._get_client_key(request)
+    LOG.info(f"Chat request from client: {client_ip}")
+    
     # Check rate limit first
     if not rate_limiter.is_allowed(request):
         remaining_requests = rate_limiter.get_remaining_requests(request)
         reset_time = rate_limiter.get_reset_time(request)
+        
+        LOG.warning(f"Rate limit exceeded for client {client_ip}: {remaining_requests} remaining, reset at {reset_time}")
 
         return jsonify({
             "error": "Rate limit exceeded",
             "message": "Hai superato il limite di 10 richieste per ora. Riprova più tardi.",
             "remaining_requests": remaining_requests,
-            "reset_time": reset_time
+            "reset_time": reset_time,
+            "client_id": client_ip[:8] + "..." if len(client_ip) > 8 else client_ip  # Partial IP for debugging
         }), 429
 
     data = request.get_json(force=True, silent=True) or {}
@@ -389,15 +396,23 @@ def api_reset_exclusions():
 
 @app.route("/api/rate-limit-status", methods=["GET"])
 def api_rate_limit_status():
+    client_ip = rate_limiter._get_client_key(request)
     remaining = rate_limiter.get_remaining_requests(request)
     reset_time = rate_limiter.get_reset_time(request)
+    
+    # Get request history for this client (for debugging)
+    client_requests = rate_limiter.requests.get(client_ip, [])
+    request_count = len(client_requests)
 
     return jsonify({
         "is_deployed": rate_limiter.is_deployed,
         "limit": rate_limiter.max_requests,
         "remaining": remaining,
+        "used": request_count,
         "reset_time": reset_time,
-        "window_seconds": rate_limiter.time_window
+        "window_seconds": rate_limiter.time_window,
+        "client_id": client_ip[:8] + "..." if len(client_ip) > 8 else client_ip,  # Partial IP for debugging
+        "tracking_method": "IP-based" if rate_limiter.is_deployed else "Development (no limits)"
     })
 
 @app.route("/api/test", methods=["GET"])
