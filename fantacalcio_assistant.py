@@ -617,8 +617,20 @@ class FantacalcioAssistant:
         filtered_pool = []
         for p in self.filtered_roster:
             if _role_letter(p.get("role") or p.get("role_raw","")) == r:
+                # Create a copy to avoid modifying the original
+                player_copy = dict(p)
+                
+                # Apply team corrections
+                if self.corrections_manager:
+                    player_name = player_copy.get("name", "")
+                    current_team = player_copy.get("team", "")
+                    corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
+                    if corrected_team and corrected_team != current_team:
+                        player_copy["team"] = corrected_team
+                        LOG.info(f"[Pool] Applied team correction: {player_name} {current_team} → {corrected_team}")
+                
                 # Skip excluded players - use fuzzy matching
-                player_name = (p.get("name") or "").lower()
+                player_name = (player_copy.get("name") or "").lower()
                 should_skip = False
                 for excluded in excluded_players:
                     excluded_lower = excluded.lower()
@@ -633,7 +645,7 @@ class FantacalcioAssistant:
                         should_skip = True
                         break
                 if not should_skip:
-                    filtered_pool.append(p)
+                    filtered_pool.append(player_copy)
                 
         return filtered_pool
 
@@ -841,6 +853,15 @@ class FantacalcioAssistant:
         # Strategy: Create balanced tiers for each role
         def pick_balanced_role(role: str, needed_count: int):
             pool = self._select_top_role_any(role, take=500)
+            
+            # Apply team corrections to each player in the pool
+            if self.corrections_manager:
+                for p in pool:
+                    player_name = p.get("name", "")
+                    current_team = p.get("team", "")
+                    corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
+                    if corrected_team and corrected_team != current_team:
+                        p["team"] = corrected_team
 
             # Filter valid players with both price and fantamedia
             valid_pool = []
@@ -1049,10 +1070,20 @@ class FantacalcioAssistant:
             if not picks[r]: return f"**{label}:** —"
             rows=[]
             for p in picks[r]:
+                # Apply team corrections one more time for display
+                player_name = p.get('name', 'N/D')
+                team_display = p.get('team', '—')
+                
+                # Double-check for team corrections
+                if self.corrections_manager:
+                    corrected_team = self.corrections_manager.get_corrected_team(player_name, team_display)
+                    if corrected_team:
+                        team_display = corrected_team
+                
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
                 bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
-                rows.append(f"- **{p.get('name','N/D')}** ({p.get('team','—')}) — " + ", ".join(bits))
+                rows.append(f"- **{player_name}** ({team_display}) — " + ", ".join(bits))
             return f"**{label}:**\n" + "\n".join(rows)
 
         tot=0.0
