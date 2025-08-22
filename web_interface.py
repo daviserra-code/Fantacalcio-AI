@@ -97,14 +97,14 @@ def api_chat():
     if not rate_limiter.is_allowed(request):
         remaining_requests = rate_limiter.get_remaining_requests(request)
         reset_time = rate_limiter.get_reset_time(request)
-        
+
         return jsonify({
             "error": "Rate limit exceeded",
             "message": "Hai superato il limite di 10 richieste per ora. Riprova più tardi.",
             "remaining_requests": remaining_requests,
             "reset_time": reset_time
         }), 429
-    
+
     data = request.get_json(force=True, silent=True) or {}
     msg  = (data.get("message") or "").strip()
     mode = (data.get("mode") or "classic").strip()
@@ -181,9 +181,9 @@ def api_chat():
         reply = f"⚠️ Errore temporaneo del servizio. Messaggio: {msg[:50]}... - Riprova tra poco."
         new_state = state
 
-    # Apply exclusions to the reply
-    if excluded_players:
-        reply = apply_exclusions_to_text(reply, excluded_players)
+    # Apply exclusions if any (both session and persistent)
+    excluded_players = new_state.get("excluded_players", [])
+    reply = apply_exclusions_to_text(reply, excluded_players)
 
     # Apply corrections and data validation to response
     try:
@@ -228,17 +228,17 @@ def api_chat():
     })
 
     set_state(new_state)
-    
+
     # Add rate limit info to response
     response = jsonify({"response": reply})
     remaining = rate_limiter.get_remaining_requests(request)
     response.headers['X-RateLimit-Remaining'] = str(remaining)
     response.headers['X-RateLimit-Limit'] = str(rate_limiter.max_requests)
-    
+
     reset_time = rate_limiter.get_reset_time(request)
     if reset_time:
         response.headers['X-RateLimit-Reset'] = str(reset_time)
-    
+
     return response
 
 def handle_exclusion(msg: str, state: dict) -> str:
@@ -391,7 +391,7 @@ def api_reset_exclusions():
 def api_rate_limit_status():
     remaining = rate_limiter.get_remaining_requests(request)
     reset_time = rate_limiter.get_reset_time(request)
-    
+
     return jsonify({
         "is_deployed": rate_limiter.is_deployed,
         "limit": rate_limiter.max_requests,
@@ -566,11 +566,11 @@ def api_import_rules_document():
         return jsonify({"error": "File path required"}), 400
 
     file_path = data["file_path"]
-    
+
     # Security check - ensure file is in attached_assets
     if not file_path.startswith("attached_assets/"):
         file_path = f"attached_assets/{file_path}"
-    
+
     if not os.path.exists(file_path):
         return jsonify({"error": "File not found"}), 404
 
