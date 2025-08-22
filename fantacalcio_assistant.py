@@ -444,6 +444,16 @@ class FantacalcioAssistant:
         out=[]
         processed_override_players = set()
 
+        # Apply corrections to roster data before filtering
+        corrected_roster = self.roster
+        if self.corrections_manager:
+            try:
+                corrected_roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+                LOG.info("[Assistant] Applied persistent corrections to roster before filtering")
+            except Exception as e:
+                LOG.error(f"[Assistant] Error applying corrections in _make_filtered_roster: {e}")
+                corrected_roster = self.roster
+
         # First, create all players from overrides that might not be in roster
         # BUT only include them for Under21 queries, not for budget-based formations
         processed_players = set()  # Track to prevent duplicates
@@ -460,7 +470,7 @@ class FantacalcioAssistant:
 
                 # Create a synthetic player record for override entries not in roster
                 found_in_roster = False
-                for p in self.roster:
+                for p in corrected_roster:
                     p_name = _norm_name(p.get("name", "").strip())
                     p_team = _norm_team(p.get("team", "").strip())
                     if p_name == _norm_name(name) and p_team == _norm_team(team):
@@ -492,8 +502,8 @@ class FantacalcioAssistant:
                     self._synthetic_under21_players.append(synthetic_player)
                     processed_override_players.add(key)
 
-        # Then process regular roster with override matching
-        for p in self.roster:
+        # Then process corrected roster with override matching
+        for p in corrected_roster:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
 
