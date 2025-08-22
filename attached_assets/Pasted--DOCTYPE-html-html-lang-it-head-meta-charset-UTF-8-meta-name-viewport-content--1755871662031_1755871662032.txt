@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FantaCalcio AI · Mobile UI</title>
+<style>
+  :root{
+    --bg-grad-a:#2c3e50;
+    --bg-grad-b:#34495e;
+    --text:#e8eef6;
+    --muted:#9fb0c3;
+    --card:#0e1626;
+    --border:#1f2a3a;
+
+    --accent-a:#00c851;
+    --accent-b:#007e33;
+    --accent-text:#ffffff;
+    --accent-glow: rgba(0,200,81,0.25);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    min-height:100%;
+    background: radial-gradient(900px 600px at 100% -10%, rgba(0,200,81,.12), transparent 60%),
+                linear-gradient(135deg,var(--bg-grad-a),var(--bg-grad-b));
+    color:var(--text);
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  }
+
+  .container{ max-width:720px; margin:0 auto; padding:12px; }
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); overflow:hidden;
+  }
+  .header{
+    padding:14px 16px; border-bottom:1px solid var(--border);
+    background:linear-gradient(45deg, rgba(0,200,81,.1), rgba(0,126,51,.06));
+  }
+  .title{font-weight:800}
+  .subtitle{color:var(--muted); font-size:.9rem}
+
+  .btn{
+    border:0; border-radius:22px; cursor:pointer;
+    font-weight:700; padding:10px 16px;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .btn-primary{
+    background:linear-gradient(45deg,var(--accent-a),var(--accent-b));
+    color:var(--accent-text);
+    box-shadow:0 6px 16px var(--accent-glow);
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 10px 22px var(--accent-glow); }
+
+  .chat{ display:flex; flex-direction:column; min-height:70vh; }
+  .log{ flex:1; overflow:auto; padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .bubble{ padding:12px 14px; border-radius:14px; line-height:1.35; }
+  .me{ background:rgba(255,255,255,.06); align-self:flex-end; }
+  .bot{ background:#0b1220; border:1px solid var(--border); align-self:flex-start; }
+
+  .composer{ display:flex; gap:8px; padding:10px; border-top:1px solid var(--border);
+             position:sticky; bottom:0; background:rgba(14,22,38,.95); backdrop-filter: blur(6px);}
+  .input{
+    flex:1; min-height:46px; max-height:160px; resize:vertical;
+    padding:12px 14px; border-radius:14px; outline:0; color:var(--text);
+    background:#0b1220; border:1px solid var(--border);
+  }
+
+  .quick{
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:8px; padding:10px; border-top:1px solid var(--border);
+    background:rgba(255,255,255,.02);
+  }
+  .quick .btn{ width:100%; min-height:40px; }
+
+  /* ========= OVERRIDE FINALE (quick buttons verdi gradiente) ========= */
+  .quick .btn,
+  .quick .quick-action-btn{
+    background:linear-gradient(45deg,var(--accent-a),var(--accent-b)) !important;
+    color:#fff !important;
+    box-shadow:0 6px 16px var(--accent-glow) !important;
+    border:0 !important;
+    border-radius:22px !important;
+    font-weight:700;
+  }
+  .quick .btn:hover,
+  .quick .quick-action-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 10px 22px var(--accent-glow) !important;
+  }
+
+  @media (min-width:560px){ .quick{ grid-template-columns:repeat(3,1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <div class="title">🏆 FantaCalcio Assistant</div>
+      <div class="subtitle">UI mobile-friendly (auto per smartphone)</div>
+    </div>
+
+    <div class="chat">
+      <div class="log" id="log">
+        <div class="bubble bot">Ciao! Sono pronto. Puoi chiedere “4-3-3 500”, “Top attaccanti 150”, “U21 difensori”.</div>
+      </div>
+
+      <div class="composer">
+        <textarea id="input" class="input" rows="2" placeholder="Scrivi…"></textarea>
+        <button id="send" class="btn btn-primary">Invia</button>
+      </div>
+
+      <div class="quick">
+        <button class="btn" data-q="Top attaccanti budget 150">🎯 Top Attaccanti 150</button>
+        <button class="btn" data-q="Top centrocampisti budget 120">⚽ Centrocampisti 120</button>
+        <button class="btn" data-q="Top difensori budget 100">🛡️ Difensori 100</button>
+        <button class="btn" data-q="Migliori portieri budget 40">🥅 Portieri 40</button>
+        <button class="btn" data-q="Formazione 4-3-3 500">📋 4-3-3 · 500</button>
+        <button class="btn" data-q="2 difensori Under 21">👶 U21 Difensori</button>
+        <button class="btn" data-q="3 centrocampisti Under 21">👶 U21 Centrocampisti</button>
+        <button class="btn" data-q="2 attaccanti Under 21">👶 U21 Attaccanti</button>
+        <button class="btn" data-q="Strategia per l'asta">🏆 Strategia Asta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const log = document.getElementById('log');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send');
+
+function add(text, who='bot'){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (who==='me'?'me':'bot');
+  b.innerHTML = text;
+  log.appendChild(b);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function sendMessage(txt){
+  if(!txt) return;
+  add(txt, 'me');
+  input.value = '';
+  try{
+    const res = await fetch('/api/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: txt, mode: 'classic'})
+    });
+    const data = await res.json();
+    add(data.response || 'Nessuna risposta');
+  }catch(e){
+    add('❌ Errore di rete');
+  }
+}
+
+sendBtn.addEventListener('click', ()=>sendMessage(input.value.trim()));
+input.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage(input.value.trim());
+  }
+});
+document.querySelectorAll('.quick .btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const q = b.dataset.q || b.textContent.trim();
+    sendMessage(q);
+  });
+});
+</script>
+</body>
+</html>
