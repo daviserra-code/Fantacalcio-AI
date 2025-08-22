@@ -182,11 +182,19 @@ class FantacalcioAssistant:
         self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
         self.guessed_age_index = {}
 
-        # Apply data corrections
+        # Apply data corrections immediately after loading roster
         if self.corrections_manager:
+            original_count = len(self.roster)
             self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
             excluded_count = len(self.corrections_manager.get_excluded_players())
-            LOG.info("[Assistant] Applied data corrections to roster, %d players excluded", excluded_count)
+            LOG.info("[Assistant] Applied data corrections to roster: %d players, %d excluded", len(self.roster), excluded_count)
+            
+            # Log team corrections that were applied
+            for player in self.roster:
+                corrected_team = self.corrections_manager.get_corrected_team(player.get("name", ""), player.get("team", ""))
+                if corrected_team and corrected_team != player.get("team"):
+                    LOG.info("[Assistant] Applied team correction: %s %s → %s", player.get("name"), player.get("team"), corrected_team)
+                    player["team"] = corrected_team
 
         self._auto_detect_season()
         self._apply_ages_to_roster()
@@ -444,15 +452,8 @@ class FantacalcioAssistant:
         out=[]
         processed_override_players = set()
 
-        # Apply corrections to roster data before filtering
+        # Use the already corrected roster (corrections applied at initialization)
         corrected_roster = self.roster
-        if self.corrections_manager:
-            try:
-                corrected_roster = self.corrections_manager.apply_corrections_to_data(self.roster)
-                LOG.info("[Assistant] Applied persistent corrections to roster before filtering")
-            except Exception as e:
-                LOG.error(f"[Assistant] Error applying corrections in _make_filtered_roster: {e}")
-                corrected_roster = self.roster
 
         # First, create all players from overrides that might not be in roster
         # BUT only include them for Under21 queries, not for budget-based formations
