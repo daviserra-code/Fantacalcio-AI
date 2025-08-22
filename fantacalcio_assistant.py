@@ -595,7 +595,23 @@ class FantacalcioAssistant:
 
     # ---------- utility ----------
     def _pool_by_role(self, r: str) -> List[Dict[str,Any]]:
-        return [p for p in self.filtered_roster if _role_letter(p.get("role") or p.get("role_raw",""))==r]
+        # Get excluded players from corrections manager
+        excluded_players = []
+        if self.corrections_manager:
+            try:
+                excluded_players = [name.lower() for name in self.corrections_manager.get_excluded_players()]
+            except Exception as e:
+                LOG.error(f"Error getting excluded players in _pool_by_role: {e}")
+        
+        filtered_pool = []
+        for p in self.filtered_roster:
+            if _role_letter(p.get("role") or p.get("role_raw","")) == r:
+                # Skip excluded players
+                player_name = (p.get("name") or "").lower()
+                if player_name not in excluded_players:
+                    filtered_pool.append(p)
+                
+        return filtered_pool
 
     def _age_from_by(self, by: Optional[int]) -> Optional[int]:
         try:
@@ -723,8 +739,23 @@ class FantacalcioAssistant:
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
                               ) -> Tuple[List[Dict[str,Any]], List[Dict[str,Any]]]:
         within=[]; fm_only=[]
+        
+        # Get excluded players from corrections manager
+        excluded_players = []
+        if self.corrections_manager:
+            try:
+                excluded_players = [name.lower() for name in self.corrections_manager.get_excluded_players()]
+            except Exception as e:
+                LOG.error(f"Error getting excluded players: {e}")
+        
         tmp=[]
         for p in self._pool_by_role(r):
+            # Skip excluded players
+            player_name = (p.get("name") or "").lower()
+            if player_name in excluded_players:
+                LOG.info(f"Skipping excluded player: {p.get('name')}")
+                continue
+                
             fm = p.get("_fm"); pr = p.get("_price")
             if isinstance(fm,(int,float)) and fm>0 and isinstance(pr,(int,float)) and 0<pr<=float(budget):
                 q = dict(p); q["_value_ratio"] = fm / max(pr,1.0); tmp.append(q)
@@ -734,6 +765,11 @@ class FantacalcioAssistant:
         if len(within) < take:
             tmp2=[]
             for p in self._pool_by_role(r):
+                # Skip excluded players
+                player_name = (p.get("name") or "").lower()
+                if player_name in excluded_players:
+                    continue
+                    
                 if p.get("_fm") is not None and (p.get("_fm") or 0.0) > 0 and p.get("_price") is None:
                     tmp2.append(p)
             tmp2.sort(key=lambda x: -(x.get("_fm") or 0.0))

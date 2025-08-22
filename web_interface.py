@@ -285,6 +285,7 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
         corrections_manager = get_corrections_manager()
         persistent_excluded = corrections_manager.get_excluded_players()
         all_excluded = list(set(excluded_players + persistent_excluded))
+        LOG.info(f"Applying exclusions: session={excluded_players}, persistent={persistent_excluded}")
     except Exception as e:
         LOG.error(f"Error getting persistent exclusions: {e}")
         all_excluded = excluded_players
@@ -307,6 +308,7 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                 pattern = rf'\b{re.escape(excluded.lower())}\b|\*\*{re.escape(excluded.lower())}\*\*'
                 if re.search(pattern, line.lower()):
                     should_exclude = True
+                    LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
                     break
 
         if not should_exclude:
