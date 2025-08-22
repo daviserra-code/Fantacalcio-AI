@@ -606,9 +606,22 @@ class FantacalcioAssistant:
         filtered_pool = []
         for p in self.filtered_roster:
             if _role_letter(p.get("role") or p.get("role_raw","")) == r:
-                # Skip excluded players
+                # Skip excluded players - use fuzzy matching
                 player_name = (p.get("name") or "").lower()
-                if player_name not in excluded_players:
+                should_skip = False
+                for excluded in excluded_players:
+                    excluded_lower = excluded.lower()
+                    # Check if excluded name is contained in player name or vice versa
+                    if excluded_lower in player_name or player_name in excluded_lower:
+                        should_skip = True
+                        break
+                    # Also check if main part of name matches
+                    excluded_parts = excluded_lower.split()
+                    player_parts = player_name.split()
+                    if any(part in player_parts for part in excluded_parts if len(part) > 2):
+                        should_skip = True
+                        break
+                if not should_skip:
                     filtered_pool.append(p)
                 
         return filtered_pool
@@ -750,10 +763,24 @@ class FantacalcioAssistant:
         
         tmp=[]
         for p in self._pool_by_role(r):
-            # Skip excluded players
+            # Skip excluded players - use fuzzy matching
             player_name = (p.get("name") or "").lower()
-            if player_name in excluded_players:
-                LOG.info(f"Skipping excluded player: {p.get('name')}")
+            should_skip = False
+            for excluded in excluded_players:
+                excluded_lower = excluded.lower()
+                # Check if excluded name is contained in player name or vice versa
+                if excluded_lower in player_name or player_name in excluded_lower:
+                    should_skip = True
+                    LOG.info(f"Skipping excluded player: {p.get('name')} (matches exclusion: {excluded})")
+                    break
+                # Also check if main part of name matches (e.g., "arnautovic" matches "marko arnautovic")
+                excluded_parts = excluded_lower.split()
+                player_parts = player_name.split()
+                if any(part in player_parts for part in excluded_parts if len(part) > 2):
+                    should_skip = True
+                    LOG.info(f"Skipping excluded player: {p.get('name')} (partial match: {excluded})")
+                    break
+            if should_skip:
                 continue
                 
             fm = p.get("_fm"); pr = p.get("_price")

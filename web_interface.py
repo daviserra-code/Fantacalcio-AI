@@ -305,8 +305,19 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                 # Additional check: make sure it's actually the player name, not just a substring
                 import re
                 # Look for the player name as a word boundary or in **bold** format
+                # Also handle partial matches like "arnautovic" matching "Marko Arnautović"
+                excluded_parts = excluded.lower().split()
+                line_lower = line.lower()
+                
+                # Check if all parts of the excluded name appear in the line
+                if all(part in line_lower for part in excluded_parts):
+                    should_exclude = True
+                    LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
+                    break
+                    
+                # Also check exact pattern matching
                 pattern = rf'\b{re.escape(excluded.lower())}\b|\*\*{re.escape(excluded.lower())}\*\*'
-                if re.search(pattern, line.lower()):
+                if re.search(pattern, line_lower):
                     should_exclude = True
                     LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
                     break
