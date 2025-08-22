@@ -434,6 +434,12 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
                         p["team"] = new_team
                         LOG.info(f"Updated {player_name} team from {old_team} to {new_team} in roster")
                 
+                # Also update filtered roster
+                for p in fantacalcio_assistant.filtered_roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        p["team"] = new_team
+                        LOG.info(f"Updated {player_name} team in filtered roster: {old_team} → {new_team}")
+                
                 # Force reload of filtered roster to apply changes
                 fantacalcio_assistant._make_filtered_roster()
                 

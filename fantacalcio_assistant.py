@@ -1074,11 +1074,12 @@ class FantacalcioAssistant:
                 player_name = p.get('name', 'N/D')
                 team_display = p.get('team', '—')
                 
-                # Double-check for team corrections
+                # FORCE team corrections for display - this ensures we always show corrected teams
                 if self.corrections_manager:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, team_display)
-                    if corrected_team:
+                    if corrected_team and corrected_team != team_display:
                         team_display = corrected_team
+                        LOG.info(f"[Formation Display] Applied team correction: {player_name} {p.get('team', '—')} → {corrected_team}")
                 
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
