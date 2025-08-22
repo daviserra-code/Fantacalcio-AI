@@ -400,30 +400,46 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
 
     # Pattern for team updates: "sposta [player] a [team]" or "[player] gioca nel [team]"
     team_update_patterns = [
-        r"(.+?)\s+(?:ora\s+)?(?:gioca\s+nel|è\s+al|è\s+del|trasferito\s+al|al)\s+(.+)$",
-        r"sposta\s+(.+?)\s+(?:al|nel|a)\s+(.+)$",
-        r"aggiorna\s+(.+?)\s+(?:al|nel|a)\s+(.+)$"
+        r"^(.+?)\s+(?:ora\s+|adesso\s+)?(?:gioca\s+nel|è\s+al|è\s+del|trasferito\s+al|va\s+al)\s+(.+)$",
+        r"^sposta\s+(.+?)\s+(?:al|nel|a)\s+(.+)$",
+        r"^aggiorna\s+(.+?)\s+(?:al|nel|a)\s+(.+)$"
     ]
 
     for pattern in team_update_patterns:
         match = re.search(pattern, message_lower)
         if match:
-            player_name = match.group(1).strip()
-            new_team = match.group(2).strip()
-            
-            # Clean up player name - remove common words that might be captured
-            player_name = re.sub(r'\b(ora|adesso|oggi)\b', '', player_name, flags=re.IGNORECASE).strip()
-            player_name = player_name.title()
-            new_team = new_team.title()
+            player_name = match.group(1).strip().title()
+            new_team = match.group(2).strip().title()
+
+            # Log the extraction for debugging
+            LOG.info(f"Team update detected: '{player_name}' -> '{new_team}'")
 
             try:
-                result = fantacalcio_assistant.update_player_data(player_name, team=new_team)
+                # Get corrections manager and apply the update
+                corrections_manager = get_corrections_manager()
                 
-                # Force immediate reload of the assistant's filtered roster
+                # Find the current team for this player
+                old_team = "Unknown"
+                for p in fantacalcio_assistant.roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        old_team = p.get("team", "Unknown")
+                        break
+                
+                # Apply the correction persistently
+                corrections_manager.add_correction_to_db(player_name, "TEAM_UPDATE", old_team, new_team, persistent=True)
+                
+                # Update the player data immediately in the assistant's roster
+                for p in fantacalcio_assistant.roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        p["team"] = new_team
+                        LOG.info(f"Updated {player_name} team from {old_team} to {new_team} in roster")
+                
+                # Force reload of filtered roster to apply changes
                 fantacalcio_assistant._make_filtered_roster()
                 
-                return f"✅ {result}"
+                return f"✅ Aggiornato {player_name}: {old_team} → {new_team}"
             except Exception as e:
+                LOG.error(f"Error updating player team: {e}")
                 return f"❌ Errore nell'aggiornare il giocatore: {e}"
 
     # Pattern for excluding non-Serie A teams

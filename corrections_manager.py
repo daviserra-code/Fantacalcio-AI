@@ -576,12 +576,14 @@ class CorrectionsManager:
             if len(correction) > 4:
                 player_name, correction_type, old_value, new_value = correction[1], correction[2], correction[3], correction[4]
                 if correction_type == "TEAM_UPDATE":
-                    # Store both the original case and lowercase for matching
+                    # Store with lowercase key for matching, but preserve original case for new value
                     team_updates[player_name.lower()] = new_value
 
         # Apply corrections and filters
         filtered_data = []
         for player in players_data:
+            # Create a copy to avoid modifying the original
+            player = dict(player)
             player_name = player.get("name", "")
             player_name_lower = player_name.lower()
 
@@ -592,11 +594,12 @@ class CorrectionsManager:
             # Apply team updates if available (case-insensitive matching)
             if player_name_lower in team_updates:
                 new_team = team_updates[player_name_lower]
+                old_team = player.get("team", "Unknown")
                 player["team"] = new_team
                 # Log the team update being applied
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.info(f"Applied team update: {player_name} -> {new_team}")
+                logger.info(f"Applied persistent team update: {player_name} {old_team} -> {new_team}")
 
             # Filter to include only Serie A teams for the current season
             if self.is_serie_a_team(player.get("team", "")):
