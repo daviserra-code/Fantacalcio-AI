@@ -755,20 +755,21 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
-        """Build formation with balanced mix of high/mid/budget players rather than budget optimization"""
+        """Build formation with balanced mix of high/mid/budget players"""
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
         
         # Strategy: Create balanced tiers for each role
         def pick_balanced_role(role: str, needed_count: int):
-            pool = self._select_top_role_any(role, take=1000)
+            pool = self._select_top_role_any(role, take=500)
             
             # Filter valid players with both price and fantamedia
             valid_pool = []
             for p in pool:
                 if (p.get("_source") != "override_synthetic" and 
-                    p.get("_price") is not None and p.get("_fm") is not None):
+                    p.get("_price") is not None and p.get("_fm") is not None and
+                    p.get("_fm") > 0):  # Ensure non-zero fantamedia
                     valid_pool.append(p)
             
             if not valid_pool:
@@ -777,42 +778,47 @@ class FantacalcioAssistant:
             # Sort by fantamedia descending to identify quality tiers
             valid_pool.sort(key=lambda x: -(x.get("_fm") or 0.0))
             
-            # Define tiers based on fantamedia performance
-            total_players = len(valid_pool)
-            if total_players < needed_count:
-                return valid_pool[:needed_count]
+            # Define tiers based on fantamedia thresholds for better quality
+            top_tier = [p for p in valid_pool if p.get("_fm", 0) >= 6.5]
+            mid_tier = [p for p in valid_pool if 6.0 <= p.get("_fm", 0) < 6.5]  
+            budget_tier = [p for p in valid_pool if 5.0 <= p.get("_fm", 0) < 6.0]
             
-            # Create 3 tiers: Top 20%, Middle 50%, Budget 30%
-            top_tier_size = max(1, int(total_players * 0.2))
-            mid_tier_size = int(total_players * 0.5)
+            # If tiers are empty, fall back to percentile-based approach
+            if not top_tier and not mid_tier:
+                total_players = len(valid_pool)
+                if total_players < needed_count:
+                    return valid_pool[:needed_count]
+                
+                top_tier_size = max(1, int(total_players * 0.3))  # Increased to 30%
+                mid_tier_size = int(total_players * 0.4)  # 40%
+                
+                top_tier = valid_pool[:top_tier_size]
+                mid_tier = valid_pool[top_tier_size:top_tier_size + mid_tier_size]
+                budget_tier = valid_pool[top_tier_size + mid_tier_size:]
             
-            top_tier = valid_pool[:top_tier_size]
-            mid_tier = valid_pool[top_tier_size:top_tier_size + mid_tier_size]
-            budget_tier = valid_pool[top_tier_size + mid_tier_size:]
-            
-            # Sort each tier by value ratio (FM/price)
+            # Sort each tier by value ratio (FM/price) for best value within tier
             for tier in [top_tier, mid_tier, budget_tier]:
                 tier.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
             
             chosen = []
             
-            # Strategy: Mix based on role importance and needed count
-            if role == "A":  # Attack: Prioritize quality
+            # Strategy: Always include top players, balanced mix for others
+            if role == "A":  # Attack: Prioritize quality heavily
                 targets = {"top": max(1, needed_count // 2), 
-                          "mid": max(1, needed_count // 3), 
-                          "budget": max(0, needed_count - (needed_count // 2) - (needed_count // 3))}
-            elif role == "C":  # Midfield: Balanced mix
+                          "mid": max(1, (needed_count + 1) // 3), 
+                          "budget": max(0, needed_count - max(1, needed_count // 2) - max(1, (needed_count + 1) // 3))}
+            elif role == "C":  # Midfield: Balanced but favor quality
                 targets = {"top": max(1, needed_count // 3), 
                           "mid": max(1, needed_count // 2), 
-                          "budget": max(0, needed_count - (needed_count // 3) - (needed_count // 2))}
-            elif role == "D":  # Defense: Focus on value
-                targets = {"top": max(0, needed_count // 4), 
+                          "budget": max(0, needed_count - max(1, needed_count // 3) - max(1, needed_count // 2))}
+            elif role == "D":  # Defense: More balanced, some quality
+                targets = {"top": max(1, needed_count // 4), 
                           "mid": max(1, needed_count // 2), 
-                          "budget": max(1, needed_count - (needed_count // 4) - (needed_count // 2))}
+                          "budget": max(1, needed_count - max(1, needed_count // 4) - max(1, needed_count // 2))}
             else:  # Goalkeeper: Best available
                 targets = {"top": 1, "mid": 0, "budget": 0}
             
-            # Pick from each tier
+            # Pick from each tier, ensuring we get the targets
             for tier, target_count in [("top", targets["top"]), ("mid", targets["mid"]), ("budget", targets["budget"])]:
                 tier_pool = top_tier if tier == "top" else (mid_tier if tier == "mid" else budget_tier)
                 
@@ -825,9 +831,11 @@ class FantacalcioAssistant:
                         used.add(p.get("name"))
                         added += 1
             
-            # Fill remaining slots from any tier if needed
+            # If we still need more players, fill from any remaining valid players
             if len(chosen) < needed_count:
                 all_remaining = [p for p in valid_pool if p.get("name") not in used]
+                all_remaining.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999)))
+                
                 for p in all_remaining:
                     if len(chosen) >= needed_count:
                         break
@@ -841,7 +849,7 @@ class FantacalcioAssistant:
             if slots[role] > 0:
                 picks[role] = pick_balanced_role(role, slots[role])
         
-        # Calculate costs
+        # Calculate costs and display information
         def calculate_total_cost():
             total = 0.0
             for role_picks in picks.values():
@@ -854,7 +862,7 @@ class FantacalcioAssistant:
         total_cost = calculate_total_cost()
         leftover = max(0, budget - total_cost)
         
-        # Calculate role budgets for display (informational only)
+        # Calculate role budgets for display
         role_budget = {}
         for role in ["P", "D", "C", "A"]:
             role_cost = sum(p.get("_price", 0) for p in picks[role] if isinstance(p.get("_price"), (int, float)))
