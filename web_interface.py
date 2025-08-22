@@ -13,6 +13,7 @@ from fantacalcio_assistant import FantacalcioAssistant
 from corrections_manager import CorrectionsManager
 # Assuming LeagueRulesManager is in a separate file named league_rules_manager.py
 from league_rules_manager import LeagueRulesManager
+from rate_limiter import RateLimiter
 
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -22,6 +23,9 @@ LOG = logging.getLogger("web_interface")
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
+
+# Initialize rate limiter (10 requests per hour for deployed app)
+rate_limiter = RateLimiter(max_requests=10, time_window=3600)
 
 # ---------- Singleton ----------
 def get_assistant() -> FantacalcioAssistant:
@@ -89,6 +93,18 @@ def index():
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
+    # Check rate limit first
+    if not rate_limiter.is_allowed(request):
+        remaining_requests = rate_limiter.get_remaining_requests(request)
+        reset_time = rate_limiter.get_reset_time(request)
+        
+        return jsonify({
+            "error": "Rate limit exceeded",
+            "message": "Hai superato il limite di 10 richieste per ora. Riprova più tardi.",
+            "remaining_requests": remaining_requests,
+            "reset_time": reset_time
+        }), 429
+    
     data = request.get_json(force=True, silent=True) or {}
     msg  = (data.get("message") or "").strip()
     mode = (data.get("mode") or "classic").strip()
@@ -212,7 +228,18 @@ def api_chat():
     })
 
     set_state(new_state)
-    return jsonify({"response": reply})
+    
+    # Add rate limit info to response
+    response = jsonify({"response": reply})
+    remaining = rate_limiter.get_remaining_requests(request)
+    response.headers['X-RateLimit-Remaining'] = str(remaining)
+    response.headers['X-RateLimit-Limit'] = str(rate_limiter.max_requests)
+    
+    reset_time = rate_limiter.get_reset_time(request)
+    if reset_time:
+        response.headers['X-RateLimit-Reset'] = str(reset_time)
+    
+    return response
 
 def handle_exclusion(msg: str, state: dict) -> str:
     """Handle player exclusions (rimuovi/escludi commands)"""
@@ -359,6 +386,19 @@ def api_reset_exclusions():
     state.pop("excluded_players", None)
     set_state(state)
     return jsonify({"ok": True, "message": "Esclusioni rimosse"})
+
+@app.route("/api/rate-limit-status", methods=["GET"])
+def api_rate_limit_status():
+    remaining = rate_limiter.get_remaining_requests(request)
+    reset_time = rate_limiter.get_reset_time(request)
+    
+    return jsonify({
+        "is_deployed": rate_limiter.is_deployed,
+        "limit": rate_limiter.max_requests,
+        "remaining": remaining,
+        "reset_time": reset_time,
+        "window_seconds": rate_limiter.time_window
+    })
 
 @app.route("/api/test", methods=["GET"])
 def api_test():
