@@ -1213,11 +1213,25 @@
             });
 
             console.log('Response status:', response.status);
+            
+            // Update rate limit display
+            updateRateLimitDisplay(response);
+            
             const data = await response.json();
             console.log('Response data:', data);
 
             // Hide typing indicator
             if (typing) typing.style.display = 'none';
+
+            // Handle rate limit error
+            if (response.status === 429) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'message assistant-message';
+                errorMsg.innerHTML = '⚠️ ' + (data.message || 'Limite di richieste superato. Riprova più tardi.');
+                container.appendChild(errorMsg);
+                container.scrollTop = container.scrollHeight;
+                return;
+            }
 
             // Add assistant response
             const assistantMsg = document.createElement('div');
@@ -1263,10 +1277,10 @@
         }
     }
 
-    function testAPI() {
+    async function testAPI() {
         console.log('Testing API connection...');
         try {
-            const response = await fetch('/api/test'); // Assuming a /api/test endpoint exists
+            const response = await fetch('/api/test');
             const data = await response.json();
             alert('API Test Successful: ' + JSON.stringify(data));
         } catch (error) {
