@@ -299,44 +299,70 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
     for line in lines:
         # Skip lines that contain excluded players
         should_exclude = False
+        line_lower = line.lower()
+        
         for excluded in all_excluded:
             excluded_lower = excluded.lower().strip()
-            line_lower = line.lower()
             
-            # Check for the player name in the line with multiple patterns
+            # Handle special characters by creating multiple search variants
             import re
+            import unicodedata
             
-            # Pattern 1: Look for the name in **bold** format (most common in responses)
-            bold_pattern = rf'\*\*[^*]*{re.escape(excluded_lower)}[^*]*\*\*'
-            if re.search(bold_pattern, line_lower):
-                should_exclude = True
-                LOG.info(f"Excluding line with bold player '{excluded}': {line.strip()}")
-                break
+            # Normalize the excluded name to handle accented characters
+            excluded_normalized = unicodedata.normalize('NFD', excluded_lower)
+            excluded_normalized = ''.join(c for c in excluded_normalized if unicodedata.category(c) != 'Mn')
             
-            # Pattern 2: Check if player name appears as a significant part of the line
-            # Split excluded name into parts and check if main parts appear
-            excluded_parts = [part for part in excluded_lower.split() if len(part) > 2]
-            if excluded_parts:
-                # If any significant part of the excluded name appears in the line, exclude it
-                for part in excluded_parts:
-                    if part in line_lower and len(part) > 3:  # Only check substantial parts
-                        should_exclude = True
-                        LOG.info(f"Excluding line containing name part '{part}' from '{excluded}': {line.strip()}")
-                        break
+            # Create search patterns for the player name
+            search_patterns = [
+                excluded_lower,
+                excluded_normalized,
+                excluded_lower.replace('ć', 'c').replace('č', 'c').replace('ž', 'z').replace('š', 's'),
+                excluded_lower.replace('ovic', 'ović').replace('ovic', 'ovič')
+            ]
             
-            # Pattern 3: Direct substring match for shorter names
-            if len(excluded_lower) > 3 and excluded_lower in line_lower:
-                should_exclude = True
-                LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
-                break
+            # Remove duplicates
+            search_patterns = list(set(search_patterns))
+            
+            for pattern in search_patterns:
+                if not pattern or len(pattern) < 3:
+                    continue
+                    
+                # Pattern 1: Look for the name in **bold** format (most common in responses)
+                bold_pattern = rf'\*\*[^*]*{re.escape(pattern)}[^*]*\*\*'
+                if re.search(bold_pattern, line_lower):
+                    should_exclude = True
+                    LOG.info(f"Excluding line with bold player '{excluded}' (pattern: {pattern}): {line.strip()}")
+                    break
                 
+                # Pattern 2: Check if main parts of the name appear
+                pattern_parts = [part for part in pattern.split() if len(part) > 2]
+                if pattern_parts:
+                    # Check if all significant parts are present
+                    parts_found = sum(1 for part in pattern_parts if part in line_lower)
+                    if parts_found >= len(pattern_parts) * 0.7:  # At least 70% of parts match
+                        should_exclude = True
+                        LOG.info(f"Excluding line containing name parts from '{excluded}' (pattern: {pattern}): {line.strip()}")
+                        break
+                
+                # Pattern 3: Direct substring match for substantial names
+                if len(pattern) > 4 and pattern in line_lower:
+                    should_exclude = True
+                    LOG.info(f"Excluding line containing '{excluded}' (pattern: {pattern}): {line.strip()}")
+                    break
+                    
             if should_exclude:
                 break
 
         if not should_exclude:
             filtered_lines.append(line)
 
-    return '\n'.join(filtered_lines)
+    result = '\n'.join(filtered_lines)
+    
+    # Log the filtering result
+    if len(filtered_lines) < len(lines):
+        LOG.info(f"Filtered out {len(lines) - len(filtered_lines)} lines containing excluded players")
+    
+    return result
 
 def handle_correction(user_message: str, fantacalcio_assistant) -> str:
     """Handle comprehensive user corrections and apply them permanently"""
