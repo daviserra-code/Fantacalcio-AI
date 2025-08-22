@@ -713,11 +713,11 @@ class CorrectionsManager:
                 if not columns:
                     return None
                 
-                # Query for team corrections for this player
+                # Query for team corrections for this player (case-insensitive)
                 if 'player_name' in columns and 'correction_type' in columns:
                     cursor.execute("""
                         SELECT new_value FROM corrections 
-                        WHERE player_name = ? 
+                        WHERE LOWER(player_name) = LOWER(?) 
                         AND correction_type = 'TEAM_UPDATE' 
                         AND persistent = TRUE 
                         ORDER BY timestamp DESC 
@@ -727,7 +727,7 @@ class CorrectionsManager:
                     # Fallback for older schema
                     cursor.execute("""
                         SELECT new_value FROM corrections 
-                        WHERE field_name = ? 
+                        WHERE LOWER(field_name) = LOWER(?) 
                         ORDER BY created_at DESC 
                         LIMIT 1
                     """, (player_name,))

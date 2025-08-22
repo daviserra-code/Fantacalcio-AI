@@ -1092,8 +1092,10 @@ class FantacalcioAssistant:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, original_team)
                     if corrected_team:
                         team_display = corrected_team
-                        if corrected_team != original_team:
-                            LOG.info(f"[Formation Display] Applied team correction: {player_name} {original_team} → {corrected_team}")
+                        LOG.info(f"[Formation Display] FORCED team correction: {player_name} {original_team} → {corrected_team}")
+                    else:
+                        # Check if there's a correction that should apply
+                        LOG.info(f"[Formation Display] No correction found for {player_name} (current team: {original_team})")
                 
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
