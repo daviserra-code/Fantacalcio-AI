@@ -400,7 +400,7 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
 
     # Pattern for team updates: "sposta [player] a [team]" or "[player] gioca nel [team]"
     team_update_patterns = [
-        r"(.+?)\s+(?:gioca\s+nel|è\s+al|è\s+del|trasferito\s+al|al)\s+(.+)$",
+        r"(.+?)\s+(?:ora\s+)?(?:gioca\s+nel|è\s+al|è\s+del|trasferito\s+al|al)\s+(.+)$",
         r"sposta\s+(.+?)\s+(?:al|nel|a)\s+(.+)$",
         r"aggiorna\s+(.+?)\s+(?:al|nel|a)\s+(.+)$"
     ]
@@ -408,11 +408,20 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
     for pattern in team_update_patterns:
         match = re.search(pattern, message_lower)
         if match:
-            player_name = match.group(1).strip().title()
-            new_team = match.group(2).strip().title()
+            player_name = match.group(1).strip()
+            new_team = match.group(2).strip()
+            
+            # Clean up player name - remove common words that might be captured
+            player_name = re.sub(r'\b(ora|adesso|oggi)\b', '', player_name, flags=re.IGNORECASE).strip()
+            player_name = player_name.title()
+            new_team = new_team.title()
 
             try:
                 result = fantacalcio_assistant.update_player_data(player_name, team=new_team)
+                
+                # Force immediate reload of the assistant's filtered roster
+                fantacalcio_assistant._make_filtered_roster()
+                
                 return f"✅ {result}"
             except Exception as e:
                 return f"❌ Errore nell'aggiornare il giocatore: {e}"
