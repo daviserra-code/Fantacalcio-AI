@@ -948,6 +948,17 @@ class FantacalcioAssistant:
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
                 picks[role] = pick_balanced_role(role, slots[role])
+        
+        # Apply team corrections to all picked players before final display
+        if self.corrections_manager:
+            for role in ["P", "D", "C", "A"]:
+                for player in picks[role]:
+                    player_name = player.get("name", "")
+                    current_team = player.get("team", "")
+                    corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
+                    if corrected_team and corrected_team != current_team:
+                        player["team"] = corrected_team
+                        LOG.info(f"[Formation Final] Applied team correction: {player_name} {current_team} → {corrected_team}")
 
         # Calculate costs and display information
         def calculate_total_cost():

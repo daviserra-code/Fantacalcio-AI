@@ -33,6 +33,12 @@ def get_assistant() -> FantacalcioAssistant:
     if not hasattr(g, 'assistant'):
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
         g.assistant = FantacalcioAssistant()
+    else:
+        # Refresh corrections data without full re-initialization
+        if hasattr(g.assistant, 'corrections_manager') and g.assistant.corrections_manager:
+            # Force reload of corrections cache
+            if hasattr(g.assistant.corrections_manager, '_excluded_players_cache'):
+                delattr(g.assistant.corrections_manager, '_excluded_players_cache')
     return g.assistant
 
 def get_corrections_manager() -> CorrectionsManager:
