@@ -124,10 +124,16 @@ def api_chat():
 
     LOG.info("Request data: %s", data)
 
-    # Best-effort: avvia ETL senza bloccare
+    # Best-effort: avvia ETL senza bloccare (skip in deployment if issues)
     try:
-        subprocess.Popen(["python", "etl_build_roster.py"])
-        LOG.info("[ETL] Job di refresh lanciato")
+        import os
+        if os.path.exists("etl_build_roster.py"):
+            subprocess.Popen(["python", "etl_build_roster.py"], 
+                           stdout=subprocess.DEVNULL, 
+                           stderr=subprocess.DEVNULL)
+            LOG.info("[ETL] Job di refresh lanciato")
+        else:
+            LOG.info("[ETL] ETL script non trovato, skip")
     except Exception as e2:
         LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
 
@@ -716,10 +722,9 @@ if __name__ == "__main__":
 
     # Configure Flask for production deployment
     app.run(
-        host=host,
+        host="0.0.0.0",
         port=port,
         debug=False,
         threaded=True,
-        use_reloader=False,
-        processes=1
+        use_reloader=False
     )
