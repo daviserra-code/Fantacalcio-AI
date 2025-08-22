@@ -862,6 +862,7 @@ class FantacalcioAssistant:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
                     if corrected_team and corrected_team != current_team:
                         p["team"] = corrected_team
+                        LOG.info(f"[Formation Build] Applied correction: {player_name} {current_team} → {corrected_team}")
 
             # Filter valid players with both price and fantamedia
             valid_pool = []
@@ -1072,14 +1073,16 @@ class FantacalcioAssistant:
             for p in picks[r]:
                 # Apply team corrections one more time for display
                 player_name = p.get('name', 'N/D')
-                team_display = p.get('team', '—')
+                original_team = p.get('team', '—')
+                team_display = original_team
                 
                 # FORCE team corrections for display - this ensures we always show corrected teams
                 if self.corrections_manager:
-                    corrected_team = self.corrections_manager.get_corrected_team(player_name, team_display)
-                    if corrected_team and corrected_team != team_display:
+                    corrected_team = self.corrections_manager.get_corrected_team(player_name, original_team)
+                    if corrected_team:
                         team_display = corrected_team
-                        LOG.info(f"[Formation Display] Applied team correction: {player_name} {p.get('team', '—')} → {corrected_team}")
+                        if corrected_team != original_team:
+                            LOG.info(f"[Formation Display] Applied team correction: {player_name} {original_team} → {corrected_team}")
                 
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")

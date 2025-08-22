@@ -703,11 +703,42 @@ class CorrectionsManager:
     def get_corrected_team(self, player_name: str, current_team: str) -> Optional[str]:
         """Get the corrected team for a player if one exists"""
         try:
-            corrections = self.get_corrections(persistent_only=True)
-            for correction in corrections:
-                if len(correction) > 4 and correction[2] == "TEAM_UPDATE" and correction[1] == player_name:
-                    return correction[4]  # new_value
-            return None
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                
+                # Check if the table exists and get its schema
+                cursor.execute("PRAGMA table_info(corrections)")
+                columns = [row[1] for row in cursor.fetchall()]
+                
+                if not columns:
+                    return None
+                
+                # Query for team corrections for this player
+                if 'player_name' in columns and 'correction_type' in columns:
+                    cursor.execute("""
+                        SELECT new_value FROM corrections 
+                        WHERE player_name = ? 
+                        AND correction_type = 'TEAM_UPDATE' 
+                        AND persistent = TRUE 
+                        ORDER BY timestamp DESC 
+                        LIMIT 1
+                    """, (player_name,))
+                else:
+                    # Fallback for older schema
+                    cursor.execute("""
+                        SELECT new_value FROM corrections 
+                        WHERE field_name = ? 
+                        ORDER BY created_at DESC 
+                        LIMIT 1
+                    """, (player_name,))
+                
+                result = cursor.fetchone()
+                if result:
+                    logger.info(f"Found team correction for {player_name}: {current_team} → {result[0]}")
+                    return result[0]
+                
+                return None
+                
         except Exception as e:
             logger.error(f"Error getting corrected team for {player_name}: {e}")
             return None
