@@ -280,7 +280,16 @@ def handle_exclusion(msg: str, state: dict) -> str:
 
 def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
     """Remove excluded players from response text"""
-    if not excluded_players:
+    # Get persistent exclusions from corrections manager
+    try:
+        corrections_manager = get_corrections_manager()
+        persistent_excluded = corrections_manager.get_excluded_players()
+        all_excluded = list(set(excluded_players + persistent_excluded))
+    except Exception as e:
+        LOG.error(f"Error getting persistent exclusions: {e}")
+        all_excluded = excluded_players
+
+    if not all_excluded:
         return text
 
     lines = text.split('\n')
@@ -289,11 +298,16 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
     for line in lines:
         # Skip lines that contain excluded players
         should_exclude = False
-        for excluded in excluded_players:
-            # Case-insensitive check
+        for excluded in all_excluded:
+            # Case-insensitive check - match player names more precisely
             if excluded.lower() in line.lower():
-                should_exclude = True
-                break
+                # Additional check: make sure it's actually the player name, not just a substring
+                import re
+                # Look for the player name as a word boundary or in **bold** format
+                pattern = rf'\b{re.escape(excluded.lower())}\b|\*\*{re.escape(excluded.lower())}\*\*'
+                if re.search(pattern, line.lower()):
+                    should_exclude = True
+                    break
 
         if not should_exclude:
             filtered_lines.append(line)
@@ -319,16 +333,19 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             player_name = re.sub(r'\s+', ' ', player_name).title()
 
             try:
-                # Use corrections manager directly for persistent removal
-                if fantacalcio_assistant.corrections_manager:
-                    result = fantacalcio_assistant.corrections_manager.remove_player(player_name, "Web interface user request")
-                    # Force reload of the assistant's data to apply changes immediately
-                    fantacalcio_assistant.roster = fantacalcio_assistant.corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
+                # Use corrections manager from web interface
+                corrections_manager = get_corrections_manager()
+                result = corrections_manager.remove_player(player_name, "Web interface user request")
+                
+                # Force reload of the assistant's data to apply changes immediately
+                if hasattr(fantacalcio_assistant, 'roster'):
+                    fantacalcio_assistant.roster = corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
+                if hasattr(fantacalcio_assistant, '_make_filtered_roster'):
                     fantacalcio_assistant._make_filtered_roster()
-                    return result
-                else:
-                    return "❌ Sistema di correzioni non disponibile"
+                
+                return result
             except Exception as e:
+                LOG.error(f"Error in handle_correction for {player_name}: {e}")
                 return f"❌ Errore nell'applicare la correzione: {e}"
 
     # Pattern for team updates: "sposta [player] a [team]" or "[player] gioca nel [team]"

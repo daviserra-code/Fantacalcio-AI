@@ -5,6 +5,8 @@ import json
 import logging
 import unicodedata
 from typing import Any, Dict, List, Optional, Tuple
+import time
+import shutil
 
 from config import (
     ROSTER_JSON_PATH, SEASON_FILTER, REF_YEAR,
@@ -15,24 +17,27 @@ from config import (
 from knowledge_manager import KnowledgeManager
 
 # Dummy function to satisfy the import if corrections_manager is not available
+LOG = logging.getLogger("fantacalcio_assistant")
 try:
     from corrections_manager import CorrectionsManager
 except ImportError:
     LOG.warning("[Assistant] Could not import CorrectionsManager, using dummy.")
     class CorrectionsManager:
-        def __init__(self): pass
+        def __init__(self, knowledge_manager=None): pass
         def apply_corrections_to_data(self, data): return data
         def update_player_team(self, *args): pass
         def add_correction(self, *args): pass
         def remove_player(self, *args): return "Corrections manager not available."
         def get_data_quality_report(self): return {"error": "Corrections manager not available"}
         def is_serie_a_team(self, team): return True # Assume valid if not implemented
+        def apply_corrections_to_text(self, text): return text, []
+        def get_corrected_team(self, name, team): return team
+        def get_corrected_name(self, name): return name
+        def get_excluded_players(self): return []
 
 # Helper function to check environment variables for boolean true
 def _env_true(value: str) -> bool:
     return value.lower() in ("true", "1", "yes", "y")
-
-LOG = logging.getLogger("fantacalcio_assistant")
 
 # ---------------- Normalizzazione ----------------
 TEAM_ALIASES = {
@@ -155,17 +160,17 @@ class FantacalcioAssistant:
 
         self.system_prompt: str = self._load_prompt_json("./prompt.json")
 
-        # Initialize corrections manager for data quality
-        try:
-            from corrections_manager import CorrectionsManager
-            self.corrections_manager = CorrectionsManager()
-            LOG.info("[Assistant] CorrectionsManager initialized")
-        except Exception as e:
-            LOG.warning("[Assistant] Could not initialize CorrectionsManager: %s", e)
-            self.corrections_manager = None
-
         self.km: KnowledgeManager = KnowledgeManager()
         LOG.info("[Assistant] KnowledgeManager attivo")
+
+        # Initialize corrections manager
+        try:
+            from corrections_manager import CorrectionsManager
+            self.corrections_manager = CorrectionsManager(knowledge_manager=self.km)
+            LOG.info("[Assistant] CorrectionsManager inizializzato")
+        except Exception as e:
+            LOG.warning("[Assistant] Failed to initialize CorrectionsManager: %s", e)
+            self.corrections_manager = None
 
         self.roster: List[Dict[str, Any]] = self._load_and_normalize_roster(self.roster_json_path)
         self.external_youth_cache: List[Dict[str, Any]] = self._load_external_youth_cache()
@@ -285,7 +290,6 @@ class FantacalcioAssistant:
             # Create backup of corrupted file
             backup_path = f"{path}.corrupted.{int(time.time())}"
             try:
-                import shutil
                 shutil.copy2(path, backup_path)
                 LOG.warning("[Assistant] File corrotto salvato come backup: %s", backup_path)
             except Exception:
@@ -740,11 +744,11 @@ class FantacalcioAssistant:
         pool=[]
         for p in self._pool_by_role(r):
             fm = p.get("_fm"); pr = p.get("_price")
-            
+
             # Skip players without essential data for budget formations
             if p.get("_source") == "override_synthetic" and (fm is None or pr is None):
                 continue
-                
+
             fm_ok = float(fm) if isinstance(fm,(int,float)) else 0.0
             denom = pr if isinstance(pr,(int,float)) else 100.0
             vr = fm_ok / max(denom, 1.0)
@@ -759,11 +763,11 @@ class FantacalcioAssistant:
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
-        
+
         # Strategy: Create balanced tiers for each role
         def pick_balanced_role(role: str, needed_count: int):
             pool = self._select_top_role_any(role, take=500)
-            
+
             # Filter valid players with both price and fantamedia
             valid_pool = []
             for p in pool:
@@ -771,37 +775,37 @@ class FantacalcioAssistant:
                     p.get("_price") is not None and p.get("_fm") is not None and
                     p.get("_fm") > 0):  # Ensure non-zero fantamedia
                     valid_pool.append(p)
-            
+
             if not valid_pool:
                 return []
-            
+
             # Sort by fantamedia descending to identify quality tiers
             valid_pool.sort(key=lambda x: -(x.get("_fm") or 0.0))
-            
+
             # Define tiers based on fantamedia thresholds for better quality
             top_tier = [p for p in valid_pool if p.get("_fm", 0) >= 6.5]
             mid_tier = [p for p in valid_pool if 6.0 <= p.get("_fm", 0) < 6.5]  
             budget_tier = [p for p in valid_pool if 5.0 <= p.get("_fm", 0) < 6.0]
-            
+
             # If tiers are empty, fall back to percentile-based approach
             if not top_tier and not mid_tier:
                 total_players = len(valid_pool)
                 if total_players < needed_count:
                     return valid_pool[:needed_count]
-                
+
                 top_tier_size = max(1, int(total_players * 0.3))  # Increased to 30%
                 mid_tier_size = int(total_players * 0.4)  # 40%
-                
+
                 top_tier = valid_pool[:top_tier_size]
                 mid_tier = valid_pool[top_tier_size:top_tier_size + mid_tier_size]
                 budget_tier = valid_pool[top_tier_size + mid_tier_size:]
-            
+
             # Sort each tier by value ratio (FM/price) for best value within tier
             for tier in [top_tier, mid_tier, budget_tier]:
                 tier.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
-            
+
             chosen = []
-            
+
             # Strategy: Always include top players, balanced mix for others
             if role == "A":  # Attack: Prioritize quality heavily
                 targets = {"top": max(1, needed_count // 2), 
@@ -817,11 +821,11 @@ class FantacalcioAssistant:
                           "budget": max(1, needed_count - max(1, needed_count // 4) - max(1, needed_count // 2))}
             else:  # Goalkeeper: Best available
                 targets = {"top": 1, "mid": 0, "budget": 0}
-            
+
             # Pick from each tier, ensuring we get the targets
             for tier, target_count in [("top", targets["top"]), ("mid", targets["mid"]), ("budget", targets["budget"])]:
                 tier_pool = top_tier if tier == "top" else (mid_tier if tier == "mid" else budget_tier)
-                
+
                 added = 0
                 for p in tier_pool:
                     if added >= target_count or len(chosen) >= needed_count:
@@ -830,25 +834,25 @@ class FantacalcioAssistant:
                         chosen.append(p)
                         used.add(p.get("name"))
                         added += 1
-            
+
             # If we still need more players, fill from any remaining valid players
             if len(chosen) < needed_count:
                 all_remaining = [p for p in valid_pool if p.get("name") not in used]
                 all_remaining.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999)))
-                
+
                 for p in all_remaining:
                     if len(chosen) >= needed_count:
                         break
                     chosen.append(p)
                     used.add(p.get("name"))
-            
+
             return chosen[:needed_count]
-        
+
         # Pick players for each role
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
                 picks[role] = pick_balanced_role(role, slots[role])
-        
+
         # Calculate costs and display information
         def calculate_total_cost():
             total = 0.0
@@ -858,16 +862,16 @@ class FantacalcioAssistant:
                     if isinstance(price, (int, float)):
                         total += price
             return total
-        
+
         total_cost = calculate_total_cost()
         leftover = max(0, budget - total_cost)
-        
+
         # Calculate role budgets for display
         role_budget = {}
         for role in ["P", "D", "C", "A"]:
             role_cost = sum(p.get("_price", 0) for p in picks[role] if isinstance(p.get("_price"), (int, float)))
             role_budget[role] = int(role_cost)
-        
+
         return {"picks": picks, "budget_roles": role_budget, "leftover": leftover}
 
     # ---------- Risposte primitive ----------
@@ -1077,8 +1081,9 @@ class FantacalcioAssistant:
         return intent
 
     # ---------- respond ----------
-    def respond(self, user_text: str, mode: str, state: Dict[str,Any], context_messages: List[Dict[str,str]] = None) -> Tuple[str, Dict[str,Any]]:
-        st = dict(state or {})
+    def get_response(self, user_text: str, mode: str, context: Dict[str, Any]) -> str:
+        """Main logic to get a response based on intent"""
+        st = dict(context or {})
         st.setdefault("history", [])
         st["history"] = (st["history"] + [{"u":user_text}])[-10:]
 
@@ -1103,14 +1108,36 @@ class FantacalcioAssistant:
                      "2) Difesa a valore: esterni titolari con FM stabile.\n"
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
         elif intent["type"] == "generic":
-             reply = self._llm_complete(user_text, context_messages or [])
+             reply = self._llm_complete(user_text, context_messages=[])
              if not reply or "non disponibile" in reply.lower():
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
         else:
             reply = "Non ho capito la richiesta. Prova con: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
 
         st["last_intent"] = intent
-        return reply, st
+        return reply
+
+    def respond(self, user_text: str, mode: str = "classic",
+                state: Optional[Dict[str, Any]] = None,
+                context_messages: Optional[List[Dict[str, str]]] = None) -> Tuple[str, Dict[str, Any]]:
+        """Main response method that applies corrections and filters"""
+        state = state or {}
+
+        # Get response from main logic
+        response = self.get_response(user_text, mode=mode, context=state)
+
+        # Apply corrections if corrections manager is available
+        if self.corrections_manager:
+            try:
+                corrected_response, applied_corrections = self.corrections_manager.apply_corrections_to_text(response)
+                if applied_corrections:
+                    LOG.info("Applied %d corrections to response", len(applied_corrections))
+                    response = corrected_response
+            except Exception as e:
+                LOG.error("Error applying corrections in respond: %s", e)
+
+        return response, state
+
 
     def _handle_goalkeeper_request(self, user_text: str) -> str:
         """Handle goalkeeper-specific requests with proper Serie A filtering"""
@@ -1237,7 +1264,7 @@ class FantacalcioAssistant:
             return "D"
         if r in {"C", "CM", "MED", "M", "MEZ", "RM", "LM", "CC", "TQ", "AM", "TRE", "CENTROCAMPISTA"}:
             return "C"
-        if r in {"A", "ATT", "ST", "SS", "PUN", "EST", "W", "LW", "RW", "ATTACCANTE"}:
+        if r in {"A", "ATT", "FWD", "ATTACCANTE", "PUN", "PUNTA", "SS", "CF", "LW", "RW", "EST", "W", "LW", "RW"}:
             return "A"
         if r and r[0] in {"P", "D", "C", "A"}:
             return r[0]
@@ -1267,32 +1294,32 @@ class FantacalcioAssistant:
         """Get a representative sample of roster data for LLM context"""
         if not hasattr(self, 'filtered_roster') or not self.filtered_roster:
             return "ROSTER VUOTO - aggiornare i dati"
-        
+
         # Get top players by role for context
         context_parts = []
-        
+
         for role in ["A", "C", "D", "P"]:
             role_players = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == role]
             # Sort by fantamedia desc, then by price asc
             role_players.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
-            
+
             role_name = {"A": "Attaccanti", "C": "Centrocampisti", "D": "Difensori", "P": "Portieri"}[role]
             context_parts.append(f"\n{role_name} TOP (roster corrente):")
-            
+
             for i, p in enumerate(role_players[:5]):  # Top 5 per ruolo
                 name = p.get("name", "N/D")
                 team = p.get("team", "N/D")
                 fm = p.get("_fm")
                 price = p.get("_price")
-                
+
                 fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
                 price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
-                
+
                 context_parts.append(f"  {i+1}. {name} ({team}) - {fm_str}, {price_str}")
-        
+
         total_players = len(self.filtered_roster)
         context_parts.insert(0, f"ROSTER CORRENTE ({total_players} giocatori Serie A 2024-25/2025-26):")
-        
+
         return "\n".join(context_parts)
 
     def update_player_data(self, player_name: str, **updates):
@@ -1395,7 +1422,7 @@ class FantacalcioAssistant:
                         fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
                         price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
                         top_attackers.append(f"- {name} ({team}) - {fm_str}, {price_str}")
-                    
+
                     roster_context = f"ATTACCANTI DISPONIBILI NEL ROSTER:\n" + "\n".join(top_attackers)
                     messages.append({"role": "system", "content": roster_context})
 
@@ -1424,12 +1451,12 @@ class FantacalcioAssistant:
                 resp.raise_for_status()
                 data = resp.json()
                 response_content = data["choices"][0]["message"]["content"].strip()
-                
+
                 # Additional validation: ensure response doesn't mention players not in roster
                 if self._contains_invalid_players(response_content):
                     LOG.warning("[Assistant] LLM response contained invalid players, filtering...")
                     response_content = self._filter_invalid_players(response_content)
-                
+
                 LOG.debug("[Assistant] OpenAI API response validated")
                 return response_content
 
@@ -1441,7 +1468,7 @@ class FantacalcioAssistant:
         """Get enhanced system prompt for LLM with current roster context"""
         # Get a sample of current roster data for context
         roster_context = self._get_roster_context()
-        
+
         return f"""Sei un assistente esperto di fantacalcio italiano con accesso ai dati del roster corrente della stagione 2024-25/2025-26.
 
 IMPORTANTE - DATI ROSTER CORRENTE:
@@ -1462,7 +1489,7 @@ COMPORTAMENTO:
 - Rispondi sempre in italiano
 - Usa solo giocatori dal roster corrente
 - Indica fantamedia e prezzo quando disponibili
-- Se mancano dati, suggerisci di aggiornare il roster
+- Se i dati sono limitati, dillo esplicitamente
 - Per confronti/classifiche, usa solo i dati disponibili nel roster
 
 STRUTTURA RISPOSTE:
@@ -1491,7 +1518,7 @@ Il tuo obiettivo è fornire analisi accurate basate ESCLUSIVAMENTE sui dati del 
             "osimhen", "victor osimhen", "kvaratskhelia", "kvara", 
             "donnarumma", "gianluigi donnarumma", "skriniar", "milan skriniar"
         ]
-        
+
         text_lower = text.lower()
         return any(player in text_lower for player in outdated_players)
 
@@ -1499,39 +1526,39 @@ Il tuo obiettivo è fornire analisi accurate basate ESCLUSIVAMENTE sui dati del 
         """Filter out mentions of players not in current roster"""
         if not self._contains_invalid_players(text):
             return text
-        
+
         # Get actual roster data for replacement
         attackers = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "A"]
         if not attackers:
             return "Non ho dati sufficienti sugli attaccanti nel roster corrente. Verifica che i dati siano aggiornati."
-        
+
         # Sort by fantamedia and get top performers
         attackers.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
-        
+
         response_lines = []
         response_lines.append("Basandomi sui dati del roster corrente, ecco i migliori attaccanti di Serie A:")
-        
+
         for i, p in enumerate(attackers[:5], 1):
             name = p.get("name", "")
             team = p.get("team", "")
             fm = p.get("_fm")
             price = p.get("_price")
-            
+
             line = f"{i}. **{name}** ({team})"
-            
+
             details = []
             if isinstance(fm, (int, float)):
                 details.append(f"FM {fm:.2f}")
             if isinstance(price, (int, float)):
                 details.append(f"€{int(price)}")
-            
+
             if details:
                 line += f" — {', '.join(details)}"
-            
+
             response_lines.append(line)
-        
+
         response_lines.append("\n*Dati basati sul roster corrente. Se mancano giocatori attesi, verifica gli aggiornamenti dei dati.*")
-        
+
         return "\n".join(response_lines)
 
     def peek_age(self, name: str, team: str = "") -> Dict[str,Any]:
