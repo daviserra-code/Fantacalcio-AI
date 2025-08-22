@@ -300,27 +300,38 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
         # Skip lines that contain excluded players
         should_exclude = False
         for excluded in all_excluded:
-            # Case-insensitive check - match player names more precisely
-            if excluded.lower() in line.lower():
-                # Additional check: make sure it's actually the player name, not just a substring
-                import re
-                # Look for the player name as a word boundary or in **bold** format
-                # Also handle partial matches like "arnautovic" matching "Marko Arnautović"
-                excluded_parts = excluded.lower().split()
-                line_lower = line.lower()
+            excluded_lower = excluded.lower().strip()
+            line_lower = line.lower()
+            
+            # Check for the player name in the line with multiple patterns
+            import re
+            
+            # Pattern 1: Look for the name in **bold** format (most common in responses)
+            bold_pattern = rf'\*\*[^*]*{re.escape(excluded_lower)}[^*]*\*\*'
+            if re.search(bold_pattern, line_lower):
+                should_exclude = True
+                LOG.info(f"Excluding line with bold player '{excluded}': {line.strip()}")
+                break
+            
+            # Pattern 2: Check if player name appears as a significant part of the line
+            # Split excluded name into parts and check if main parts appear
+            excluded_parts = [part for part in excluded_lower.split() if len(part) > 2]
+            if excluded_parts:
+                # If any significant part of the excluded name appears in the line, exclude it
+                for part in excluded_parts:
+                    if part in line_lower and len(part) > 3:  # Only check substantial parts
+                        should_exclude = True
+                        LOG.info(f"Excluding line containing name part '{part}' from '{excluded}': {line.strip()}")
+                        break
+            
+            # Pattern 3: Direct substring match for shorter names
+            if len(excluded_lower) > 3 and excluded_lower in line_lower:
+                should_exclude = True
+                LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
+                break
                 
-                # Check if all parts of the excluded name appear in the line
-                if all(part in line_lower for part in excluded_parts):
-                    should_exclude = True
-                    LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
-                    break
-                    
-                # Also check exact pattern matching
-                pattern = rf'\b{re.escape(excluded.lower())}\b|\*\*{re.escape(excluded.lower())}\*\*'
-                if re.search(pattern, line_lower):
-                    should_exclude = True
-                    LOG.info(f"Excluding line containing '{excluded}': {line.strip()}")
-                    break
+            if should_exclude:
+                break
 
         if not should_exclude:
             filtered_lines.append(line)
