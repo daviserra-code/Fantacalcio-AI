@@ -5,6 +5,7 @@ import logging
 import subprocess
 import os
 import re # Import the re module
+import time
 from flask import Flask, request, jsonify, session, render_template, g # Import g for application context
 from flask import Response # Import Response for exporting rules
 
@@ -32,7 +33,17 @@ def get_assistant() -> FantacalcioAssistant:
     # Use Flask's application context (g) for singletons
     if not hasattr(g, 'assistant'):
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        g.assistant = FantacalcioAssistant()
+        try:
+            g.assistant = FantacalcioAssistant()
+            LOG.info("FantacalcioAssistant initialized successfully")
+        except Exception as e:
+            LOG.error(f"Failed to initialize FantacalcioAssistant: {e}")
+            # Create a minimal fallback assistant
+            from types import SimpleNamespace
+            g.assistant = SimpleNamespace()
+            g.assistant.respond = lambda msg, **kwargs: (f"⚠️ Servizio temporaneamente non disponibile: {e}", {})
+            g.assistant.roster = []
+            g.assistant.filtered_roster = []
     else:
         # Refresh corrections data without full re-initialization
         if hasattr(g.assistant, 'corrections_manager') and g.assistant.corrections_manager:
@@ -91,11 +102,26 @@ T = {
 
 @app.route("/", methods=["GET"])
 def index():
-    lang = request.args.get("lang", "it")
-    page_id = uuid.uuid4().hex[:16]
-    LOG.info("Request: GET / from %s", request.remote_addr)
-    LOG.info("Page view: %s, lang: %s", page_id, lang)
-    return render_template("index.html", lang=lang, t=T.get(lang,T["it"]))
+    try:
+        lang = request.args.get("lang", "it")
+        page_id = uuid.uuid4().hex[:16]
+        LOG.info("Request: GET / from %s", request.remote_addr)
+        LOG.info("Page view: %s, lang: %s", page_id, lang)
+        return render_template("index.html", lang=lang, t=T.get(lang,T["it"]))
+    except Exception as e:
+        LOG.error(f"Error serving index page: {e}")
+        # Fallback HTML if template fails
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Fantasy Football Assistant</title></head>
+        <body>
+            <h1>Fantasy Football Assistant</h1>
+            <p>Servizio temporaneamente non disponibile. Errore: {e}</p>
+            <p><a href="/health">Controlla stato servizio</a></p>
+        </body>
+        </html>
+        """, 500
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
@@ -527,15 +553,39 @@ def api_rate_limit_status():
 
 @app.route("/api/test", methods=["GET"])
 def api_test():
-    a = get_assistant()
-    return jsonify({
-        "ok": True,
-        "season_filter": a.season_filter,
-        "age_index_size": len(a.age_index) + len(a.guessed_age_index),
-        "overrides_size": len(a.overrides),
-        "pool_size": len(a.filtered_roster),
-        "status": "Assistant loaded successfully"
-    })
+    try:
+        a = get_assistant()
+        return jsonify({
+            "ok": True,
+            "season_filter": getattr(a, 'season_filter', 'unknown'),
+            "age_index_size": len(getattr(a, 'age_index', [])) + len(getattr(a, 'guessed_age_index', [])),
+            "overrides_size": len(getattr(a, 'overrides', [])),
+            "pool_size": len(getattr(a, 'filtered_roster', [])),
+            "status": "Assistant loaded successfully"
+        })
+    except Exception as e:
+        LOG.error(f"Error in api_test: {e}")
+        return jsonify({
+            "ok": False,
+            "error": str(e),
+            "status": "Error loading assistant"
+        }), 500
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint for deployment"""
+    try:
+        # Basic health check
+        return jsonify({
+            "status": "healthy",
+            "timestamp": time.time(),
+            "deployment": os.getenv("REPLIT_DEPLOYMENT", "unknown")
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy", 
+            "error": str(e)
+        }), 500
 
 @app.route("/api/age-coverage", methods=["GET"])
 def api_age_coverage():

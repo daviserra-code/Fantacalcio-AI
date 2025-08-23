@@ -25,9 +25,16 @@ class RateLimiter:
             os.getenv("REPLIT_DEPLOYMENT") == "1",
             os.getenv("REPL_DEPLOYMENT") == "1", 
             "fantacalcioai.it" in os.getenv("REPLIT_URL", ""),
-            os.getenv("ENVIRONMENT") == "production"
+            os.getenv("ENVIRONMENT") == "production",
+            # Additional deployment detection
+            os.getenv("HOSTNAME", "").startswith("runner-"),
+            "replit.dev" in os.getenv("REPLIT_URL", ""),
+            ".repl.co" in os.getenv("REPLIT_URL", ""),
+            os.path.exists("/.replit_deployment")
         ]
-        return any(deployment_indicators)
+        is_deployed = any(deployment_indicators)
+        LOG.info(f"Deployment detection: {dict(zip(['REPLIT_DEPLOYMENT', 'REPL_DEPLOYMENT', 'fantacalcioai.it', 'ENVIRONMENT', 'HOSTNAME', 'replit.dev', 'repl.co', 'deployment_file'], [os.getenv('REPLIT_DEPLOYMENT'), os.getenv('REPL_DEPLOYMENT'), 'fantacalcioai.it' in os.getenv('REPLIT_URL', ''), os.getenv('ENVIRONMENT'), os.getenv('HOSTNAME', '').startswith('runner-'), 'replit.dev' in os.getenv('REPLIT_URL', ''), '.repl.co' in os.getenv('REPLIT_URL', ''), os.path.exists('/.replit_deployment')]))} -> {is_deployed}")
+        return is_deployed
     
     def _get_client_key(self, request) -> str:
         """Generate a unique key for the client based on IP address"""
