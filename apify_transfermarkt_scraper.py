@@ -52,10 +52,10 @@ APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
 APIFY_BASE_URL = "https://api.apify.com/v2"
 
 # Actor IDs per diversi scraper Transfermarkt su Apify
-# Nota: questi sono esempi, dovrai configurare gli actor reali dal marketplace
+# Usa il custom actor TransfermarktScraperDS
 APIFY_ACTORS = {
-    "transfermarkt_transfers": "apify/web-scraper",  # Generic web scraper
-    "transfermarkt_players": "apify/web-scraper",   # Generic web scraper
+    "transfermarkt_transfers": "TransfermarktScraperDS",  # Custom actor
+    "transfermarkt_players": "TransfermarktScraperDS",   # Custom actor
 }
 
 # Mapping squadre Serie A -> URL Transfermarkt (simile a etl_tm_serie_a_full.py)
@@ -156,46 +156,13 @@ class ApifyTransfermarktScraper:
         
         team_url = SERIE_A_TEAMS[team]
         
-        # Input per l'actor Apify (generic web scraper approach)
+        # Input per il custom actor TransfermarktScraperDS
         actor_input = {
-            "startUrls": [{"url": team_url}],
-            "maxRequestsPerCrawl": 5,
-            "pageFunction": """
-            async function pageFunction(context) {
-                const { page, request, log } = context;
-                const title = await page.title();
-                
-                // Extract transfer data from Transfermarkt page
-                const transfers = await page.evaluate(() => {
-                    const rows = document.querySelectorAll('table.items tbody tr');
-                    const results = [];
-                    
-                    rows.forEach(row => {
-                        const cells = row.querySelectorAll('td');
-                        if (cells.length >= 4) {
-                            const player = cells[0]?.textContent?.trim();
-                            const position = cells[1]?.textContent?.trim();
-                            const fromClub = cells[2]?.textContent?.trim();
-                            const fee = cells[3]?.textContent?.trim();
-                            
-                            if (player) {
-                                results.push({
-                                    playerName: player,
-                                    position: position,
-                                    fromClub: fromClub,
-                                    transferFee: fee,
-                                    transferType: 'arrival'
-                                });
-                            }
-                        }
-                    });
-                    
-                    return results;
-                });
-                
-                return transfers;
-            }
-            """
+            "teamUrl": team_url,
+            "season": season,
+            "extractTransfers": True,
+            "extractArrivals": not arrivals_only or True,
+            "extractDepartures": not arrivals_only
         }
         
         LOG.info("[APIFY] Scraping %s transfers per stagione %s", team, season)

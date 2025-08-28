@@ -3,22 +3,21 @@
   "apify": {
     "actors": {
       "transfermarkt_transfers": {
-        "id": "apify/transfermarkt-scraper",
-        "description": "Scraper principale per trasferimenti Transfermarkt",
+        "id": "TransfermarktScraperDS",
+        "description": "Custom actor per trasferimenti Transfermarkt",
         "input_schema": {
-          "startUrls": "Array di URL da scrapare",
-          "maxRequestsPerCrawl": "Limite richieste per run",
-          "season": "Stagione di interesse",
+          "teamUrl": "URL della squadra Transfermarkt",
+          "season": "Stagione di interesse (es. 2025-26)",
           "extractTransfers": "Estrai dati trasferimenti",
           "extractArrivals": "Includi arrivi",
           "extractDepartures": "Includi cessioni"
         }
       },
       "transfermarkt_players": {
-        "id": "apify/transfermarkt-players",
-        "description": "Scraper per profili giocatori Transfermarkt",
+        "id": "TransfermarktScraperDS",
+        "description": "Custom actor per profili giocatori Transfermarkt",
         "input_schema": {
-          "startUrls": "Array di URL giocatori",
+          "teamUrl": "URL della squadra o giocatore",
           "extractPlayerStats": "Estrai statistiche",
           "extractMarketValue": "Estrai valore di mercato"
         }
