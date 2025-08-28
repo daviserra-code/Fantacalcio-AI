@@ -168,23 +168,35 @@ class ApifyTransfermarktScraper:
 
         try:
             result = self.run_actor(APIFY_ACTORS["transfermarkt_transfers"], actor_input)
+            
+            LOG.info("[APIFY] Actor returned %d raw items", len(result["items"]))
 
             # Trasforma i dati Apify nel formato compatibile con il tuo ETL
             transfers = []
+            processed = 0
+            skipped = 0
+            
             for item in result["items"]:
                 if isinstance(item, list):
                     # Se l'item è una lista di trasferimenti
                     for transfer_data in item:
+                        processed += 1
                         transfer = self._normalize_transfer_data(transfer_data, team, season)
                         if transfer:
                             transfers.append(transfer)
+                        else:
+                            skipped += 1
                 else:
                     # Se l'item è un singolo trasferimento
+                    processed += 1
                     transfer = self._normalize_transfer_data(item, team, season)
                     if transfer:
                         transfers.append(transfer)
+                    else:
+                        skipped += 1
 
-            LOG.info("[APIFY] %s: estratti %d trasferimenti", team, len(transfers))
+            LOG.info("[APIFY] %s: processati %d item, estratti %d trasferimenti, saltati %d", 
+                     team, processed, len(transfers), skipped)
             return transfers
 
         except Exception as e:
@@ -211,12 +223,8 @@ class ApifyTransfermarktScraper:
             to_team = raw_data.get("to_team", "")
             fee = raw_data.get("fee", "")
             
-            # Verifica che il trasferimento sia effettivamente correlato al team richiesto
-            team_lower = team.lower()
-            if not (team_lower in from_team.lower() or team_lower in to_team.lower() or 
-                   team_lower in raw_data.get("team", "").lower()):
-                LOG.debug("[APIFY] Transfer non correlato al team %s: %s -> %s", team, from_team, to_team)
-                return None
+            # Il tuo actor già filtra per team, quindi non serve verificare nuovamente
+            # Rimuoviamo il filtro che causava il problema dei "transfer 0"
 
             if not player_name or not direction:
                 LOG.warning("[APIFY] Dati mancanti: player=%s, direction=%s", player_name, direction)
