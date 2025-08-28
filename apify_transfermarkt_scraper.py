@@ -191,6 +191,7 @@ class ApifyTransfermarktScraper:
             LOG.error("[APIFY] Errore scraping %s: %s", team, e)
             # Se l'actor specifico non esiste, suggerisci alternative
             if "404" in str(e) or "Not Found" in str(e):
+                actor_id = APIFY_ACTORS["transfermarkt_transfers"]
                 LOG.warning("[APIFY] L'actor %s non esiste o non è accessibile. Verifica:", actor_id)
                 LOG.warning("[APIFY] 1. Il nome dell'actor è corretto: %s", actor_id)
                 LOG.warning("[APIFY] 2. L'actor è pubblico o hai i permessi")
