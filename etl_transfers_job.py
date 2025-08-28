@@ -124,7 +124,8 @@ def fetch_from_wikipedia(team: str) -> Dict[str, Any]:
     res = wf.fetch_recent_transfers(team)
     return {
         "players": res,
-        "sources": [f"https://it.wikipedia.org/wiki/{team.replace(' ', '_')}"]
+        "sources": [f"https://it.wikipedia.org/wiki/{team.replace(' ', '_')}"],
+        "label": "Wikipedia"
     }
 
 def fetch_from_tm(team: str) -> Dict[str, Any]:
@@ -228,18 +229,24 @@ def run_once():
         merged_players = _unique(wiki["players"] + tm["players"] + apify["players"] + rss["players"])
         merged_sources = _merge_sources(wiki["sources"], tm["sources"], apify["sources"], rss["sources"])
 
+        # Get labels safely with defaults
+        wiki_label = wiki.get("label", "Wikipedia")
+        tm_label = tm.get("label", "TM (disabled)")
+        apify_label = apify.get("label", "Apify (disabled)")
+        rss_label = rss.get("label", "RSS (none)")
+
         if not merged_players:
             logger.info("[ETL] Nessun acquisto trovato per %s (fonti: %s, %s, %s, %s)",
-                        team, wiki["label"], tm["label"], apify["label"], rss["label"])
+                        team, wiki_label, tm_label, apify_label, rss_label)
             continue
 
         for name in merged_players:
             upsert_transfer(km, team, name, merged_sources, SEASON, source_label=";".join(
                 [lbl for lbl in [
-                    wiki["label"],
-                    tm["label"] if USE_TM else None,
-                    apify["label"] if USE_APIFY else None,
-                    rss["label"] if rss["sources"] else None
+                    wiki_label,
+                    tm_label if USE_TM else None,
+                    apify_label if USE_APIFY else None,
+                    rss_label if rss.get("sources") else None
                 ] if lbl]
             ))
             total_upserts += 1

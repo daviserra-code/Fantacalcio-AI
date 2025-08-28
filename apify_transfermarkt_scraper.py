@@ -191,10 +191,11 @@ class ApifyTransfermarktScraper:
             LOG.error("[APIFY] Errore scraping %s: %s", team, e)
             # Se l'actor specifico non esiste, suggerisci alternative
             if "404" in str(e) or "Not Found" in str(e):
-                LOG.warning("[APIFY] L'actor transfermarkt-scraper non esiste. Considera di:")
-                LOG.warning("[APIFY] 1. Cercare actors alternativi nel marketplace Apify")
-                LOG.warning("[APIFY] 2. Creare un actor personalizzato")
-                LOG.warning("[APIFY] 3. Usare il fallback diretto a Transfermarkt")
+                LOG.warning("[APIFY] L'actor %s non esiste o non è accessibile. Verifica:", actor_id)
+                LOG.warning("[APIFY] 1. Il nome dell'actor è corretto: %s", actor_id)
+                LOG.warning("[APIFY] 2. L'actor è pubblico o hai i permessi")
+                LOG.warning("[APIFY] 3. Il token APIFY_API_TOKEN è valido")
+                LOG.warning("[APIFY] 4. Usa il fallback diretto a Transfermarkt")
             return []
 
     def _normalize_transfer_data(self, raw_data: Dict[str, Any], 
