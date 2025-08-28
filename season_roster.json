@@ -15,7 +15,10 @@
     "birth_year": 1994,
     "price": 6,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Francesco Rossi",
@@ -168,7 +171,10 @@
     "birth_year": 2001,
     "price": 9,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Łukasz Skorupski",
@@ -204,7 +210,10 @@
     "birth_year": 1997,
     "price": 8,
     "fantamedia": 5.83,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Sam Beukema",
@@ -339,7 +348,10 @@
     "birth_year": 1996,
     "price": 6,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Boris Radunović",
@@ -348,7 +360,10 @@
     "birth_year": 1996,
     "price": 5,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Alberto Dossena",
@@ -789,7 +804,10 @@
     "birth_year": 1992,
     "price": 8,
     "fantamedia": 6.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Dodô",
@@ -861,7 +879,10 @@
     "birth_year": 1998,
     "price": 9,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Christian Kouamé",
@@ -870,7 +891,10 @@
     "birth_year": 1997,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Andrea Belotti",
@@ -1302,7 +1326,10 @@
     "birth_year": 1999,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Wojciech Szczęsny",
@@ -1410,7 +1437,10 @@
     "birth_year": 2001,
     "price": 9,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Fabio Miretti",
@@ -1419,7 +1449,10 @@
     "birth_year": 2003,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Kenan Yıldız",
@@ -1509,7 +1542,10 @@
     "birth_year": 1998,
     "price": 8,
     "fantamedia": 5.53,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Mario Gila",
@@ -1536,7 +1572,10 @@
     "birth_year": 1994,
     "price": 8,
     "fantamedia": 6.52,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Matías Vecino",
@@ -1770,7 +1809,10 @@
     "birth_year": 1996,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Theo Hernández",
@@ -1824,7 +1866,10 @@
     "birth_year": 1997,
     "price": 12,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Tijjani Reijnders",
@@ -1860,7 +1905,10 @@
     "birth_year": 2000,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Rafael Leão",
@@ -1896,7 +1944,10 @@
     "birth_year": 2000,
     "price": 9,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Luka Jović",
@@ -1959,7 +2010,10 @@
     "birth_year": 2001,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Mathias Olivera",
@@ -2004,7 +2058,10 @@
     "birth_year": 1999,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Khvicha Kvaratskhelia",
@@ -2040,7 +2097,10 @@
     "birth_year": 1998,
     "price": 23,
     "fantamedia": 7.82,
-    "appearances": 25
+    "appearances": 25,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Jesper Lindstrøm",
@@ -2049,7 +2109,10 @@
     "birth_year": 2000,
     "price": 9,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Leandro Chichizola",
@@ -2391,7 +2454,10 @@
     "birth_year": 2002,
     "price": 8,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Houssem Aouar",
@@ -2427,7 +2493,10 @@
     "birth_year": 1997,
     "price": 12,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Stephan El Shaarawy",
@@ -2733,7 +2802,10 @@
     "birth_year": 2000,
     "price": 8,
     "fantamedia": 6.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Kingsley Ehizibue",
@@ -2760,7 +2832,10 @@
     "birth_year": 1999,
     "price": 6,
     "fantamedia": 0.0,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Walace",
@@ -2787,7 +2862,10 @@
     "birth_year": 2002,
     "price": 11,
     "fantamedia": 6.22,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   },
   {
     "name": "Oier Zarraga",
@@ -2824,5 +2902,3767 @@
     "price": 9,
     "fantamedia": 7.0,
     "appearances": 0
+  },
+  {
+    "name": "Nikola Krstović",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Odilon Kossounou",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kamaldeen Sulemana",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicola Zalewski",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Honest Ahanor",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lazar Samardžić",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Brescianini",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Sportiello",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Roberto Piccoli",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mitchel Bakker",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ben Godfrey",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michel Adopo",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giovanni Bonfanti",
+    "team": "Atalanta",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jonathan Rowe",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Martin Vitík",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nadir Zortea",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Torbjørn Heggem",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Casale",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tommaso Pobega",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Federico Bernardeschi",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ciro Immobile",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Thomas Gillier",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Massimo Pessina",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kacper Urbanski",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jesper Karlsson",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antonio Raimondo",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mihajlo Ilić",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Niklas Pyyhtiä",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tommaso Corazza",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Joaquín Sosa",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kevin Bonifazi",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gianmarco Cangiano",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Orji Okwonkwo",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Riccardo Stivanello",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gennaro Anatriello",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Manuel Rosetti",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Motolese",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Davide Franzini",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Raffaelli",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Mazia",
+    "team": "Bologna",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Roberto Piccoli",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elia Caprile",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gianluca Gaetano",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michel Adopo",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Semih Kılıçsoy",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michael Folorunsho",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gennaro Borrelli",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sebastiano Esposito",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Palestra",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Mazzitelli",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicola Pintus",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Vinciguerra",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Velizar-Iliya Iliev",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pantelis Hatzidiakos",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mateusz Wieteska",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nik Prelec",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Riyad Idrissi",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Davide Veroli",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Di Pardo",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marko Rog",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Cavuoti",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luigi Palomba",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Etienne Catena",
+    "team": "Cagliari",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ferdi Er",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Daniele Attorre",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Viktor Ribeiro",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nico Crisigiovanni",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Argjend Shalaj",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Keck",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michael Geywitz",
+    "team": "Como",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Stiven Shpendi",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Salvatore Elia",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Curto",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matteo Lovato",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gerard Yepes",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Edoardo Saporiti",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Manuel Gasparini",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessio Spatari",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Joseph Ceesay",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Fabri",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Nasti",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Rareș Ilie",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Fulignati",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Franco Carboni",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nosa Edward Obaretin",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Brando Moruzzi",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Thomas Campaniello",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jeremy Moray",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ank Asmussen",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Bogdan Popov",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Dawid Bembnista",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Orlandi",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Danilo Busiello",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Ignacchiti",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Stiven Shpendi",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gabriele Guarino",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Petar Stojanović",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Belardinelli",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Duccio Degli Innocenti",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Samuele Perisan",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Iwo Kaczmarski",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Niccolò Chiorra",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Herculano Nabian",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Sodero",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lovro Stubljar",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Vallarelli",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gabriele Indragoli",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Torri",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lapo Paolieri",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giuseppe Brugognone",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matteo Morelli",
+    "team": "Empoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Roberto Piccoli",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Simon Sohm",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Fagioli",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Albert Gudmundsson",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jacopo Fazzini",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Robin Gosens",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Eman Kospo",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Edin Džeko",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Lezzerini",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Viti",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Riccardo Braschi",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Eddy Kouadio",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nico González",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michael Kayode",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sofyan Amrabat",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Niccolò Fortini",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "M'Bala Nzola",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Riccardo Sottil",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Bianco",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Amatucci",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Josip Brekalo",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antonín Barák",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gino Infantino",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Abdelhamid Sabiri",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Oliver Christensen",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Oliver Christensen",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Lucchesi",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Filippo Distefano",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Costantino Favasuli",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Edoardo Pierozzi",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Eljon Toci",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Davide Gentile",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Niccolò Nardi",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Eduard Duțu",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Dimo Krastev",
+    "team": "Fiorentina",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolae Stanciu",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Valentín Carboni",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Albert Grønbæk",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Leo Østigård",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Colombo",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Albert Gudmundsson",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mikael Egill Ellertsson",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Vogliacco",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Marcandalli",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Emil Bohinen",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Seydou Fini",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Güven Yalçın",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Aramu",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "David Ankeye",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Christos Papadopoulos",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Debenedetti",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gabriele Calvani",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Manolo Portanova",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lennart Czyborra",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Federico Accornero",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Favilli",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elia Petrelli",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Simone Calvani",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tommaso Pittino",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gabriele Pessolani",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Federico Valietti",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Gagliardi",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Daniel Fossati",
+    "team": "Genoa",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luis Henrique",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ange-Yoan Bonny",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andy Diouf",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Petar Sučić",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicola Zalewski",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Aleksandar Stanković",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pio Esposito",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sebastiano Esposito",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Filip Stanković",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Martín Satriano",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tomás Palacios",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ebenezer Akinsanmiro",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Zinho Vanheusden",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Eddie Salcedo",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Franco Carboni",
+    "team": "Inter",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francisco Conceição",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nico González",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lloyd Kelly",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pierre Kalulu",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michele Di Gregorio",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "João Mário",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jonathan David",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Rovella",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Hans Nicolussi Caviglia",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tiago Djaló",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Filip Kostić",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Arthur Melo",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Daniele Rugani",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Pellegrini",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Facundo González",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia De Sciglio",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Stefano Gori",
+    "team": "Juventus",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Rovella",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nuno Tavares",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Pellegrini",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Fisayo Dele-Bashiru",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Samuel Gigot",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matteo Cancellieri",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gaetano Castrovilli",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Romano Floriani Mussolini",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Diego González",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Fabio Andrea Ruggeri",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Saná Fernandes",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mohamed Fares",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jean-Daniel Akpa Akpro",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Dimitrije Kamenovic",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gabriele Artistico",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Valerio Crespi",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Bertini",
+    "team": "Lazio",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Márk Kosznovszky",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Josh Knight",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "John Swift",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luke Le Roux",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Adrian Segecic",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Min-hyeok Yang",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Florian Bianchini",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Harry Clout",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Harry Clout",
+    "team": "Lecce",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ardon Jashari",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Samuele Ricci",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Koni De Winter",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pervis Estupiñán",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Zachary Athekame",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Álvaro Morata",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luka Modrić",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pietro Terracciano",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Camarda",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Davide Bartesaghi",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Christian Comotto",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pierre Kalulu",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alexis Saelemaekers",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tommaso Pobega",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Colombo",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Pellegrino",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Devis Vásquez",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marko Lazetić",
+    "team": "Milan",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Filippo Delli Carri",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jacopo Sardo",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Lucchesi",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Demba Thiam",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolas Galazzi",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Adam Bakoune",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pedro Obiang",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Ravanelli",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Paulo Azzi",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Agustín Álvarez",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Berretta",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Saverio Domanico",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michele Di Gregorio",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Andrea Colpani",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Valentin Antov",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mirko Marić",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pepín Machín",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Sorrentino",
+    "team": "Monza",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sam Beukema",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Noa Lang",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Miguel Gutiérrez",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Vanja Milinković-Savić",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Lucca",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Marianucci",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kevin De Bruyne",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Emanuele Rao",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elia Caprile",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michael Folorunsho",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Zanoli",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessio Zerbin",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gianluca Gaetano",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Walid Cheddira",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giuseppe Ambrosino",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antonio Vergara",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nosa Edward Obaretin",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lorenzo Sgarbi",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antonio Cioffi",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gennaro Iaccarino",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Coli Saco",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giuseppe D'Agostino",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Mezzoni",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luigi D'Avino",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gianluca Vigliotti",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Spavone",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Gioielli",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matteo Marchisano",
+    "team": "Napoli",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matija Frigan",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Christian Ordóñez",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Oliver Sørensen",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mariano Troilo",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Abdoulaye Ndiaye",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sascha Britschgi",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gaetano Oristanio",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolas Trabucchi",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elia Plicco",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Rachid Kouda",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antoine Joujou",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tjas Begic",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Anthony Partipilo",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Dario Sits",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Filippo Rinaldi",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Peter Amoran",
+    "team": "Parma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Wesley",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Neil El Aynaoui",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Leon Bailey",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Evan Ferguson",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Daniele Ghilardi",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Devis Vásquez",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Radoslaw Zelezny",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Mannini",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Enzo Le Fée",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicola Zalewski",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marash Kumbulla",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mario Hermoso",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Samuel Dahl",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Riccardo Pagano",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ola Solbakken",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luigi Cherubini",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ebrima Darboe",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Matteo Plaia",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pietro Boer",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Davide Mastrantonio",
+    "team": "Roma",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Zakaria Aboukhlal",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Franco Israel",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marcus Pedersen",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kristjan Asllani",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Cyril Ngonge",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giovanni Simeone",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Cristiano Biraghi",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ardian Ismajli",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tino Anjorin",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Saba Sazonov",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Demba Seck",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Aaron Ciammaglichella",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mihai Popa",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jonathan Silva",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Brian Bayeye",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Ange N'Guessan",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Cristian Padula",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tommaso Di Marco",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kevin Haveri",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Côme Bianay Balcot",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Francesco Dell'Aquila",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jacopo Antolini",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Pietro Passador",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jacopo Antolini",
+    "team": "Torino",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Arthur Atta",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Lennon Miller",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Adam Buksa",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Luca Kjerrumgaard",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Saba Goglichidze",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jakub Piotrowski",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Alessandro Nunziante",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Bertola",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Leonardo Buta",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nikolay Popov",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Abdoulaye Camara",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Cristiano De Paoli",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Vakoun Bayo",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Brenner",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Vivaldo Semedo",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gonçalo Esteves",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marco Ballarini",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Sekou Diawara",
+    "team": "Udinese",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Amin Sarr",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Cheikh Niasse",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Antoine Bernede",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Rafik Belghali",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Grigoris Kastanos",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Domagoj Bradarić",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Victor Nelsson",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Gift Orban",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Armel Bella-Kotchap",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giovane",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Yellu Santiago",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Fallou Cham",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Unai Núñez",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Enzo Ebosse",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Stefan Mitrović",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elayis Tavsan",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Thomas Henry",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Kevin Lasagna",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Koray Günter",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mateusz Praszelik",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Christian Corradi",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jayden Braaf",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Charlys",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Yayah Kallon",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicolò Calabrese",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Elia Boseggia",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Juan Manuel Cruz",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Denis Cazzadori",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Edoardo Bernardi",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Rigo",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Mattia Florio",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Giacomo Toniolo",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Nicola Patanè",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Aiman Rihai",
+    "team": "Verona",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Tobias Braun",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Marcus Coffie",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Johann von Knebel",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Niklas Pietruschka",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Max Wendt",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Caspar Kremberg",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Michael Kobert",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Colin Haupt",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "Jim Franke",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
+  },
+  {
+    "name": "T. Aldag",
+    "team": "Venezia",
+    "role": "NA",
+    "season": "2025-26",
+    "type": "current_player",
+    "source": "apify_transfermarkt",
+    "source_date": "2025-08-28"
   }
 ]
