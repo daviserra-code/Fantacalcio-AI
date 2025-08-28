@@ -144,15 +144,39 @@ def fetch_from_apify(team: str) -> Dict[str, Any]:
     if not USE_APIFY or ApifyTransfermarktScraper is None:
         return {"players": [], "sources": [], "elapsed": 0.0, "label": "Apify (disabled)"}
 
+    # Apify actor IDs (da settare correttamente)
+    APIFY_ACTORS = {
+        "transfermarkt_transfers": "yummy_pen/transfermarktscraperds",  # Custom Transfermarkt Scraper
+        "transfermarkt_players": "yummy_pen/transfermarktscraperds",
+    }
+
+    actor_id = APIFY_ACTORS.get("transfermarkt_transfers") # O un altro ID se serve un parser specifico
+
     try:
-        scraper = ApifyTransfermarktScraper()
+        # Notare che ApifyTransfermarktScraper è un wrapper locale, non usa direttamente l'API Python
+        # qui si fa riferimento a come il suo wrapper è stato costruito:
+        # https://github.com/apify/transfermarkt-scraper/blob/master/src/index.js#L23
+        # Se il tuo custom actor ha una firma diversa, dovrai adattare qui.
+        # L'importazione `from apify_transfermarkt_scraper import ApifyTransfermarktScraper`
+        # NON punta al tuo custom actor, ma al pacchetto Python generico.
+        # Per usare il tuo custom actor, dovresti usare la libreria Apify Python:
+        # from apify_client import ApifyClient
+        # client = ApifyClient(token=os.environ.get("APIFY_API_TOKEN"))
+        # run_input = { "team": team, "season": SEASON, "arrivals_only": True }
+        # run = client.actor(actor_id).call(run_input=run_input)
+        # transfers = run.get("items", []) # o dove sono i risultati
+
+        # Assumendo che ApifyTransfermarktScraper sia stato modificato per usare il tuo actor
+        # o che tu abbia un modo per puntare ad esso.
+        # Se usi la libreria Apify Python, il codice qui sotto NON sarà corretto.
+        scraper = ApifyTransfermarktScraper() # Questo dovrebbe puntare al tuo custom actor
         start_time = time.time()
 
         transfers = scraper.scrape_team_transfers(team=team, season=SEASON, arrivals_only=True)
         players = [t.get("player") for t in transfers if t.get("direction") == "in" and t.get("player")]
 
         elapsed = time.time() - start_time
-        sources = [f"https://apify.com/transfermarkt-scraper"]
+        sources = [f"https://console.apify.com/actors/{actor_id}"] # Link to the specific actor
 
         return {
             "players": players,

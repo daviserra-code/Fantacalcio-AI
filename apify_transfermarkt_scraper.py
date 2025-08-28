@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -54,8 +53,8 @@ APIFY_BASE_URL = "https://api.apify.com/v2"
 # Actor IDs per diversi scraper Transfermarkt su Apify
 # Usa il custom actor TransfermarktScraperDS (format: username/actor-name)
 APIFY_ACTORS = {
-    "transfermarkt_transfers": f"{os.environ.get('APIFY_USERNAME', 'your-username')}/TransfermarktScraperDS",
-    "transfermarkt_players": f"{os.environ.get('APIFY_USERNAME', 'your-username')}/TransfermarktScraperDS",
+    "transfermarkt_transfers": "yummy_pen/transfermarktscraperds",  # Custom Transfermarkt Scraper
+    "transfermarkt_players": "yummy_pen/transfermarktscraperds",
 }
 
 # Mapping squadre Serie A -> URL Transfermarkt (simile a etl_tm_serie_a_full.py)
@@ -85,77 +84,77 @@ SERIE_A_TEAMS = {
 
 class ApifyTransfermarktScraper:
     """Client per scraping Transfermarkt tramite Apify"""
-    
+
     def __init__(self, api_token: Optional[str] = None):
         self.api_token = api_token or APIFY_API_TOKEN
         if not self.api_token:
             raise ValueError("APIFY_API_TOKEN richiesto. Configuralo nelle secrets di Replit.")
-        
+
         self.session = requests.Session()
         self.session.headers.update({
             "Authorization": f"Bearer {self.api_token}",
             "Content-Type": "application/json"
         })
-    
+
     def run_actor(self, actor_id: str, input_data: Dict[str, Any], 
                   timeout_s: int = 300) -> Dict[str, Any]:
         """Esegue un actor Apify e attende i risultati"""
-        
+
         # 1. Avvia il run
         run_url = f"{APIFY_BASE_URL}/acts/{actor_id}/runs"
         LOG.info("[APIFY] Avvio actor %s", actor_id)
-        
+
         response = self.session.post(run_url, json=input_data)
         response.raise_for_status()
         run_data = response.json()
-        
+
         run_id = run_data["data"]["id"]
         LOG.info("[APIFY] Run ID: %s", run_id)
-        
+
         # 2. Attendi completamento
         status_url = f"{APIFY_BASE_URL}/actor-runs/{run_id}"
         start_time = time.time()
-        
+
         while time.time() - start_time < timeout_s:
             response = self.session.get(status_url)
             response.raise_for_status()
             status_data = response.json()
-            
+
             status = status_data["data"]["status"]
             LOG.info("[APIFY] Status: %s", status)
-            
+
             if status == "SUCCEEDED":
                 break
             elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
                 raise Exception(f"Actor run failed: {status}")
-            
+
             time.sleep(5)  # Polling ogni 5 secondi
         else:
             raise TimeoutError(f"Actor run timeout dopo {timeout_s}s")
-        
+
         # 3. Scarica dataset risultati
         dataset_id = status_data["data"]["defaultDatasetId"]
         dataset_url = f"{APIFY_BASE_URL}/datasets/{dataset_id}/items"
-        
+
         response = self.session.get(dataset_url)
         response.raise_for_status()
-        
+
         return {
             "run_id": run_id,
             "status": status,
             "items": response.json(),
             "stats": status_data["data"]["stats"]
         }
-    
+
     def scrape_team_transfers(self, team: str, season: str = "2025-26",
                             arrivals_only: bool = False) -> List[Dict[str, Any]]:
         """Scrapa i trasferimenti di una squadra"""
-        
+
         if team not in SERIE_A_TEAMS:
             raise ValueError(f"Squadra {team} non supportata")
-        
+
         team_url = SERIE_A_TEAMS[team]
-        
+
         # Input per il custom actor TransfermarktScraperDS
         actor_input = {
             "teamUrl": team_url,
@@ -164,12 +163,12 @@ class ApifyTransfermarktScraper:
             "extractArrivals": not arrivals_only or True,
             "extractDepartures": not arrivals_only
         }
-        
+
         LOG.info("[APIFY] Scraping %s transfers per stagione %s", team, season)
-        
+
         try:
             result = self.run_actor(APIFY_ACTORS["transfermarkt_transfers"], actor_input)
-            
+
             # Trasforma i dati Apify nel formato compatibile con il tuo ETL
             transfers = []
             for item in result["items"]:
@@ -184,10 +183,10 @@ class ApifyTransfermarktScraper:
                     transfer = self._normalize_transfer_data(item, team, season)
                     if transfer:
                         transfers.append(transfer)
-            
+
             LOG.info("[APIFY] %s: estratti %d trasferimenti", team, len(transfers))
             return transfers
-            
+
         except Exception as e:
             LOG.error("[APIFY] Errore scraping %s: %s", team, e)
             # Se l'actor specifico non esiste, suggerisci alternative
@@ -197,11 +196,11 @@ class ApifyTransfermarktScraper:
                 LOG.warning("[APIFY] 2. Creare un actor personalizzato")
                 LOG.warning("[APIFY] 3. Usare il fallback diretto a Transfermarkt")
             return []
-    
+
     def _normalize_transfer_data(self, raw_data: Dict[str, Any], 
                                team: str, season: str) -> Optional[Dict[str, Any]]:
         """Normalizza i dati Apify nel formato del tuo ETL"""
-        
+
         try:
             # Adatta questi campi alla struttura effettiva dell'actor Apify
             player_name = raw_data.get("playerName") or raw_data.get("name")
@@ -210,10 +209,10 @@ class ApifyTransfermarktScraper:
             to_team = team if direction == "in" else raw_data.get("toClub")
             fee = raw_data.get("transferFee") or raw_data.get("fee") or ""
             position = raw_data.get("position") or ""
-            
+
             if not player_name:
                 return None
-            
+
             return {
                 "id": f"apify_{uuid.uuid4().hex[:10]}",
                 "type": "transfer",
@@ -232,7 +231,7 @@ class ApifyTransfermarktScraper:
                 "apify_run_id": raw_data.get("_apify_run_id"),
                 "scraped_at": raw_data.get("_apify_scraped_at")
             }
-            
+
         except Exception as e:
             LOG.warning("[APIFY] Errore normalizzazione dati: %s", e)
             return None
@@ -240,50 +239,50 @@ class ApifyTransfermarktScraper:
 
 def save_transfers_jsonl(transfers: List[Dict[str, Any]], team: str, season: str) -> Path:
     """Salva i trasferimenti in formato JSONL"""
-    
+
     data_dir = Path("./data")
     data_dir.mkdir(exist_ok=True)
-    
+
     slug = team.lower().replace(" ", "_")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"apify_transfers_{slug}_{season.replace('/', '-')}_{timestamp}.jsonl"
     filepath = data_dir / filename
-    
+
     with filepath.open("w", encoding="utf-8") as f:
         for transfer in transfers:
             f.write(json.dumps(transfer, ensure_ascii=False) + "\n")
-    
+
     LOG.info("[EXPORT] Salvato %s con %d trasferimenti", filepath, len(transfers))
     return filepath
 
 
 def merge_into_roster(transfers: List[Dict[str, Any]], roster_path: Path = Path("./season_roster.json")) -> int:
     """Aggiorna season_roster.json con i nuovi arrivi (stesso formato di etl_tm_serie_a_full.py)"""
-    
+
     try:
         with roster_path.open("r", encoding="utf-8") as f:
             roster = json.load(f)
     except Exception:
         roster = []
-    
+
     # Indicizza roster esistente
     roster_index = {}
     for player in roster:
         key = (player.get("name", "").lower(), player.get("team", "").lower())
         roster_index[key] = player
-    
+
     updates = 0
     for transfer in transfers:
         if transfer.get("direction") != "in":
             continue  # Solo arrivi nel roster
-        
+
         name = transfer.get("player", "")
         team = transfer.get("team", "")
         if not name or not team:
             continue
-        
+
         key = (name.lower(), team.lower())
-        
+
         if key not in roster_index:
             # Nuovo giocatore
             roster.append({
@@ -303,28 +302,28 @@ def merge_into_roster(transfers: List[Dict[str, Any]], roster_path: Path = Path(
             player["source"] = transfer.get("source")
             player["source_date"] = transfer.get("source_date")
             updates += 1
-    
+
     with roster_path.open("w", encoding="utf-8") as f:
         json.dump(roster, f, ensure_ascii=False, indent=2)
-    
+
     LOG.info("[ROSTER] Aggiornati %d giocatori, totale roster: %d", updates, len(roster))
     return updates
 
 
 def ingest_into_kb(transfers: List[Dict[str, Any]]) -> int:
     """Inserisce i trasferimenti nella Knowledge Base (compatibile con etl_tm_serie_a_full.py)"""
-    
+
     if not KM_AVAILABLE:
         LOG.warning("[INGEST] KnowledgeManager non disponibile")
         return 0
-    
+
     try:
         km = KnowledgeManager()
         docs, metas, ids = [], [], []
-        
+
         for transfer in transfers:
             direction_str = "IN" if transfer.get("direction") == "in" else "OUT"
-            
+
             # Documento testuale
             docs.append(
                 f"Transfer {direction_str}: {transfer.get('player')} "
@@ -332,7 +331,7 @@ def ingest_into_kb(transfers: List[Dict[str, Any]]) -> int:
                 f"From: {transfer.get('from_team', 'n/a')} To: {transfer.get('to_team', 'n/a')}. "
                 f"Fee: {transfer.get('fee', 'n/a')}. Source: Apify Transfermarkt."
             )
-            
+
             # Metadati
             metas.append({
                 "type": "transfer",
@@ -350,13 +349,13 @@ def ingest_into_kb(transfers: List[Dict[str, Any]]) -> int:
                 "valid_to": transfer.get("valid_to"),
                 "apify_run_id": transfer.get("apify_run_id"),
             })
-            
+
             ids.append(transfer.get("id") or f"apify_{uuid.uuid4().hex[:10]}")
-        
+
         n = km.upsert(docs=docs, metadatas=metas, ids=ids)
         LOG.info("[INGEST] Inseriti %s trasferimenti in KB", n)
         return int(n or 0)
-        
+
     except Exception as e:
         LOG.error("[INGEST] Errore: %s", e)
         return 0
@@ -371,60 +370,60 @@ def main():
     parser.add_argument("--write-roster", action="store_true", help="Aggiorna season_roster.json")
     parser.add_argument("--ingest", action="store_true", help="Inserisci in Knowledge Base")
     parser.add_argument("--delay", type=float, default=5.0, help="Delay tra squadre (secondi)")
-    
+
     args = parser.parse_args()
-    
+
     if not args.team and not args.all_serie_a:
         parser.error("Specifica --team NOME oppure --all-serie-a")
-    
+
     # Verifica token Apify
     if not APIFY_API_TOKEN:
         LOG.error("APIFY_API_TOKEN non configurato. Vai su https://console.apify.com/account/integrations")
         return 1
-    
+
     scraper = ApifyTransfermarktScraper()
     all_transfers = []
-    
+
     teams_to_process = [args.team] if args.team else list(SERIE_A_TEAMS.keys())
-    
+
     for i, team in enumerate(teams_to_process, 1):
         LOG.info("(%d/%d) Processando %s", i, len(teams_to_process), team)
-        
+
         try:
             transfers = scraper.scrape_team_transfers(
                 team=team,
                 season=args.season,
                 arrivals_only=args.arrivals_only
             )
-            
+
             if transfers:
                 # Salva JSONL per ogni squadra
                 save_transfers_jsonl(transfers, team, args.season)
                 all_transfers.extend(transfers)
             else:
                 LOG.warning("Nessun trasferimento trovato per %s", team)
-                
+
         except Exception as e:
             LOG.error("Errore processando %s: %s", team, e)
-        
+
         # Delay tra squadre per non sovraccaricare Apify
         if i < len(teams_to_process):
             time.sleep(args.delay)
-    
+
     # Operazioni finali
     if all_transfers:
         # Salva file combinato
         combined_path = save_transfers_jsonl(all_transfers, "SERIE_A_COMBINED", args.season)
         LOG.info("File combinato: %s", combined_path)
-        
+
         # Aggiorna roster
         if args.write_roster:
             merge_into_roster(all_transfers)
-        
+
         # Inserisci in KB
         if args.ingest:
             ingest_into_kb(all_transfers)
-    
+
     LOG.info("Completato! Trasferimenti totali: %d", len(all_transfers))
 
 
