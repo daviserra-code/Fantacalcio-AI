@@ -27,7 +27,8 @@ logging.basicConfig(
 
 LOG = logging.getLogger("serie_a_roster_update")
 
-def update_complete_roster(season: str = "2025-26", arrivals_only: bool = False):
+def update_complete_roster(season: str = "2025-26", arrivals_only: bool = False, 
+                           update_roster: bool = True, ingest_kb: bool = True):
     """Update the complete Serie A roster using Apify"""
     
     # Check if Apify is configured
@@ -101,14 +102,22 @@ def update_complete_roster(season: str = "2025-26", arrivals_only: bool = False)
         LOG.info(f"Total transfers collected: {len(all_transfers)}")
         
         # Update roster with arrivals only
-        arrivals = [t for t in all_transfers if t.get("direction") == "in"]
-        if arrivals:
-            roster_updates = merge_into_roster(arrivals, Path("./season_roster.json"))
-            LOG.info(f"Roster updated: {roster_updates} players")
+        if update_roster:
+            arrivals = [t for t in all_transfers if t.get("direction") == "in"]
+            if arrivals:
+                roster_updates = merge_into_roster(arrivals, Path("./season_roster.json"))
+                LOG.info(f"Roster updated: {roster_updates} players")
+            else:
+                LOG.warning("No arrivals found to update roster")
+        else:
+            LOG.info("Skipping roster update (--update-roster not specified)")
         
         # Ingest all transfers into Knowledge Base
-        kb_updates = ingest_into_kb(all_transfers)
-        LOG.info(f"Knowledge Base updated: {kb_updates} entries")
+        if ingest_kb:
+            kb_updates = ingest_into_kb(all_transfers)
+            LOG.info(f"Knowledge Base updated: {kb_updates} entries")
+        else:
+            LOG.info("Skipping KB ingest (--ingest-kb not specified)")
         
         LOG.info("Serie A roster update completed successfully!")
         return True
@@ -121,12 +130,17 @@ def main():
     parser = argparse.ArgumentParser(description="Update Serie A roster via Apify")
     parser.add_argument("--season", default="2025-26", help="Season (e.g., 2025-26)")
     parser.add_argument("--arrivals-only", action="store_true", help="Only process arrivals")
+    parser.add_argument("--all-teams", action="store_true", help="Process all Serie A teams")
+    parser.add_argument("--update-roster", action="store_true", help="Update season_roster.json")
+    parser.add_argument("--ingest-kb", action="store_true", help="Ingest data into Knowledge Base")
     
     args = parser.parse_args()
     
     success = update_complete_roster(
         season=args.season,
-        arrivals_only=args.arrivals_only
+        arrivals_only=args.arrivals_only,
+        update_roster=args.update_roster,
+        ingest_kb=args.ingest_kb
     )
     
     sys.exit(0 if success else 1)
