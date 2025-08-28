@@ -96,7 +96,7 @@ class ApifyTransfermarktScraper:
             "Content-Type": "application/json"
         })
 
-    def run_actor(self, actor_id: str, input_data: Dict[str, Any], 
+    def run_actor(self, actor_id: str, input_data: Dict[str, Any],
                   timeout_s: int = 300) -> Dict[str, Any]:
         """Esegue un actor Apify e attende i risultati"""
 
@@ -168,14 +168,14 @@ class ApifyTransfermarktScraper:
 
         try:
             result = self.run_actor(APIFY_ACTORS["transfermarkt_transfers"], actor_input)
-            
+
             LOG.info("[APIFY] Actor returned %d raw items", len(result["items"]))
 
             # Trasforma i dati Apify nel formato compatibile con il tuo ETL
             transfers = []
             processed = 0
             skipped = 0
-            
+
             for item in result["items"]:
                 if isinstance(item, list):
                     # Se l'item è una lista di trasferimenti
@@ -195,7 +195,7 @@ class ApifyTransfermarktScraper:
                     else:
                         skipped += 1
 
-            LOG.info("[APIFY] %s: processati %d item, estratti %d trasferimenti, saltati %d", 
+            LOG.info("[APIFY] %s: processati %d item, estratti %d trasferimenti, saltati %d",
                      team, processed, len(transfers), skipped)
             return transfers
 
@@ -211,26 +211,47 @@ class ApifyTransfermarktScraper:
                 LOG.warning("[APIFY] 4. Usa il fallback diretto a Transfermarkt")
             return []
 
-    def _normalize_transfer_data(self, raw_data: Dict[str, Any], 
+    def _normalize_transfer_data(self, raw_data: Dict[str, Any],
                                team: str, season: str) -> Optional[Dict[str, Any]]:
         """Normalizza i dati Apify nel formato del tuo ETL"""
 
         try:
-            # Il tuo actor già fornisce i dati strutturati correttamente
             player_name = raw_data.get("player")
-            direction = raw_data.get("direction")  # Usa direttamente il campo dell'actor
+            direction = raw_data.get("direction")
             from_team = raw_data.get("from_team", "")
             to_team = raw_data.get("to_team", "")
             fee = raw_data.get("fee", "")
-            
-            # Il tuo actor già filtra per team, quindi non serve verificare nuovamente
-            # Rimuoviamo il filtro che causava il problema dei "transfer 0"
+            raw_team = raw_data.get("team", "")
 
-            if not player_name or not direction:
-                LOG.warning("[APIFY] Dati mancanti: player=%s, direction=%s", player_name, direction)
+            # FILTRO CRITICO: l'actor restituisce tutti i trasferimenti Serie A
+            # Dobbiamo filtrare solo quelli della squadra richiesta
+            team_lower = team.lower()
+
+            # Per gli arrivi: il team deve corrispondere a quello richiesto
+            if direction == "in":
+                if raw_team and raw_team.lower() != team_lower:
+                    LOG.debug("[APIFY] Scarto arrivo: %s per %s (cerco %s)", player_name, raw_team, team)
+                    return None
+                if to_team and team_lower not in to_team.lower():
+                    LOG.debug("[APIFY] Scarto arrivo: %s → %s (cerco %s)", player_name, to_team, team)
+                    return None
+
+            # Per le cessioni: il team deve corrispondere a quello richiesto
+            elif direction == "out":
+                if raw_team and raw_team.lower() != team_lower:
+                    LOG.debug("[APIFY] Scarto cessione: %s da %s (cerco %s)", player_name, raw_team, team)
+                    return None
+                if from_team and team_lower not in from_team.lower():
+                    LOG.debug("[APIFY] Scarto cessione: %s da %s (cerco %s)", player_name, from_team, team)
+                    return None
+
+            # Se nessun team specificato, scarta
+            if not raw_team:
+                LOG.debug("[APIFY] Scarto: nessun team specificato per %s", player_name)
                 return None
 
-            result = {
+            LOG.debug("[APIFY] Normalized transfer: %s %s %s (%s)", player_name, from_team, to_team, direction)
+            return {
                 "id": f"apify_{uuid.uuid4().hex[:10]}",
                 "type": "transfer",
                 "season": season,
@@ -248,9 +269,6 @@ class ApifyTransfermarktScraper:
                 "apify_run_id": raw_data.get("_apify_run_id"),
                 "scraped_at": raw_data.get("_apify_scraped_at")
             }
-            
-            LOG.debug("[APIFY] Normalized transfer: %s %s %s (%s)", player_name, from_team, to_team, direction)
-            return result
 
         except Exception as e:
             LOG.warning("[APIFY] Errore normalizzazione dati: %s", e)
