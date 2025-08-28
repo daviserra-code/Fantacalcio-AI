@@ -51,10 +51,10 @@ APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
 APIFY_BASE_URL = "https://api.apify.com/v2"
 
 # Actor IDs per diversi scraper Transfermarkt su Apify
-# Usa il custom actor TransfermarktScraperDS (format: username/actor-name)
+# Usa il custom actor TransfermarktScraperDS (format: username~actor-name for private actors)
 APIFY_ACTORS = {
-    "transfermarkt_transfers": "yummy_pen/transfermarktscraperds",  # Custom Transfermarkt Scraper
-    "transfermarkt_players": "yummy_pen/transfermarktscraperds",
+    "transfermarkt_transfers": "yummy_pen~transfermarktscraperds",  # Custom Transfermarkt Scraper
+    "transfermarkt_players": "yummy_pen~transfermarktscraperds",
 }
 
 # Mapping squadre Serie A -> URL Transfermarkt (simile a etl_tm_serie_a_full.py)
