@@ -1,0 +1,97 @@
+2025-08-28 21:59:07,678 - debug_apify - INFO - Testing con Juventus...
+2025-08-28 21:59:07,678 - apify_transfermarkt - INFO - [APIFY] Avvio actor yummy_pen~transfermarktscraperds
+2025-08-28 21:59:07,959 - apify_transfermarkt - INFO - [APIFY] Run ID: hUbS04vD4TdqcXLbd
+2025-08-28 21:59:08,016 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:13,081 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:18,205 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:23,262 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:28,302 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:33,340 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:38,383 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:43,417 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:48,481 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 21:59:53,534 - apify_transfermarkt - INFO - [APIFY] Status: SUCCEEDED
+
+🔍 RISULTATI ACTOR:
+Status: SUCCEEDED
+Items count: 854
+
+📋 PRIMI 3 ITEMS:
+
+--- Item 1 ---
+Chiavi disponibili: ['id', 'type', 'season', 'team', 'player', 'direction', 'from_team', 'to_team', 'fee', 'source', 'source_date']
+  id: tr_71a06616ba
+  type: transfer
+  season: 2025-26
+  team: Atalanta
+  player: Nikola Krstović
+  direction: in
+  from_team: 
+  to_team: Atalanta
+  fee: 25,00 mln €
+  source: transfermarkt_html
+
+--- Item 2 ---
+Chiavi disponibili: ['id', 'type', 'season', 'team', 'player', 'direction', 'from_team', 'to_team', 'fee', 'source', 'source_date']
+  id: tr_303a06b543
+  type: transfer
+  season: 2025-26
+  team: Atalanta
+  player: Odilon Kossounou
+  direction: in
+  from_team: 
+  to_team: Atalanta
+  fee: 20,00 mln €
+  source: transfermarkt_html
+
+--- Item 3 ---
+Chiavi disponibili: ['id', 'type', 'season', 'team', 'player', 'direction', 'from_team', 'to_team', 'fee', 'source', 'source_date']
+  id: tr_9f839b1cd6
+  type: transfer
+  season: 2025-26
+  team: Atalanta
+  player: Kamaldeen Sulemana
+  direction: in
+  from_team: 
+  to_team: Atalanta
+  fee: 17,00 mln €
+  source: transfermarkt_html
+
+💾 Sample salvato in debug_apify_sample.json
+
+🔄 TEST NORMALIZZAZIONE:
+2025-08-28 21:59:53,684 - apify_transfermarkt - INFO - [APIFY] Scraping Juventus transfers per stagione 2025-26
+2025-08-28 21:59:53,684 - apify_transfermarkt - INFO - [APIFY] Avvio actor yummy_pen~transfermarktscraperds
+2025-08-28 21:59:53,888 - apify_transfermarkt - INFO - [APIFY] Run ID: Bc1766qpgDhlYi8iz
+2025-08-28 21:59:53,927 - apify_transfermarkt - INFO - [APIFY] Status: READY
+2025-08-28 21:59:58,964 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:04,015 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:09,093 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:14,175 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:19,279 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:24,343 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:29,378 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:34,433 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-28 22:00:39,504 - apify_transfermarkt - INFO - [APIFY] Status: SUCCEEDED
+2025-08-28 22:00:39,843 - apify_transfermarkt - INFO - [APIFY] Juventus: estratti 854 trasferimenti
+Transfers normalizzati: 854
+Primo transfer normalizzato:
+{
+  "id": "apify_ffb5bb0b42",
+  "type": "transfer",
+  "season": "2025-26",
+  "team": "Juventus",
+  "player": "Nikola Krstović",
+  "direction": "out",
+  "from_team": "Juventus",
+  "to_team": "Atalanta",
+  "fee": "25,00 mln €",
+  "position": "",
+  "source": "apify_transfermarkt",
+  "source_date": "2025-08-28",
+  "valid_from": "2025-08-28",
+  "valid_to": "2099-12-31",
+  "apify_run_id": null,
+  "scraped_at": null
+}
+Arrivi: 37, Partenze: 817
