@@ -28,7 +28,7 @@ import datetime as dt
 from typing import List, Dict, Any, Optional
 
 from knowledge_manager import KnowledgeManager
-from web_fallback import WebFallback  # Wikipedia fallback (il tuo file precedente)
+from web_fallback import WebFallbackWikipedia as WebFallback  # Wikipedia fallback (il tuo file precedente)
 # Transfermarkt fallback è opzionale
 try:
     from web_fallback_tm import TransfermarktFallback
