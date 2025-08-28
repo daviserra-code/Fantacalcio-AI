@@ -35,6 +35,14 @@ try:
 except Exception:
     TransfermarktFallback = None
 
+# Apify fallback (opzionale ma raccomandato per produzione)
+try:
+    from apify_transfermarkt_scraper import ApifyTransfermarktScraper
+    APIFY_AVAILABLE = bool(os.environ.get("APIFY_API_TOKEN"))
+except Exception:
+    ApifyTransfermarktScraper = None
+    APIFY_AVAILABLE = False
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("etl_transfers_job")
 
@@ -45,6 +53,7 @@ EMBED_MODEL = os.environ.get("EMBED_MODEL", "all-MiniLM-L6-v2")
 
 SEASON = os.environ.get("SEASON", "2025-26")
 USE_TM = os.environ.get("TRANSFERMARKT_FALLBACK", "0") == "1"
+USE_APIFY = os.environ.get("USE_APIFY_TRANSFERMARKT", "0") == "1" and APIFY_AVAILABLE
 REQUEST_DELAY = float(os.environ.get("REQUEST_DELAY", "2.0"))  # delay tra chiamate per educazione
 JOB_INTERVAL_MIN = int(os.environ.get("JOB_INTERVAL_MIN", "0"))  # se >0, loop periodico
 
@@ -132,6 +141,31 @@ def fetch_from_tm(team: str) -> Dict[str, Any]:
         "label": "Transfermarkt",
     }
 
+def fetch_from_apify(team: str) -> Dict[str, Any]:
+    """Fetch tramite Apify (più affidabile per Transfermarkt)"""
+    if not USE_APIFY or ApifyTransfermarktScraper is None:
+        return {"players": [], "sources": [], "elapsed": 0.0, "label": "Apify (disabled)"}
+    
+    try:
+        scraper = ApifyTransfermarktScraper()
+        start_time = time.time()
+        
+        transfers = scraper.scrape_team_transfers(team=team, season=SEASON, arrivals_only=True)
+        players = [t.get("player") for t in transfers if t.get("direction") == "in" and t.get("player")]
+        
+        elapsed = time.time() - start_time
+        sources = [f"https://apify.com/transfermarkt-scraper"]
+        
+        return {
+            "players": players,
+            "sources": sources,
+            "elapsed": elapsed,
+            "label": "Apify Transfermarkt",
+        }
+    except Exception as e:
+        logger.warning("Errore Apify per %s: %s", team, e)
+        return {"players": [], "sources": [], "elapsed": 0.0, "label": "Apify (error)"}
+
 def fetch_from_rss(team: str) -> Dict[str, Any]:
     """Placeholder semplice: se configuri feed RSS ufficiali, qui puoi parsare 'nuovo giocatore'."""
     # Non implementato in dettaglio perché i feed variano. Fornisco struttura compatibile.
@@ -159,26 +193,36 @@ def run_once():
         wiki = fetch_from_wikipedia(team)
         time.sleep(REQUEST_DELAY)
 
-        # 2) Transfermarkt (opzionale)
+        # 2) Transfermarkt standard (opzionale)
         tm = fetch_from_tm(team)
         if USE_TM:
             time.sleep(REQUEST_DELAY)
 
-        # 3) RSS/ufficiali (se configurati)
+        # 3) Apify Transfermarkt (raccomandato per produzione)
+        apify = fetch_from_apify(team)
+        if USE_APIFY:
+            time.sleep(REQUEST_DELAY)
+
+        # 4) RSS/ufficiali (se configurati)
         rss = fetch_from_rss(team)
 
         # Merge dedup
-        merged_players = _unique(wiki["players"] + tm["players"] + rss["players"])
-        merged_sources = _merge_sources(wiki["sources"], tm["sources"], rss["sources"])
+        merged_players = _unique(wiki["players"] + tm["players"] + apify["players"] + rss["players"])
+        merged_sources = _merge_sources(wiki["sources"], tm["sources"], apify["sources"], rss["sources"])
 
         if not merged_players:
-            logger.info("[ETL] Nessun acquisto trovato per %s (fonti: %s, %s, %s)",
-                        team, wiki["label"], tm["label"], rss["label"])
+            logger.info("[ETL] Nessun acquisto trovato per %s (fonti: %s, %s, %s, %s)",
+                        team, wiki["label"], tm["label"], apify["label"], rss["label"])
             continue
 
         for name in merged_players:
             upsert_transfer(km, team, name, merged_sources, SEASON, source_label=";".join(
-                [lbl for lbl in [wiki["label"], tm["label"] if USE_TM else None, rss["label"] if rss["sources"] else None] if lbl]
+                [lbl for lbl in [
+                    wiki["label"], 
+                    tm["label"] if USE_TM else None, 
+                    apify["label"] if USE_APIFY else None,
+                    rss["label"] if rss["sources"] else None
+                ] if lbl]
             ))
             total_upserts += 1
 

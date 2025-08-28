@@ -1,0 +1,120 @@
+
+{
+  "apify": {
+    "actors": {
+      "transfermarkt_transfers": {
+        "id": "apify/transfermarkt-scraper",
+        "description": "Scraper principale per trasferimenti Transfermarkt",
+        "input_schema": {
+          "startUrls": "Array di URL da scrapare",
+          "maxRequestsPerCrawl": "Limite richieste per run",
+          "season": "Stagione di interesse",
+          "extractTransfers": "Estrai dati trasferimenti",
+          "extractArrivals": "Includi arrivi",
+          "extractDepartures": "Includi cessioni"
+        }
+      },
+      "transfermarkt_players": {
+        "id": "apify/transfermarkt-players",
+        "description": "Scraper per profili giocatori Transfermarkt",
+        "input_schema": {
+          "startUrls": "Array di URL giocatori",
+          "extractPlayerStats": "Estrai statistiche",
+          "extractMarketValue": "Estrai valore di mercato"
+        }
+      }
+    },
+    "rate_limits": {
+      "requests_per_minute": 60,
+      "concurrent_runs": 3,
+      "delay_between_teams": 5.0
+    },
+    "output_settings": {
+      "format": "json",
+      "include_metadata": true,
+      "include_run_stats": true
+    }
+  },
+  "serie_a_teams": {
+    "Atalanta": {
+      "transfermarkt_url": "https://www.transfermarkt.it/atalanta-bergamo/transfers/verein/800",
+      "aliases": ["Atalanta BC", "Atalanta Bergamo"]
+    },
+    "Bologna": {
+      "transfermarkt_url": "https://www.transfermarkt.it/bologna-fc-1909/transfers/verein/1025",
+      "aliases": ["Bologna FC", "Bologna 1909"]
+    },
+    "Cagliari": {
+      "transfermarkt_url": "https://www.transfermarkt.it/cagliari-calcio/transfers/verein/1390",
+      "aliases": ["Cagliari Calcio"]
+    },
+    "Como": {
+      "transfermarkt_url": "https://www.transfermarkt.it/como-1907/transfers/verein/280",
+      "aliases": ["Como 1907"]
+    },
+    "Empoli": {
+      "transfermarkt_url": "https://www.transfermarkt.it/empoli-fc/transfers/verein/749",
+      "aliases": ["Empoli FC"]
+    },
+    "Fiorentina": {
+      "transfermarkt_url": "https://www.transfermarkt.it/acf-fiorentina/transfers/verein/430",
+      "aliases": ["ACF Fiorentina", "Viola"]
+    },
+    "Genoa": {
+      "transfermarkt_url": "https://www.transfermarkt.it/genoa-cfc/transfers/verein/252",
+      "aliases": ["Genoa CFC", "Il Grifone"]
+    },
+    "Inter": {
+      "transfermarkt_url": "https://www.transfermarkt.it/inter-mailand/transfers/verein/46",
+      "aliases": ["Inter Milano", "FC Internazionale", "Nerazzurri"]
+    },
+    "Juventus": {
+      "transfermarkt_url": "https://www.transfermarkt.it/juventus-fc/transfers/verein/506",
+      "aliases": ["Juventus FC", "Juve", "Bianconeri"]
+    },
+    "Lazio": {
+      "transfermarkt_url": "https://www.transfermarkt.it/ss-lazio/transfers/verein/398",
+      "aliases": ["SS Lazio", "Biancocelesti"]
+    },
+    "Lecce": {
+      "transfermarkt_url": "https://www.transfermarkt.it/us-lecce/transfers/verein/1020",
+      "aliases": ["US Lecce"]
+    },
+    "Milan": {
+      "transfermarkt_url": "https://www.transfermarkt.it/ac-mailand/transfers/verein/5",
+      "aliases": ["AC Milan", "Milan AC", "Rossoneri"]
+    },
+    "Monza": {
+      "transfermarkt_url": "https://www.transfermarkt.it/ac-monza/transfers/verein/2919",
+      "aliases": ["AC Monza", "Monza 1912"]
+    },
+    "Napoli": {
+      "transfermarkt_url": "https://www.transfermarkt.it/ssc-neapel/transfers/verein/6195",
+      "aliases": ["SSC Napoli", "Azzurri"]
+    },
+    "Parma": {
+      "transfermarkt_url": "https://www.transfermarkt.it/parma-calcio-1913/transfers/verein/130",
+      "aliases": ["Parma Calcio", "Parma FC"]
+    },
+    "Roma": {
+      "transfermarkt_url": "https://www.transfermarkt.it/as-roma/transfers/verein/12",
+      "aliases": ["AS Roma", "Giallorossi"]
+    },
+    "Torino": {
+      "transfermarkt_url": "https://www.transfermarkt.it/torino-fc/transfers/verein/416",
+      "aliases": ["Torino FC", "Granata"]
+    },
+    "Udinese": {
+      "transfermarkt_url": "https://www.transfermarkt.it/udinese-calcio/transfers/verein/410",
+      "aliases": ["Udinese Calcio", "Bianconeri friulani"]
+    },
+    "Verona": {
+      "transfermarkt_url": "https://www.transfermarkt.it/hellas-verona/transfers/verein/276",
+      "aliases": ["Hellas Verona", "Scaligeri"]
+    },
+    "Venezia": {
+      "transfermarkt_url": "https://www.transfermarkt.it/venezia-fc/transfers/verein/907",
+      "aliases": ["Venezia FC"]
+    }
+  }
+}
