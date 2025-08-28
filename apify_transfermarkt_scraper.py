@@ -52,10 +52,10 @@ APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
 APIFY_BASE_URL = "https://api.apify.com/v2"
 
 # Actor IDs per diversi scraper Transfermarkt su Apify
-# Nota: questi sono esempi, dovrai trovare/creare gli actor specifici
+# Nota: questi sono esempi, dovrai configurare gli actor reali dal marketplace
 APIFY_ACTORS = {
-    "transfermarkt_transfers": "apify/transfermarkt-scraper",  # esempio
-    "transfermarkt_players": "apify/transfermarkt-players",   # esempio
+    "transfermarkt_transfers": "apify/web-scraper",  # Generic web scraper
+    "transfermarkt_players": "apify/web-scraper",   # Generic web scraper
 }
 
 # Mapping squadre Serie A -> URL Transfermarkt (simile a etl_tm_serie_a_full.py)
@@ -156,15 +156,46 @@ class ApifyTransfermarktScraper:
         
         team_url = SERIE_A_TEAMS[team]
         
-        # Input per l'actor Apify
+        # Input per l'actor Apify (generic web scraper approach)
         actor_input = {
             "startUrls": [{"url": team_url}],
-            "maxRequestsPerCrawl": 10,
-            "season": season,
-            "extractTransfers": True,
-            "extractArrivals": True,
-            "extractDepartures": not arrivals_only,
-            "outputFormat": "json"
+            "maxRequestsPerCrawl": 5,
+            "pageFunction": """
+            async function pageFunction(context) {
+                const { page, request, log } = context;
+                const title = await page.title();
+                
+                // Extract transfer data from Transfermarkt page
+                const transfers = await page.evaluate(() => {
+                    const rows = document.querySelectorAll('table.items tbody tr');
+                    const results = [];
+                    
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 4) {
+                            const player = cells[0]?.textContent?.trim();
+                            const position = cells[1]?.textContent?.trim();
+                            const fromClub = cells[2]?.textContent?.trim();
+                            const fee = cells[3]?.textContent?.trim();
+                            
+                            if (player) {
+                                results.push({
+                                    playerName: player,
+                                    position: position,
+                                    fromClub: fromClub,
+                                    transferFee: fee,
+                                    transferType: 'arrival'
+                                });
+                            }
+                        }
+                    });
+                    
+                    return results;
+                });
+                
+                return transfers;
+            }
+            """
         }
         
         LOG.info("[APIFY] Scraping %s transfers per stagione %s", team, season)
@@ -175,15 +206,29 @@ class ApifyTransfermarktScraper:
             # Trasforma i dati Apify nel formato compatibile con il tuo ETL
             transfers = []
             for item in result["items"]:
-                transfer = self._normalize_transfer_data(item, team, season)
-                if transfer:
-                    transfers.append(transfer)
+                if isinstance(item, list):
+                    # Se l'item è una lista di trasferimenti
+                    for transfer_data in item:
+                        transfer = self._normalize_transfer_data(transfer_data, team, season)
+                        if transfer:
+                            transfers.append(transfer)
+                else:
+                    # Se l'item è un singolo trasferimento
+                    transfer = self._normalize_transfer_data(item, team, season)
+                    if transfer:
+                        transfers.append(transfer)
             
             LOG.info("[APIFY] %s: estratti %d trasferimenti", team, len(transfers))
             return transfers
             
         except Exception as e:
             LOG.error("[APIFY] Errore scraping %s: %s", team, e)
+            # Se l'actor specifico non esiste, suggerisci alternative
+            if "404" in str(e) or "Not Found" in str(e):
+                LOG.warning("[APIFY] L'actor transfermarkt-scraper non esiste. Considera di:")
+                LOG.warning("[APIFY] 1. Cercare actors alternativi nel marketplace Apify")
+                LOG.warning("[APIFY] 2. Creare un actor personalizzato")
+                LOG.warning("[APIFY] 3. Usare il fallback diretto a Transfermarkt")
             return []
     
     def _normalize_transfer_data(self, raw_data: Dict[str, Any], 
