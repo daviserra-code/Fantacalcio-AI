@@ -204,60 +204,22 @@ class ApifyTransfermarktScraper:
         """Normalizza i dati Apify nel formato del tuo ETL"""
 
         try:
-            # Debug: log della struttura dati ricevuta
-            LOG.debug("[APIFY] Raw data structure: %s", list(raw_data.keys()))
+            # Il tuo actor già fornisce i dati strutturati correttamente
+            player_name = raw_data.get("player")
+            direction = raw_data.get("direction")  # Usa direttamente il campo dell'actor
+            from_team = raw_data.get("from_team", "")
+            to_team = raw_data.get("to_team", "")
+            fee = raw_data.get("fee", "")
             
-            # Prova diversi nomi di campo possibili
-            player_name = (raw_data.get("playerName") or 
-                          raw_data.get("name") or 
-                          raw_data.get("player") or
-                          raw_data.get("Player") or
-                          raw_data.get("Nome") or
-                          raw_data.get("giocatore"))
-            
-            # Prova a determinare la direzione del trasferimento
-            direction = None
-            transfer_type = raw_data.get("transferType") or raw_data.get("type") or raw_data.get("direzione")
-            
-            if transfer_type:
-                if transfer_type.lower() in ["arrival", "arrivo", "in", "acquisto"]:
-                    direction = "in"
-                elif transfer_type.lower() in ["departure", "partenza", "out", "cessione"]:
-                    direction = "out"
-            
-            # Se non riusciamo a determinare dalla struttura, assumiamo che sia un arrivo
-            # se il team corrisponde al "to_team" o se non c'è direzione specificata
-            if not direction:
-                to_team_field = (raw_data.get("toClub") or 
-                               raw_data.get("to_team") or 
-                               raw_data.get("squadra_arrivo") or
-                               raw_data.get("team"))
-                if to_team_field and team.lower() in to_team_field.lower():
-                    direction = "in"
-                else:
-                    direction = "out"
-            
-            from_team = (raw_data.get("fromClub") or 
-                        raw_data.get("from_team") or 
-                        raw_data.get("squadra_partenza") or
-                        "") if direction == "in" else team
-                        
-            to_team = team if direction == "in" else (raw_data.get("toClub") or 
-                                                     raw_data.get("to_team") or 
-                                                     raw_data.get("squadra_arrivo") or
-                                                     "")
-            
-            fee = (raw_data.get("transferFee") or 
-                  raw_data.get("fee") or 
-                  raw_data.get("costo") or 
-                  raw_data.get("prezzo") or "")
-                  
-            position = (raw_data.get("position") or 
-                       raw_data.get("role") or 
-                       raw_data.get("ruolo") or "")
+            # Verifica che il trasferimento sia effettivamente correlato al team richiesto
+            team_lower = team.lower()
+            if not (team_lower in from_team.lower() or team_lower in to_team.lower() or 
+                   team_lower in raw_data.get("team", "").lower()):
+                LOG.debug("[APIFY] Transfer non correlato al team %s: %s -> %s", team, from_team, to_team)
+                return None
 
-            if not player_name:
-                LOG.warning("[APIFY] Nessun nome giocatore trovato in: %s", raw_data)
+            if not player_name or not direction:
+                LOG.warning("[APIFY] Dati mancanti: player=%s, direction=%s", player_name, direction)
                 return None
 
             result = {
@@ -270,7 +232,7 @@ class ApifyTransfermarktScraper:
                 "from_team": from_team,
                 "to_team": to_team,
                 "fee": fee,
-                "position": position,
+                "position": "",  # Non disponibile nei dati attuali
                 "source": "apify_transfermarkt",
                 "source_date": datetime.now().strftime("%Y-%m-%d"),
                 "valid_from": datetime.now().strftime("%Y-%m-%d"),
@@ -279,7 +241,7 @@ class ApifyTransfermarktScraper:
                 "scraped_at": raw_data.get("_apify_scraped_at")
             }
             
-            LOG.debug("[APIFY] Normalized transfer: %s -> %s (%s)", player_name, team, direction)
+            LOG.debug("[APIFY] Normalized transfer: %s %s %s (%s)", player_name, from_team, to_team, direction)
             return result
 
         except Exception as e:
