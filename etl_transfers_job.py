@@ -28,7 +28,7 @@ import datetime as dt
 from typing import List, Dict, Any, Optional
 
 from knowledge_manager import KnowledgeManager
-from web_fallback import WebFallbackWikipedia as WebFallback  # Wikipedia fallback (il tuo file precedente)
+from web_fallback import WebFallbackWikipedia  # Wikipedia fallback (il tuo file precedente)
 # Transfermarkt fallback è opzionale
 try:
     from web_fallback_tm import TransfermarktFallback
@@ -120,13 +120,11 @@ def _merge_sources(*args: List[str]) -> List[str]:
     return merged
 
 def fetch_from_wikipedia(team: str) -> Dict[str, Any]:
-    wf = WebFallback(timeout_s=float(os.environ.get("WEB_TIMEOUT", "6.5")))
-    res = wf.fetch_team_transfers(team)
+    wf = WebFallbackWikipedia(enabled=True, lang="it")
+    res = wf.fetch_recent_transfers(team)
     return {
-        "players": res.get("acquisti", []) or [],
-        "sources": res.get("sources", []) or [],
-        "elapsed": res.get("elapsed", 0.0),
-        "label": "Wikipedia",
+        "players": res,
+        "sources": [f"https://it.wikipedia.org/wiki/{team.replace(' ', '_')}"]
     }
 
 def fetch_from_tm(team: str) -> Dict[str, Any]:
@@ -145,17 +143,17 @@ def fetch_from_apify(team: str) -> Dict[str, Any]:
     """Fetch tramite Apify (più affidabile per Transfermarkt)"""
     if not USE_APIFY or ApifyTransfermarktScraper is None:
         return {"players": [], "sources": [], "elapsed": 0.0, "label": "Apify (disabled)"}
-    
+
     try:
         scraper = ApifyTransfermarktScraper()
         start_time = time.time()
-        
+
         transfers = scraper.scrape_team_transfers(team=team, season=SEASON, arrivals_only=True)
         players = [t.get("player") for t in transfers if t.get("direction") == "in" and t.get("player")]
-        
+
         elapsed = time.time() - start_time
         sources = [f"https://apify.com/transfermarkt-scraper"]
-        
+
         return {
             "players": players,
             "sources": sources,
@@ -214,8 +212,8 @@ def run_once():
         for name in merged_players:
             upsert_transfer(km, team, name, merged_sources, SEASON, source_label=";".join(
                 [lbl for lbl in [
-                    wiki["label"], 
-                    tm["label"] if USE_TM else None, 
+                    wiki["label"],
+                    tm["label"] if USE_TM else None,
                     apify["label"] if USE_APIFY else None,
                     rss["label"] if rss["sources"] else None
                 ] if lbl]
