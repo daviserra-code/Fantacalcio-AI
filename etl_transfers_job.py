@@ -179,11 +179,7 @@ def fetch_from_rss(team: str) -> Dict[str, Any]:
 def run_once():
     logger.info("[ETL] Avvio job transfers — season=%s", SEASON)
 
-    km = KnowledgeManager(
-        collection_name=CHROMA_COLLECTION,
-        persist_dir=CHROMA_DIR,
-        embed_model_name=EMBED_MODEL,
-    )
+    km = KnowledgeManager()
 
     total_upserts = 0
     for i, team in enumerate(SERIE_A_TEAMS, start=1):
