@@ -45,6 +45,26 @@ def update_complete_roster(season: str = "2025-26", arrivals_only: bool = False)
         
         LOG.info(f"Starting Serie A roster update for season {season}")
         LOG.info(f"Processing {len(teams)} teams...")
+        LOG.info(f"Arrivals only: {arrivals_only}")
+        
+        # Test con una squadra prima di processare tutte
+        test_team = teams[0]  # Prendi la prima squadra come test
+        LOG.info(f"🧪 Testing with {test_team} first...")
+        
+        try:
+            test_transfers = scraper.scrape_team_transfers(
+                team=test_team,
+                season=season,
+                arrivals_only=arrivals_only
+            )
+            LOG.info(f"✅ Test successful: {len(test_transfers)} transfers from {test_team}")
+            if test_transfers:
+                LOG.info(f"Sample transfer: {test_transfers[0]}")
+            else:
+                LOG.warning(f"⚠️ No transfers found for test team {test_team}")
+        except Exception as e:
+            LOG.error(f"❌ Test failed for {test_team}: {e}")
+            return False
         
         for i, team in enumerate(teams, 1):
             LOG.info(f"({i}/{len(teams)}) Processing {team}...")
@@ -58,12 +78,16 @@ def update_complete_roster(season: str = "2025-26", arrivals_only: bool = False)
                 
                 if transfers:
                     all_transfers.extend(transfers)
-                    LOG.info(f"{team}: {len(transfers)} transfers found")
+                    arrivals = [t for t in transfers if t.get("direction") == "in"]
+                    departures = [t for t in transfers if t.get("direction") == "out"]
+                    LOG.info(f"{team}: {len(transfers)} total transfers (↗️{len(arrivals)} in, ↙️{len(departures)} out)")
                 else:
                     LOG.warning(f"{team}: No transfers found")
                     
             except Exception as e:
                 LOG.error(f"Error processing {team}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
             
             # Rate limiting - be respectful to Apify

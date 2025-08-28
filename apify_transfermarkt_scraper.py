@@ -204,18 +204,63 @@ class ApifyTransfermarktScraper:
         """Normalizza i dati Apify nel formato del tuo ETL"""
 
         try:
-            # Adatta questi campi alla struttura effettiva dell'actor Apify
-            player_name = raw_data.get("playerName") or raw_data.get("name")
-            direction = "in" if raw_data.get("transferType") == "arrival" else "out"
-            from_team = raw_data.get("fromClub") if direction == "in" else team
-            to_team = team if direction == "in" else raw_data.get("toClub")
-            fee = raw_data.get("transferFee") or raw_data.get("fee") or ""
-            position = raw_data.get("position") or ""
+            # Debug: log della struttura dati ricevuta
+            LOG.debug("[APIFY] Raw data structure: %s", list(raw_data.keys()))
+            
+            # Prova diversi nomi di campo possibili
+            player_name = (raw_data.get("playerName") or 
+                          raw_data.get("name") or 
+                          raw_data.get("player") or
+                          raw_data.get("Player") or
+                          raw_data.get("Nome") or
+                          raw_data.get("giocatore"))
+            
+            # Prova a determinare la direzione del trasferimento
+            direction = None
+            transfer_type = raw_data.get("transferType") or raw_data.get("type") or raw_data.get("direzione")
+            
+            if transfer_type:
+                if transfer_type.lower() in ["arrival", "arrivo", "in", "acquisto"]:
+                    direction = "in"
+                elif transfer_type.lower() in ["departure", "partenza", "out", "cessione"]:
+                    direction = "out"
+            
+            # Se non riusciamo a determinare dalla struttura, assumiamo che sia un arrivo
+            # se il team corrisponde al "to_team" o se non c'è direzione specificata
+            if not direction:
+                to_team_field = (raw_data.get("toClub") or 
+                               raw_data.get("to_team") or 
+                               raw_data.get("squadra_arrivo") or
+                               raw_data.get("team"))
+                if to_team_field and team.lower() in to_team_field.lower():
+                    direction = "in"
+                else:
+                    direction = "out"
+            
+            from_team = (raw_data.get("fromClub") or 
+                        raw_data.get("from_team") or 
+                        raw_data.get("squadra_partenza") or
+                        "") if direction == "in" else team
+                        
+            to_team = team if direction == "in" else (raw_data.get("toClub") or 
+                                                     raw_data.get("to_team") or 
+                                                     raw_data.get("squadra_arrivo") or
+                                                     "")
+            
+            fee = (raw_data.get("transferFee") or 
+                  raw_data.get("fee") or 
+                  raw_data.get("costo") or 
+                  raw_data.get("prezzo") or "")
+                  
+            position = (raw_data.get("position") or 
+                       raw_data.get("role") or 
+                       raw_data.get("ruolo") or "")
 
             if not player_name:
+                LOG.warning("[APIFY] Nessun nome giocatore trovato in: %s", raw_data)
                 return None
 
-            return {
+            result = {
                 "id": f"apify_{uuid.uuid4().hex[:10]}",
                 "type": "transfer",
                 "season": season,
@@ -233,9 +278,13 @@ class ApifyTransfermarktScraper:
                 "apify_run_id": raw_data.get("_apify_run_id"),
                 "scraped_at": raw_data.get("_apify_scraped_at")
             }
+            
+            LOG.debug("[APIFY] Normalized transfer: %s -> %s (%s)", player_name, team, direction)
+            return result
 
         except Exception as e:
             LOG.warning("[APIFY] Errore normalizzazione dati: %s", e)
+            LOG.warning("[APIFY] Raw data che ha causato errore: %s", raw_data)
             return None
 
 

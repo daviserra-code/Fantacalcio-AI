@@ -147,8 +147,8 @@ def fetch_from_apify(team: str) -> Dict[str, Any]:
 
     # Apify actor IDs (da settare correttamente)
     APIFY_ACTORS = {
-        "transfermarkt_transfers": "yummy_pen/transfermarktscraperds",  # Custom Transfermarkt Scraper
-        "transfermarkt_players": "yummy_pen/transfermarktscraperds",
+        "transfermarkt_transfers": "yummy_pen~transfermarktscraperds",  # Custom Transfermarkt Scraper
+        "transfermarkt_players": "yummy_pen~transfermarktscraperds",
     }
 
     actor_id = APIFY_ACTORS.get("transfermarkt_transfers") # O un altro ID se serve un parser specifico
