@@ -14,6 +14,35 @@ logging.basicConfig(
 
 OUT_PATH = os.getenv("ROSTER_JSON_PATH", "./season_roster.json")
 
+def normalize_role(raw_role: str) -> str:
+    """Convert various role/position formats to standard P/D/C/A format"""
+    if not raw_role:
+        return ""
+    
+    role = raw_role.strip().upper()
+    
+    # Goalkeeper variations
+    if any(x in role for x in ['PORTIERE', 'GOALKEEPER', 'KEEPER', 'GK', 'POR']):
+        return 'P'
+    
+    # Defender variations  
+    if any(x in role for x in ['DIFENSORE', 'DEFENDER', 'DEFENCE', 'DEF', 'DIFENSOR', 'DC', 'CB', 'RB', 'LB', 'TD', 'TS']):
+        return 'D'
+        
+    # Midfielder variations
+    if any(x in role for x in ['CENTROCAMPISTA', 'MIDFIELDER', 'MIDFIELD', 'MED', 'MEZZ', 'CM', 'CAM', 'CDM', 'AM', 'TQ']):
+        return 'C'
+        
+    # Forward/Attacker variations
+    if any(x in role for x in ['ATTACCANTE', 'FORWARD', 'STRIKER', 'ATT', 'ATTACK', 'ST', 'CF', 'LW', 'RW', 'SS', 'PUN']):
+        return 'A'
+    
+    # Single letter roles
+    if role in ['P', 'D', 'C', 'A']:
+        return role
+        
+    return ""
+
 def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
     def _num(x, default=None):
         try:
@@ -33,9 +62,43 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
     # Extract name from various possible fields
     name = (m.get("name") or m.get("player") or m.get("player_name") or "").strip()
     
-    # Extract role and normalize it - check multiple possible fields
-    role = (m.get("role") or m.get("position") or m.get("pos") or 
-            m.get("player_position") or m.get("ruolo") or "").strip().upper()
+    # Extract role and normalize it - check multiple possible fields including nested data
+    role = ""
+    
+    # Check multiple field variations for role/position
+    role_fields = [
+        "role", "position", "pos", "player_position", "ruolo", 
+        "posizione", "main_position", "primary_position"
+    ]
+    
+    for field in role_fields:
+        if m.get(field):
+            role = str(m.get(field)).strip().upper()
+            break
+    
+    # If still no role, try to extract from nested player_info
+    if not role and isinstance(m.get("player_info"), dict):
+        player_info = m.get("player_info")
+        for field in role_fields:
+            if player_info.get(field):
+                role = str(player_info.get(field)).strip().upper()
+                break
+    
+    # If still no role, try to infer from other fields or set default
+    if not role:
+        # Try to extract from any text field that might contain position info
+        for key, value in m.items():
+            if isinstance(value, str) and any(pos in value.upper() for pos in 
+                ['PORTIERE', 'DIFENSORE', 'CENTROCAMPISTA', 'ATTACCANTE', 'GOALKEEPER', 'DEFENDER', 'MIDFIELDER', 'FORWARD']):
+                if 'PORTIERE' in value.upper() or 'GOALKEEPER' in value.upper():
+                    role = 'P'
+                elif 'DIFENSORE' in value.upper() or 'DEFENDER' in value.upper():
+                    role = 'D'
+                elif 'CENTROCAMPISTA' in value.upper() or 'MIDFIELDER' in value.upper():
+                    role = 'C'
+                elif 'ATTACCANTE' in value.upper() or 'FORWARD' in value.upper():
+                    role = 'A'
+                break
     
     # Extract team name
     team = (m.get("team") or m.get("club") or m.get("team_name") or "").strip()
@@ -65,9 +128,12 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
     price = _num(m.get("price") or m.get("cost") or m.get("market_value") or 
                 player_info.get("market_value"), default=None)
     
+    # Normalize the role using our helper function
+    normalized_role = normalize_role(role)
+    
     return {
         "name": name,
-        "role": role,
+        "role": normalized_role,
         "team": team,
         "birth_year": birth_year,
         "price": price,
