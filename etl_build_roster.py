@@ -33,8 +33,9 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
     # Extract name from various possible fields
     name = (m.get("name") or m.get("player") or m.get("player_name") or "").strip()
     
-    # Extract role and normalize it
-    role = (m.get("role") or m.get("position") or "").strip().upper()
+    # Extract role and normalize it - check multiple possible fields
+    role = (m.get("role") or m.get("position") or m.get("pos") or 
+            m.get("player_position") or m.get("ruolo") or "").strip().upper()
     
     # Extract team name
     team = (m.get("team") or m.get("club") or m.get("team_name") or "").strip()
@@ -53,17 +54,31 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
     else:
         birth_year = _int(birth_year, default=None)
 
+    # For transfer data, try to get additional info from nested structures
+    player_info = m.get("player_info", {}) if isinstance(m.get("player_info"), dict) else {}
+    
+    # Enhanced role detection
+    if not role:
+        role = (player_info.get("position") or player_info.get("role") or "").strip().upper()
+    
+    # Try to get market value as price if no price available
+    price = _num(m.get("price") or m.get("cost") or m.get("market_value") or 
+                player_info.get("market_value"), default=None)
+    
     return {
         "name": name,
         "role": role,
         "team": team,
         "birth_year": birth_year,
-        "price": _num(m.get("price") or m.get("cost"), default=None),
-        "fantamedia": _num(m.get("fantamedia") or m.get("avg") or m.get("fm"), default=None),
-        "appearances": _int(m.get("appearances") or m.get("apps") or m.get("presenze"), default=0),
+        "price": price,
+        "fantamedia": _num(m.get("fantamedia") or m.get("avg") or m.get("fm") or 
+                          player_info.get("fantamedia"), default=None),
+        "appearances": _int(m.get("appearances") or m.get("apps") or m.get("presenze") or
+                           player_info.get("appearances"), default=0),
         "season": m.get("season"),
         "source": m.get("source"),
         "source_date": m.get("source_date"),
+        "age": _int(m.get("age") or player_info.get("age"), default=None),
     }
 
 def fetch_players_from_kb(km: KnowledgeManager, seasons: List[str], limit: int = 5000) -> List[Dict[str, Any]]:
