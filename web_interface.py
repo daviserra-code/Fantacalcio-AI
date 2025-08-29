@@ -268,15 +268,14 @@ def api_chat():
     except Exception as e:
         LOG.error("Error applying corrections: %s", e)
 
-    # Update conversation history
-    new_state.setdefault("conversation_history", []).append({
-        "role": "user",
-        "content": msg
-    })
-    new_state["conversation_history"].append({
-        "role": "assistant",
-        "content": reply
-    })
+    # Update conversation history (avoid duplicates since assistant already handles this)
+    if "conversation_history" not in new_state:
+        new_state["conversation_history"] = []
+        # Add the current exchange if not already added by assistant
+        new_state["conversation_history"].extend([
+            {"role": "user", "content": msg, "timestamp": time.time()},
+            {"role": "assistant", "content": reply, "timestamp": time.time()}
+        ])
 
     set_state(new_state)
 

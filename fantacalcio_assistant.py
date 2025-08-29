@@ -1153,6 +1153,70 @@ class FantacalcioAssistant:
         if m: last["take"]=max(1, int(m.group(1)))
         return last
 
+    def _handle_conversational_response(self, user_text: str, state: Dict[str, Any], context_messages: Optional[List[Dict[str, str]]] = None) -> Optional[str]:
+        """Handle conversational patterns and context-aware responses"""
+        user_lower = user_text.lower().strip()
+        history = state.get("conversation_history", [])
+        
+        # Greeting patterns
+        greeting_patterns = ["ciao", "buongiorno", "buonasera", "salve", "hey", "hello"]
+        if any(pattern in user_lower for pattern in greeting_patterns) and len(user_lower) < 20:
+            return "Ciao! 👋 Sono qui per aiutarti con il fantacalcio. Dimmi cosa ti serve: formazioni, consigli Under 21, strategie d'asta o altro!"
+            
+        # Thank you patterns
+        thanks_patterns = ["grazie", "perfetto", "ottimo", "bene così", "va bene"]
+        if any(pattern in user_lower for pattern in thanks_patterns) and len(user_lower) < 30:
+            suggestions = [
+                "Prego! Posso aiutarti con altro? Magari una formazione diversa o consigli per altri ruoli?",
+                "Figurati! Hai bisogno di altri consigli per la tua squadra?",
+                "Di nulla! Vuoi che analizziamo qualche altro aspetto della tua strategia fantacalcio?"
+            ]
+            import random
+            return random.choice(suggestions)
+            
+        # Context-aware follow-ups
+        if len(history) >= 2:
+            last_assistant_msg = None
+            for msg in reversed(history):
+                if msg.get("role") == "assistant":
+                    last_assistant_msg = msg.get("content", "")
+                    break
+                    
+            # If last response contained Under 21 players, offer alternatives
+            if last_assistant_msg and "Under 21" in last_assistant_msg:
+                if any(word in user_lower for word in ["altri", "ancora", "alternative", "più"]):
+                    # Extract role from last intent
+                    last_intent = state.get("last_intent", {})
+                    role = last_intent.get("role", "A")
+                    max_age = last_intent.get("max_age", 21)
+                    take = last_intent.get("take", 3)
+                    
+                    # Get more players
+                    return self._answer_under21(role, max_age, take + 2)
+                    
+            # If last response contained formation, offer adjustments
+            if last_assistant_msg and "Formazione" in last_assistant_msg:
+                if any(word in user_lower for word in ["cambia", "modifica", "altro", "diverso"]):
+                    return "Dimmi che modifica vuoi: cambiare modulo (es. '4-4-2'), aumentare/diminuire budget, o preferenze per ruoli specifici?"
+                    
+        # Clarification requests
+        unclear_patterns = ["non ho capito", "cosa intendi", "spiegami", "come funziona"]
+        if any(pattern in user_lower for pattern in unclear_patterns):
+            return """Posso aiutarti con:
+🏆 **Formazioni**: "formazione 5-3-2 budget 500"
+⚡ **Under 21**: "3 attaccanti under 21" o "difensori u21"
+💰 **Budget**: "top attaccanti budget 150"
+🎯 **Strategie**: "strategia asta"
+⚙️ **Portieri**: "migliori portieri budget 20"
+
+Cosa ti interessa di più?"""
+
+        # Context from previous interactions
+        if any(word in user_lower for word in ["e poi", "inoltre", "anche", "pure"]):
+            return "Dimmi pure, sono qui per aiutarti! Che altro ti serve per la tua strategia fantacalcio?"
+            
+        return None
+
     def _parse_intent(self, text: str, mode: str) -> Dict[str,Any]:
         lt = (text or "").lower().strip()
         intent={"type":"generic","mode":mode,"raw":lt}
@@ -1230,7 +1294,7 @@ class FantacalcioAssistant:
                      "2) Difesa a valore: esterni titolari con FM stabile.\n"
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
         elif intent["type"] == "generic":
-             reply = self._llm_complete(user_text, context_messages=[])
+             reply = self._llm_complete(user_text, context_messages=[], state=st)
              if not reply or "non disponibile" in reply.lower():
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
         else:
@@ -1244,9 +1308,27 @@ class FantacalcioAssistant:
                 context_messages: Optional[List[Dict[str, str]]] = None) -> Tuple[str, Dict[str, Any]]:
         """Main response method that applies corrections and filters"""
         state = state or {}
+        
+        # Initialize conversation history if not present
+        if "conversation_history" not in state:
+            state["conversation_history"] = []
+            
+        # Add current user message to history
+        state["conversation_history"].append({
+            "role": "user", 
+            "content": user_text,
+            "timestamp": time.time()
+        })
+        
+        # Keep only last 10 exchanges to prevent memory overflow
+        state["conversation_history"] = state["conversation_history"][-20:]
 
-        # Get response from main logic
-        response = self.get_response(user_text, mode=mode, context=state)
+        # Check for conversational patterns and context
+        response = self._handle_conversational_response(user_text, state, context_messages)
+        
+        if not response:
+            # Get response from main logic if no conversational response
+            response = self.get_response(user_text, mode=mode, context=state)
 
         # Apply corrections if corrections manager is available
         if self.corrections_manager:
@@ -1257,6 +1339,13 @@ class FantacalcioAssistant:
                     response = corrected_response
             except Exception as e:
                 LOG.error("Error applying corrections in respond: %s", e)
+
+        # Add assistant response to history
+        state["conversation_history"].append({
+            "role": "assistant",
+            "content": response,
+            "timestamp": time.time()
+        })
 
         return response, state
 
@@ -1509,8 +1598,8 @@ class FantacalcioAssistant:
     # ---------------------------
     # LLM (fallback generico)
     # ---------------------------
-    def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None) -> str:
-        """Complete using LLM with context"""
+    def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None, state: Dict[str, Any] = None) -> str:
+        """Complete using LLM with conversation context"""
         if not self.openai_api_key:
             LOG.warning("[Assistant] OPENAI_API_KEY not set, cannot use LLM.")
             return "⚠️ Servizio AI temporaneamente non disponibile. Configura OPENAI_API_KEY."
@@ -1521,16 +1610,25 @@ class FantacalcioAssistant:
             # Build messages with context
             messages = [{"role": "system", "content": self._get_system_prompt()}]
 
-            # Add recent user/assistant turns for context
+            # Add conversation history from state for better context
+            if state and "conversation_history" in state:
+                # Get last 6 messages (3 exchanges) for context
+                recent_history = state["conversation_history"][-6:]
+                for msg in recent_history:
+                    if msg.get("role") in ["user", "assistant"]:
+                        messages.append({
+                            "role": msg["role"],
+                            "content": msg["content"]
+                        })
+            
+            # Add external context messages if provided
             if context_messages:
                 messages.extend(context_messages)
-            elif hasattr(self, 'st') and self.st.get('history'):
-                 for turn in self.st['history'][-3:]: # Last 3 turns for context
-                    if 'u' in turn: messages.append({"role": "user", "content": turn['u']})
-                    if 'a' in turn: messages.append({"role": "assistant", "content": turn['a']})
 
-            # Add specific context for attacker queries to avoid outdated responses
+            # Add specific context for different query types
             user_lower = user_text.lower()
+            
+            # Enhanced context for specific queries
             if any(term in user_lower for term in ["attaccant", "miglior", "top", "punta"]):
                 attackers = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "A"]
                 if attackers:
@@ -1547,8 +1645,29 @@ class FantacalcioAssistant:
 
                     roster_context = f"ATTACCANTI DISPONIBILI NEL ROSTER:\n" + "\n".join(top_attackers)
                     messages.append({"role": "system", "content": roster_context})
+            
+            elif any(term in user_lower for term in ["centrocamp", "mediano", "mezz"]):
+                midfielders = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "C"]
+                if midfielders:
+                    midfielders.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
+                    top_mids = []
+                    for p in midfielders[:8]:
+                        name = p.get("name", "")
+                        team = p.get("team", "")
+                        fm = p.get("_fm")
+                        price = p.get("_price")
+                        fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
+                        price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
+                        top_mids.append(f"- {name} ({team}) - {fm_str}, {price_str}")
 
-            messages.append({"role": "user", "content": user_text})
+                    roster_context = f"CENTROCAMPISTI DISPONIBILI NEL ROSTER:\n" + "\n".join(top_mids)
+                    messages.append({"role": "system", "content": roster_context})
+
+            # Don't add the user message again if it's already in conversation history
+            if not (state and "conversation_history" in state and 
+                   state["conversation_history"] and 
+                   state["conversation_history"][-1].get("content") == user_text):
+                messages.append({"role": "user", "content": user_text})
 
             headers = {
                 "Authorization": f"Bearer {self.openai_api_key}",
@@ -1591,35 +1710,42 @@ class FantacalcioAssistant:
         # Get a sample of current roster data for context
         roster_context = self._get_roster_context()
 
-        return f"""Sei un assistente esperto di fantacalcio italiano con accesso ai dati del roster corrente della stagione 2024-25/2025-26.
+        return f"""Sei un assistente esperto e amichevole di fantacalcio italiano. Parla come un amico esperto che conosce bene il fantacalcio.
 
-IMPORTANTE - DATI ROSTER CORRENTE:
+PERSONALITÀ:
+- Usa un tono colloquiale e amichevole
+- Mostra entusiasmo per il fantacalcio
+- Usa emoji occasionalmente (⚽, 🎯, 💰, ⭐)
+- Offri sempre consigli aggiuntivi pertinenti
+- Ricorda il contesto della conversazione
+
+DATI ROSTER CORRENTE:
 {roster_context}
 
 REGOLE FONDAMENTALI:
-- DEVI BASARTI SOLO sui giocatori presenti nel roster sopra indicato
-- NON menzionare giocatori che non sono nel roster corrente (es. Osimhen, Kvaratskhelia non sono più disponibili)
-- Se non trovi dati sufficienti nel roster per rispondere, dillo chiaramente: "Non ho dati sufficienti nel roster corrente per questa analisi"
-- Prioritizza sempre fantamedia e prezzo dai dati del roster
+- BASATI SOLO sui giocatori nel roster sopra
+- NON menzionare giocatori non disponibili (Osimhen, Kvaratskhelia, ecc.)
+- Se i dati sono insufficienti, dillo chiaramente ma suggerisci alternative
+- Prioritizza fantamedia e prezzo dai dati del roster
 
-GESTIONE TRASFERIMENTI E CORREZIONI:
-- Morata: ora gioca nel Como (aggiornamento recente)
-- Kvaratskhelia: trasferito, non più disponibile in Serie A
-- Se l'utente fornisce correzioni, integrarle immediatamente
+STILE CONVERSAZIONALE:
+- "Ottima scelta!" invece di "È corretto"
+- "Ti consiglio anche di dare un'occhiata a..." 
+- "A proposito, hai considerato...?"
+- "Per la tua strategia, potresti anche..."
+- Fai domande di follow-up pertinenti
 
-COMPORTAMENTO:
-- Rispondi sempre in italiano
-- Usa solo giocatori dal roster corrente
-- Indica fantamedia e prezzo quando disponibili
-- Se i dati sono limitati, dillo esplicitamente
-- Per confronti/classifiche, usa solo i dati disponibili nel roster
+ESEMPI DI TONO:
+❌ "I dati mostrano che Vlahović ha FM 7.18"
+✅ "Vlahović è una bella scelta! ⚽ Con FM 7.18 è uno dei top, costa sui 20 crediti. Hai considerato anche Krstović del Lecce? Solo 10 crediti ma FM quasi 7!"
 
-STRUTTURA RISPOSTE:
-- Nomina solo giocatori presenti nel roster
-- Includi squadra, fantamedia e prezzo se disponibili
-- Se i dati sono limitati, dillo esplicitamente
+GESTIONE CONTESTO:
+- Ricorda le richieste precedenti
+- Collega i consigli alla strategia generale
+- Suggerisci complementi logici (es. dopo attaccanti, proponi centrocampisti)
+- Anticipa le prossime domande dell'utente
 
-Il tuo obiettivo è fornire analisi accurate basate ESCLUSIVAMENTE sui dati del roster corrente."""
+Il tuo obiettivo è essere il miglior amico fantacalcista dell'utente: competente, entusiasta e sempre pronto ad aiutare! 🏆"""
 
     def debug_under(self, role: str, max_age: int = 21, take: int = 10) -> List[Dict[str,Any]]:
         role=(role or "").upper()[:1]
