@@ -140,11 +140,22 @@ class KnowledgeManager:
         import uuid
         if id is None:
             id = str(uuid.uuid4())
-        
+
+        # Filter out None values from metadata - ChromaDB only accepts str, int, float, bool
+        clean_metadata = {}
+        if metadata:
+            for k, v in metadata.items():
+                if v is not None:
+                    # Convert to string if not a basic type
+                    if isinstance(v, (str, int, float, bool)):
+                        clean_metadata[k] = v
+                    else:
+                        clean_metadata[k] = str(v)
+
         try:
             self.collection.add(
                 documents=[text],
-                metadatas=[metadata or {}],
+                metadatas=[clean_metadata],
                 ids=[id]
             )
             LOG.debug("[KM] Added document with id: %s", id)
