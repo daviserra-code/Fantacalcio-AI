@@ -575,10 +575,10 @@ def handle_correction_message(user_message):
     import re
 
     # Pattern for age corrections: "Player ha X anni" or "Player is X years old"
-    # More flexible pattern to catch various formats
+    # More flexible pattern to catch various formats, including accented characters
     age_patterns = [
         r'(.+?)\s+ha\s+(\d+)\s+anni',
-        r'(.+?)\s+è\s+(\d+)\s+anni',
+        r'(.+?)\s+è\s+(\d+)\s+anni', 
         r'(.+?)\s+is\s+(\d+)\s+years?\s+old',
         r'(.+?)\s+età\s+(\d+)',
         r'(.+?)\s+age\s+(\d+)'
@@ -586,7 +586,7 @@ def handle_correction_message(user_message):
     
     age_match = None
     for pattern in age_patterns:
-        age_match = re.search(pattern, user_message, re.IGNORECASE)
+        age_match = re.search(pattern, user_message, re.IGNORECASE | re.UNICODE)
         if age_match:
             break
 
@@ -609,30 +609,63 @@ def handle_correction_message(user_message):
             )
             
             if success:
-                # Update the player data immediately in both rosters
+                # Update the player data immediately in both rosters - use fuzzy matching for names with accents
+                import unicodedata
+                
+                def normalize_name(name):
+                    """Normalize name for comparison (remove accents, convert to lowercase)"""
+                    normalized = unicodedata.normalize('NFD', name.lower())
+                    return ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+                
+                player_name_normalized = normalize_name(player_name)
                 updated = False
+                
                 for p in assistant.roster:
-                    if p.get("name", "").lower() == player_name.lower():
+                    roster_name = p.get("name", "")
+                    roster_name_normalized = normalize_name(roster_name)
+                    
+                    # Try exact match first, then normalized match
+                    if (roster_name.lower() == player_name.lower() or 
+                        roster_name_normalized == player_name_normalized or
+                        player_name_normalized in roster_name_normalized or
+                        roster_name_normalized in player_name_normalized):
                         p["birth_year"] = birth_year
                         updated = True
-                        LOG.info(f"Updated {player_name} birth_year to {birth_year} in main roster")
+                        LOG.info(f"Updated {roster_name} birth_year to {birth_year} in main roster (matched from input: {player_name})")
+                        break
                 
                 for p in assistant.filtered_roster:
-                    if p.get("name", "").lower() == player_name.lower():
+                    roster_name = p.get("name", "")
+                    roster_name_normalized = normalize_name(roster_name)
+                    
+                    if (roster_name.lower() == player_name.lower() or 
+                        roster_name_normalized == player_name_normalized or
+                        player_name_normalized in roster_name_normalized or
+                        roster_name_normalized in player_name_normalized):
                         p["birth_year"] = birth_year
-                        LOG.info(f"Updated {player_name} birth_year to {birth_year} in filtered roster")
+                        LOG.info(f"Updated {roster_name} birth_year to {birth_year} in filtered roster (matched from input: {player_name})")
                 
                 # Also add to age_overrides for immediate effect in Under21 queries
                 if hasattr(assistant, 'overrides'):
-                    # Find the player's team for the override key
+                    # Find the player's team for the override key using improved matching
                     team = "Unknown"
+                    matched_name = player_name
+                    
                     for p in assistant.roster:
-                        if p.get("name", "").lower() == player_name.lower():
+                        roster_name = p.get("name", "")
+                        roster_name_normalized = normalize_name(roster_name)
+                        
+                        if (roster_name.lower() == player_name.lower() or 
+                            roster_name_normalized == player_name_normalized or
+                            player_name_normalized in roster_name_normalized or
+                            roster_name_normalized in player_name_normalized):
                             team = p.get("team", "Unknown")
+                            matched_name = roster_name  # Use the exact name from roster
+                            LOG.info(f"Found team for override: {matched_name} -> {team}")
                             break
                     
-                    # Use the same key format as age_overrides.json
-                    override_key = f"{player_name}@@{team}"
+                    # Use the same key format as age_overrides.json with matched name
+                    override_key = f"{matched_name}@@{team}"
                     assistant.overrides[override_key] = birth_year
                     LOG.info(f"Added override: {override_key} -> {birth_year}")
                 
