@@ -583,23 +583,36 @@ def handle_correction_message(user_message):
         age = int(age_match.group(2))
 
         try:
-            assistant = get_assistant()
-            if hasattr(assistant, 'corrections_manager'):
-                # Add age correction
-                correction_id = assistant.corrections_manager.add_player_correction(
-                    player_name=player_name,
-                    field_name="age",
-                    old_value="unknown",
-                    new_value=str(age),
-                    reason=f"User correction via chat: {user_message}"
-                )
+            corrections_manager = get_corrections_manager()
+            # Calculate birth year from age (assuming current year is 2025)
+            birth_year = 2025 - age
+            
+            # Add age correction using birth_year
+            correction_id = corrections_manager.add_player_correction(
+                player_name=player_name,
+                field_name="birth_year",
+                old_value="unknown",
+                new_value=str(birth_year),
+                reason=f"User correction via chat: {user_message}"
+            )
 
-                if correction_id:
-                    return f"✅ Correzione aggiunta: {player_name} ha {age} anni. La correzione sarà applicata nelle prossime ricerche."
-                else:
-                    return f"❌ Errore nell'aggiungere la correzione per {player_name}."
+            if correction_id:
+                # Also update the assistant's data immediately
+                assistant = get_assistant()
+                for p in assistant.roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        p["birth_year"] = birth_year
+                        break
+                
+                # Update filtered roster
+                for p in assistant.filtered_roster:
+                    if p.get("name", "").lower() == player_name.lower():
+                        p["birth_year"] = birth_year
+                        break
+                
+                return f"✅ Correzione aggiunta: {player_name} ha {age} anni (nato nel {birth_year}). La correzione è stata applicata."
             else:
-                return "❌ Sistema di correzioni non disponibile."
+                return f"❌ Errore nell'aggiungere la correzione per {player_name}."
         except Exception as e:
             LOG.error(f"Error handling age correction: {e}")
             return f"❌ Errore nell'elaborare la correzione: {e}"
