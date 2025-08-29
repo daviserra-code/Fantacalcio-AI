@@ -575,42 +575,68 @@ def handle_correction_message(user_message):
     import re
 
     # Pattern for age corrections: "Player ha X anni" or "Player is X years old"
-    age_pattern = r'(.+?)\s+(?:ha|è|is)\s+(\d+)\s+(?:anni|years?\s+old)'
-    age_match = re.search(age_pattern, user_message, re.IGNORECASE)
+    # More flexible pattern to catch various formats
+    age_patterns = [
+        r'(.+?)\s+ha\s+(\d+)\s+anni',
+        r'(.+?)\s+è\s+(\d+)\s+anni',
+        r'(.+?)\s+is\s+(\d+)\s+years?\s+old',
+        r'(.+?)\s+età\s+(\d+)',
+        r'(.+?)\s+age\s+(\d+)'
+    ]
+    
+    age_match = None
+    for pattern in age_patterns:
+        age_match = re.search(pattern, user_message, re.IGNORECASE)
+        if age_match:
+            break
 
     if age_match:
         player_name = age_match.group(1).strip()
         age = int(age_match.group(2))
 
+        LOG.info(f"Age correction detected: {player_name} -> {age} years old")
+
         try:
             corrections_manager = get_corrections_manager()
+            assistant = get_assistant()
+            
             # Calculate birth year from age (assuming current year is 2025)
             birth_year = 2025 - age
             
-            # Add age correction using birth_year
-            correction_id = corrections_manager.add_player_correction(
-                player_name=player_name,
-                field_name="birth_year",
-                old_value="unknown",
-                new_value=str(birth_year),
-                reason=f"User correction via chat: {user_message}"
+            # Add to corrections database with persistent flag
+            success = corrections_manager.add_correction_to_db(
+                player_name, "AGE_UPDATE", "unknown", str(birth_year), persistent=True
             )
-
-            if correction_id:
-                # Also update the assistant's data immediately
-                assistant = get_assistant()
+            
+            if success:
+                # Update the player data immediately in both rosters
+                updated = False
                 for p in assistant.roster:
                     if p.get("name", "").lower() == player_name.lower():
                         p["birth_year"] = birth_year
-                        break
+                        updated = True
+                        LOG.info(f"Updated {player_name} birth_year to {birth_year} in main roster")
                 
-                # Update filtered roster
                 for p in assistant.filtered_roster:
                     if p.get("name", "").lower() == player_name.lower():
                         p["birth_year"] = birth_year
-                        break
+                        LOG.info(f"Updated {player_name} birth_year to {birth_year} in filtered roster")
                 
-                return f"✅ Correzione aggiunta: {player_name} ha {age} anni (nato nel {birth_year}). La correzione è stata applicata."
+                # Also add to age_overrides for immediate effect in Under21 queries
+                if hasattr(assistant, 'overrides'):
+                    # Find the player's team for the override key
+                    team = "Unknown"
+                    for p in assistant.roster:
+                        if p.get("name", "").lower() == player_name.lower():
+                            team = p.get("team", "Unknown")
+                            break
+                    
+                    # Use the same key format as age_overrides.json
+                    override_key = f"{player_name}@@{team}"
+                    assistant.overrides[override_key] = birth_year
+                    LOG.info(f"Added override: {override_key} -> {birth_year}")
+                
+                return f"✅ Correzione aggiunta: {player_name} ha {age} anni (nato nel {birth_year}). La correzione è stata applicata immediatamente."
             else:
                 return f"❌ Errore nell'aggiungere la correzione per {player_name}."
         except Exception as e:
