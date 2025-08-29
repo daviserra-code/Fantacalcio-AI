@@ -391,9 +391,17 @@ def ingest_into_kb(transfers: List[Dict[str, Any]]) -> int:
 
             ids.append(transfer.get("id") or f"apify_{uuid.uuid4().hex[:10]}")
 
-        n = km.upsert(docs=docs, metadatas=metas, ids=ids)
-        LOG.info("[INGEST] Inseriti %s trasferimenti in KB", n)
-        return int(n or 0)
+        # Use add_knowledge method instead of upsert
+        added_count = 0
+        for doc, meta in zip(docs, metas):
+            try:
+                km.add_knowledge(text=doc, metadata=meta)
+                added_count += 1
+            except Exception as e:
+                LOG.warning("[INGEST] Failed to add transfer: %s", e)
+
+        LOG.info("[INGEST] Added %d transfers to KB", added_count)
+        return added_count
 
     except Exception as e:
         LOG.error("[INGEST] Errore: %s", e)
