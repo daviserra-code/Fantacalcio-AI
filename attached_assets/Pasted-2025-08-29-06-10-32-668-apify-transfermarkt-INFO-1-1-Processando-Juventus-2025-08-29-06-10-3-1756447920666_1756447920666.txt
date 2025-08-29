@@ -1,0 +1,104 @@
+2025-08-29 06:10:32,668 - apify_transfermarkt - INFO - (1/1) Processando Juventus
+2025-08-29 06:10:32,668 - apify_transfermarkt - INFO - [APIFY] Scraping Juventus transfers per stagione 2025-26
+2025-08-29 06:10:32,668 - apify_transfermarkt - INFO - [APIFY] Avvio actor yummy_pen~transfermarktscraperds
+2025-08-29 06:10:32,918 - apify_transfermarkt - INFO - [APIFY] Run ID: 8ofA2NegWhd0Gx9iY
+2025-08-29 06:10:32,988 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:10:38,038 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:10:43,082 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:10:48,214 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:10:53,273 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:10:58,316 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:11:03,356 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:11:08,450 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:11:13,644 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:11:18,692 - apify_transfermarkt - INFO - [APIFY] Status: RUNNING
+2025-08-29 06:11:23,733 - apify_transfermarkt - INFO - [APIFY] Status: SUCCEEDED
+2025-08-29 06:11:23,884 - apify_transfermarkt - INFO - [APIFY] Actor returned 855 raw items
+2025-08-29 06:11:23,886 - apify_transfermarkt - INFO - [APIFY] Juventus: processati 855 item, estratti 37 trasferimenti, saltati 818
+2025-08-29 06:11:23,888 - apify_transfermarkt - INFO - [EXPORT] Salvato data/apify_transfers_juventus_2025-26_20250829_061123.jsonl con 37 trasferimenti
+2025-08-29 06:11:23,889 - apify_transfermarkt - INFO - [EXPORT] Salvato data/apify_transfers_serie_a_combined_2025-26_20250829_061123.jsonl con 37 trasferimenti
+2025-08-29 06:11:23,889 - apify_transfermarkt - INFO - File combinato: data/apify_transfers_serie_a_combined_2025-26_20250829_061123.jsonl
+2025-08-29 06:11:23,889 - knowledge_manager - INFO - [KM] Initializing KnowledgeManager...
+2025-08-29 06:11:23,925 - chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-08-29 06:11:24,121 - knowledge_manager - INFO - [KM] Using Chroma PersistentClient at ./chroma_db
+2025-08-29 06:11:24,140 - knowledge_manager - INFO - [KM] Collection caricata: 'fantacalcio_knowledge', count=1
+2025-08-29 06:11:24,140 - knowledge_manager - INFO - 🔄 Initializing SentenceTransformer (attempt 1/10)...
+2025-08-29 06:11:24,140 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-08-29 06:11:26,928 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-29 06:11:26,929 - knowledge_manager - INFO - ✅ SentenceTransformer initialized successfully on attempt 1
+2025-08-29 06:11:26,929 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,929 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,930 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,931 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,931 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,931 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,931 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,931 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,932 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,933 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,934 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,935 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,936 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,937 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,938 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,939 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - knowledge_manager - ERROR - [KM] Error adding document: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: Expected metadata value to be a str, int, float or bool, got None which is a NoneType
+2025-08-29 06:11:26,940 - apify_transfermarkt - INFO - [INGEST] Added 0 transfers to KB
+2025-08-29 06:11:26,945 - apify_transfermarkt - INFO - Completato! Trasferimenti totali: 37
