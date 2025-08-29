@@ -1,0 +1,39 @@
+2025-08-29 07:24:52,428 - werkzeug - INFO - Press CTRL+C to quit
+2025-08-29 07:24:52,846 - web_interface - INFO - Request: GET / from 172.31.88.2
+2025-08-29 07:24:52,846 - web_interface - INFO - Page view: fa038ab77da5495d, lang: it
+2025-08-29 07:24:52,863 - werkzeug - INFO - 172.31.88.2 - - [29/Aug/2025 07:24:52] "GET / HTTP/1.1" 200 -
+2025-08-29 07:24:53,793 - werkzeug - INFO - 172.31.88.2 - - [29/Aug/2025 07:24:53] "GET /api/rate-limit-status HTTP/1.1" 200 -
+2025-08-29 07:25:11,996 - web_interface - INFO - Chat request from client: dev_environment
+2025-08-29 07:25:11,996 - web_interface - INFO - Request data: {'message': 'Migliori attaccanti per budget 150 crediti?', 'mode': 'classic'}
+2025-08-29 07:25:11,997 - web_interface - INFO - [ETL] Job di refresh lanciato
+2025-08-29 07:25:11,997 - web_interface - INFO - Initializing FantacalcioAssistant (singleton)...
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - Initializing FantacalcioAssistant...
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - [Assistant] ENABLE_WEB_FALLBACK raw='0' parsed=False
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - [Assistant] ROSTER_JSON_PATH=./season_roster.json
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - [Assistant] EXTERNAL_YOUTH_CACHE=./cache/under21_cache.json
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - [Assistant] OpenAI model=gpt-4o-mini temp=0.20 max_tokens=600
+2025-08-29 07:25:11,997 - fantacalcio_assistant - INFO - [Assistant] prompt.json caricato correttamente
+2025-08-29 07:25:11,997 - knowledge_manager - INFO - [KM] Initializing KnowledgeManager...
+2025-08-29 07:25:12,016 - chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-08-29 07:25:12,163 - knowledge_manager - INFO - [KM] Using Chroma PersistentClient at ./chroma_db
+2025-08-29 07:25:12,173 - knowledge_manager - INFO - [KM] Collection caricata: 'fantacalcio_knowledge', count=893
+2025-08-29 07:25:12,174 - knowledge_manager - INFO - 🔄 Initializing SentenceTransformer (attempt 1/10)...
+2025-08-29 07:25:12,174 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-08-29 07:25:13,919 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-29 07:25:13,921 - knowledge_manager - INFO - ✅ SentenceTransformer initialized successfully on attempt 1
+2025-08-29 07:25:13,921 - fantacalcio_assistant - INFO - [Assistant] KnowledgeManager attivo
+2025-08-29 07:25:14,006 - fantacalcio_assistant - INFO - [Assistant] CorrectionsManager inizializzato
+2025-08-29 07:25:14,459 - fantacalcio_assistant - INFO - [Assistant] Roster normalizzato: 638/638 record utili
+2025-08-29 07:25:14,460 - fantacalcio_assistant - INFO - [Assistant] Loaded 0 players from external youth cache.
+2025-08-29 07:25:14,461 - fantacalcio_assistant - INFO - [Assistant] age_index caricato: 185 chiavi
+2025-08-29 07:25:14,461 - fantacalcio_assistant - INFO - [Assistant] overrides caricato: 186 chiavi
+2025-08-29 07:25:14,461 - fantacalcio_assistant - INFO - [Assistant] override roles caricati: 186
+2025-08-29 07:25:14,468 - fantacalcio_assistant - INFO - [Assistant] Applied data corrections to roster: 638 players, 0 excluded
+2025-08-29 07:25:14,617 - fantacalcio_assistant - INFO - [Assistant] SEASON_FILTER auto: 2025-26
+2025-08-29 07:25:14,653 - fantacalcio_assistant - INFO - [Assistant] Età arricchite su 71 record
+2025-08-29 07:25:16,071 - fantacalcio_assistant - INFO - [Assistant] Pool filtrato: 638 record principali + 98 synthetic U21, stagione=2025-26
+2025-08-29 07:25:16,072 - fantacalcio_assistant - INFO - [Assistant] Inizializzazione completata
+2025-08-29 07:25:16,072 - web_interface - INFO - FantacalcioAssistant initialized successfully
+Batches: 100%|█████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 34.83it/s]
+2025-08-29 07:25:16,180 - web_interface - INFO - Applying exclusions: session=[], persistent=[]
+2025-08-29 07:25:16,190 - werkzeug - INFO - 172.31.88.2 - - [29/Aug/2025 07:25:16] "POST /api/chat HTTP/1.1" 200 
