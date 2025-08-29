@@ -1,0 +1,48 @@
+Ingesting 37 transfers...
+2025-08-29 06:05:48,232 - knowledge_manager - INFO - [KM] Initializing KnowledgeManager...
+2025-08-29 06:05:48,270 - chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-08-29 06:05:48,458 - knowledge_manager - INFO - [KM] Using Chroma PersistentClient at ./chroma_db
+2025-08-29 06:05:48,474 - knowledge_manager - INFO - [KM] Collection caricata: 'fantacalcio_knowledge', count=1
+2025-08-29 06:05:48,474 - knowledge_manager - INFO - 🔄 Initializing SentenceTransformer (attempt 1/10)...
+2025-08-29 06:05:48,475 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-08-29 06:05:52,165 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-08-29 06:05:52,166 - knowledge_manager - INFO - ✅ SentenceTransformer initialized successfully on attempt 1
+2025-08-29 06:05:52,167 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,167 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,167 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,167 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,167 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,168 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,169 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,170 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,171 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - WARNING - [INGEST] Failed to add transfer: 'KnowledgeManager' object has no attribute 'add_knowledge'
+2025-08-29 06:05:52,172 - apify_transfermarkt - INFO - [INGEST] Added 0 transfers to KB
+Successfully ingested 0 transfers into Knowledge Base
