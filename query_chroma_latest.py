@@ -32,13 +32,14 @@ def main():
         limit = min(50, count)
         results = km.collection.get(
             limit=limit,
-            include=["documents", "metadatas", "ids"]
+            include=["documents", "metadatas"]
         )
         
         # Extract and sort by creation/modification time
         documents = results.get("documents", [])
         metadatas = results.get("metadatas", [])
-        ids = results.get("ids", [])
+        # ChromaDB doesn't return ids in the include, we'll generate them
+        ids = [f"doc_{i}" for i in range(len(documents))]
         
         if not documents:
             print("No documents retrieved.")
