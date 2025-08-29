@@ -1169,13 +1169,7 @@ class FantacalcioAssistant:
             intent.update({"type":"formation","formation_text":fm, "budget":budget})
             return intent
 
-        # top attaccanti con budget
-        if ("attacc" in lt or "top attaccanti" in lt or "punta" in lt) and ("budget" in lt or self._parse_first_int(lt)):
-            budget = self._parse_first_int(lt) or 150
-            intent.update({"type":"budget_attackers","budget":budget})
-            return intent
-
-        # under
+        # under - CHECK THIS FIRST before budget detection
         if any(k in lt for k in ["under 21","under-21","under21","u21","under 23","u23"]):
             max_age = 21 if "23" not in lt else 23
             role="A"
@@ -1183,9 +1177,15 @@ class FantacalcioAssistant:
             elif "centrocamp" in lt or "mezzala" in lt or "regista" in lt: role="C"
             elif "portier" in lt: role="P"
             take = 3
-            m = re.search(r"\b(\d)\s+(nomi|giocatori)\b", lt)
+            m = re.search(r"\b(\d)\s+(nomi|giocatori|attaccant)\b", lt)
             if m: take = max(1, int(m.group(1)))
             intent.update({"type":"under","role":role,"max_age":max_age,"take":take})
+            return intent
+
+        # top attaccanti con budget
+        if ("attacc" in lt or "top attaccanti" in lt or "punta" in lt) and ("budget" in lt or self._parse_first_int(lt)):
+            budget = self._parse_first_int(lt) or 150
+            intent.update({"type":"budget_attackers","budget":budget})
             return intent
 
         # asta
