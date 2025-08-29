@@ -24,33 +24,111 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
             return default
     def _int(x, default=0):
         try:
+            if x is None or x == "":
+                return default
             return int(x)
         except Exception:
             return default
 
+    # Extract name from various possible fields
+    name = (m.get("name") or m.get("player") or m.get("player_name") or "").strip()
+    
+    # Extract role and normalize it
+    role = (m.get("role") or m.get("position") or "").strip().upper()
+    
+    # Extract team name
+    team = (m.get("team") or m.get("club") or m.get("team_name") or "").strip()
+    
+    # Handle birth year from different sources
+    birth_year = (m.get("birth_year") or m.get("birthyear") or 
+                  m.get("year_of_birth") or m.get("birth_date"))
+    if birth_year and isinstance(birth_year, str):
+        # Try to extract year from date string
+        import re
+        year_match = re.search(r'\b(19|20)\d{2}\b', str(birth_year))
+        if year_match:
+            birth_year = _int(year_match.group(), default=None)
+        else:
+            birth_year = _int(birth_year, default=None)
+    else:
+        birth_year = _int(birth_year, default=None)
+
     return {
-        "name": (m.get("name") or m.get("player") or "").strip(),
-        "role": (m.get("role") or m.get("position") or "").strip().upper(),
-        "team": (m.get("team") or m.get("club") or "").strip(),
-        "birth_year": m.get("birth_year") or m.get("birthyear"),
+        "name": name,
+        "role": role,
+        "team": team,
+        "birth_year": birth_year,
         "price": _num(m.get("price") or m.get("cost"), default=None),
-        "fantamedia": _num(m.get("fantamedia") or m.get("avg"), default=None),
-        "appearances": _int(m.get("appearances") or m.get("apps") or 0, 0),
+        "fantamedia": _num(m.get("fantamedia") or m.get("avg") or m.get("fm"), default=None),
+        "appearances": _int(m.get("appearances") or m.get("apps") or m.get("presenze"), default=0),
+        "season": m.get("season"),
+        "source": m.get("source"),
+        "source_date": m.get("source_date"),
     }
 
 def fetch_players_from_kb(km: KnowledgeManager, seasons: List[str], limit: int = 5000) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
-    for season in seasons:
-        where = {"$and": [
-            {"type": {"$in": ["player_info", "current_player"]}},
-            {"season": {"$eq": season}}
-        ]}
-        res = km.get_by_filter(where=where, limit=limit, include=["metadatas"])
+    
+    # Try different query approaches to fetch player data
+    try:
+        # First approach: try to get all documents and filter manually
+        LOG.info("[ETL] Fetching all documents from KB for filtering...")
+        res = km.get_by_filter(where=None, limit=limit, include=["metadatas"])
         metas = res.get("metadatas") or []
+        LOG.info("[ETL] Retrieved %d documents from KB", len(metas))
+        
         for m in metas:
-            if isinstance(m, dict):
-                out.append(normalize_player(m))
-    return out
+            if not isinstance(m, dict):
+                continue
+                
+            # Check if it's player data
+            doc_type = m.get("type", "")
+            doc_season = m.get("season", "")
+            
+            # Accept various player-related types and season formats
+            if (doc_type in ["player_info", "current_player", "transfer"] or 
+                m.get("name") or m.get("player")):
+                
+                # Filter by season if specified
+                if not seasons or doc_season in seasons or any(s in str(doc_season) for s in seasons):
+                    player_data = normalize_player(m)
+                    if player_data.get("name"):  # Only add if we have a name
+                        out.append(player_data)
+                        
+    except Exception as e:
+        LOG.error("[ETL] Error fetching from KB: %s", e)
+        LOG.info("[ETL] Trying alternative search approach...")
+        
+        # Fallback: try search-based approach
+        try:
+            for season in seasons:
+                search_res = km.search_knowledge(
+                    text=f"player season {season}",
+                    n_results=limit,
+                    include=["metadatas"]
+                )
+                
+                if "metadatas" in search_res and search_res["metadatas"]:
+                    for meta_list in search_res["metadatas"]:
+                        for m in meta_list if isinstance(meta_list, list) else [meta_list]:
+                            if isinstance(m, dict):
+                                player_data = normalize_player(m)
+                                if player_data.get("name"):
+                                    out.append(player_data)
+        except Exception as e2:
+            LOG.error("[ETL] Fallback search also failed: %s", e2)
+    
+    # Remove duplicates based on name-team combination
+    seen = set()
+    unique_out = []
+    for player in out:
+        key = (player.get("name", "").lower(), player.get("team", "").lower())
+        if key not in seen and key[0]:  # Only add if name exists
+            seen.add(key)
+            unique_out.append(player)
+    
+    LOG.info("[ETL] Processed %d unique players from KB", len(unique_out))
+    return unique_out
 
 def main():
     LOG.info("[ETL] Costruzione roster…")
