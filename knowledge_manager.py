@@ -133,3 +133,21 @@ class KnowledgeManager:
         )
         out = {k: res.get(k) for k in ("documents", "metadatas", "distances", "ids") if k in include or k == "ids"}
         return out
+
+    def add_knowledge(self, text: str, metadata: Optional[Dict[str, Any]] = None, 
+                     id: Optional[str] = None) -> None:
+        """Add a single document to the knowledge base"""
+        import uuid
+        if id is None:
+            id = str(uuid.uuid4())
+        
+        try:
+            self.collection.add(
+                documents=[text],
+                metadatas=[metadata or {}],
+                ids=[id]
+            )
+            LOG.debug("[KM] Added document with id: %s", id)
+        except Exception as e:
+            LOG.error("[KM] Error adding document: %s", e)
+            raise
