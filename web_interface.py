@@ -29,44 +29,50 @@ app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
 rate_limiter = RateLimiter(max_requests=10, time_window=3600)
 
 # ---------- Singletons ----------
+# Global singleton to prevent re-initialization
+_global_assistant = None
+
 def get_assistant() -> FantacalcioAssistant:
-    # Use Flask's application context (g) for singletons
-    if not hasattr(g, 'assistant'):
+    global _global_assistant
+    
+    # Use global singleton instead of Flask g to prevent re-initialization
+    if _global_assistant is None:
         LOG.info("Initializing FantacalcioAssistant (singleton)...")
         try:
-            g.assistant = FantacalcioAssistant()
+            _global_assistant = FantacalcioAssistant()
             LOG.info("FantacalcioAssistant initialized successfully")
         except Exception as e:
             LOG.error(f"Failed to initialize FantacalcioAssistant: {e}")
             # Create a minimal fallback assistant
             from types import SimpleNamespace
-            g.assistant = SimpleNamespace()
-            g.assistant.respond = lambda msg, **kwargs: (f"⚠️ Servizio temporaneamente non disponibile: {e}", {})
-            g.assistant.roster = []
-            g.assistant.filtered_roster = []
-    else:
-        # Refresh corrections data without full re-initialization
-        if hasattr(g.assistant, 'corrections_manager') and g.assistant.corrections_manager:
-            # Force reload of corrections cache
-            if hasattr(g.assistant.corrections_manager, '_excluded_players_cache'):
-                delattr(g.assistant.corrections_manager, '_excluded_players_cache')
-    return g.assistant
+            _global_assistant = SimpleNamespace()
+            _global_assistant.respond = lambda msg, **kwargs: (f"⚠️ Servizio temporaneamente non disponibile: {e}", {})
+            _global_assistant.roster = []
+            _global_assistant.filtered_roster = []
+    
+    return _global_assistant
+
+# Global singleton for corrections manager
+_global_corrections_manager = None
 
 def get_corrections_manager() -> CorrectionsManager:
-    # Use Flask's application context (g) for singletons
-    cm = g.get('_corrections_manager')
-    if cm is None:
+    global _global_corrections_manager
+    
+    if _global_corrections_manager is None:
         assistant = get_assistant()
-        cm = CorrectionsManager(knowledge_manager=assistant.km)
-        g._corrections_manager = cm
-    return cm
+        _global_corrections_manager = CorrectionsManager(knowledge_manager=assistant.km)
+    return _global_corrections_manager
+
+# Global singleton for rules manager
+_global_rules_manager = None
 
 def get_rules_manager() -> LeagueRulesManager:
-    # Use Flask's application context (g) for singletons
-    if not hasattr(g, 'rules_manager'):
+    global _global_rules_manager
+    
+    if _global_rules_manager is None:
         LOG.info("Initializing LeagueRulesManager (singleton)...")
-        g.rules_manager = LeagueRulesManager()
-    return g.rules_manager
+        _global_rules_manager = LeagueRulesManager()
+    return _global_rules_manager
 
 def get_sid() -> str:
     sid = session.get("sid")
