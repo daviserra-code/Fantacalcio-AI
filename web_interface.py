@@ -28,7 +28,7 @@ app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
 # Initialize rate limiter (10 requests per hour for deployed app)
 rate_limiter = RateLimiter(max_requests=10, time_window=3600)
 
-# ---------- Singleton ----------
+# ---------- Singletons ----------
 def get_assistant() -> FantacalcioAssistant:
     # Use Flask's application context (g) for singletons
     if not hasattr(g, 'assistant'):
@@ -128,12 +128,12 @@ def api_chat():
     # Log client info for debugging
     client_ip = rate_limiter._get_client_key(request)
     LOG.info(f"Chat request from client: {client_ip}")
-    
+
     # Check rate limit first
     if not rate_limiter.is_allowed(request):
         remaining_requests = rate_limiter.get_remaining_requests(request)
         reset_time = rate_limiter.get_reset_time(request)
-        
+
         LOG.warning(f"Rate limit exceeded for client {client_ip}: {remaining_requests} remaining, reset at {reset_time}")
 
         return jsonify({
@@ -338,18 +338,18 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
         # Skip lines that contain excluded players
         should_exclude = False
         line_lower = line.lower()
-        
+
         for excluded in all_excluded:
             excluded_lower = excluded.lower().strip()
-            
+
             # Handle special characters by creating multiple search variants
             import re
             import unicodedata
-            
+
             # Normalize the excluded name to handle accented characters
             excluded_normalized = unicodedata.normalize('NFD', excluded_lower)
             excluded_normalized = ''.join(c for c in excluded_normalized if unicodedata.category(c) != 'Mn')
-            
+
             # Create search patterns for the player name
             search_patterns = [
                 excluded_lower,
@@ -357,21 +357,21 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                 excluded_lower.replace('ć', 'c').replace('č', 'c').replace('ž', 'z').replace('š', 's'),
                 excluded_lower.replace('ovic', 'ović').replace('ovic', 'ovič')
             ]
-            
+
             # Remove duplicates
             search_patterns = list(set(search_patterns))
-            
+
             for pattern in search_patterns:
                 if not pattern or len(pattern) < 3:
                     continue
-                    
+
                 # Pattern 1: Look for the name in **bold** format (most common in responses)
                 bold_pattern = rf'\*\*[^*]*{re.escape(pattern)}[^*]*\*\*'
                 if re.search(bold_pattern, line_lower):
                     should_exclude = True
                     LOG.info(f"Excluding line with bold player '{excluded}' (pattern: {pattern}): {line.strip()}")
                     break
-                
+
                 # Pattern 2: Check if main parts of the name appear
                 pattern_parts = [part for part in pattern.split() if len(part) > 2]
                 if pattern_parts:
@@ -381,13 +381,13 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                         should_exclude = True
                         LOG.info(f"Excluding line containing name parts from '{excluded}' (pattern: {pattern}): {line.strip()}")
                         break
-                
+
                 # Pattern 3: Direct substring match for substantial names
                 if len(pattern) > 4 and pattern in line_lower:
                     should_exclude = True
                     LOG.info(f"Excluding line containing '{excluded}' (pattern: {pattern}): {line.strip()}")
                     break
-                    
+
             if should_exclude:
                 break
 
@@ -395,11 +395,11 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
             filtered_lines.append(line)
 
     result = '\n'.join(filtered_lines)
-    
+
     # Log the filtering result
     if len(filtered_lines) < len(lines):
         LOG.info(f"Filtered out {len(lines) - len(filtered_lines)} lines containing excluded players")
-    
+
     return result
 
 def handle_correction(user_message: str, fantacalcio_assistant) -> str:
@@ -424,13 +424,13 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
                 # Use corrections manager from web interface
                 corrections_manager = get_corrections_manager()
                 result = corrections_manager.remove_player(player_name, "Web interface user request")
-                
+
                 # Force reload of the assistant's data to apply changes immediately
                 if hasattr(fantacalcio_assistant, 'roster'):
                     fantacalcio_assistant.roster = corrections_manager.apply_corrections_to_data(fantacalcio_assistant.roster)
                 if hasattr(fantacalcio_assistant, '_make_filtered_roster'):
                     fantacalcio_assistant._make_filtered_roster()
-                
+
                 return result
             except Exception as e:
                 LOG.error(f"Error in handle_correction for {player_name}: {e}")
@@ -455,32 +455,32 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             try:
                 # Get corrections manager and apply the update
                 corrections_manager = get_corrections_manager()
-                
+
                 # Find the current team for this player
                 old_team = "Unknown"
                 for p in fantacalcio_assistant.roster:
                     if p.get("name", "").lower() == player_name.lower():
                         old_team = p.get("team", "Unknown")
                         break
-                
+
                 # Apply the correction persistently
                 corrections_manager.add_correction_to_db(player_name, "TEAM_UPDATE", old_team, new_team, persistent=True)
-                
+
                 # Update the player data immediately in the assistant's roster
                 for p in fantacalcio_assistant.roster:
                     if p.get("name", "").lower() == player_name.lower():
                         p["team"] = new_team
                         LOG.info(f"Updated {player_name} team from {old_team} to {new_team} in roster")
-                
+
                 # Also update filtered roster
                 for p in fantacalcio_assistant.filtered_roster:
                     if p.get("name", "").lower() == player_name.lower():
                         p["team"] = new_team
                         LOG.info(f"Updated {player_name} team in filtered roster: {old_team} → {new_team}")
-                
+
                 # Force reload of filtered roster to apply changes
                 fantacalcio_assistant._make_filtered_roster()
-                
+
                 return f"✅ Aggiornato {player_name}: {old_team} → {new_team}"
             except Exception as e:
                 LOG.error(f"Error updating player team: {e}")
@@ -518,6 +518,125 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
 
     return None
 
+def handle_chat():
+    try:
+        data = request.get_json(force=True, silent=True) or {}
+        user_message = data.get('message', '').strip()
+        mode = data.get('mode', 'classic').strip()
+
+        # Add client identifier for logging
+        client_id = request.headers.get('X-Client-ID', 'unknown')
+        LOG.info(f"Chat request from client: {client_id}")
+        LOG.info(f"Request data: {data}")
+
+        if not user_message:
+            return jsonify({"response": "Scrivi un messaggio."})
+
+        # Check if this is a correction message
+        correction_response = handle_correction_message(user_message)
+        if correction_response:
+            return jsonify({"response": correction_response})
+
+        # ETL refresh job (non-blocking)
+        try:
+            if os.path.exists("etl_build_roster.py"):
+                subprocess.Popen(["python", "etl_build_roster.py"], 
+                               stdout=subprocess.DEVNULL, 
+                               stderr=subprocess.DEVNULL)
+                LOG.info("[ETL] Job di refresh lanciato")
+            else:
+                LOG.info("[ETL] ETL script non trovato, skip")
+        except Exception as e2:
+            LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
+
+        # Initialize assistant
+        LOG.info("Initializing FantacalcioAssistant (singleton)...")
+        assistant = get_assistant()
+
+        # Get response from assistant
+        response = assistant.chat(user_message, mode=mode)
+
+        # Apply session exclusions if any
+        session_exclusions = session.get('excluded_players', [])
+        persistent_exclusions = assistant.corrections_manager.get_excluded_players() if hasattr(assistant, 'corrections_manager') else []
+
+        LOG.info(f"Applying exclusions: session={session_exclusions}, persistent={persistent_exclusions}")
+
+        # Filter response if needed (this is already handled in the assistant)
+
+        return jsonify({"response": response})
+
+    except Exception as e:
+        LOG.error(f"Error in chat handler: {e}")
+        return jsonify({"error": str(e)}), 500
+
+def handle_correction_message(user_message):
+    """Handle correction messages like 'Player X is Y years old' or 'Player X plays for Team Y'"""
+    import re
+
+    # Pattern for age corrections: "Player ha X anni" or "Player is X years old"
+    age_pattern = r'(.+?)\s+(?:ha|è|is)\s+(\d+)\s+(?:anni|years?\s+old)'
+    age_match = re.search(age_pattern, user_message, re.IGNORECASE)
+
+    if age_match:
+        player_name = age_match.group(1).strip()
+        age = int(age_match.group(2))
+
+        try:
+            assistant = get_assistant()
+            if hasattr(assistant, 'corrections_manager'):
+                # Add age correction
+                correction_id = assistant.corrections_manager.add_player_correction(
+                    player_name=player_name,
+                    field_name="age",
+                    old_value="unknown",
+                    new_value=str(age),
+                    reason=f"User correction via chat: {user_message}"
+                )
+
+                if correction_id:
+                    return f"✅ Correzione aggiunta: {player_name} ha {age} anni. La correzione sarà applicata nelle prossime ricerche."
+                else:
+                    return f"❌ Errore nell'aggiungere la correzione per {player_name}."
+            else:
+                return "❌ Sistema di correzioni non disponibile."
+        except Exception as e:
+            LOG.error(f"Error handling age correction: {e}")
+            return f"❌ Errore nell'elaborare la correzione: {e}"
+
+    # Pattern for team corrections: "Player plays for Team" or "Player gioca nel/per Team"
+    team_pattern = r'(.+?)\s+(?:plays?\s+for|gioca\s+(?:nel|per|in))\s+(.+)'
+    team_match = re.search(team_pattern, user_message, re.IGNORECASE)
+
+    if team_match:
+        player_name = team_match.group(1).strip()
+        team_name = team_match.group(2).strip()
+
+        try:
+            assistant = get_assistant()
+            if hasattr(assistant, 'corrections_manager'):
+                # Add team correction
+                correction_id = assistant.corrections_manager.add_player_correction(
+                    player_name=player_name,
+                    field_name="team", 
+                    old_value="previous_team",
+                    new_value=team_name,
+                    reason=f"User correction via chat: {user_message}"
+                )
+
+                if correction_id:
+                    return f"✅ Correzione aggiunta: {player_name} gioca per {team_name}. La correzione sarà applicata nelle prossime ricerche."
+                else:
+                    return f"❌ Errore nell'aggiungere la correzione per {player_name}."
+            else:
+                return "❌ Sistema di correzioni non disponibile."
+        except Exception as e:
+            LOG.error(f"Error handling team correction: {e}")
+            return f"❌ Errore nell'elaborare la correzione: {e}"
+
+    # Not a correction message
+    return None
+
 @app.route("/api/reset-chat", methods=["POST"])
 def api_reset_chat():
     set_state({})
@@ -535,7 +654,7 @@ def api_rate_limit_status():
     client_ip = rate_limiter._get_client_key(request)
     remaining = rate_limiter.get_remaining_requests(request)
     reset_time = rate_limiter.get_reset_time(request)
-    
+
     # Get request history for this client (for debugging)
     client_requests = rate_limiter.requests.get(client_ip, [])
     request_count = len(client_requests)
@@ -641,12 +760,57 @@ def api_add_correction():
     else:
         return jsonify({"error": "Failed to add correction"}), 500
 
-@app.route("/api/corrections", methods=["GET"])
-def api_get_corrections():
-    limit = int(request.args.get("limit", 50))
-    cm = get_corrections_manager()
-    corrections = cm.get_corrections(limit)
-    return jsonify({"corrections": corrections})
+@app.route('/api/corrections', methods=['POST'])
+def add_correction():
+    try:
+        data = request.get_json()
+        player_name = data.get('player_name', '').strip()
+        field_name = data.get('field_name', '').strip()
+        old_value = data.get('old_value', '').strip()
+        new_value = data.get('new_value', '').strip()
+        reason = data.get('reason', 'Manual correction via API').strip()
+
+        if not all([player_name, field_name, new_value]):
+            return jsonify({"error": "player_name, field_name, and new_value are required"}), 400
+
+        assistant = get_assistant()
+        if hasattr(assistant, 'corrections_manager'):
+            correction_id = assistant.corrections_manager.add_player_correction(
+                player_name=player_name,
+                field_name=field_name,
+                old_value=old_value,
+                new_value=new_value,
+                reason=reason
+            )
+
+            if correction_id:
+                return jsonify({
+                    "success": True,
+                    "message": f"Correction added for {player_name}",
+                    "correction_id": correction_id
+                })
+            else:
+                return jsonify({"error": "Failed to add correction"}), 500
+        else:
+            return jsonify({"error": "Corrections manager not available"}), 500
+
+    except Exception as e:
+        LOG.error(f"Error adding correction: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/corrections', methods=['GET'])
+def get_corrections():
+    try:
+        assistant = get_assistant()
+        if hasattr(assistant, 'corrections_manager'):
+            corrections = assistant.corrections_manager.get_recent_corrections(limit=20)
+            return jsonify({"corrections": corrections})
+        else:
+            return jsonify({"error": "Corrections manager not available"}), 500
+    except Exception as e:
+        LOG.error(f"Error getting corrections: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # League Rules Management Endpoints
 @app.route("/api/rules", methods=["GET"])
