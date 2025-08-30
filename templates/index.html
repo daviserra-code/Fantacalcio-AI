@@ -1848,12 +1848,15 @@
             })
             .catch(error => console.log('Rate limit status not available'));
 
-        document.getElementById('message-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage('classic');
-      }
-    });
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage('classic');
+                }
+            });
+        }
     });
 
     // Close modals by clicking outside

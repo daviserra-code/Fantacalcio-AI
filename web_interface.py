@@ -131,30 +131,34 @@ def index():
 
 @app.route("/api/chat", methods=["POST"])
 def api_chat():
-    # Log client info for debugging
-    client_ip = rate_limiter._get_client_key(request)
-    LOG.info(f"Chat request from client: {client_ip}")
+    try:
+        # Log client info for debugging
+        client_ip = rate_limiter._get_client_key(request)
+        LOG.info(f"Chat request from client: {client_ip}")
 
-    # Check rate limit first
-    if not rate_limiter.is_allowed(request):
-        remaining_requests = rate_limiter.get_remaining_requests(request)
-        reset_time = rate_limiter.get_reset_time(request)
+        # Check rate limit first
+        if not rate_limiter.is_allowed(request):
+            remaining_requests = rate_limiter.get_remaining_requests(request)
+            reset_time = rate_limiter.get_reset_time(request)
 
-        LOG.warning(f"Rate limit exceeded for client {client_ip}: {remaining_requests} remaining, reset at {reset_time}")
+            LOG.warning(f"Rate limit exceeded for client {client_ip}: {remaining_requests} remaining, reset at {reset_time}")
 
-        return jsonify({
-            "error": "Rate limit exceeded",
-            "message": "Hai superato il limite di 10 richieste per ora. Riprova più tardi.",
-            "remaining_requests": remaining_requests,
-            "reset_time": reset_time,
-            "client_id": client_ip[:8] + "..." if len(client_ip) > 8 else client_ip  # Partial IP for debugging
-        }), 429
+            return jsonify({
+                "error": "Rate limit exceeded",
+                "message": "Hai superato il limite di 10 richieste per ora. Riprova più tardi.",
+                "remaining_requests": remaining_requests,
+                "reset_time": reset_time,
+                "client_id": client_ip[:8] + "..." if len(client_ip) > 8 else client_ip  # Partial IP for debugging
+            }), 429
 
-    data = request.get_json(force=True, silent=True) or {}
-    msg  = (data.get("message") or "").strip()
-    mode = (data.get("mode") or "classic").strip()
+        data = request.get_json(force=True, silent=True) or {}
+        msg  = (data.get("message") or "").strip()
+        mode = (data.get("mode") or "classic").strip()
 
-    LOG.info("Request data: %s", data)
+        LOG.info("Request data: %s", data)
+    except Exception as e:
+        LOG.error(f"Error processing request: {e}")
+        return jsonify({"response": "❌ Errore nell'elaborazione della richiesta. Riprova."}), 500
 
     # Best-effort: avvia ETL senza bloccare (skip in deployment if issues)
     try:
