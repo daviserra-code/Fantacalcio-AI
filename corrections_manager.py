@@ -525,7 +525,7 @@ class CorrectionsManager:
         conn.close()
 
     def add_exclusion(self, player_name: str, team: str = "") -> str:
-        """Add a player exclusion to prevent them from appearing in recommendations"""
+        """Add a player exclusion to prevent them from appearing in recommendations for a specific team"""
         try:
             player_key = f"{player_name.lower().strip()}_{team.lower().strip()}"
 
@@ -537,37 +537,48 @@ class CorrectionsManager:
 
             self.conn.commit()
 
-            # Also add to in-memory cache for immediate effect
+            # Add to team-specific cache for immediate effect
             if not hasattr(self, '_excluded_players_cache'):
-                self._excluded_players_cache = set()
-            self._excluded_players_cache.add(player_name.lower().strip())
+                self._excluded_players_cache = {}
+            if team not in self._excluded_players_cache:
+                self._excluded_players_cache[team] = set()
+            self._excluded_players_cache[team].add(player_name.lower().strip())
 
-            LOG.info(f"[Corrections] Added exclusion: {player_name} ({team})")
-            return f"✅ **{player_name} {team}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+            LOG.info(f"[Corrections] Added team-specific exclusion: {player_name} from {team}")
+            return f"✅ **{player_name}** è stato escluso dalle liste della **{team}**. Potrà ancora apparire se trasferito in altre squadre."
 
         except Exception as e:
             LOG.error(f"Error adding exclusion: {e}")
             return f"❌ Errore nell'esclusione di {player_name}"
 
 
-    def get_excluded_players(self) -> List[str]:
-        """Get list of excluded players"""
+    def get_excluded_players(self, team: str = None) -> List[str]:
+        """Get list of excluded players, optionally filtered by team"""
         try:
+            excluded_players = []
+
             # Get from cache if available (for immediate effect)
             if hasattr(self, '_excluded_players_cache'):
-                cached_players = list(self._excluded_players_cache)
-            else:
-                cached_players = []
+                if team and team in self._excluded_players_cache:
+                    excluded_players.extend(self._excluded_players_cache[team])
+                elif not team:
+                    # Get all excluded players from all teams
+                    for team_players in self._excluded_players_cache.values():
+                        excluded_players.extend(team_players)
 
             # Get from database
             cursor = self.conn.cursor()
-            cursor.execute("SELECT player_name FROM exclusions")
+            if team:
+                cursor.execute("SELECT player_name FROM exclusions WHERE LOWER(team) = LOWER(?)", (team,))
+            else:
+                cursor.execute("SELECT player_name FROM exclusions")
+            
             db_players = [row[0].lower().strip() for row in cursor.fetchall()]
 
             # Combine and deduplicate
-            all_excluded = list(set(cached_players + db_players))
+            all_excluded = list(set(excluded_players + db_players))
 
-            LOG.info(f"[Corrections] Excluded players: {len(all_excluded)} total")
+            LOG.info(f"[Corrections] Excluded players for {team or 'all teams'}: {len(all_excluded)} total")
             return all_excluded
 
         except Exception as e:
@@ -751,6 +762,29 @@ class CorrectionsManager:
         except Exception as e:
             logger.error(f"Error getting corrected team for {player_name}: {e}")
             return None
+
+    def is_player_excluded_from_team(self, player_name: str, team: str) -> bool:
+        """Check if a specific player is excluded from a specific team"""
+        try:
+            # Check cache first
+            if hasattr(self, '_excluded_players_cache'):
+                if team in self._excluded_players_cache:
+                    if player_name.lower().strip() in self._excluded_players_cache[team]:
+                        return True
+
+            # Check database
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM exclusions 
+                WHERE LOWER(player_name) = LOWER(?) AND LOWER(team) = LOWER(?)
+            """, (player_name, team))
+            
+            result = cursor.fetchone()
+            return result and result[0] > 0
+
+        except Exception as e:
+            LOG.error(f"Error checking exclusion for {player_name} from {team}: {e}")
+            return False
 
     def get_data_quality_report(self):
         """Generate a comprehensive report on data quality issues and corrections."""

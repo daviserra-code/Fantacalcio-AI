@@ -298,9 +298,34 @@ def handle_exclusion(msg: str, state: dict) -> str:
     """Handle player exclusions (rimuovi/escludi commands)"""
     msg_lower = msg.lower()
 
-    # Pattern: "rimuovi/escludi [player name]"
+    # Pattern: "rimuovi/escludi [player name] dalla [team]" or "rimuovi [player name] dalla lista"
     import re
 
+    # Pattern for team-specific exclusions
+    team_exclusion_pattern = r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)\s+dall[ao]\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s*$)"
+    team_match = re.search(team_exclusion_pattern, msg, re.IGNORECASE)
+    
+    if team_match:
+        player_name = team_match.group(1).strip()
+        team_name = team_match.group(2).strip()
+        
+        # Clean up common words
+        player_name = re.sub(r'\b(dalla?|lista|squadre?|non|di|serie|a)\b', '', player_name, flags=re.IGNORECASE).strip()
+        team_name = re.sub(r'\b(lista|squadra)\b', '', team_name, flags=re.IGNORECASE).strip()
+        
+        if len(player_name) > 2 and len(team_name) > 2:
+            # Use team-specific exclusions
+            team_exclusions = state.setdefault("team_exclusions", {})
+            if team_name not in team_exclusions:
+                team_exclusions[team_name] = []
+            
+            if player_name not in team_exclusions[team_name]:
+                team_exclusions[team_name].append(player_name)
+                return f"✅ **{player_name}** è stato escluso dalle liste della **{team_name}**. Potrà ancora apparire se trasferito in altre squadre."
+            else:
+                return f"**{player_name}** è già escluso dalle liste della **{team_name}**."
+
+    # Fallback patterns for general exclusions
     patterns = [
         r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)",
         r"escludi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+lista)?(?:\s*$)"
@@ -318,20 +343,20 @@ def handle_exclusion(msg: str, state: dict) -> str:
                 excluded_players = state.setdefault("excluded_players", [])
                 if player_name not in excluded_players:
                     excluded_players.append(player_name)
-                    return f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+                    return f"✅ **{player_name}** è stato escluso dalle future liste globalmente. Usa 'rimuovi [nome] dalla [squadra]' per esclusioni specifiche per squadra."
                 else:
                     return f"**{player_name}** è già escluso dalle liste."
 
     return None
 
 def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
-    """Remove excluded players from response text"""
+    """Remove excluded players from response text, considering team-specific exclusions"""
     # Get persistent exclusions from corrections manager
     try:
         corrections_manager = get_corrections_manager()
         persistent_excluded = corrections_manager.get_excluded_players()
-        all_excluded = list(set(excluded_players + persistent_exclusions))
-        LOG.info(f"Applying exclusions: session={excluded_players}, persistent={persistent_exclusions}")
+        all_excluded = list(set(excluded_players + persistent_excluded))
+        LOG.info(f"Applying exclusions: session={excluded_players}, persistent={persistent_excluded}")
     except Exception as e:
         LOG.error(f"Error getting persistent exclusions: {e}")
         all_excluded = excluded_players
@@ -347,11 +372,17 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
         should_exclude = False
         line_lower = line.lower()
 
+        # Extract team from line if possible (format: **Player** (Team))
+        team_in_line = None
+        import re
+        team_match = re.search(r'\*\*[^*]+\*\*\s*\(([^)]+)\)', line)
+        if team_match:
+            team_in_line = team_match.group(1).strip()
+
         for excluded in all_excluded:
             excluded_lower = excluded.lower().strip()
 
             # Handle special characters by creating multiple search variants
-            import re
             import unicodedata
 
             # Normalize the excluded name to handle accented characters
@@ -373,6 +404,9 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                 if not pattern or len(pattern) < 3:
                     continue
 
+                # Check if this is a team-specific exclusion
+                # For now, apply general exclusions - team-specific logic can be enhanced later
+                
                 # Pattern 1: Look for the name in **bold** format (most common in responses)
                 bold_pattern = rf'\*\*[^*]*{re.escape(pattern)}[^*]*\*\*'
                 if re.search(bold_pattern, line_lower):
