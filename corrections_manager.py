@@ -18,12 +18,8 @@ class CorrectionsManager:
         self.db_path = "corrections.db"
         self._init_db()
         self.current_season = "2024-25"
-        # Initialize connection for exclusions if not already done by _init_db
-        try:
-            self.conn = sqlite3.connect(self.db_path)
-        except Exception as e:
-            logger.error(f"Failed to connect to database: {e}")
-            self.conn = None
+        # Don't store persistent connections - create per-thread connections instead
+        self.conn = None
 
 
     def add_correction(self, correction_type: str, incorrect_info: str,
@@ -146,9 +142,18 @@ class CorrectionsManager:
 
         for correction in corrections:
             try:
-                wrong = correction.get("wrong", "")
-                correct = correction.get("correct", "")
-                context = correction.get("context", "")
+                # Handle both dict and tuple formats
+                if isinstance(correction, dict):
+                    wrong = correction.get("wrong", "")
+                    correct = correction.get("correct", "")
+                    context = correction.get("context", "")
+                elif isinstance(correction, (list, tuple)) and len(correction) >= 5:
+                    # Handle tuple format: (id, player_name, correction_type, old_value, new_value, ...)
+                    wrong = str(correction[3]) if correction[3] else ""
+                    correct = str(correction[4]) if correction[4] else ""
+                    context = ""
+                else:
+                    continue
 
                 if not (wrong and correct):
                     continue
@@ -524,22 +529,24 @@ class CorrectionsManager:
         conn.commit()
         conn.close()
 
+    def _get_connection(self):
+        """Get a thread-safe database connection"""
+        return sqlite3.connect(self.db_path)
+
     def add_exclusion(self, player_name: str, team: str = "") -> str:
         """Add a player exclusion to prevent them from appearing in recommendations for a specific team"""
         try:
-            # Ensure database connection
-            if not self.conn:
-                self.conn = sqlite3.connect(self.db_path)
+            # Create new connection for this thread
+            with sqlite3.connect(self.db_path) as conn:
+                player_key = f"{player_name.lower().strip()}_{team.lower().strip()}"
 
-            player_key = f"{player_name.lower().strip()}_{team.lower().strip()}"
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT OR REPLACE INTO exclusions (player_key, player_name, team, created_at)
+                    VALUES (?, ?, ?, ?)
+                """, (player_key, player_name, team, datetime.now().isoformat()))
 
-            cursor = self.conn.cursor()
-            cursor.execute("""
-                INSERT OR REPLACE INTO exclusions (player_key, player_name, team, created_at)
-                VALUES (?, ?, ?, ?)
-            """, (player_key, player_name, team, datetime.now().isoformat()))
-
-            self.conn.commit()
+                conn.commit()
 
             # Also add as a persistent correction for general exclusion
             self.add_correction_to_db(player_name, "TEAM_EXCLUSION", team, "EXCLUDED", persistent=True)
@@ -573,25 +580,23 @@ class CorrectionsManager:
                     for team_players in self._excluded_players_cache.values():
                         excluded_players.extend(team_players)
 
-            # Get from database - ensure connection is valid
-            if not self.conn:
+            # Get from database using thread-safe connection
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                if team:
+                    cursor.execute("SELECT player_name FROM exclusions WHERE LOWER(team) = LOWER(?)", (team,))
+                else:
+                    cursor.execute("SELECT player_name FROM exclusions")
+                
+                db_players = [row[0].lower().strip() for row in cursor.fetchall()]
+
+                # Also check for general exclusions (players excluded from all teams)
                 try:
-                    self.conn = sqlite3.connect(self.db_path)
-                except Exception as e:
-                    LOG.error(f"Failed to reconnect to database: {e}")
-                    return excluded_players
-
-            cursor = self.conn.cursor()
-            if team:
-                cursor.execute("SELECT player_name FROM exclusions WHERE LOWER(team) = LOWER(?)", (team,))
-            else:
-                cursor.execute("SELECT player_name FROM exclusions")
-            
-            db_players = [row[0].lower().strip() for row in cursor.fetchall()]
-
-            # Also check for general exclusions (players excluded from all teams)
-            cursor.execute("SELECT player_name FROM corrections WHERE correction_type = 'REMOVE' AND persistent = TRUE")
-            general_excluded = [row[0].lower().strip() for row in cursor.fetchall()]
+                    cursor.execute("SELECT player_name FROM corrections WHERE correction_type = 'REMOVE' AND persistent = TRUE")
+                    general_excluded = [row[0].lower().strip() for row in cursor.fetchall()]
+                except sqlite3.OperationalError:
+                    # Handle case where table schema might be different
+                    general_excluded = []
 
             # Combine and deduplicate
             all_excluded = list(set(excluded_players + db_players + general_excluded))
@@ -790,15 +795,16 @@ class CorrectionsManager:
                     if player_name.lower().strip() in self._excluded_players_cache[team]:
                         return True
 
-            # Check database
-            cursor = self.conn.cursor()
-            cursor.execute("""
-                SELECT COUNT(*) FROM exclusions 
-                WHERE LOWER(player_name) = LOWER(?) AND LOWER(team) = LOWER(?)
-            """, (player_name, team))
-            
-            result = cursor.fetchone()
-            return result and result[0] > 0
+            # Check database using thread-safe connection
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT COUNT(*) FROM exclusions 
+                    WHERE LOWER(player_name) = LOWER(?) AND LOWER(team) = LOWER(?)
+                """, (player_name, team))
+                
+                result = cursor.fetchone()
+                return result and result[0] > 0
 
         except Exception as e:
             LOG.error(f"Error checking exclusion for {player_name} from {team}: {e}")
