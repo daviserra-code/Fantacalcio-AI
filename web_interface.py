@@ -404,28 +404,38 @@ def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
                 if not pattern or len(pattern) < 3:
                     continue
 
-                # Check if this is a team-specific exclusion
-                # For now, apply general exclusions - team-specific logic can be enhanced later
-                
+                # Enhanced pattern matching for better exclusion
                 # Pattern 1: Look for the name in **bold** format (most common in responses)
                 bold_pattern = rf'\*\*[^*]*{re.escape(pattern)}[^*]*\*\*'
-                if re.search(bold_pattern, line_lower):
+                if re.search(bold_pattern, line_lower, re.IGNORECASE):
                     should_exclude = True
                     LOG.info(f"Excluding line with bold player '{excluded}' (pattern: {pattern}): {line.strip()}")
                     break
 
-                # Pattern 2: Check if main parts of the name appear
+                # Pattern 2: Look for exact name matches in list items (e.g., "1. **Name** →")
+                list_pattern = rf'\d+\.\s*\*\*[^*]*{re.escape(pattern)}[^*]*\*\*'
+                if re.search(list_pattern, line_lower, re.IGNORECASE):
+                    should_exclude = True
+                    LOG.info(f"Excluding numbered list item with '{excluded}' (pattern: {pattern}): {line.strip()}")
+                    break
+
+                # Pattern 3: Check if main parts of the name appear
                 pattern_parts = [part for part in pattern.split() if len(part) > 2]
                 if pattern_parts:
-                    # Check if all significant parts are present
+                    # For names with multiple parts, check if most parts match
                     parts_found = sum(1 for part in pattern_parts if part in line_lower)
-                    if parts_found >= len(pattern_parts) * 0.7:  # At least 70% of parts match
+                    if len(pattern_parts) > 1 and parts_found >= len(pattern_parts):
                         should_exclude = True
-                        LOG.info(f"Excluding line containing name parts from '{excluded}' (pattern: {pattern}): {line.strip()}")
+                        LOG.info(f"Excluding line containing all name parts from '{excluded}' (pattern: {pattern}): {line.strip()}")
+                        break
+                    elif len(pattern_parts) == 1 and parts_found > 0 and len(pattern_parts[0]) > 4:
+                        # For single long names, be more strict
+                        should_exclude = True
+                        LOG.info(f"Excluding line containing single name part from '{excluded}' (pattern: {pattern}): {line.strip()}")
                         break
 
-                # Pattern 3: Direct substring match for substantial names
-                if len(pattern) > 4 and pattern in line_lower:
+                # Pattern 4: Direct substring match for substantial names (stricter)
+                if len(pattern) > 6 and pattern in line_lower:
                     should_exclude = True
                     LOG.info(f"Excluding line containing '{excluded}' (pattern: {pattern}): {line.strip()}")
                     break

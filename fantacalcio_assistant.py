@@ -1483,11 +1483,14 @@ Cosa ti interessa di più?"""
             else:
                 search_terms = ["acquisti Serie A 2025", "Transfer IN", "direction in"]
             
+            # Increase search results when user wants to see all transfers
+            search_limit = 50 if show_all else 10
+            
             for term in search_terms:
                 try:
                     results = self.km.search_knowledge(
                         text=term, 
-                        n_results=10,
+                        n_results=search_limit,
                         include=["documents", "metadatas"]
                     )
                     
@@ -1522,6 +1525,46 @@ Cosa ti interessa di più?"""
                 except Exception as e:
                     LOG.debug(f"Error searching knowledge for {term}: {e}")
                     continue
+            
+            # Additionally, get transfers by filter to ensure we capture all data
+            if team and show_all:
+                try:
+                    filter_results = self.km.get_by_filter(
+                        where={"team": team, "type": "transfer", "direction": "in"}, 
+                        limit=100,
+                        include=["documents", "metadatas"]
+                    )
+                    
+                    if filter_results and "metadatas" in filter_results:
+                        for metadata_list in filter_results["metadatas"]:
+                            for metadata in metadata_list:
+                                if (metadata.get("type") == "transfer" and 
+                                    metadata.get("direction") == "in"):
+                                    
+                                    player_name = metadata.get("player", "")
+                                    team_name = metadata.get("team", "")
+                                    
+                                    if player_name and team_name:
+                                        # Apply team corrections
+                                        if self.corrections_manager:
+                                            corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
+                                            if corrected_team:
+                                                team_name = corrected_team
+                                        
+                                        # Filter by team
+                                        if team and team.lower() not in team_name.lower():
+                                            continue
+                                            
+                                        knowledge_transfers.append({
+                                            "player": player_name,
+                                            "team": team_name,
+                                            "season": metadata.get("season", "2025-26"),
+                                            "fee": metadata.get("fee", ""),
+                                            "source": "knowledge_base_filter",
+                                            "validated": False
+                                        })
+                except Exception as e:
+                    LOG.debug(f"Error getting transfers by filter: {e}")
             
             # Combine and validate transfers
             all_transfers = roster_transfers + knowledge_transfers
