@@ -182,6 +182,7 @@ def api_chat():
     corrections_manager = get_corrections_manager()
 
     # Handle exclusion requests
+    import re  # Ensure re module is available in local scope
     exclusion_patterns = [
         r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+([a-zA-ZÀ-ÿ\s]+))?(?:\s|$)",
         r"escludi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+([a-zA-ZÀ-ÿ\s]+))?(?:\s|$)",
