@@ -1393,6 +1393,9 @@ Cosa ti interessa di più?"""
     def _handle_transfers_request(self, team: str, user_text: str) -> str:
         """Handle transfer/acquisitions requests with proper data validation and corrections"""
         try:
+            # Check if user wants to see all transfers
+            show_all = "tutti" in user_text.lower() or "all" in user_text.lower()
+            
             # First, check roster data for actual current transfers (direction = "in" only)
             roster_transfers = []
             seen_players = set()
@@ -1558,11 +1561,20 @@ Cosa ti interessa di più?"""
             
             if validated_transfers:
                 if team:
-                    reply = f"🔄 **Ultimi acquisti {team} (2025-26):**\n\n"
+                    if show_all:
+                        reply = f"🔄 **Tutti gli acquisti {team} (2025-26):**\n\n"
+                    else:
+                        reply = f"🔄 **Ultimi acquisti {team} (2025-26):**\n\n"
                 else:
-                    reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
+                    if show_all:
+                        reply = "🔄 **Tutti gli acquisti Serie A (2025-26):**\n\n"
+                    else:
+                        reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
                 
-                for i, transfer in enumerate(validated_transfers[:8], 1):
+                # Determine how many to show
+                max_display = len(validated_transfers) if show_all else 8
+                
+                for i, transfer in enumerate(validated_transfers[:max_display], 1):
                     fee_info = ""
                     if transfer.get("fee") and "fine prestito" not in transfer.get("fee", "").lower():
                         fee_info = f" • {transfer['fee']}"
@@ -1577,8 +1589,10 @@ Cosa ti interessa di più?"""
                     
                     reply += f"{i}. **{transfer['player']}** → {transfer['team']}{fee_info}{source_info}\n"
                 
-                if len(validated_transfers) > 8:
+                if not show_all and len(validated_transfers) > 8:
                     reply += f"\n*...e altri {len(validated_transfers) - 8} acquisti*"
+                elif show_all:
+                    reply += f"\n*Totale: {len(validated_transfers)} acquisti*"
                 
                 # Add validation notes
                 validation_notes = []
