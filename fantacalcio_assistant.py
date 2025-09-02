@@ -1484,7 +1484,7 @@ Cosa ti interessa di più?"""
                 search_terms = ["acquisti Serie A 2025", "Transfer IN", "direction in"]
             
             # Increase search results when user wants to see all transfers
-            search_limit = 50 if show_all else 10
+            search_limit = 200 if show_all else 10
             
             for term in search_terms:
                 try:
@@ -1662,10 +1662,13 @@ Cosa ti interessa di più?"""
                     else:
                         reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
                 
-                # Determine how many to show
-                max_display = len(validated_transfers) if show_all else 8
+                # Determine how many to show - if show_all is True, show everything
+                if show_all:
+                    transfers_to_show = validated_transfers
+                else:
+                    transfers_to_show = validated_transfers[:8]
                 
-                for i, transfer in enumerate(validated_transfers[:max_display], 1):
+                for i, transfer in enumerate(transfers_to_show, 1):
                     fee_info = ""
                     if transfer.get("fee") and "fine prestito" not in transfer.get("fee", "").lower():
                         fee_info = f" • {transfer['fee']}"
@@ -1683,7 +1686,7 @@ Cosa ti interessa di più?"""
                 if not show_all and len(validated_transfers) > 8:
                     reply += f"\n*...e altri {len(validated_transfers) - 8} acquisti*"
                 elif show_all:
-                    reply += f"\n*Totale: {len(validated_transfers)} acquisti*"
+                    reply += f"\n\n📊 *Totale completo: {len(validated_transfers)} acquisti mostrati*"
                 
                 # Add validation notes
                 validation_notes = []
