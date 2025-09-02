@@ -1160,10 +1160,11 @@ class FantacalcioAssistant:
                 
                 # Apply the correction
                 if self.corrections_manager:
-                    # Find the player's current team in roster
+                    # Find the player's current team in roster (check transfers too)
                     current_team = None
                     for p in self.roster:
-                        if (p.get("name", "") or p.get("Name", "")).lower() == player_name.lower():
+                        roster_name = (p.get("name", "") or p.get("Name", "")).lower()
+                        if roster_name == player_name.lower():
                             current_team = p.get("team", "")
                             break
                     
@@ -1177,7 +1178,11 @@ class FantacalcioAssistant:
                         
                         return f"✅ Perfetto! Ho aggiornato i dati: **{player_name}** ora risulta correttamente nella **{team_name}**. Grazie per la correzione! 🎯\n\nVuoi che ricontrolli gli ultimi acquisti con i dati aggiornati?"
                     else:
-                        return f"🤔 Hai ragione su **{player_name}** nella **{team_name}**, ma non riesco a trovarlo nel database per aggiornarlo. Potrebbe essere un problema nei dati di trasferimento."
+                        # Even if not found in current roster, still add the correction for future transfers
+                        self.corrections_manager.update_player_team(player_name, "Juventus", team_name)  # Assume correction from Juventus since that's the context
+                        LOG.info(f"[Conversational] Applied correction for transfer data: {player_name} Juventus → {team_name}")
+                        
+                        return f"✅ Perfetto! Ho registrato la correzione: **{player_name}** appartiene alla **{team_name}**. Questo aggiornerà i futuri elenchi di trasferimenti. 🎯\n\nVuoi che ricontrolli gli ultimi acquisti con i dati aggiornati?"
                 else:
                     return f"📝 Noted: **{player_name}** gioca nella **{team_name}**. I dati di trasferimento potrebbero essere obsoleti o incompleti."
         
@@ -1395,18 +1400,26 @@ Cosa ti interessa di più?"""
             for p in self.roster:
                 if p.get("type") == "transfer" and p.get("direction") == "in":
                     player_name = p.get("Name") or p.get("name", "")
-                    team_name = p.get("team", "")
+                    original_team_name = p.get("team", "")
+                    team_name = original_team_name
                     season = p.get("season", "")
                     
                     # Apply team corrections if available
+                    corrected_team = None
                     if self.corrections_manager:
                         corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
-                        if corrected_team:
+                        if corrected_team and corrected_team != team_name:
                             team_name = corrected_team
+                            LOG.info(f"[Transfers] Applied team correction: {player_name} {original_team_name} → {corrected_team}")
                     
-                    # Filter by team if specified
+                    # Filter by team if specified - now check against corrected team
                     if team and team.lower() not in team_name.lower():
-                        continue
+                        # Skip this player if they've been corrected to play for a different team
+                        if corrected_team and corrected_team.lower() != team.lower():
+                            LOG.info(f"[Transfers] Skipping {player_name} - corrected team {corrected_team} doesn't match requested team {team}")
+                            continue
+                        elif not corrected_team:
+                            continue
                     
                     # Check for duplicate/conflicting data
                     player_key = player_name.lower().strip()
@@ -1427,7 +1440,8 @@ Cosa ti interessa di più?"""
                         "season": season,
                         "fee": fee,
                         "source": p.get("source", "roster"),
-                        "validated": True
+                        "validated": True,
+                        "corrected": corrected_team is not None
                     })
             
             # Also search knowledge base for additional transfer data
@@ -1492,6 +1506,25 @@ Cosa ti interessa di più?"""
                     continue
                 player_names_seen.add(player_lower)
                 
+                # Check if this player has been corrected to play for a different team
+                if self.corrections_manager:
+                    corrected_team = self.corrections_manager.get_corrected_team(t["player"], t["team"])
+                    if corrected_team and corrected_team.lower() != t["team"].lower():
+                        # Player has been corrected to different team
+                        if team and corrected_team.lower() == team.lower():
+                            # Player actually belongs to the requested team
+                            t["team"] = corrected_team
+                            t["corrected"] = True
+                            LOG.info(f"[Transfers] Corrected {t['player']}: now correctly in {corrected_team}")
+                        elif team and corrected_team.lower() != team.lower():
+                            # Player belongs to different team, skip
+                            LOG.info(f"[Transfers] Skipping {t['player']}: corrected to {corrected_team}, not {team}")
+                            continue
+                        else:
+                            # No specific team filter, update team info
+                            t["team"] = corrected_team
+                            t["corrected"] = True
+                
                 # Validate player exists in current Serie A context
                 is_valid_transfer = True
                 
@@ -1510,6 +1543,10 @@ Cosa ti interessa di più?"""
                         if self.corrections_manager:
                             corrected_team = self.corrections_manager.get_corrected_team(t["player"], roster_player.get("team", ""))
                             if corrected_team:
+                                # Check if corrected team matches what we're looking for
+                                if team and corrected_team.lower() != team.lower():
+                                    LOG.info(f"[Transfers] Skipping {t['player']}: corrected to {corrected_team}, not {team}")
+                                    continue
                                 t["team"] = corrected_team
                                 t["corrected"] = True
                                 LOG.info(f"[Transfers] Applied correction: {t['player']} now correctly shows as {corrected_team}")
