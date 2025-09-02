@@ -845,16 +845,25 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
-        """Build formation with balanced mix of high/mid/budget players"""
+        """Build formation with improved budget allocation to utilize more of the available budget"""
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
+        
+        # Calculate target budget allocation per role (more aggressive spending)
+        total_players = sum(slots.values())
+        role_budget_targets = {
+            "P": int(budget * 0.15),  # 15% for goalkeeper
+            "D": int(budget * 0.25),  # 25% for defenders  
+            "C": int(budget * 0.35),  # 35% for midfielders
+            "A": int(budget * 0.25)   # 25% for attackers
+        }
 
-        # Strategy: Create balanced tiers for each role
-        def pick_balanced_role(role: str, needed_count: int):
+        # Strategy: Pick players within budget ranges for each role
+        def pick_budget_conscious_role(role: str, needed_count: int, role_budget: int):
             pool = self._select_top_role_any(role, take=500)
             
-            # Apply team corrections to each player in the pool
+            # Apply team corrections
             if self.corrections_manager:
                 for p in pool:
                     player_name = p.get("name", "")
@@ -862,92 +871,68 @@ class FantacalcioAssistant:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
                     if corrected_team and corrected_team != current_team:
                         p["team"] = corrected_team
-                        LOG.info(f"[Formation Build] Applied correction: {player_name} {current_team} → {corrected_team}")
 
             # Filter valid players with both price and fantamedia
             valid_pool = []
             for p in pool:
                 if (p.get("_source") != "override_synthetic" and 
                     p.get("_price") is not None and p.get("_fm") is not None and
-                    p.get("_fm") > 0):  # Ensure non-zero fantamedia
+                    p.get("_fm") > 0):
                     valid_pool.append(p)
 
             if not valid_pool:
                 return []
 
-            # Sort by fantamedia descending to identify quality tiers
-            valid_pool.sort(key=lambda x: -(x.get("_fm") or 0.0))
+            # Filter by affordable players for this role budget
+            avg_price_per_player = role_budget // max(needed_count, 1)
+            max_single_player = min(role_budget * 0.6, avg_price_per_player * 2)  # Allow some premium players
+            
+            affordable_pool = [p for p in valid_pool if p.get("_price", 0) <= max_single_player]
+            
+            if not affordable_pool:
+                # Fallback to cheapest available if budget is too tight
+                valid_pool.sort(key=lambda x: x.get("_price", 9999))
+                affordable_pool = valid_pool[:needed_count * 3]
 
-            # Define tiers based on fantamedia thresholds for better quality
-            top_tier = [p for p in valid_pool if p.get("_fm", 0) >= 6.5]
-            mid_tier = [p for p in valid_pool if 6.0 <= p.get("_fm", 0) < 6.5]  
-            budget_tier = [p for p in valid_pool if 5.0 <= p.get("_fm", 0) < 6.0]
+            # Sort by value ratio within budget
+            affordable_pool.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
 
-            # If tiers are empty, fall back to percentile-based approach
-            if not top_tier and not mid_tier:
-                total_players = len(valid_pool)
-                if total_players < needed_count:
-                    return valid_pool[:needed_count]
-
-                top_tier_size = max(1, int(total_players * 0.3))  # Increased to 30%
-                mid_tier_size = int(total_players * 0.4)  # 40%
-
-                top_tier = valid_pool[:top_tier_size]
-                mid_tier = valid_pool[top_tier_size:top_tier_size + mid_tier_size]
-                budget_tier = valid_pool[top_tier_size + mid_tier_size:]
-
-            # Sort each tier by value ratio (FM/price) for best value within tier
-            for tier in [top_tier, mid_tier, budget_tier]:
-                tier.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
-
+            # Use greedy algorithm to maximize value within budget
             chosen = []
+            remaining_budget = role_budget
+            remaining_slots = needed_count
 
-            # Strategy: Always include top players, balanced mix for others
-            if role == "A":  # Attack: Prioritize quality heavily
-                targets = {"top": max(1, needed_count // 2), 
-                          "mid": max(1, (needed_count + 1) // 3), 
-                          "budget": max(0, needed_count - max(1, needed_count // 2) - max(1, (needed_count + 1) // 3))}
-            elif role == "C":  # Midfield: Balanced but favor quality
-                targets = {"top": max(1, needed_count // 3), 
-                          "mid": max(1, needed_count // 2), 
-                          "budget": max(0, needed_count - max(1, needed_count // 3) - max(1, needed_count // 2))}
-            elif role == "D":  # Defense: More balanced, some quality
-                targets = {"top": max(1, needed_count // 4), 
-                          "mid": max(1, needed_count // 2), 
-                          "budget": max(1, needed_count - max(1, needed_count // 4) - max(1, needed_count // 2))}
-            else:  # Goalkeeper: Best available
-                targets = {"top": 1, "mid": 0, "budget": 0}
-
-            # Pick from each tier, ensuring we get the targets
-            for tier, target_count in [("top", targets["top"]), ("mid", targets["mid"]), ("budget", targets["budget"])]:
-                tier_pool = top_tier if tier == "top" else (mid_tier if tier == "mid" else budget_tier)
-
-                added = 0
-                for p in tier_pool:
-                    if added >= target_count or len(chosen) >= needed_count:
-                        break
-                    if p.get("name") not in used:
-                        chosen.append(p)
-                        used.add(p.get("name"))
-                        added += 1
-
-            # If we still need more players, fill from any remaining valid players
-            if len(chosen) < needed_count:
-                all_remaining = [p for p in valid_pool if p.get("name") not in used]
-                all_remaining.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999)))
-
-                for p in all_remaining:
-                    if len(chosen) >= needed_count:
-                        break
+            for p in affordable_pool:
+                if len(chosen) >= needed_count:
+                    break
+                    
+                price = p.get("_price", 0)
+                if price <= remaining_budget and p.get("name") not in used:
                     chosen.append(p)
                     used.add(p.get("name"))
+                    remaining_budget -= price
+                    remaining_slots -= 1
 
-            return chosen[:needed_count]
+            # If we still need players and have budget left, be more flexible
+            if len(chosen) < needed_count and remaining_budget > 0:
+                remaining_pool = [p for p in valid_pool if p.get("name") not in used]
+                remaining_pool.sort(key=lambda x: (x.get("_price", 9999), -(x.get("_fm") or 0.0)))
+                
+                for p in remaining_pool:
+                    if len(chosen) >= needed_count:
+                        break
+                    price = p.get("_price", 0)
+                    if price <= remaining_budget:
+                        chosen.append(p)
+                        used.add(p.get("name"))
+                        remaining_budget -= price
 
-        # Pick players for each role
+            return chosen
+
+        # Pick players for each role with budget consciousness
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
-                picks[role] = pick_balanced_role(role, slots[role])
+                picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
         
         # Apply team corrections to all picked players before final display
         if self.corrections_manager:
@@ -960,7 +945,7 @@ class FantacalcioAssistant:
                         player["team"] = corrected_team
                         LOG.info(f"[Formation Final] Applied team correction: {player_name} {current_team} → {corrected_team}")
 
-        # Calculate costs and display information
+        # Calculate actual costs
         def calculate_total_cost():
             total = 0.0
             for role_picks in picks.values():
@@ -1226,6 +1211,16 @@ Cosa ti interessa di più?"""
             intent.update({"type": "goalkeeper", "original_text": text})
             return intent
 
+        # Check for transfer/acquisitions requests
+        if any(x in lt for x in ["ultimi acquisti", "acquisiti", "nuovi acquisti", "trasferimenti", "mercato", "acquisti"]):
+            team = None
+            for team_name in ["inter", "milan", "juventus", "napoli", "roma", "lazio", "atalanta", "fiorentina", "bologna", "torino", "genoa", "udinese", "cagliari", "lecce", "empoli", "monza", "venezia", "verona", "como", "parma"]:
+                if team_name in lt:
+                    team = team_name.title()
+                    break
+            intent.update({"type": "transfers", "team": team, "original_text": text})
+            return intent
+
         # formazione
         if "formazione" in lt and re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
             fm = re.search(r"\b([0-5])\s*-\s*([0-5])\s*-\s*([0-5])\b", lt).group(0)
@@ -1288,6 +1283,8 @@ Cosa ti interessa di più?"""
             reply = self._answer_build_xi(f"{fm_text} {budget}")
         elif intent["type"] == "goalkeeper":
             reply = self._handle_goalkeeper_request(intent.get("original_text", user_text))
+        elif intent["type"] == "transfers":
+            reply = self._handle_transfers_request(intent.get("team"), intent.get("original_text", user_text))
         elif intent["type"] == "asta":
             reply = ("🧭 **Strategia Asta (Classic)**\n"
                      "1) Tenere liquidità per gli slot premium in A.\n"
@@ -1349,6 +1346,99 @@ Cosa ti interessa di più?"""
 
         return response, state
 
+
+    def _handle_transfers_request(self, team: str, user_text: str) -> str:
+        """Handle transfer/acquisitions requests by querying knowledge base and roster data"""
+        try:
+            # Query knowledge base for recent transfers
+            if team:
+                search_terms = [f"{team} acquisti", f"{team} trasferimenti", f"{team} mercato", f"transfer {team}"]
+            else:
+                search_terms = ["acquisti 2025", "trasferimenti Serie A", "mercato estivo 2025"]
+            
+            transfers_found = []
+            
+            for term in search_terms:
+                try:
+                    results = self.km.search_knowledge(
+                        text=term, 
+                        n_results=10, 
+                        include=["documents", "metadatas"]
+                    )
+                    
+                    if results and "metadatas" in results:
+                        for metadata_list in results["metadatas"]:
+                            for metadata in metadata_list:
+                                if metadata.get("type") == "transfer" and metadata.get("direction") == "in":
+                                    player_name = metadata.get("player", "")
+                                    team_name = metadata.get("team", "")
+                                    if team and team.lower() in team_name.lower():
+                                        transfers_found.append({
+                                            "player": player_name,
+                                            "team": team_name,
+                                            "season": metadata.get("season", "2025-26")
+                                        })
+                                    elif not team:
+                                        transfers_found.append({
+                                            "player": player_name,
+                                            "team": team_name,
+                                            "season": metadata.get("season", "2025-26")
+                                        })
+                except Exception as e:
+                    LOG.debug(f"Error searching transfers for {term}: {e}")
+                    continue
+            
+            # Also check roster data for recent transfers
+            roster_transfers = []
+            for p in self.roster:
+                if p.get("type") == "transfer" and p.get("direction") == "in":
+                    player_name = p.get("Name") or p.get("name", "")
+                    team_name = p.get("team", "")
+                    if team and team.lower() in team_name.lower():
+                        roster_transfers.append({
+                            "player": player_name,
+                            "team": team_name,
+                            "season": p.get("season", "2025-26")
+                        })
+                    elif not team:
+                        roster_transfers.append({
+                            "player": player_name,
+                            "team": team_name,
+                            "season": p.get("season", "2025-26")
+                        })
+            
+            # Combine and deduplicate
+            all_transfers = transfers_found + roster_transfers
+            seen = set()
+            unique_transfers = []
+            for t in all_transfers:
+                key = f"{t['player'].lower()}_{t['team'].lower()}"
+                if key not in seen:
+                    seen.add(key)
+                    unique_transfers.append(t)
+            
+            if unique_transfers:
+                if team:
+                    reply = f"🔄 **Ultimi acquisti {team}:**\n\n"
+                else:
+                    reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
+                
+                for i, transfer in enumerate(unique_transfers[:8], 1):
+                    reply += f"{i}. **{transfer['player']}** → {transfer['team']}\n"
+                
+                if len(unique_transfers) > 8:
+                    reply += f"\n*...e altri {len(unique_transfers) - 8} acquisti*"
+                    
+                return reply
+            else:
+                if team:
+                    return f"Non ho trovato acquisti recenti per {team}. I dati potrebbero non essere ancora aggiornati per la stagione 2025-26."
+                else:
+                    return "Non ho trovato acquisti recenti nel database. I dati dei trasferimenti potrebbero necessitare di aggiornamento."
+                    
+        except Exception as e:
+            LOG.error(f"Error in _handle_transfers_request: {e}")
+            return "⚠️ Errore nel recupero dei dati di mercato. Riprova più tardi."
 
     def _handle_goalkeeper_request(self, user_text: str) -> str:
         """Handle goalkeeper-specific requests with proper Serie A filtering"""
