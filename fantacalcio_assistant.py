@@ -1350,11 +1350,19 @@ Cosa ti interessa di più?"""
     def _handle_transfers_request(self, team: str, user_text: str) -> str:
         """Handle transfer/acquisitions requests by querying knowledge base and roster data"""
         try:
-            # Query knowledge base for recent transfers
+            # Enhanced search terms for Apify data
             if team:
-                search_terms = [f"{team} acquisti", f"{team} trasferimenti", f"{team} mercato", f"transfer {team}"]
+                search_terms = [
+                    f"{team} acquisti", f"{team} trasferimenti", f"{team} mercato", 
+                    f"transfer {team}", f"Transfer IN: {team}", f"arrivo {team}",
+                    f"{team} 2025-26", f"apify {team}"
+                ]
             else:
-                search_terms = ["acquisti 2025", "trasferimenti Serie A", "mercato estivo 2025"]
+                search_terms = [
+                    "acquisti 2025", "trasferimenti Serie A", "mercato estivo 2025",
+                    "Transfer IN", "direction in", "apify_transfermarkt",
+                    "2025-26 arrivals", "Serie A transfers"
+                ]
             
             transfers_found = []
             
@@ -1362,28 +1370,47 @@ Cosa ti interessa di più?"""
                 try:
                     results = self.km.search_knowledge(
                         text=term, 
-                        n_results=10, 
+                        n_results=15,  # Increased from 10 to get more results
                         include=["documents", "metadatas"]
                     )
                     
                     if results and "metadatas" in results:
                         for metadata_list in results["metadatas"]:
                             for metadata in metadata_list:
-                                if metadata.get("type") == "transfer" and metadata.get("direction") == "in":
-                                    player_name = metadata.get("player", "")
-                                    team_name = metadata.get("team", "")
-                                    if team and team.lower() in team_name.lower():
-                                        transfers_found.append({
-                                            "player": player_name,
-                                            "team": team_name,
-                                            "season": metadata.get("season", "2025-26")
-                                        })
-                                    elif not team:
-                                        transfers_found.append({
-                                            "player": player_name,
-                                            "team": team_name,
-                                            "season": metadata.get("season", "2025-26")
-                                        })
+                                # Enhanced filtering for Apify transfer data
+                                is_transfer = (
+                                    metadata.get("type") == "transfer" or
+                                    "transfer" in metadata.get("source", "").lower() or
+                                    "apify" in metadata.get("source", "").lower()
+                                )
+                                
+                                is_arrival = (
+                                    metadata.get("direction") == "in" or
+                                    "IN:" in str(metadata.get("text", "")) or
+                                    "arrivo" in str(metadata.get("text", "")).lower()
+                                )
+                                
+                                if is_transfer and is_arrival:
+                                    player_name = metadata.get("player", "") or self._extract_player_from_text(metadata.get("text", ""))
+                                    team_name = metadata.get("team", "") or metadata.get("to_team", "")
+                                    
+                                    if player_name and team_name:
+                                        if team and team.lower() in team_name.lower():
+                                            transfers_found.append({
+                                                "player": player_name,
+                                                "team": team_name,
+                                                "season": metadata.get("season", "2025-26"),
+                                                "source": metadata.get("source", ""),
+                                                "fee": metadata.get("fee", "")
+                                            })
+                                        elif not team:
+                                            transfers_found.append({
+                                                "player": player_name,
+                                                "team": team_name,
+                                                "season": metadata.get("season", "2025-26"),
+                                                "source": metadata.get("source", ""),
+                                                "fee": metadata.get("fee", "")
+                                            })
                 except Exception as e:
                     LOG.debug(f"Error searching transfers for {term}: {e}")
                     continue
@@ -1419,26 +1446,64 @@ Cosa ti interessa di più?"""
             
             if unique_transfers:
                 if team:
-                    reply = f"🔄 **Ultimi acquisti {team}:**\n\n"
+                    reply = f"🔄 **Ultimi acquisti {team} (2025-26):**\n\n"
                 else:
                     reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
                 
                 for i, transfer in enumerate(unique_transfers[:8], 1):
-                    reply += f"{i}. **{transfer['player']}** → {transfer['team']}\n"
+                    fee_info = ""
+                    if transfer.get("fee"):
+                        fee_info = f" • {transfer['fee']}"
+                    
+                    source_info = ""
+                    if "apify" in transfer.get("source", "").lower():
+                        source_info = " 🆕"
+                    
+                    reply += f"{i}. **{transfer['player']}** → {transfer['team']}{fee_info}{source_info}\n"
                 
                 if len(unique_transfers) > 8:
                     reply += f"\n*...e altri {len(unique_transfers) - 8} acquisti*"
+                
+                # Add data source info
+                apify_count = sum(1 for t in unique_transfers if "apify" in t.get("source", "").lower())
+                if apify_count > 0:
+                    reply += f"\n\n💡 *{apify_count} trasferimenti da fonte Apify aggiornata*"
                     
                 return reply
             else:
                 if team:
-                    return f"Non ho trovato acquisti recenti per {team}. I dati potrebbero non essere ancora aggiornati per la stagione 2025-26."
+                    return f"❌ Non ho trovato acquisti recenti per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati Apify potrebbero necessitare di aggiornamento\n• Usa 'ultimi acquisti' per vedere tutti i trasferimenti Serie A"
                 else:
-                    return "Non ho trovato acquisti recenti nel database. I dati dei trasferimenti potrebbero necessitare di aggiornamento."
+                    return "❌ Non ho trovato acquisti recenti nel database.\n\n🔄 **Possibili cause:**\n• I dati Apify necessitano di refresh\n• Nessun trasferimento registrato per questa stagione\n• Problema temporaneo con la knowledge base"
                     
         except Exception as e:
             LOG.error(f"Error in _handle_transfers_request: {e}")
             return "⚠️ Errore nel recupero dei dati di mercato. Riprova più tardi."
+
+    def _extract_player_from_text(self, text: str) -> str:
+        """Extract player name from transfer document text"""
+        if not text:
+            return ""
+        
+        # Look for patterns like "Transfer IN: Player Name" or "Player Name → Team"
+        import re
+        
+        patterns = [
+            r"Transfer IN:\s*([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s*→|\s*\(|\s*$)",
+            r"([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)\s*→",
+            r"Player:\s*([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s|$)",
+            r"^([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s*\(|\s*-|\s*→)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match:
+                player_name = match.group(1).strip()
+                # Basic validation
+                if len(player_name) > 2 and not any(word in player_name.lower() for word in ["transfer", "from", "to", "team"]):
+                    return player_name
+        
+        return ""
 
     def _handle_goalkeeper_request(self, user_text: str) -> str:
         """Handle goalkeeper-specific requests with proper Serie A filtering"""
