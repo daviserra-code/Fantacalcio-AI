@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple
 
 logger = logging.getLogger(__name__)
+LOG = logger # Alias for consistency with provided snippet
 
 class CorrectionsManager:
     """Enhanced corrections manager with better retrieval and application"""
@@ -17,6 +18,13 @@ class CorrectionsManager:
         self.db_path = "corrections.db"
         self._init_db()
         self.current_season = "2024-25"
+        # Initialize connection for exclusions if not already done by _init_db
+        try:
+            self.conn = sqlite3.connect(self.db_path)
+        except Exception as e:
+            logger.error(f"Failed to connect to database: {e}")
+            self.conn = None
+
 
     def add_correction(self, correction_type: str, incorrect_info: str,
                       correct_info: str, context: str = None):
@@ -297,36 +305,46 @@ class CorrectionsManager:
                         last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
+                # Exclusions table for players to be excluded from recommendations
+                conn.execute('''
+                    CREATE TABLE IF NOT EXISTS exclusions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        player_key TEXT NOT NULL UNIQUE,
+                        player_name TEXT NOT NULL,
+                        team TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
                 conn.commit()
-                
+
                 # Add missing columns if they don't exist (for existing databases)
                 try:
                     conn.execute("ALTER TABLE corrections ADD COLUMN correction_type TEXT")
                 except sqlite3.OperationalError:
                     pass  # Column already exists
-                
+
                 try:
                     conn.execute("ALTER TABLE corrections ADD COLUMN season TEXT DEFAULT '2024-25'")
                 except sqlite3.OperationalError:
                     pass  # Column already exists
-                    
+
                 try:
                     conn.execute("ALTER TABLE corrections ADD COLUMN persistent BOOLEAN DEFAULT TRUE")
                 except sqlite3.OperationalError:
                     pass  # Column already exists
-                    
+
                 try:
                     conn.execute("ALTER TABLE corrections ADD COLUMN applied BOOLEAN DEFAULT FALSE")
                 except sqlite3.OperationalError:
                     pass  # Column already exists
-                    
+
                 try:
                     conn.execute("ALTER TABLE corrections ADD COLUMN timestamp DATETIME DEFAULT CURRENT_TIMESTAMP")
                 except sqlite3.OperationalError:
                     pass  # Column already exists
-                    
+
                 conn.commit()
-                
+
         except Exception as e:
             logger.error(f"Failed to initialize corrections database: {e}")
 
@@ -376,11 +394,11 @@ class CorrectionsManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 # Check table schema first
                 cursor.execute("PRAGMA table_info(corrections)")
                 columns = [row[1] for row in cursor.fetchall()]
-                
+
                 if 'player_name' in columns:
                     cursor.execute('''
                         INSERT INTO corrections (player_name, correction_type, old_value, new_value, season, persistent)
@@ -392,7 +410,7 @@ class CorrectionsManager:
                         INSERT INTO corrections (field_name, old_value, new_value, reason, created_at)
                         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                     ''', (player_name, old_value or correction_type, new_value, f"{correction_type}: {player_name}"))
-                
+
                 conn.commit()
                 logger.info(f"Added correction to DB: {player_name} - {correction_type}")
             return True
@@ -414,7 +432,7 @@ class CorrectionsManager:
 
         if persistent_only:
             query += ' AND persistent = TRUE'
-        
+
         query += ' ORDER BY timestamp DESC'
 
         cursor.execute(query, params)
@@ -435,7 +453,7 @@ class CorrectionsManager:
         try:
             # Add to corrections database with persistent flag
             success = self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
-            
+
             # Also add to knowledge manager for immediate effect
             if self.knowledge_manager:
                 correction_text = f"PLAYER_REMOVED: {player_name} - Reason: {reason}"
@@ -447,7 +465,7 @@ class CorrectionsManager:
                     "created_at": datetime.now().isoformat(),
                     "persistent": True
                 }
-                
+
                 import uuid
                 doc_id = str(uuid.uuid4())
                 self.knowledge_manager.collection.add(
@@ -455,7 +473,7 @@ class CorrectionsManager:
                     metadatas=[metadata],
                     ids=[doc_id]
                 )
-            
+
             if success:
                 self.log_data_issue("PLAYER_REMOVAL", f"Player {player_name} removed: {reason}", "high")
                 # Force immediate application by clearing any cached data
@@ -506,63 +524,54 @@ class CorrectionsManager:
         conn.commit()
         conn.close()
 
-    def get_excluded_players(self):
-        """Retrieve a list of player names marked for exclusion."""
-        # Use cached version if available
-        if hasattr(self, '_excluded_players_cache'):
-            return self._excluded_players_cache
-            
-        # Fetch all persistent corrections from database
+    def add_exclusion(self, player_name: str, team: str = "") -> str:
+        """Add a player exclusion to prevent them from appearing in recommendations"""
         try:
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                
-                # Check if the table exists and get its schema
-                cursor.execute("PRAGMA table_info(corrections)")
-                columns = [row[1] for row in cursor.fetchall()]
-                
-                if not columns:
-                    # Table doesn't exist yet
-                    self._excluded_players_cache = []
-                    return []
-                
-                # Use the correct column name based on the schema
-                if 'player_name' in columns:
-                    player_col = 'player_name'
-                elif 'name' in columns:
-                    player_col = 'name'
-                else:
-                    # Fallback: get the first text column
-                    cursor.execute("SELECT * FROM corrections LIMIT 1")
-                    if cursor.fetchone():
-                        player_col = columns[1] if len(columns) > 1 else columns[0]
-                    else:
-                        self._excluded_players_cache = []
-                        return []
-                
-                # Query with the correct column name
-                if 'correction_type' in columns:
-                    cursor.execute(f"""
-                        SELECT {player_col} FROM corrections 
-                        WHERE correction_type = 'REMOVE' 
-                        AND new_value = 'EXCLUDED' 
-                        AND persistent = TRUE
-                    """)
-                else:
-                    # Fallback for older schema
-                    cursor.execute(f"""
-                        SELECT {player_col} FROM corrections 
-                        WHERE old_value IS NULL 
-                        AND new_value = 'EXCLUDED'
-                    """)
-                
-                excluded = [row[0] for row in cursor.fetchall()]
-                
-                # Cache the result
-                self._excluded_players_cache = excluded
-                return excluded
+            player_key = f"{player_name.lower().strip()}_{team.lower().strip()}"
+
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO exclusions (player_key, player_name, team, created_at)
+                VALUES (?, ?, ?, ?)
+            """, (player_key, player_name, team, datetime.now().isoformat()))
+
+            self.conn.commit()
+
+            # Also add to in-memory cache for immediate effect
+            if not hasattr(self, '_excluded_players_cache'):
+                self._excluded_players_cache = set()
+            self._excluded_players_cache.add(player_name.lower().strip())
+
+            LOG.info(f"[Corrections] Added exclusion: {player_name} ({team})")
+            return f"✅ **{player_name} {team}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+
         except Exception as e:
-            logger.error(f"Error retrieving excluded players: {e}")
+            LOG.error(f"Error adding exclusion: {e}")
+            return f"❌ Errore nell'esclusione di {player_name}"
+
+
+    def get_excluded_players(self) -> List[str]:
+        """Get list of excluded players"""
+        try:
+            # Get from cache if available (for immediate effect)
+            if hasattr(self, '_excluded_players_cache'):
+                cached_players = list(self._excluded_players_cache)
+            else:
+                cached_players = []
+
+            # Get from database
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT player_name FROM exclusions")
+            db_players = [row[0].lower().strip() for row in cursor.fetchall()]
+
+            # Combine and deduplicate
+            all_excluded = list(set(cached_players + db_players))
+
+            LOG.info(f"[Corrections] Excluded players: {len(all_excluded)} total")
+            return all_excluded
+
+        except Exception as e:
+            LOG.error(f"Error getting excluded players: {e}")
             return []
 
     def apply_corrections_to_data(self, players_data: list):
@@ -618,9 +627,9 @@ class CorrectionsManager:
         """Check if a given team name is part of the current Serie A league."""
         if not team:
             return False
-            
+
         team_norm = team.lower().strip()
-        
+
         # Current Serie A 2024-25 teams
         serie_a_teams = {
             "atalanta", "bologna", "cagliari", "como", "empoli", "fiorentina",
@@ -628,7 +637,7 @@ class CorrectionsManager:
             "monza", "napoli", "parma", "roma", "torino", "udinese",
             "venezia", "verona", "hellas verona"
         }
-        
+
         # Handle common variations and full names
         team_mappings = {
             "hellas verona": "verona",
@@ -672,20 +681,20 @@ class CorrectionsManager:
             "bayern munich": False,
             "borussia dortmund": False
         }
-        
+
         # Check direct exclusions first
         if team_mappings.get(team_norm) is False:
             return False
-            
+
         # Check direct match
         if team_norm in serie_a_teams:
             return True
-            
+
         # Check mappings
         mapped_team = team_mappings.get(team_norm)
         if mapped_team and mapped_team in serie_a_teams:
             return True
-            
+
         return False
 
     def get_corrected_name(self, name: str) -> Optional[str]:
@@ -705,14 +714,14 @@ class CorrectionsManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                
+
                 # Check if the table exists and get its schema
                 cursor.execute("PRAGMA table_info(corrections)")
                 columns = [row[1] for row in cursor.fetchall()]
-                
+
                 if not columns:
                     return None
-                
+
                 # Query for team corrections for this player (case-insensitive)
                 if 'player_name' in columns and 'correction_type' in columns:
                     cursor.execute("""
@@ -731,14 +740,14 @@ class CorrectionsManager:
                         ORDER BY created_at DESC 
                         LIMIT 1
                     """, (player_name,))
-                
+
                 result = cursor.fetchone()
                 if result:
                     logger.info(f"Found team correction for {player_name}: {current_team} → {result[0]}")
                     return result[0]
-                
+
                 return None
-                
+
         except Exception as e:
             logger.error(f"Error getting corrected team for {player_name}: {e}")
             return None

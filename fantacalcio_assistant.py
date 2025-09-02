@@ -1396,6 +1396,15 @@ Cosa ti interessa di più?"""
             # Check if user wants to see all transfers
             show_all = "tutti" in user_text.lower() or "all" in user_text.lower()
             
+            # Get excluded players from corrections manager
+            excluded_players = []
+            if self.corrections_manager:
+                try:
+                    excluded_players = [name.lower() for name in self.corrections_manager.get_excluded_players()]
+                    LOG.info(f"[Transfers] Excluded players: {excluded_players}")
+                except Exception as e:
+                    LOG.error(f"Error getting excluded players in transfers: {e}")
+            
             # First, check roster data for actual current transfers (direction = "in" only)
             roster_transfers = []
             seen_players = set()
@@ -1406,6 +1415,26 @@ Cosa ti interessa di più?"""
                     original_team_name = p.get("team", "")
                     team_name = original_team_name
                     season = p.get("season", "")
+                    
+                    # Skip excluded players - use fuzzy matching
+                    player_name_lower = player_name.lower().strip()
+                    should_skip = False
+                    for excluded in excluded_players:
+                        excluded_lower = excluded.lower()
+                        # Check if excluded name is contained in player name or vice versa
+                        if excluded_lower in player_name_lower or player_name_lower in excluded_lower:
+                            should_skip = True
+                            LOG.info(f"[Transfers] Skipping excluded player: {player_name} (matches exclusion: {excluded})")
+                            break
+                        # Also check if main part of name matches
+                        excluded_parts = excluded_lower.split()
+                        player_parts = player_name_lower.split()
+                        if any(part in player_parts for part in excluded_parts if len(part) > 2):
+                            should_skip = True
+                            LOG.info(f"[Transfers] Skipping excluded player: {player_name} (partial match: {excluded})")
+                            break
+                    if should_skip:
+                        continue
                     
                     # Apply team corrections if available
                     corrected_team = None
@@ -1508,6 +1537,25 @@ Cosa ti interessa di più?"""
                 if player_lower in player_names_seen:
                     continue
                 player_names_seen.add(player_lower)
+                
+                # Skip excluded players - apply the same logic as roster transfers
+                should_skip = False
+                for excluded in excluded_players:
+                    excluded_lower = excluded.lower()
+                    # Check if excluded name is contained in player name or vice versa
+                    if excluded_lower in player_lower or player_lower in excluded_lower:
+                        should_skip = True
+                        LOG.info(f"[Transfers] Skipping excluded player from KB: {t['player']} (matches exclusion: {excluded})")
+                        break
+                    # Also check if main part of name matches
+                    excluded_parts = excluded_lower.split()
+                    player_parts = player_lower.split()
+                    if any(part in player_parts for part in excluded_parts if len(part) > 2):
+                        should_skip = True
+                        LOG.info(f"[Transfers] Skipping excluded player from KB: {t['player']} (partial match: {excluded})")
+                        break
+                if should_skip:
+                    continue
                 
                 # Check if this player has been corrected to play for a different team
                 if self.corrections_manager:
