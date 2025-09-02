@@ -1143,6 +1143,44 @@ class FantacalcioAssistant:
         user_lower = user_text.lower().strip()
         history = state.get("conversation_history", [])
         
+        # Check for team correction feedback (e.g., "Luca Pellegrini gioca nella Lazio")
+        team_correction_patterns = [
+            r"(\w+(?:\s+\w+)*)\s+gioca\s+nell?[ao]\s+(\w+)",
+            r"(\w+(?:\s+\w+)*)\s+è\s+nell?[ao]\s+(\w+)",
+            r"(\w+(?:\s+\w+)*)\s+sta\s+nell?[ao]\s+(\w+)"
+        ]
+        
+        for pattern in team_correction_patterns:
+            match = re.search(pattern, user_lower)
+            if match:
+                player_name = match.group(1).strip().title()
+                team_name = match.group(2).strip().title()
+                
+                LOG.info(f"[Conversational] Team correction detected: {player_name} → {team_name}")
+                
+                # Apply the correction
+                if self.corrections_manager:
+                    # Find the player's current team in roster
+                    current_team = None
+                    for p in self.roster:
+                        if (p.get("name", "") or p.get("Name", "")).lower() == player_name.lower():
+                            current_team = p.get("team", "")
+                            break
+                    
+                    if current_team:
+                        self.corrections_manager.update_player_team(player_name, current_team, team_name)
+                        LOG.info(f"[Conversational] Applied correction: {player_name} {current_team} → {team_name}")
+                        
+                        # Refresh data
+                        self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+                        self._make_filtered_roster()
+                        
+                        return f"✅ Perfetto! Ho aggiornato i dati: **{player_name}** ora risulta correttamente nella **{team_name}**. Grazie per la correzione! 🎯\n\nVuoi che ricontrolli gli ultimi acquisti con i dati aggiornati?"
+                    else:
+                        return f"🤔 Hai ragione su **{player_name}** nella **{team_name}**, ma non riesco a trovarlo nel database per aggiornarlo. Potrebbe essere un problema nei dati di trasferimento."
+                else:
+                    return f"📝 Noted: **{player_name}** gioca nella **{team_name}**. I dati di trasferimento potrebbero essere obsoleti o incompleti."
+        
         # Greeting patterns
         greeting_patterns = ["ciao", "buongiorno", "buonasera", "salve", "hey", "hello"]
         if any(pattern in user_lower for pattern in greeting_patterns) and len(user_lower) < 20:
@@ -1188,7 +1226,7 @@ class FantacalcioAssistant:
         unclear_patterns = ["non ho capito", "cosa intendi", "spiegami", "come funziona"]
         if any(pattern in user_lower for pattern in unclear_patterns):
             return """Posso aiutarti con:
-🏆 **Formazioni**: "formazione 5-3-2 budget 500"
+🏆 **Formazioni**: "formazione 5-3-2 budget 200"
 ⚡ **Under 21**: "3 attaccanti under 21" o "difensori u21"
 💰 **Budget**: "top attaccanti budget 150"
 🎯 **Strategie**: "strategia asta"
@@ -1348,133 +1386,182 @@ Cosa ti interessa di più?"""
 
 
     def _handle_transfers_request(self, team: str, user_text: str) -> str:
-        """Handle transfer/acquisitions requests by querying knowledge base and roster data"""
+        """Handle transfer/acquisitions requests with proper data validation and corrections"""
         try:
-            # Enhanced search terms for Apify data
-            if team:
-                search_terms = [
-                    f"{team} acquisti", f"{team} trasferimenti", f"{team} mercato", 
-                    f"transfer {team}", f"Transfer IN: {team}", f"arrivo {team}",
-                    f"{team} 2025-26", f"apify {team}"
-                ]
-            else:
-                search_terms = [
-                    "acquisti 2025", "trasferimenti Serie A", "mercato estivo 2025",
-                    "Transfer IN", "direction in", "apify_transfermarkt",
-                    "2025-26 arrivals", "Serie A transfers"
-                ]
+            # First, check roster data for actual current transfers (direction = "in" only)
+            roster_transfers = []
+            seen_players = set()
             
-            transfers_found = []
+            for p in self.roster:
+                if p.get("type") == "transfer" and p.get("direction") == "in":
+                    player_name = p.get("Name") or p.get("name", "")
+                    team_name = p.get("team", "")
+                    season = p.get("season", "")
+                    
+                    # Apply team corrections if available
+                    if self.corrections_manager:
+                        corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
+                        if corrected_team:
+                            team_name = corrected_team
+                    
+                    # Filter by team if specified
+                    if team and team.lower() not in team_name.lower():
+                        continue
+                    
+                    # Check for duplicate/conflicting data
+                    player_key = player_name.lower().strip()
+                    if player_key in seen_players:
+                        LOG.warning(f"[Transfers] Duplicate player found: {player_name} for {team_name}")
+                        continue
+                    seen_players.add(player_key)
+                    
+                    # Validate this is actually a current transfer (not a loan return)
+                    fee = p.get("fee", "")
+                    if "fine prestito" in fee.lower():
+                        LOG.info(f"[Transfers] Skipping loan return: {player_name} to {team_name}")
+                        continue
+                    
+                    roster_transfers.append({
+                        "player": player_name,
+                        "team": team_name,
+                        "season": season,
+                        "fee": fee,
+                        "source": p.get("source", "roster"),
+                        "validated": True
+                    })
+            
+            # Also search knowledge base for additional transfer data
+            knowledge_transfers = []
+            if team:
+                search_terms = [f"{team} acquisti 2025", f"Transfer IN: {team}", f"{team} 2025-26"]
+            else:
+                search_terms = ["acquisti Serie A 2025", "Transfer IN", "direction in"]
             
             for term in search_terms:
                 try:
                     results = self.km.search_knowledge(
                         text=term, 
-                        n_results=15,  # Increased from 10 to get more results
+                        n_results=10,
                         include=["documents", "metadatas"]
                     )
                     
                     if results and "metadatas" in results:
                         for metadata_list in results["metadatas"]:
                             for metadata in metadata_list:
-                                # Enhanced filtering for Apify transfer data
-                                is_transfer = (
-                                    metadata.get("type") == "transfer" or
-                                    "transfer" in metadata.get("source", "").lower() or
-                                    "apify" in metadata.get("source", "").lower()
-                                )
-                                
-                                is_arrival = (
-                                    metadata.get("direction") == "in" or
-                                    "IN:" in str(metadata.get("text", "")) or
-                                    "arrivo" in str(metadata.get("text", "")).lower()
-                                )
-                                
-                                if is_transfer and is_arrival:
-                                    player_name = metadata.get("player", "") or self._extract_player_from_text(metadata.get("text", ""))
-                                    team_name = metadata.get("team", "") or metadata.get("to_team", "")
+                                if (metadata.get("type") == "transfer" and 
+                                    metadata.get("direction") == "in"):
+                                    
+                                    player_name = metadata.get("player", "")
+                                    team_name = metadata.get("team", "")
                                     
                                     if player_name and team_name:
-                                        if team and team.lower() in team_name.lower():
-                                            transfers_found.append({
-                                                "player": player_name,
-                                                "team": team_name,
-                                                "season": metadata.get("season", "2025-26"),
-                                                "source": metadata.get("source", ""),
-                                                "fee": metadata.get("fee", "")
-                                            })
-                                        elif not team:
-                                            transfers_found.append({
-                                                "player": player_name,
-                                                "team": team_name,
-                                                "season": metadata.get("season", "2025-26"),
-                                                "source": metadata.get("source", ""),
-                                                "fee": metadata.get("fee", "")
-                                            })
+                                        # Apply team corrections
+                                        if self.corrections_manager:
+                                            corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
+                                            if corrected_team:
+                                                team_name = corrected_team
+                                        
+                                        # Filter by team
+                                        if team and team.lower() not in team_name.lower():
+                                            continue
+                                            
+                                        knowledge_transfers.append({
+                                            "player": player_name,
+                                            "team": team_name,
+                                            "season": metadata.get("season", "2025-26"),
+                                            "fee": metadata.get("fee", ""),
+                                            "source": "knowledge_base",
+                                            "validated": False
+                                        })
                 except Exception as e:
-                    LOG.debug(f"Error searching transfers for {term}: {e}")
+                    LOG.debug(f"Error searching knowledge for {term}: {e}")
                     continue
             
-            # Also check roster data for recent transfers
-            roster_transfers = []
-            for p in self.roster:
-                if p.get("type") == "transfer" and p.get("direction") == "in":
-                    player_name = p.get("Name") or p.get("name", "")
-                    team_name = p.get("team", "")
-                    if team and team.lower() in team_name.lower():
-                        roster_transfers.append({
-                            "player": player_name,
-                            "team": team_name,
-                            "season": p.get("season", "2025-26")
-                        })
-                    elif not team:
-                        roster_transfers.append({
-                            "player": player_name,
-                            "team": team_name,
-                            "season": p.get("season", "2025-26")
-                        })
+            # Combine and validate transfers
+            all_transfers = roster_transfers + knowledge_transfers
             
-            # Combine and deduplicate
-            all_transfers = transfers_found + roster_transfers
-            seen = set()
-            unique_transfers = []
+            # Final deduplication and validation
+            validated_transfers = []
+            player_names_seen = set()
+            
             for t in all_transfers:
-                key = f"{t['player'].lower()}_{t['team'].lower()}"
-                if key not in seen:
-                    seen.add(key)
-                    unique_transfers.append(t)
+                player_lower = t["player"].lower().strip()
+                
+                # Skip if already processed
+                if player_lower in player_names_seen:
+                    continue
+                player_names_seen.add(player_lower)
+                
+                # Validate player exists in current Serie A context
+                is_valid_transfer = True
+                
+                # Check if player has conflicting data (plays for different team)
+                for roster_player in self.roster:
+                    roster_name = (roster_player.get("name") or "").lower().strip()
+                    roster_team = roster_player.get("team", "").lower().strip()
+                    
+                    if (roster_name == player_lower and 
+                        roster_player.get("type") != "transfer" and
+                        roster_team != t["team"].lower().strip()):
+                        
+                        LOG.warning(f"[Transfers] Conflicting data for {t['player']}: transfer says {t['team']}, roster says {roster_player.get('team')}")
+                        
+                        # If corrections manager has info, use that
+                        if self.corrections_manager:
+                            corrected_team = self.corrections_manager.get_corrected_team(t["player"], roster_player.get("team", ""))
+                            if corrected_team:
+                                t["team"] = corrected_team
+                                t["corrected"] = True
+                                LOG.info(f"[Transfers] Applied correction: {t['player']} now correctly shows as {corrected_team}")
+                            else:
+                                # Mark as potentially invalid
+                                t["needs_validation"] = True
+                
+                validated_transfers.append(t)
             
-            if unique_transfers:
+            if validated_transfers:
                 if team:
                     reply = f"🔄 **Ultimi acquisti {team} (2025-26):**\n\n"
                 else:
                     reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
                 
-                for i, transfer in enumerate(unique_transfers[:8], 1):
+                for i, transfer in enumerate(validated_transfers[:8], 1):
                     fee_info = ""
-                    if transfer.get("fee"):
+                    if transfer.get("fee") and "fine prestito" not in transfer.get("fee", "").lower():
                         fee_info = f" • {transfer['fee']}"
                     
                     source_info = ""
                     if "apify" in transfer.get("source", "").lower():
                         source_info = " 🆕"
+                    elif transfer.get("corrected"):
+                        source_info = " ✅"
+                    elif transfer.get("needs_validation"):
+                        source_info = " ⚠️"
                     
                     reply += f"{i}. **{transfer['player']}** → {transfer['team']}{fee_info}{source_info}\n"
                 
-                if len(unique_transfers) > 8:
-                    reply += f"\n*...e altri {len(unique_transfers) - 8} acquisti*"
+                if len(validated_transfers) > 8:
+                    reply += f"\n*...e altri {len(validated_transfers) - 8} acquisti*"
                 
-                # Add data source info
-                apify_count = sum(1 for t in unique_transfers if "apify" in t.get("source", "").lower())
-                if apify_count > 0:
-                    reply += f"\n\n💡 *{apify_count} trasferimenti da fonte Apify aggiornata*"
+                # Add validation notes
+                validation_notes = []
+                corrected_count = sum(1 for t in validated_transfers if t.get("corrected"))
+                needs_validation_count = sum(1 for t in validated_transfers if t.get("needs_validation"))
+                
+                if corrected_count > 0:
+                    validation_notes.append(f"✅ {corrected_count} correzioni applicate")
+                if needs_validation_count > 0:
+                    validation_notes.append(f"⚠️ {needs_validation_count} da verificare")
+                
+                if validation_notes:
+                    reply += f"\n\n💡 *{', '.join(validation_notes)}*"
                     
                 return reply
             else:
                 if team:
-                    return f"❌ Non ho trovato acquisti recenti per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati Apify potrebbero necessitare di aggiornamento\n• Usa 'ultimi acquisti' per vedere tutti i trasferimenti Serie A"
+                    return f"❌ Non ho trovato acquisti recenti validati per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono conflitti nei dati di trasferimento"
                 else:
-                    return "❌ Non ho trovato acquisti recenti nel database.\n\n🔄 **Possibili cause:**\n• I dati Apify necessitano di refresh\n• Nessun trasferimento registrato per questa stagione\n• Problema temporaneo con la knowledge base"
+                    return "❌ Non ho trovato acquisti recenti validati nel database.\n\n🔄 **Possibili cause:**\n• I dati necessitano di refresh\n• Conflitti nei dati di trasferimento\n• Problema temporaneo con la knowledge base"
                     
         except Exception as e:
             LOG.error(f"Error in _handle_transfers_request: {e}")
