@@ -527,6 +527,10 @@ class CorrectionsManager:
     def add_exclusion(self, player_name: str, team: str = "") -> str:
         """Add a player exclusion to prevent them from appearing in recommendations for a specific team"""
         try:
+            # Ensure database connection
+            if not self.conn:
+                self.conn = sqlite3.connect(self.db_path)
+
             player_key = f"{player_name.lower().strip()}_{team.lower().strip()}"
 
             cursor = self.conn.cursor()
@@ -536,6 +540,9 @@ class CorrectionsManager:
             """, (player_key, player_name, team, datetime.now().isoformat()))
 
             self.conn.commit()
+
+            # Also add as a persistent correction for general exclusion
+            self.add_correction_to_db(player_name, "TEAM_EXCLUSION", team, "EXCLUDED", persistent=True)
 
             # Add to team-specific cache for immediate effect
             if not hasattr(self, '_excluded_players_cache'):
@@ -566,7 +573,14 @@ class CorrectionsManager:
                     for team_players in self._excluded_players_cache.values():
                         excluded_players.extend(team_players)
 
-            # Get from database
+            # Get from database - ensure connection is valid
+            if not self.conn:
+                try:
+                    self.conn = sqlite3.connect(self.db_path)
+                except Exception as e:
+                    LOG.error(f"Failed to reconnect to database: {e}")
+                    return excluded_players
+
             cursor = self.conn.cursor()
             if team:
                 cursor.execute("SELECT player_name FROM exclusions WHERE LOWER(team) = LOWER(?)", (team,))
@@ -575,15 +589,19 @@ class CorrectionsManager:
             
             db_players = [row[0].lower().strip() for row in cursor.fetchall()]
 
-            # Combine and deduplicate
-            all_excluded = list(set(excluded_players + db_players))
+            # Also check for general exclusions (players excluded from all teams)
+            cursor.execute("SELECT player_name FROM corrections WHERE correction_type = 'REMOVE' AND persistent = TRUE")
+            general_excluded = [row[0].lower().strip() for row in cursor.fetchall()]
 
-            LOG.info(f"[Corrections] Excluded players for {team or 'all teams'}: {len(all_excluded)} total")
+            # Combine and deduplicate
+            all_excluded = list(set(excluded_players + db_players + general_excluded))
+
+            LOG.info(f"[Corrections] Excluded players for {team or 'all teams'}: {len(all_excluded)} total - DB: {len(db_players)}, Cache: {len(excluded_players)}, General: {len(general_excluded)}")
             return all_excluded
 
         except Exception as e:
             LOG.error(f"Error getting excluded players: {e}")
-            return []
+            return excluded_players
 
     def apply_corrections_to_data(self, players_data: list):
         """Apply all persistent corrections and filters to a list of player dictionaries."""

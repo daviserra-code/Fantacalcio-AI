@@ -181,11 +181,64 @@ def api_chat():
     assistant = get_assistant()
     corrections_manager = get_corrections_manager()
 
-    # Handle exclusions (rimuovi/escludi commands)
-    exclusion_response = handle_exclusion(msg, state)
-    if exclusion_response:
-        set_state(state)
-        return jsonify({"response": exclusion_response})
+    # Handle exclusion requests
+    exclusion_patterns = [
+        r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+([a-zA-ZÀ-ÿ\s]+))?(?:\s|$)",
+        r"escludi\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+([a-zA-ZÀ-ÿ\s]+))?(?:\s|$)",
+        r"togli\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s+dalla?\s+([a-zA-ZÀ-ÿ\s]+))?(?:\s|$)"
+    ]
+
+    for pattern in exclusion_patterns:
+        match = re.search(pattern, msg.lower())
+        if match:
+            player_name = match.group(1).strip().title()
+            team_name = match.group(2).strip().title() if match.group(2) else ""
+
+            LOG.info(f"[Web] Exclusion request: {player_name} from {team_name or 'all teams'}")
+
+            if assistant.corrections_manager:
+                if team_name:
+                    result = assistant.corrections_manager.add_exclusion(player_name, team_name)
+                    # Store in session for immediate effect
+                    session_exclusions = state.get("excluded_players", [])
+                    exclusion_key = f"{player_name.lower()}_{team_name.lower()}"
+                    if exclusion_key not in session_exclusions:
+                        session_exclusions.append(exclusion_key)
+                        state["excluded_players"] = session_exclusions
+                        LOG.info(f"[Web] Added to session exclusions: {exclusion_key}")
+
+                    # Force refresh of assistant data
+                    assistant.roster = assistant.corrections_manager.apply_corrections_to_data(assistant.roster)
+                    assistant._make_filtered_roster()
+
+                    response = result
+                else:
+                    result = assistant.corrections_manager.remove_player(player_name)
+                    # Store in session for global exclusion
+                    session_exclusions = state.get("excluded_players", [])
+                    exclusion_key = f"{player_name.lower()}_global"
+                    if exclusion_key not in session_exclusions:
+                        session_exclusions.append(exclusion_key)
+                        state["excluded_players"] = session_exclusions
+                        LOG.info(f"[Web] Added to session exclusions (global): {exclusion_key}")
+
+                    # Force refresh of assistant data
+                    assistant.roster = assistant.corrections_manager.apply_corrections_to_data(assistant.roster)
+                    assistant._make_filtered_roster()
+
+                    response = result
+            else:
+                response = f"✅ **{player_name}** è stato escluso dalle future liste. Questa esclusione è attiva per tutta la sessione."
+                # Store in session even without corrections manager
+                session_exclusions = state.get("excluded_players", [])
+                exclusion_key = f"{player_name.lower()}_{team_name.lower() if team_name else 'global'}"
+                if exclusion_key not in session_exclusions:
+                    session_exclusions.append(exclusion_key)
+                    state["excluded_players"] = session_exclusions
+                    LOG.info(f"[Web] Added to session exclusions (fallback): {exclusion_key}")
+
+            set_state(state)
+            return jsonify({"response": response, "state": state})
 
     # Check for corrections
     correction_response = handle_correction(msg, assistant) # Pass assistant instead of corrections_manager
@@ -228,6 +281,35 @@ def api_chat():
             "role": "system",
             "content": exclusions_context
         })
+
+    # Apply exclusions before processing
+    session_exclusions = state.get("excluded_players", [])
+    persistent_exclusions = []
+    if assistant.corrections_manager:
+        try:
+            persistent_exclusions = assistant.corrections_manager.get_excluded_players()
+        except Exception as e:
+            LOG.error(f"Error getting persistent exclusions: {e}")
+
+    all_exclusions = session_exclusions + persistent_exclusions
+    LOG.info(f"Applying exclusions: session={session_exclusions}, persistent={persistent_exclusions}")
+
+    # Update assistant's excluded players cache before processing
+    if assistant.corrections_manager and all_exclusions:
+        if not hasattr(assistant.corrections_manager, '_excluded_players_cache'):
+            assistant.corrections_manager._excluded_players_cache = {}
+
+        # Parse session exclusions and add to cache
+        for exclusion in session_exclusions:
+            if "_" in exclusion:
+                player_name, team_or_global = exclusion.split("_", 1)
+                if team_or_global != "global":
+                    if team_or_global not in assistant.corrections_manager._excluded_players_cache:
+                        assistant.corrections_manager._excluded_players_cache[team_or_global] = set()
+                    assistant.corrections_manager._excluded_players_cache[team_or_global].add(player_name.lower())
+
+        LOG.info(f"Updated exclusions cache with session data")
+
 
     try:
         reply, new_state = assistant.respond(msg, mode=mode, state=state, context_messages=context_messages)
@@ -279,6 +361,12 @@ def api_chat():
             {"role": "user", "content": msg, "timestamp": time.time()},
             {"role": "assistant", "content": reply, "timestamp": time.time()}
         ])
+    else:
+        # Ensure current exchange is added if not already handled by assistant.respond
+        if not any(item['content'] == reply for item in new_state["conversation_history"] if item['role'] == 'assistant'):
+            new_state["conversation_history"].append({"role": "user", "content": msg, "timestamp": time.time()})
+            new_state["conversation_history"].append({"role": "assistant", "content": reply, "timestamp": time.time()})
+
 
     set_state(new_state)
 
@@ -304,21 +392,21 @@ def handle_exclusion(msg: str, state: dict) -> str:
     # Pattern for team-specific exclusions
     team_exclusion_pattern = r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)\s+dall[ao]\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s*$)"
     team_match = re.search(team_exclusion_pattern, msg, re.IGNORECASE)
-    
+
     if team_match:
         player_name = team_match.group(1).strip()
         team_name = team_match.group(2).strip()
-        
+
         # Clean up common words
         player_name = re.sub(r'\b(dalla?|lista|squadre?|non|di|serie|a)\b', '', player_name, flags=re.IGNORECASE).strip()
         team_name = re.sub(r'\b(lista|squadra)\b', '', team_name, flags=re.IGNORECASE).strip()
-        
+
         if len(player_name) > 2 and len(team_name) > 2:
             # Use team-specific exclusions
             team_exclusions = state.setdefault("team_exclusions", {})
             if team_name not in team_exclusions:
                 team_exclusions[team_name] = []
-            
+
             if player_name not in team_exclusions[team_name]:
                 team_exclusions[team_name].append(player_name)
                 return f"✅ **{player_name}** è stato escluso dalle liste della **{team_name}**. Potrà ancora apparire se trasferito in altre squadre."
@@ -568,216 +656,6 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             except Exception as e:
                 return f"❌ Errore nel generare il report: {e}"
 
-    return None
-
-def handle_chat():
-    try:
-        data = request.get_json(force=True, silent=True) or {}
-        user_message = data.get('message', '').strip()
-        mode = data.get('mode', 'classic').strip()
-
-        # Add client identifier for logging
-        client_id = request.headers.get('X-Client-ID', 'unknown')
-        LOG.info(f"Chat request from client: {client_id}")
-        LOG.info(f"Request data: {data}")
-
-        if not user_message:
-            return jsonify({"response": "Scrivi un messaggio."})
-
-        # Check if this is a correction message
-        correction_response = handle_correction_message(user_message)
-        if correction_response:
-            return jsonify({"response": correction_response})
-
-        # ETL refresh job (non-blocking)
-        try:
-            if os.path.exists("etl_build_roster.py"):
-                subprocess.Popen(["python", "etl_build_roster.py"], 
-                               stdout=subprocess.DEVNULL, 
-                               stderr=subprocess.DEVNULL)
-                LOG.info("[ETL] Job di refresh lanciato")
-            else:
-                LOG.info("[ETL] ETL script non trovato, skip")
-        except Exception as e2:
-            LOG.warning("[ETL] impossibile avviare ETL: %s", e2)
-
-        # Initialize assistant
-        LOG.info("Initializing FantacalcioAssistant (singleton)...")
-        assistant = get_assistant()
-
-        # Get response from assistant
-        response = assistant.chat(user_message, mode=mode)
-
-        # Apply session exclusions if any
-        session_exclusions = session.get('excluded_players', [])
-        persistent_exclusions = []
-        if assistant.corrections_manager:
-            try:
-                persistent_exclusions = assistant.corrections_manager.get_excluded_players()
-            except Exception as e:
-                LOG.error(f"Error getting persistent exclusions: {e}")
-
-        LOG.info(f"Applying exclusions: session={session_exclusions}, persistent={persistent_exclusions}")
-
-        # Apply exclusions to assistant - ensure they are in memory for immediate effect
-        all_exclusions = list(set(session_exclusions + persistent_exclusions))
-        if assistant.corrections_manager and all_exclusions:
-            # Ensure cache is initialized
-            if not hasattr(assistant.corrections_manager, '_excluded_players_cache'):
-                assistant.corrections_manager._excluded_players_cache = set()
-
-            # Add all exclusions to cache for immediate effect
-            for player_name in all_exclusions:
-                assistant.corrections_manager._excluded_players_cache.add(player_name.lower().strip())
-
-            LOG.info(f"Applied {len(all_exclusions)} exclusions to cache")
-
-        # The response from assistant.chat already handles exclusions and corrections
-        # no need to re-apply them here.
-
-        return jsonify({"response": response})
-
-    except Exception as e:
-        LOG.error(f"Error in chat handler: {e}")
-        return jsonify({"error": str(e)}), 500
-
-def handle_correction_message(user_message):
-    """Handle correction messages like 'Player X is Y years old' or 'Player X plays for Team Y'"""
-    import re
-
-    # Pattern for age corrections: "Player ha X anni" or "Player is X years old"
-    # More flexible pattern to catch various formats, including accented characters
-    age_patterns = [
-        r'(.+?)\s+ha\s+(\d+)\s+anni',
-        r'(.+?)\s+è\s+(\d+)\s+anni', 
-        r'(.+?)\s+is\s+(\d+)\s+years?\s+old',
-        r'(.+?)\s+età\s+(\d+)',
-        r'(.+?)\s+age\s+(\d+)'
-    ]
-
-    age_match = None
-    for pattern in age_patterns:
-        age_match = re.search(pattern, user_message, re.IGNORECASE | re.UNICODE)
-        if age_match:
-            break
-
-    if age_match:
-        player_name = age_match.group(1).strip()
-        age = int(age_match.group(2))
-
-        LOG.info(f"Age correction detected: {player_name} -> {age} years old")
-
-        try:
-            corrections_manager = get_corrections_manager()
-            assistant = get_assistant()
-
-            # Calculate birth year from age (assuming current year is 2025)
-            birth_year = 2025 - age
-
-            # Add to corrections database with persistent flag
-            success = corrections_manager.add_correction_to_db(
-                player_name, "AGE_UPDATE", "unknown", str(birth_year), persistent=True
-            )
-
-            if success:
-                # Update the player data immediately in both rosters - use fuzzy matching for names with accents
-                import unicodedata
-
-                def normalize_name(name):
-                    """Normalize name for comparison (remove accents, convert to lowercase)"""
-                    normalized = unicodedata.normalize('NFD', name.lower())
-                    return ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
-
-                player_name_normalized = normalize_name(player_name)
-                updated = False
-
-                for p in assistant.roster:
-                    roster_name = p.get("name", "")
-                    roster_name_normalized = normalize_name(roster_name)
-
-                    # Try exact match first, then normalized match
-                    if (roster_name.lower() == player_name.lower() or 
-                        roster_name_normalized == player_name_normalized or
-                        player_name_normalized in roster_name_normalized or
-                        roster_name_normalized in player_name_normalized):
-                        p["birth_year"] = birth_year
-                        updated = True
-                        LOG.info(f"Updated {roster_name} birth_year to {birth_year} in main roster (matched from input: {player_name})")
-                        break
-
-                for p in assistant.filtered_roster:
-                    roster_name = p.get("name", "")
-                    roster_name_normalized = normalize_name(roster_name)
-
-                    if (roster_name.lower() == player_name.lower() or 
-                        roster_name_normalized == player_name_normalized or
-                        player_name_normalized in roster_name_normalized or
-                        roster_name_normalized in player_name_normalized):
-                        p["birth_year"] = birth_year
-                        LOG.info(f"Updated {roster_name} birth_year to {birth_year} in filtered roster (matched from input: {player_name})")
-
-                # Also add to age_overrides for immediate effect in Under21 queries
-                if hasattr(assistant, 'overrides'):
-                    # Find the player's team for the override key using improved matching
-                    team = "Unknown"
-                    matched_name = player_name
-
-                    for p in assistant.roster:
-                        roster_name = p.get("name", "")
-                        roster_name_normalized = normalize_name(roster_name)
-
-                        if (roster_name.lower() == player_name.lower() or 
-                            roster_name_normalized == player_name_normalized or
-                            player_name_normalized in roster_name_normalized or
-                            roster_name_normalized in player_name_normalized):
-                            team = p.get("team", "Unknown")
-                            matched_name = roster_name  # Use the exact name from roster
-                            LOG.info(f"Found team for override: {matched_name} -> {team}")
-                            break
-
-                    # Use the same key format as age_overrides.json with matched name
-                    override_key = f"{matched_name}@@{team}"
-                    assistant.overrides[override_key] = birth_year
-                    LOG.info(f"Added override: {override_key} -> {birth_year}")
-
-                return f"✅ Correzione aggiunta: {player_name} ha {age} anni (nato nel {birth_year}). La correzione è stata applicata immediatamente."
-            else:
-                return f"❌ Errore nell'aggiungere la correzione per {player_name}."
-        except Exception as e:
-            LOG.error(f"Error handling age correction: {e}")
-            return f"❌ Errore nell'elaborare la correzione: {e}"
-
-    # Pattern for team corrections: "Player plays for Team" or "Player gioca nel/per Team"
-    team_pattern = r'(.+?)\s+(?:plays?\s+for|gioca\s+(?:nel|per|in))\s+(.+)'
-    team_match = re.search(team_pattern, user_message, re.IGNORECASE)
-
-    if team_match:
-        player_name = team_match.group(1).strip()
-        team_name = team_match.group(2).strip()
-
-        try:
-            assistant = get_assistant()
-            if hasattr(assistant, 'corrections_manager'):
-                # Add team correction
-                correction_id = assistant.corrections_manager.add_player_correction(
-                    player_name=player_name,
-                    field_name="team", 
-                    old_value="previous_team",
-                    new_value=team_name,
-                    reason=f"User correction via chat: {user_message}"
-                )
-
-                if correction_id:
-                    return f"✅ Correzione aggiunta: {player_name} gioca per {team_name}. La correzione sarà applicata nelle prossime ricerche."
-                else:
-                    return f"❌ Errore nell'aggiungere la correzione per {player_name}."
-            else:
-                return "❌ Sistema di correzioni non disponibile."
-        except Exception as e:
-            LOG.error(f"Error handling team correction: {e}")
-            return f"❌ Errore nell'elaborare la correzione: {e}"
-
-    # Not a correction message
     return None
 
 @app.route("/api/reset-chat", methods=["POST"])
