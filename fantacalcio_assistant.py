@@ -1666,7 +1666,7 @@ Cosa ti interessa di più?"""
                 if show_all:
                     transfers_to_show = validated_transfers
                 else:
-                    transfers_to_show = validated_transfers[:8]
+                    transfers_to_show = validated_transfers[:10]
                 
                 for i, transfer in enumerate(transfers_to_show, 1):
                     fee_info = ""
@@ -1683,8 +1683,8 @@ Cosa ti interessa di più?"""
                     
                     reply += f"{i}. **{transfer['player']}** → {transfer['team']}{fee_info}{source_info}\n"
                 
-                if not show_all and len(validated_transfers) > 8:
-                    reply += f"\n*...e altri {len(validated_transfers) - 8} acquisti*"
+                if not show_all and len(validated_transfers) > 10:
+                    reply += f"\n*...e altri {len(validated_transfers) - 10} acquisti*"
                 elif show_all:
                     reply += f"\n\n📊 *Totale completo: {len(validated_transfers)} acquisti mostrati*"
                 
