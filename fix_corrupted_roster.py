@@ -4,7 +4,7 @@
 
 """
 Script to fix the corrupted season_roster.json file.
-Handles encoding issues and missing JSON structure.
+Handles encoding issues and missing JSON structure with manual parsing.
 """
 
 import json
@@ -69,15 +69,12 @@ def fix_encoding_issues(text):
         'VÃ¡squez': 'Vásquez',
         'IkonÃ©': 'Ikoné',
         'KouamÃ©': 'Kouamé',
-        'MartÃ­nez': 'Martínez',
-        'VÃ¡squez': 'Vásquez',
         'GuÃ°mundsson': 'Guðmundsson',
         'MontipÃ²': 'Montipò',
         'ViÃ±a': 'Viña',
         'MilenkoviÄ': 'Milenković',
         'ÃalhanoÄlu': 'Çalhanoğlu',
         'BarreÅ¡a': 'Barella',
-        'MartÃ­nez': 'Martínez',
         'VlahoviÄ': 'Vlahović',
         'YÄ±ldÄ±z': 'Yıldız',
         'DuÅ¡an': 'Dušan',
@@ -96,7 +93,6 @@ def fix_encoding_issues(text):
         'NehuÃ©n': 'Nehuen',
         'PÃ©rez': 'Pérez',
         'NicolÃ²': 'Nicolò',
-        'ViÃ±a': 'Viña',
         'ErliÄ': 'Erlić',
         'LaurientÃ©': 'Laurienté',
         'AgustÃ­n': 'Agustín',
@@ -110,21 +106,83 @@ def fix_encoding_issues(text):
         'BrescianÃni': 'Brescianini',
         'GutiÃ©rrez': 'Gutiérrez',
         'ConceiÃ§Ã£o': 'Conceição',
-        'GonzÃ¡lez': 'González',
         'MÃ¡rio': 'Mário',
         'Rovelle': 'Rovella',
         'DjalÃ³': 'Djaló',
         'KostiÄ': 'Kostić',
         'FagiÃ³li': 'Fagioli',
         'LindstrÃ¸m': 'Lindstrøm',
-        'BernabÃ©': 'Bernabé',
-        'Å emper': 'Šemper'
+        'BernabÃ©': 'Bernabé'
     }
     
     for wrong, correct in replacements.items():
         text = text.replace(wrong, correct)
     
     return text
+
+def manual_fix_json(content):
+    """Manually fix the JSON structure by reconstructing it properly."""
+    LOG.info("Attempting manual JSON reconstruction...")
+    
+    # Fix encoding first
+    content = fix_encoding_issues(content)
+    
+    # The file starts with "  }," - we need to find complete JSON objects
+    # Let's split by lines and reconstruct
+    lines = content.split('\n')
+    
+    # Remove empty lines and strip whitespace
+    lines = [line.strip() for line in lines if line.strip()]
+    
+    # Initialize our JSON array
+    result_objects = []
+    current_object = {}
+    current_key = None
+    brace_count = 0
+    in_object = False
+    
+    # Start with opening bracket
+    fixed_content = "[\n"
+    
+    for i, line in enumerate(lines):
+        # Skip the first line if it starts with "}," (the corrupted part)
+        if i == 0 and line.startswith('},'):
+            continue
+            
+        # Count braces to track object boundaries
+        open_braces = line.count('{')
+        close_braces = line.count('}')
+        
+        # If we find an opening brace, we're starting a new object
+        if '{' in line and not in_object:
+            in_object = True
+            brace_count = open_braces - close_braces
+            fixed_content += "  {\n"
+            continue
+        elif in_object:
+            brace_count += open_braces - close_braces
+            
+            # Add the line to our fixed content
+            if line.strip() and not line.startswith('},'):
+                # Ensure proper indentation
+                if not line.startswith('  '):
+                    line = '    ' + line.strip()
+                fixed_content += line + '\n'
+                
+                # Check if this closes the object
+                if brace_count <= 0 and '}' in line:
+                    # This object is complete
+                    in_object = False
+                    brace_count = 0
+                    # Add comma except for the last object (we'll fix this later)
+                    if not line.endswith(','):
+                        fixed_content = fixed_content.rstrip() + ',\n'
+                    fixed_content += "  },\n"
+    
+    # Remove the last comma and close the array
+    fixed_content = fixed_content.rstrip().rstrip(',') + '\n]'
+    
+    return fixed_content
 
 def main():
     corrupted_file = "season_roster.json.corrupted.1756762135"
@@ -137,33 +195,59 @@ def main():
         
         LOG.info(f"Read corrupted file: {len(content)} characters")
         
-        # Fix encoding issues
-        content = fix_encoding_issues(content)
-        
-        # The file seems to be missing the opening bracket, add it
-        if not content.strip().startswith('['):
-            content = '[' + content
-        
-        # Ensure proper JSON ending
-        if not content.strip().endswith(']'):
-            content = content.rstrip().rstrip(',') + '\n]'
-        
-        # Try to parse the JSON to validate it
+        # Try manual reconstruction first
         try:
-            data = json.loads(content)
-            LOG.info(f"Successfully parsed JSON with {len(data)} records")
-        except json.JSONDecodeError as e:
-            LOG.error(f"JSON parsing failed: {e}")
-            # Try to fix common JSON issues
-            content = content.replace('}\n  {', '},\n  {')
-            content = re.sub(r',(\s*[}\]])', r'\1', content)  # Remove trailing commas
+            fixed_content = manual_fix_json(content)
+            LOG.info("Manual reconstruction completed")
             
-            try:
-                data = json.loads(content)
-                LOG.info(f"Successfully parsed JSON after fixes with {len(data)} records")
-            except json.JSONDecodeError as e2:
-                LOG.error(f"Could not fix JSON: {e2}")
-                return
+            # Test if the fixed content is valid JSON
+            data = json.loads(fixed_content)
+            LOG.info(f"Successfully parsed JSON with {len(data)} records")
+            
+        except (json.JSONDecodeError, Exception) as e:
+            LOG.error(f"Manual reconstruction failed: {e}")
+            LOG.info("Falling back to line-by-line extraction...")
+            
+            # Fallback: Extract individual JSON objects line by line
+            content = fix_encoding_issues(content)
+            lines = content.split('\n')
+            
+            objects = []
+            current_obj_lines = []
+            brace_count = 0
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                if line.startswith('},') and not current_obj_lines:
+                    continue  # Skip the corrupted first line
+                
+                current_obj_lines.append(line)
+                brace_count += line.count('{') - line.count('}')
+                
+                if brace_count == 0 and current_obj_lines:
+                    # We have a complete object
+                    obj_str = '\n'.join(current_obj_lines)
+                    obj_str = obj_str.rstrip(',').rstrip()
+                    
+                    if obj_str.startswith('{') and obj_str.endswith('}'):
+                        try:
+                            obj = json.loads(obj_str)
+                            objects.append(obj)
+                        except json.JSONDecodeError:
+                            LOG.warning(f"Failed to parse object: {obj_str[:100]}...")
+                    
+                    current_obj_lines = []
+                    brace_count = 0
+            
+            data = objects
+            LOG.info(f"Extracted {len(data)} valid objects")
+        
+        if not data:
+            LOG.error("No valid data extracted")
+            return
         
         # Write the fixed file
         with open(output_file, 'w', encoding='utf-8') as f:
@@ -174,7 +258,7 @@ def main():
         # Show some sample data
         if data:
             LOG.info("Sample records:")
-            for i, player in enumerate(data[:3]):
+            for i, player in enumerate(data[:5]):
                 LOG.info(f"  {i+1}. {player.get('name', 'Unknown')} - {player.get('team', 'Unknown')} ({player.get('role', 'Unknown')})")
         
     except Exception as e:
