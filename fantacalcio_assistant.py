@@ -954,7 +954,31 @@ class FantacalcioAssistant:
         # Pick players for each role with budget consciousness
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
-                picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
+                if role == "P":
+                    # Special handling for goalkeepers - use a simpler selection method
+                    gk_pool = self._pool_by_role("P")
+                    if gk_pool:
+                        # Sort by value ratio and pick the best within budget
+                        valid_gks = []
+                        for gk in gk_pool:
+                            if (gk.get("_price") is not None and gk.get("_fm") is not None and 
+                                gk.get("_price") <= role_budget_targets["P"]):
+                                gk["_value_ratio"] = gk.get("_fm", 0) / max(gk.get("_price", 1), 1)
+                                valid_gks.append(gk)
+                        
+                        if valid_gks:
+                            valid_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -(x.get("_fm") or 0)))
+                            picks[role] = [valid_gks[0]]
+                            used.add(valid_gks[0].get("name"))
+                        else:
+                            # Fallback: pick cheapest goalkeeper with data
+                            fallback_gks = [gk for gk in gk_pool if gk.get("_price") is not None]
+                            if fallback_gks:
+                                fallback_gks.sort(key=lambda x: (x.get("_price", 999), -(x.get("_fm") or 0)))
+                                picks[role] = [fallback_gks[0]]
+                                used.add(fallback_gks[0].get("name"))
+                else:
+                    picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
         
         # Apply team corrections to all picked players before final display
         if self.corrections_manager:
