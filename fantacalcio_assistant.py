@@ -1344,7 +1344,7 @@ Cosa ti interessa di più?"""
             reply = self._answer_top_attackers_by_budget(intent.get("budget",150))
         elif intent["type"] == "formation":
             fm_text = intent["formation_text"]
-            budget = intent.get("budget", 500)
+            budget = intent.get("budget", 200)
             reply = self._answer_build_xi(f"{fm_text} {budget}")
         elif intent["type"] == "goalkeeper":
             reply = self._handle_goalkeeper_request(intent.get("original_text", user_text))
