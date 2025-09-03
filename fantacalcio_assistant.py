@@ -1300,6 +1300,16 @@ Cosa ti interessa di più?"""
             intent.update({"type": "goalkeeper", "original_text": text})
             return intent
 
+        # Check for team formation requests
+        if any(x in lt for x in ["formazione", "titolare", "squadra", "rosa", "lineup"]) and not re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
+            team = None
+            for team_name in ["inter", "milan", "juventus", "napoli", "roma", "lazio", "atalanta", "fiorentina", "bologna", "torino", "genoa", "udinese", "cagliari", "lecce", "empoli", "monza", "venezia", "verona", "como", "parma"]:
+                if team_name in lt:
+                    team = team_name.title()
+                    break
+            intent.update({"type": "team_formation", "team": team, "original_text": text})
+            return intent
+
         # Check for transfer/acquisitions requests
         if any(x in lt for x in ["ultimi acquisti", "acquisiti", "nuovi acquisti", "trasferimenti", "mercato", "acquisti"]):
             team = None
@@ -1374,6 +1384,8 @@ Cosa ti interessa di più?"""
             reply = self._handle_goalkeeper_request(intent.get("original_text", user_text))
         elif intent["type"] == "transfers":
             reply = self._handle_transfers_request(intent.get("team"), intent.get("original_text", user_text))
+        elif intent["type"] == "team_formation":
+            reply = self._handle_team_formation_request(intent.get("team"), intent.get("original_text", user_text))
         elif intent["type"] == "asta":
             reply = ("🧭 **Strategia Asta (Classic)**\n"
                      "1) Tenere liquidità per gli slot premium in A.\n"
@@ -1782,6 +1794,76 @@ Cosa ti interessa di più?"""
                     return player_name
         
         return ""
+
+    def _handle_team_formation_request(self, team: str, user_text: str) -> str:
+        """Handle team formation requests with current roster data"""
+        if not team:
+            return "Per quale squadra vuoi vedere la formazione? Specifica il nome della squadra (es. 'formazione Juventus')."
+        
+        try:
+            # Get current players from the team
+            team_players = []
+            for p in self.filtered_roster:
+                player_team = p.get("team", "").lower()
+                if team.lower() in player_team or player_team in team.lower():
+                    # Apply team corrections
+                    corrected_team = team
+                    if self.corrections_manager:
+                        corrected_team = self.corrections_manager.get_corrected_team(p.get("name", ""), p.get("team", ""))
+                        if corrected_team and corrected_team.lower() == team.lower():
+                            team_players.append(p)
+                        elif not corrected_team and team.lower() in player_team:
+                            team_players.append(p)
+                    else:
+                        team_players.append(p)
+            
+            if not team_players:
+                return f"❌ Non ho trovato giocatori per **{team}** nel roster corrente.\n\n💡 Possibili cause:\n• Il nome della squadra potrebbe essere scritto diversamente\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
+            
+            # Group by role
+            roles = {"P": [], "D": [], "C": [], "A": []}
+            for p in team_players:
+                role = _role_letter(p.get("role") or p.get("role_raw", ""))
+                if role in roles:
+                    roles[role].append(p)
+            
+            # Sort each role by fantamedia descending
+            for role in roles:
+                roles[role].sort(key=lambda x: -(x.get("_fm") or 0.0))
+            
+            # Build formation display
+            reply = f"🏆 **Rosa attuale {team} (2025-26):**\n\n"
+            
+            role_names = {"P": "Portieri", "D": "Difensori", "C": "Centrocampisti", "A": "Attaccanti"}
+            
+            for role, role_name in role_names.items():
+                players = roles[role]
+                if players:
+                    reply += f"**{role_name}:**\n"
+                    for i, p in enumerate(players[:8], 1):  # Show top 8 per role
+                        name = p.get("name", "N/D")
+                        fm = p.get("_fm")
+                        price = p.get("_price")
+                        
+                        fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
+                        price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
+                        
+                        reply += f"{i}. **{name}** — {fm_str}, {price_str}\n"
+                    reply += "\n"
+                else:
+                    reply += f"**{role_name}:** Nessun giocatore trovato\n\n"
+            
+            total_players = len(team_players)
+            avg_fm = sum(p.get("_fm", 0) for p in team_players if p.get("_fm")) / max(len([p for p in team_players if p.get("_fm")]), 1)
+            
+            reply += f"📊 **Totale giocatori:** {total_players} • **FM media:** {avg_fm:.2f}\n"
+            reply += f"💡 *Dati aggiornati alla stagione 2025-26*"
+            
+            return reply
+            
+        except Exception as e:
+            LOG.error(f"Error in _handle_team_formation_request: {e}")
+            return f"⚠️ Errore nel recupero della formazione per {team}. Riprova più tardi."
 
     def _handle_goalkeeper_request(self, user_text: str) -> str:
         """Handle goalkeeper-specific requests with proper Serie A filtering"""
