@@ -850,13 +850,13 @@ class FantacalcioAssistant:
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
         
-        # Calculate target budget allocation per role (more aggressive spending)
+        # Calculate target budget allocation per role (optimized for 200 credit budget)
         total_players = sum(slots.values())
         role_budget_targets = {
-            "P": int(budget * 0.15),  # 15% for goalkeeper
-            "D": int(budget * 0.25),  # 25% for defenders  
-            "C": int(budget * 0.35),  # 35% for midfielders
-            "A": int(budget * 0.25)   # 25% for attackers
+            "P": int(budget * 0.12),  # 12% for goalkeeper (24 credits)
+            "D": int(budget * 0.28),  # 28% for defenders (56 credits)
+            "C": int(budget * 0.38),  # 38% for midfielders (76 credits)  
+            "A": int(budget * 0.22)   # 22% for attackers (44 credits)
         }
 
         # Strategy: Pick players within budget ranges for each role
@@ -1057,7 +1057,7 @@ class FantacalcioAssistant:
 
     def _answer_build_xi(self, text: str) -> str:
         formation = _formation_from_text(text)
-        budget = self._parse_first_int(text) or 500
+        budget = self._parse_first_int(text) or 200
         if not formation:
             return "Specificami una formazione tipo 5-3-2 o 4-3-3."
         res = self._build_formation(formation, budget)
@@ -1267,7 +1267,7 @@ Cosa ti interessa di più?"""
         # formazione
         if "formazione" in lt and re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
             fm = re.search(r"\b([0-5])\s*-\s*([0-5])\s*-\s*([0-5])\b", lt).group(0)
-            budget = self._parse_first_int(lt) or 500
+            budget = self._parse_first_int(lt) or 200
             intent.update({"type":"formation","formation_text":fm, "budget":budget})
             return intent
 
