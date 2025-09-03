@@ -845,7 +845,7 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
-        """Build formation with improved budget allocation to utilize more of the available budget"""
+        """Build formation with budget allocation optimized for lower credit budgets"""
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
@@ -853,10 +853,10 @@ class FantacalcioAssistant:
         # Calculate target budget allocation per role (optimized for 200 credit budget)
         total_players = sum(slots.values())
         role_budget_targets = {
-            "P": int(budget * 0.12),  # 12% for goalkeeper (24 credits)
-            "D": int(budget * 0.28),  # 28% for defenders (56 credits)
-            "C": int(budget * 0.38),  # 38% for midfielders (76 credits)  
-            "A": int(budget * 0.22)   # 22% for attackers (44 credits)
+            "P": int(budget * 0.12),  # 12% for goalkeeper 
+            "D": int(budget * 0.28),  # 28% for defenders
+            "C": int(budget * 0.38),  # 38% for midfielders  
+            "A": int(budget * 0.22)   # 22% for attackers
         }
 
         # Strategy: Pick players within budget ranges for each role
@@ -1095,7 +1095,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget riferimento: {budget} crediti)")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: {budget} crediti)")
         out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
         out.append(fmt("P","Portiere"))
         out.append(fmt("D","Difensori"))
