@@ -859,7 +859,7 @@ class FantacalcioAssistant:
             "A": int(budget * 0.22)   # 22% for attackers
         }
 
-        # Strategy: Pick players within budget ranges for each role
+        # Strategy: Pick players to actually utilize the budget effectively
         def pick_budget_conscious_role(role: str, needed_count: int, role_budget: int):
             pool = self._select_top_role_any(role, take=500)
             
@@ -883,38 +883,33 @@ class FantacalcioAssistant:
             if not valid_pool:
                 return []
 
-            # Filter by affordable players for this role budget
-            avg_price_per_player = role_budget // max(needed_count, 1)
-            max_single_player = min(role_budget * 0.6, avg_price_per_player * 2)  # Allow some premium players
+            # Target spending: aim to use 80-90% of role budget
+            target_spending = int(role_budget * 0.85)
+            avg_price_per_player = target_spending // max(needed_count, 1)
             
-            affordable_pool = [p for p in valid_pool if p.get("_price", 0) <= max_single_player]
+            # Be more generous with max player price to enable better players
+            max_single_player = min(role_budget, avg_price_per_player * 3)
             
-            if not affordable_pool:
-                # Fallback to cheapest available if budget is too tight
-                valid_pool.sort(key=lambda x: x.get("_price", 9999))
-                affordable_pool = valid_pool[:needed_count * 3]
+            # Sort all valid players by value ratio (FM/price)
+            valid_pool.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
 
-            # Sort by value ratio within budget
-            affordable_pool.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
-
-            # Use greedy algorithm to maximize value within budget
+            # Use knapsack-style approach to maximize value within budget
             chosen = []
             remaining_budget = role_budget
-            remaining_slots = needed_count
-
-            for p in affordable_pool:
+            
+            # First pass: try to pick best value players that fit
+            for p in valid_pool:
                 if len(chosen) >= needed_count:
                     break
                     
                 price = p.get("_price", 0)
-                if price <= remaining_budget and p.get("name") not in used:
+                if price <= remaining_budget and p.get("name") not in used and price <= max_single_player:
                     chosen.append(p)
                     used.add(p.get("name"))
                     remaining_budget -= price
-                    remaining_slots -= 1
 
-            # If we still need players and have budget left, be more flexible
-            if len(chosen) < needed_count and remaining_budget > 0:
+            # Second pass: if we still have slots and significant budget left, upgrade players
+            if len(chosen) < needed_count and remaining_budget > avg_price_per_player:
                 remaining_pool = [p for p in valid_pool if p.get("name") not in used]
                 remaining_pool.sort(key=lambda x: (x.get("_price", 9999), -(x.get("_fm") or 0.0)))
                 
@@ -926,6 +921,33 @@ class FantacalcioAssistant:
                         chosen.append(p)
                         used.add(p.get("name"))
                         remaining_budget -= price
+
+            # Third pass: if we have good budget left, try to upgrade existing picks
+            if remaining_budget > avg_price_per_player and len(chosen) == needed_count:
+                upgrade_candidates = [p for p in valid_pool 
+                                    if p.get("name") not in used 
+                                    and p.get("_price", 0) <= remaining_budget + min([x.get("_price", 0) for x in chosen])
+                                    and p.get("_fm", 0) > min([x.get("_fm", 0) for x in chosen])]
+                
+                if upgrade_candidates:
+                    # Find worst player in current selection
+                    worst_idx = min(range(len(chosen)), key=lambda i: chosen[i].get("_fm", 0))
+                    worst_player = chosen[worst_idx]
+                    
+                    # Find best upgrade within budget
+                    available_budget = remaining_budget + worst_player.get("_price", 0)
+                    best_upgrade = None
+                    
+                    for candidate in upgrade_candidates:
+                        if (candidate.get("_price", 0) <= available_budget and
+                            candidate.get("_fm", 0) > worst_player.get("_fm", 0)):
+                            if not best_upgrade or candidate.get("_value_ratio", 0) > best_upgrade.get("_value_ratio", 0):
+                                best_upgrade = candidate
+                    
+                    if best_upgrade:
+                        used.remove(worst_player.get("name"))
+                        used.add(best_upgrade.get("name"))
+                        chosen[worst_idx] = best_upgrade
 
             return chosen
 
