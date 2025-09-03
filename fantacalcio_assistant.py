@@ -1206,7 +1206,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: 200 crediti)")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget fisso: 200 crediti)")
         out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
         out.append(fmt("P","Portiere"))
         out.append(fmt("D","Difensori"))
