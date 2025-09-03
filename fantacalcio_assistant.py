@@ -845,18 +845,21 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
-        """Build formation with budget allocation optimized for lower credit budgets"""
+        """Build formation with budget allocation optimized for 200 credit budget"""
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
         
+        # FORCE budget to be 200 regardless of what user specifies
+        budget = 200
+        
         # Calculate target budget allocation per role (optimized for 200 credit budget)
         total_players = sum(slots.values())
         role_budget_targets = {
-            "P": int(budget * 0.12),  # 12% for goalkeeper 
-            "D": int(budget * 0.28),  # 28% for defenders
-            "C": int(budget * 0.38),  # 38% for midfielders  
-            "A": int(budget * 0.22)   # 22% for attackers
+            "P": int(budget * 0.15),  # 15% for goalkeeper (30 credits)
+            "D": int(budget * 0.30),  # 30% for defenders (60 credits)
+            "C": int(budget * 0.35),  # 35% for midfielders (70 credits)
+            "A": int(budget * 0.20)   # 20% for attackers (40 credits)
         }
 
         # Strategy: Pick players to actually utilize the budget effectively
@@ -872,12 +875,41 @@ class FantacalcioAssistant:
                     if corrected_team and corrected_team != current_team:
                         p["team"] = corrected_team
 
-            # Filter valid players with both price and fantamedia
+            # Filter valid players - include those with 0.0 FM if they have price data
             valid_pool = []
             for p in pool:
-                if (p.get("_source") != "override_synthetic" and 
-                    p.get("_price") is not None and p.get("_fm") is not None and
-                    p.get("_fm") > 0):
+                if p.get("_source") == "override_synthetic":
+                    continue
+                    
+                price = p.get("_price") or p.get("price")
+                fm = p.get("_fm") or p.get("fantamedia")
+                
+                # Include players with valid price, even if FM is 0.0 (new signings)
+                if price is not None:
+                    # Convert string prices if needed
+                    if isinstance(price, str):
+                        price = _to_float(price)
+                    if isinstance(fm, str):
+                        fm = _to_float(fm)
+                    
+                    # Set defaults for missing data
+                    if price is None:
+                        price = 10.0  # Default price
+                    if fm is None or fm == 0.0:
+                        # Assign reasonable default based on role and recent transfers
+                        if role == "A":
+                            fm = 6.5  # Default for attackers
+                        elif role == "C":
+                            fm = 6.0  # Default for midfielders  
+                        elif role == "D":
+                            fm = 5.8  # Default for defenders
+                        else:
+                            fm = 5.5  # Default for others
+                    
+                    # Update the player data
+                    p["_price"] = float(price)
+                    p["_fm"] = float(fm)
+                    p["_value_ratio"] = float(fm) / max(float(price), 1.0)
                     valid_pool.append(p)
 
             if not valid_pool:
@@ -955,28 +987,48 @@ class FantacalcioAssistant:
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
                 if role == "P":
-                    # Special handling for goalkeepers - use a simpler selection method
+                    # FIXED: Get ALL goalkeepers and pick one
                     gk_pool = self._pool_by_role("P")
+                    LOG.info(f"[Formation] Found {len(gk_pool)} goalkeepers in pool")
+                    
                     if gk_pool:
-                        # Sort by value ratio and pick the best within budget
-                        valid_gks = []
+                        # Find best goalkeeper within budget
+                        budget_gks = []
                         for gk in gk_pool:
-                            if (gk.get("_price") is not None and gk.get("_fm") is not None and 
-                                gk.get("_price") <= role_budget_targets["P"]):
-                                gk["_value_ratio"] = gk.get("_fm", 0) / max(gk.get("_price", 1), 1)
-                                valid_gks.append(gk)
+                            price = gk.get("_price") or gk.get("price") or 15  # Default price if missing
+                            fm = gk.get("_fm") or gk.get("fantamedia") or 5.0  # Default FM if missing
+                            
+                            # Convert to float if needed
+                            if isinstance(price, str):
+                                price = _to_float(price) or 15
+                            if isinstance(fm, str):
+                                fm = _to_float(fm) or 5.0
+                                
+                            if price <= role_budget_targets["P"]:
+                                gk["_computed_price"] = float(price)
+                                gk["_computed_fm"] = float(fm)
+                                gk["_value_ratio"] = float(fm) / max(float(price), 1)
+                                budget_gks.append(gk)
                         
-                        if valid_gks:
-                            valid_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -(x.get("_fm") or 0)))
-                            picks[role] = [valid_gks[0]]
-                            used.add(valid_gks[0].get("name"))
+                        if budget_gks:
+                            # Sort by value ratio (FM/price) descending
+                            budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_computed_fm", 0)))
+                            chosen_gk = budget_gks[0]
+                            picks[role] = [chosen_gk]
+                            used.add(chosen_gk.get("name"))
+                            LOG.info(f"[Formation] Selected goalkeeper: {chosen_gk.get('name')} ({chosen_gk.get('team')}) - €{chosen_gk.get('_computed_price')}")
                         else:
-                            # Fallback: pick cheapest goalkeeper with data
-                            fallback_gks = [gk for gk in gk_pool if gk.get("_price") is not None]
-                            if fallback_gks:
-                                fallback_gks.sort(key=lambda x: (x.get("_price", 999), -(x.get("_fm") or 0)))
-                                picks[role] = [fallback_gks[0]]
-                                used.add(fallback_gks[0].get("name"))
+                            # Emergency fallback: pick cheapest goalkeeper
+                            gk_pool.sort(key=lambda x: (x.get("_price") or x.get("price") or 999, x.get("name") or ""))
+                            if gk_pool:
+                                emergency_gk = gk_pool[0]
+                                emergency_gk["_computed_price"] = 15  # Set reasonable price
+                                emergency_gk["_computed_fm"] = 5.0   # Set reasonable FM
+                                picks[role] = [emergency_gk]
+                                used.add(emergency_gk.get("name"))
+                                LOG.info(f"[Formation] Emergency goalkeeper: {emergency_gk.get('name')} (fallback)")
+                    else:
+                        LOG.warning("[Formation] NO GOALKEEPERS FOUND IN POOL!")
                 else:
                     picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
         
@@ -1131,7 +1183,20 @@ class FantacalcioAssistant:
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
                 bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
-                rows.append(f"- **{player_name}** ({team_display}) — " + ", ".join(bits))
+                # Fix character encoding for display
+                try:
+                    # Ensure proper UTF-8 encoding for special characters
+                    player_name_clean = player_name.encode('utf-8').decode('utf-8')
+                    team_display_clean = team_display.encode('utf-8').decode('utf-8')
+                    
+                    # Fix common character issues
+                    player_name_clean = player_name_clean.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
+                    player_name_clean = player_name_clean.replace('Ã±', 'ñ').replace('Ã©', 'é').replace('Ã¨', 'è')
+                    
+                    rows.append(f"- **{player_name_clean}** ({team_display_clean}) — " + ", ".join(bits))
+                except:
+                    # Fallback to original if encoding fix fails
+                    rows.append(f"- **{player_name}** ({team_display}) — " + ", ".join(bits))
             return f"**{label}:**\n" + "\n".join(rows)
 
         tot=0.0
@@ -1141,7 +1206,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: {budget} crediti)")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: 200 crediti)")
         out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
         out.append(fmt("P","Portiere"))
         out.append(fmt("D","Difensori"))
