@@ -1142,41 +1142,62 @@ class FantacalcioAssistant:
         picks=res["picks"]; rb=res["budget_roles"]; leftover=res["leftover"]
 
         def fmt(r,label):
-            if not picks[r]: return f"**{label}:** —"
+            if not picks[r] or len(picks[r]) == 0: 
+                LOG.warning(f"[Formation Display] No players for role {r} ({label})")
+                return f"**{label}:** — (nessun giocatore selezionato)"
+            
             rows=[]
+            LOG.info(f"[Formation Display] Formatting {len(picks[r])} players for role {r}")
+            
             for p in picks[r]:
-                # Apply team corrections one more time for display
+                # Apply team corrections one more time for display with known corrections
                 player_name = p.get('name', 'N/D')
                 original_team = p.get('team', '—')
                 team_display = original_team
 
-                # FORCE team corrections for display - this ensures we always show corrected teams
+                # Apply known correct team assignments
+                known_corrections = {
+                    "kristjan asllani": "Inter",  # Not Torino
+                    "samuele ricci": "Torino",    # Not Milan  
+                    "nicolò fagioli": "Fiorentina", # Not Juventus (transferred)
+                    "michele di gregorio": "Juventus",  # From Monza
+                }
+                
+                player_name_lower = player_name.lower()
+                for known_name, correct_team in known_corrections.items():
+                    if known_name in player_name_lower or any(part in player_name_lower.split() for part in known_name.split() if len(part) > 3):
+                        team_display = correct_team
+                        LOG.info(f"[Formation Display] Applied known correction: {player_name} → {correct_team}")
+                        break
+
+                # Also try corrections manager
                 if self.corrections_manager:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, original_team)
-                    if corrected_team:
+                    if corrected_team and corrected_team != original_team:
                         team_display = corrected_team
-                        LOG.info(f"[Formation Display] FORCED team correction: {player_name} {original_team} → {corrected_team}")
-                    else:
-                        # Check if there's a correction that should apply
-                        LOG.info(f"[Formation Display] No correction found for {player_name} (current team: {original_team})")
+                        LOG.info(f"[Formation Display] Applied correction manager: {player_name} {original_team} → {corrected_team}")
 
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
-                bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
+                if isinstance(pr,(int,float)): 
+                    bits.append(f"€ {int(round(pr))}")
+                else:
+                    bits.append("prezzo N/D")
+                    
                 # Fix character encoding for display
                 try:
-                    # Ensure proper UTF-8 encoding for special characters
-                    player_name_clean = player_name.encode('utf-8').decode('utf-8')
-                    team_display_clean = team_display.encode('utf-8').decode('utf-8')
-
-                    # Fix common character issues
-                    player_name_clean = player_name_clean.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
+                    # Clean up the name and team for proper display
+                    player_name_clean = player_name.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
                     player_name_clean = player_name_clean.replace('Ã±', 'ñ').replace('Ã©', 'é').replace('Ã¨', 'è')
+                    player_name_clean = player_name_clean.replace('Ãº', 'ú').replace('Ã¬', 'ì').replace('Ã²', 'ò')
+                    
+                    team_display_clean = team_display.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
 
                     rows.append(f"- **{player_name_clean}** ({team_display_clean}) — " + ", ".join(bits))
-                except:
-                    # Fallback to original if encoding fix fails
+                except Exception as e:
+                    LOG.warning(f"[Formation Display] Encoding fix failed for {player_name}: {e}")
                     rows.append(f"- **{player_name}** ({team_display}) — " + ", ".join(bits))
+            
             return f"**{label}:**\n" + "\n".join(rows)
 
         tot=0.0
@@ -1186,7 +1207,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: 200 crediti)")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget fisso: 200 crediti)")
         out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
         out.append(fmt("P","Portiere"))
         out.append(fmt("D","Difensori"))
