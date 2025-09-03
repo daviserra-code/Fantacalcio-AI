@@ -122,7 +122,7 @@ def _first_key(d: Dict[str,Any], keys: List[str]) -> Any:
     return None
 
 def _age_key(name: str, team: str) -> str:
-    # Use the exact format from age_overrides.json (no normalization for team names)
+    # Use the exact format from age_overrides.json (no normalization to team names)
     return f"{name}@@{team}"
 
 def _safe_float(x: Any, default: float = 0.0) -> float:
@@ -134,102 +134,7 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-# ---------------- Assistant ----------------
-class FantacalcioAssistant:
-    def __init__(self) -> None:
-        LOG.info("Initializing FantacalcioAssistant...")
-
-        self.enable_web_fallback: bool = _env_true(os.getenv("ENABLE_WEB_FALLBACK", "0"))
-        LOG.info("[Assistant] ENABLE_WEB_FALLBACK raw='%s' parsed=%s",
-                 os.getenv("ENABLE_WEB_FALLBACK", "0"), self.enable_web_fallback)
-
-        self.roster_json_path: str = os.getenv("ROSTER_JSON_PATH", "./season_roster.json")
-        LOG.info("[Assistant] ROSTER_JSON_PATH=%s", self.roster_json_path)
-
-        self.external_youth_cache_path: str = os.getenv(
-            "EXTERNAL_YOUTH_CACHE", "./cache/under21_cache.json"
-        )
-        LOG.info("[Assistant] EXTERNAL_YOUTH_CACHE=%s", self.external_youth_cache_path)
-
-        self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
-        self.openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        self.openai_temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.20"))
-        self.openai_max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "600"))
-        LOG.info("[Assistant] OpenAI model=%s temp=%.2f max_tokens=%d",
-                 self.openai_model, self.openai_temperature, self.openai_max_tokens)
-
-        self.system_prompt: str = self._load_prompt_json("./prompt.json")
-
-        self.km: KnowledgeManager = KnowledgeManager()
-        LOG.info("[Assistant] KnowledgeManager attivo")
-
-        # Initialize corrections manager
-        try:
-            from corrections_manager import CorrectionsManager
-            self.corrections_manager = CorrectionsManager(knowledge_manager=self.km)
-            LOG.info("[Assistant] CorrectionsManager inizializzato")
-        except Exception as e:
-            LOG.warning("[Assistant] Failed to initialize CorrectionsManager: %s", e)
-            self.corrections_manager = None
-
-        self.roster: List[Dict[str, Any]] = self._load_and_normalize_roster(self.roster_json_path)
-        self.external_youth_cache: List[Dict[str, Any]] = self._load_external_youth_cache()
-
-        # Initialize missing attributes
-        self.season_filter = SEASON_FILTER or None
-        self.age_index = self._load_age_index(AGE_INDEX_PATH)
-        self.override_roles = {}  # Initialize before loading overrides
-        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
-        self.guessed_age_index = {}
-
-        # Apply data corrections immediately after loading roster
-        if self.corrections_manager:
-            original_count = len(self.roster)
-            self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
-            excluded_count = len(self.corrections_manager.get_excluded_players())
-            LOG.info("[Assistant] Applied data corrections to roster: %d players, %d excluded", len(self.roster), excluded_count)
-            
-            # Log team corrections that were applied
-            for player in self.roster:
-                corrected_team = self.corrections_manager.get_corrected_team(player.get("name", ""), player.get("team", ""))
-                if corrected_team and corrected_team != player.get("team"):
-                    LOG.info("[Assistant] Applied team correction: %s %s → %s", player.get("name"), player.get("team"), corrected_team)
-                    player["team"] = corrected_team
-
-        self._auto_detect_season()
-        self._apply_ages_to_roster()
-        self._make_filtered_roster()
-        LOG.info("[Assistant] Inizializzazione completata")
-
-    def _load_prompt_json(self, path: str) -> str:
-        """Load system prompt from JSON file"""
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                cfg = json.load(f)
-        except Exception as e:
-            LOG.error("[Assistant] Errore caricamento prompt: %s", e)
-            return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
-                    "non inventare dati e dichiara incertezza se mancano fonti.")
-
-        if isinstance(cfg, dict):
-            if "system" in cfg and isinstance(cfg["system"], dict):
-                sys = cfg["system"]
-                name = sys.get("name", "fantacalcio_system")
-                content = sys.get("content", "")
-                style = sys.get("style", "")
-                language = sys.get("language", "it")
-                system_text = f"[{name}] ({language}, {style})\n{content}".strip()
-                LOG.info("[Assistant] prompt.json caricato correttamente")
-                return system_text
-            if "prompt" in cfg and isinstance(cfg["prompt"], str):
-                LOG.info("[Assistant] prompt.json caricato correttamente")
-                return cfg["prompt"]
-
-        LOG.error("[Assistant] prompt.json non contiene 'system' o 'prompt' validi")
-        return ("Sei un assistente fantacalcio. Rispondi in modo conciso e pratico in italiano; "
-                "non inventare dati e dichiara incertezza se mancano fonti.")
-
-    # ---------- loaders ----------
+# ---------- loaders ----------
     def _load_age_index(self, path: str) -> Dict[str,int]:
         out={}
         try:
@@ -613,13 +518,13 @@ class FantacalcioAssistant:
                 excluded_players = [name.lower() for name in self.corrections_manager.get_excluded_players()]
             except Exception as e:
                 LOG.error(f"Error getting excluded players in _pool_by_role: {e}")
-        
+
         filtered_pool = []
         for p in self.filtered_roster:
             if _role_letter(p.get("role") or p.get("role_raw","")) == r:
                 # Create a copy to avoid modifying the original
                 player_copy = dict(p)
-                
+
                 # Apply team corrections
                 if self.corrections_manager:
                     player_name = player_copy.get("name", "")
@@ -628,7 +533,7 @@ class FantacalcioAssistant:
                     if corrected_team and corrected_team != current_team:
                         player_copy["team"] = corrected_team
                         LOG.info(f"[Pool] Applied team correction: {player_name} {current_team} → {corrected_team}")
-                
+
                 # Skip excluded players - use fuzzy matching
                 player_name = (player_copy.get("name") or "").lower()
                 should_skip = False
@@ -646,7 +551,7 @@ class FantacalcioAssistant:
                         break
                 if not should_skip:
                     filtered_pool.append(player_copy)
-                
+
         return filtered_pool
 
     def _age_from_by(self, by: Optional[int]) -> Optional[int]:
@@ -775,7 +680,7 @@ class FantacalcioAssistant:
     def _select_top_by_budget(self, r: str, budget: int, take: int = 8
                               ) -> Tuple[List[Dict[str,Any]], List[Dict[str,Any]]]:
         within=[]; fm_only=[]
-        
+
         # Get excluded players from corrections manager
         excluded_players = []
         if self.corrections_manager:
@@ -783,7 +688,7 @@ class FantacalcioAssistant:
                 excluded_players = [name.lower() for name in self.corrections_manager.get_excluded_players()]
             except Exception as e:
                 LOG.error(f"Error getting excluded players: {e}")
-        
+
         tmp=[]
         for p in self._pool_by_role(r):
             # Skip excluded players - use fuzzy matching
@@ -805,7 +710,7 @@ class FantacalcioAssistant:
                     break
             if should_skip:
                 continue
-                
+
             fm = p.get("_fm"); pr = p.get("_price")
             if isinstance(fm,(int,float)) and fm>0 and isinstance(pr,(int,float)) and 0<pr<=float(budget):
                 q = dict(p); q["_value_ratio"] = fm / max(pr,1.0); tmp.append(q)
@@ -819,7 +724,7 @@ class FantacalcioAssistant:
                 player_name = (p.get("name") or "").lower()
                 if player_name in excluded_players:
                     continue
-                    
+
                 if p.get("_fm") is not None and (p.get("_fm") or 0.0) > 0 and p.get("_price") is None:
                     tmp2.append(p)
             tmp2.sort(key=lambda x: -(x.get("_fm") or 0.0))
@@ -849,10 +754,10 @@ class FantacalcioAssistant:
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
         used = set()
-        
+
         # FORCE budget to be 200 regardless of what user specifies
         budget = 200
-        
+
         # Calculate target budget allocation per role (optimized for 200 credit budget)
         total_players = sum(slots.values())
         role_budget_targets = {
@@ -865,7 +770,7 @@ class FantacalcioAssistant:
         # Strategy: Pick players to actually utilize the budget effectively
         def pick_budget_conscious_role(role: str, needed_count: int, role_budget: int):
             pool = self._select_top_role_any(role, take=500)
-            
+
             # Apply team corrections
             if self.corrections_manager:
                 for p in pool:
@@ -874,16 +779,17 @@ class FantacalcioAssistant:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, current_team)
                     if corrected_team and corrected_team != current_team:
                         p["team"] = corrected_team
+                        LOG.info(f"[Formation] Applied team correction: {player_name} {current_team} → {corrected_team}")
 
             # Filter valid players - include those with 0.0 FM if they have price data
             valid_pool = []
             for p in pool:
                 if p.get("_source") == "override_synthetic":
                     continue
-                    
+
                 price = p.get("_price") or p.get("price")
                 fm = p.get("_fm") or p.get("fantamedia")
-                
+
                 # Include players with valid price, even if FM is 0.0 (new signings)
                 if price is not None:
                     # Convert string prices if needed
@@ -891,7 +797,7 @@ class FantacalcioAssistant:
                         price = _to_float(price)
                     if isinstance(fm, str):
                         fm = _to_float(fm)
-                    
+
                     # Set defaults for missing data
                     if price is None:
                         price = 10.0  # Default price
@@ -905,7 +811,7 @@ class FantacalcioAssistant:
                             fm = 5.8  # Default for defenders
                         else:
                             fm = 5.5  # Default for others
-                    
+
                     # Update the player data
                     p["_price"] = float(price)
                     p["_fm"] = float(fm)
@@ -918,22 +824,22 @@ class FantacalcioAssistant:
             # Target spending: aim to use 80-90% of role budget
             target_spending = int(role_budget * 0.85)
             avg_price_per_player = target_spending // max(needed_count, 1)
-            
+
             # Be more generous with max player price to enable better players
             max_single_player = min(role_budget, avg_price_per_player * 3)
-            
+
             # Sort all valid players by value ratio (FM/price)
             valid_pool.sort(key=lambda x: (-x.get("_value_ratio", 0.0), -(x.get("_fm") or 0.0)))
 
             # Use knapsack-style approach to maximize value within budget
             chosen = []
             remaining_budget = role_budget
-            
+
             # First pass: try to pick best value players that fit
             for p in valid_pool:
                 if len(chosen) >= needed_count:
                     break
-                    
+
                 price = p.get("_price", 0)
                 if price <= remaining_budget and p.get("name") not in used and price <= max_single_player:
                     chosen.append(p)
@@ -944,7 +850,7 @@ class FantacalcioAssistant:
             if len(chosen) < needed_count and remaining_budget > avg_price_per_player:
                 remaining_pool = [p for p in valid_pool if p.get("name") not in used]
                 remaining_pool.sort(key=lambda x: (x.get("_price", 9999), -(x.get("_fm") or 0.0)))
-                
+
                 for p in remaining_pool:
                     if len(chosen) >= needed_count:
                         break
@@ -960,22 +866,22 @@ class FantacalcioAssistant:
                                     if p.get("name") not in used 
                                     and p.get("_price", 0) <= remaining_budget + min([x.get("_price", 0) for x in chosen])
                                     and p.get("_fm", 0) > min([x.get("_fm", 0) for x in chosen])]
-                
+
                 if upgrade_candidates:
                     # Find worst player in current selection
                     worst_idx = min(range(len(chosen)), key=lambda i: chosen[i].get("_fm", 0))
                     worst_player = chosen[worst_idx]
-                    
+
                     # Find best upgrade within budget
                     available_budget = remaining_budget + worst_player.get("_price", 0)
                     best_upgrade = None
-                    
+
                     for candidate in upgrade_candidates:
                         if (candidate.get("_price", 0) <= available_budget and
                             candidate.get("_fm", 0) > worst_player.get("_fm", 0)):
                             if not best_upgrade or candidate.get("_value_ratio", 0) > best_upgrade.get("_value_ratio", 0):
                                 best_upgrade = candidate
-                    
+
                     if best_upgrade:
                         used.remove(worst_player.get("name"))
                         used.add(best_upgrade.get("name"))
@@ -990,26 +896,26 @@ class FantacalcioAssistant:
                     # FIXED: Get ALL goalkeepers and pick one
                     gk_pool = self._pool_by_role("P")
                     LOG.info(f"[Formation] Found {len(gk_pool)} goalkeepers in pool")
-                    
+
                     if gk_pool:
                         # Find best goalkeeper within budget
                         budget_gks = []
                         for gk in gk_pool:
                             price = gk.get("_price") or gk.get("price") or 15  # Default price if missing
                             fm = gk.get("_fm") or gk.get("fantamedia") or 5.0  # Default FM if missing
-                            
+
                             # Convert to float if needed
                             if isinstance(price, str):
                                 price = _to_float(price) or 15
                             if isinstance(fm, str):
                                 fm = _to_float(fm) or 5.0
-                                
+
                             if price <= role_budget_targets["P"]:
                                 gk["_computed_price"] = float(price)
                                 gk["_computed_fm"] = float(fm)
                                 gk["_value_ratio"] = float(fm) / max(float(price), 1)
                                 budget_gks.append(gk)
-                        
+
                         if budget_gks:
                             # Sort by value ratio (FM/price) descending
                             budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_computed_fm", 0)))
@@ -1031,7 +937,7 @@ class FantacalcioAssistant:
                         LOG.warning("[Formation] NO GOALKEEPERS FOUND IN POOL!")
                 else:
                     picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
-        
+
         # Apply team corrections to all picked players before final display
         if self.corrections_manager:
             for role in ["P", "D", "C", "A"]:
@@ -1169,7 +1075,7 @@ class FantacalcioAssistant:
                 player_name = p.get('name', 'N/D')
                 original_team = p.get('team', '—')
                 team_display = original_team
-                
+
                 # FORCE team corrections for display - this ensures we always show corrected teams
                 if self.corrections_manager:
                     corrected_team = self.corrections_manager.get_corrected_team(player_name, original_team)
@@ -1179,7 +1085,7 @@ class FantacalcioAssistant:
                     else:
                         # Check if there's a correction that should apply
                         LOG.info(f"[Formation Display] No correction found for {player_name} (current team: {original_team})")
-                
+
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
                 if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
                 bits.append(f"€ {int(round(pr))}" if isinstance(pr,(int,float)) else "prezzo N/D")
@@ -1188,11 +1094,11 @@ class FantacalcioAssistant:
                     # Ensure proper UTF-8 encoding for special characters
                     player_name_clean = player_name.encode('utf-8').decode('utf-8')
                     team_display_clean = team_display.encode('utf-8').decode('utf-8')
-                    
+
                     # Fix common character issues
                     player_name_clean = player_name_clean.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
                     player_name_clean = player_name_clean.replace('Ã±', 'ñ').replace('Ã©', 'é').replace('Ã¨', 'è')
-                    
+
                     rows.append(f"- **{player_name_clean}** ({team_display_clean}) — " + ", ".join(bits))
                 except:
                     # Fallback to original if encoding fix fails
@@ -1253,22 +1159,22 @@ class FantacalcioAssistant:
         """Handle conversational patterns and context-aware responses"""
         user_lower = user_text.lower().strip()
         history = state.get("conversation_history", [])
-        
+
         # Check for team correction feedback (e.g., "Luca Pellegrini gioca nella Lazio")
         team_correction_patterns = [
             r"(\w+(?:\s+\w+)*)\s+gioca\s+nell?[ao]\s+(\w+)",
             r"(\w+(?:\s+\w+)*)\s+è\s+nell?[ao]\s+(\w+)",
             r"(\w+(?:\s+\w+)*)\s+sta\s+nell?[ao]\s+(\w+)"
         ]
-        
+
         for pattern in team_correction_patterns:
             match = re.search(pattern, user_lower)
             if match:
                 player_name = match.group(1).strip().title()
                 team_name = match.group(2).strip().title()
-                
+
                 LOG.info(f"[Conversational] Team correction detected: {player_name} → {team_name}")
-                
+
                 # Apply the correction
                 if self.corrections_manager:
                     # Find the player's current team in roster (check transfers too)
@@ -1278,30 +1184,30 @@ class FantacalcioAssistant:
                         if roster_name == player_name.lower():
                             current_team = p.get("team", "")
                             break
-                    
+
                     if current_team:
                         self.corrections_manager.update_player_team(player_name, current_team, team_name)
                         LOG.info(f"[Conversational] Applied correction: {player_name} {current_team} → {team_name}")
-                        
+
                         # Refresh data
                         self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
                         self._make_filtered_roster()
-                        
+
                         return f"✅ Perfetto! Ho aggiornato i dati: **{player_name}** ora risulta correttamente nella **{team_name}**. Grazie per la correzione! 🎯\n\nVuoi che ricontrolli gli ultimi acquisti con i dati aggiornati?"
                     else:
                         # Even if not found in current roster, still add the correction for future transfers
                         self.corrections_manager.update_player_team(player_name, "Juventus", team_name)  # Assume correction from Juventus since that's the context
                         LOG.info(f"[Conversational] Applied correction for transfer data: {player_name} Juventus → {team_name}")
-                        
+
                         return f"✅ Perfetto! Ho registrato la correzione: **{player_name}** appartiene alla **{team_name}**. Questo aggiornerà i futuri elenchi di trasferimenti. 🎯\n\nVuoi che ricontrolli gli ultimi acquisti con i dati aggiornati?"
                 else:
                     return f"📝 Noted: **{player_name}** gioca nella **{team_name}**. I dati di trasferimento potrebbero essere obsoleti o incompleti."
-        
+
         # Greeting patterns
         greeting_patterns = ["ciao", "buongiorno", "buonasera", "salve", "hey", "hello"]
         if any(pattern in user_lower for pattern in greeting_patterns) and len(user_lower) < 20:
             return "Ciao! 👋 Sono qui per aiutarti con il fantacalcio. Dimmi cosa ti serve: formazioni, consigli Under 21, strategie d'asta o altro!"
-            
+
         # Thank you patterns
         thanks_patterns = ["grazie", "perfetto", "ottimo", "bene così", "va bene"]
         if any(pattern in user_lower for pattern in thanks_patterns) and len(user_lower) < 30:
@@ -1312,7 +1218,7 @@ class FantacalcioAssistant:
             ]
             import random
             return random.choice(suggestions)
-            
+
         # Context-aware follow-ups
         if len(history) >= 2:
             last_assistant_msg = None
@@ -1320,7 +1226,7 @@ class FantacalcioAssistant:
                 if msg.get("role") == "assistant":
                     last_assistant_msg = msg.get("content", "")
                     break
-                    
+
             # If last response contained Under 21 players, offer alternatives
             if last_assistant_msg and "Under 21" in last_assistant_msg:
                 if any(word in user_lower for word in ["altri", "ancora", "alternative", "più"]):
@@ -1329,15 +1235,15 @@ class FantacalcioAssistant:
                     role = last_intent.get("role", "A")
                     max_age = last_intent.get("max_age", 21)
                     take = last_intent.get("take", 3)
-                    
+
                     # Get more players
                     return self._answer_under21(role, max_age, take + 2)
-                    
+
             # If last response contained formation, offer adjustments
             if last_assistant_msg and "Formazione" in last_assistant_msg:
                 if any(word in user_lower for word in ["cambia", "modifica", "altro", "diverso"]):
                     return "Dimmi che modifica vuoi: cambiare modulo (es. '4-4-2'), aumentare/diminuire budget, o preferenze per ruoli specifici?"
-                    
+
         # Clarification requests
         unclear_patterns = ["non ho capito", "cosa intendi", "spiegami", "come funziona"]
         if any(pattern in user_lower for pattern in unclear_patterns):
@@ -1353,7 +1259,7 @@ Cosa ti interessa di più?"""
         # Context from previous interactions
         if any(word in user_lower for word in ["e poi", "inoltre", "anche", "pure"]):
             return "Dimmi pure, sono qui per aiutarti! Che altro ti serve per la tua strategia fantacalcio?"
-            
+
         return None
 
     def _parse_intent(self, text: str, mode: str) -> Dict[str,Any]:
@@ -1471,24 +1377,24 @@ Cosa ti interessa di più?"""
                 context_messages: Optional[List[Dict[str, str]]] = None) -> Tuple[str, Dict[str, Any]]:
         """Main response method that applies corrections and filters"""
         state = state or {}
-        
+
         # Initialize conversation history if not present
         if "conversation_history" not in state:
             state["conversation_history"] = []
-            
+
         # Add current user message to history
         state["conversation_history"].append({
             "role": "user", 
             "content": user_text,
             "timestamp": time.time()
         })
-        
+
         # Keep only last 10 exchanges to prevent memory overflow
         state["conversation_history"] = state["conversation_history"][-20:]
 
         # Check for conversational patterns and context
         response = self._handle_conversational_response(user_text, state, context_messages)
-        
+
         if not response:
             # Get response from main logic if no conversational response
             response = self.get_response(user_text, mode=mode, context=state)
@@ -1518,7 +1424,7 @@ Cosa ti interessa di più?"""
         try:
             # Check if user wants to see all transfers
             show_all = "tutti" in user_text.lower() or "all" in user_text.lower()
-            
+
             # Get excluded players from corrections manager
             excluded_players = []
             if self.corrections_manager:
@@ -1527,18 +1433,18 @@ Cosa ti interessa di più?"""
                     LOG.info(f"[Transfers] Excluded players: {excluded_players}")
                 except Exception as e:
                     LOG.error(f"Error getting excluded players in transfers: {e}")
-            
+
             # First, check roster data for actual current transfers (direction = "in" only)
             roster_transfers = []
             seen_players = set()
-            
+
             for p in self.roster:
                 if p.get("type") == "transfer" and p.get("direction") == "in":
                     player_name = p.get("Name") or p.get("name", "")
                     original_team_name = p.get("team", "")
                     team_name = original_team_name
                     season = p.get("season", "")
-                    
+
                     # Skip excluded players - use fuzzy matching
                     player_name_lower = player_name.lower().strip()
                     should_skip = False
@@ -1558,7 +1464,7 @@ Cosa ti interessa di più?"""
                             break
                     if should_skip:
                         continue
-                    
+
                     # Apply team corrections if available
                     corrected_team = None
                     if self.corrections_manager:
@@ -1566,7 +1472,7 @@ Cosa ti interessa di più?"""
                         if corrected_team and corrected_team != team_name:
                             team_name = corrected_team
                             LOG.info(f"[Transfers] Applied team correction: {player_name} {original_team_name} → {corrected_team}")
-                    
+
                     # Filter by team if specified - now check against corrected team
                     if team and team.lower() not in team_name.lower():
                         # Skip this player if they've been corrected to play for a different team
@@ -1575,20 +1481,20 @@ Cosa ti interessa di più?"""
                             continue
                         elif not corrected_team:
                             continue
-                    
+
                     # Check for duplicate/conflicting data
                     player_key = player_name.lower().strip()
                     if player_key in seen_players:
                         LOG.warning(f"[Transfers] Duplicate player found: {player_name} for {team_name}")
                         continue
                     seen_players.add(player_key)
-                    
+
                     # Validate this is actually a current transfer (not a loan return)
                     fee = p.get("fee", "")
                     if "fine prestito" in fee.lower():
                         LOG.info(f"[Transfers] Skipping loan return: {player_name} to {team_name}")
                         continue
-                    
+
                     roster_transfers.append({
                         "player": player_name,
                         "team": team_name,
@@ -1598,17 +1504,17 @@ Cosa ti interessa di più?"""
                         "validated": True,
                         "corrected": corrected_team is not None
                     })
-            
+
             # Also search knowledge base for additional transfer data
             knowledge_transfers = []
             if team:
                 search_terms = [f"{team} acquisti 2025", f"Transfer IN: {team}", f"{team} 2025-26"]
             else:
                 search_terms = ["acquisti Serie A 2025", "Transfer IN", "direction in"]
-            
+
             # Increase search results when user wants to see all transfers
             search_limit = 200 if show_all else 10
-            
+
             for term in search_terms:
                 try:
                     results = self.km.search_knowledge(
@@ -1616,27 +1522,27 @@ Cosa ti interessa di più?"""
                         n_results=search_limit,
                         include=["documents", "metadatas"]
                     )
-                    
+
                     if results and "metadatas" in results:
                         for metadata_list in results["metadatas"]:
                             for metadata in metadata_list:
                                 if (metadata.get("type") == "transfer" and 
                                     metadata.get("direction") == "in"):
-                                    
+
                                     player_name = metadata.get("player", "")
                                     team_name = metadata.get("team", "")
-                                    
+
                                     if player_name and team_name:
                                         # Apply team corrections
                                         if self.corrections_manager:
                                             corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
                                             if corrected_team:
                                                 team_name = corrected_team
-                                        
+
                                         # Filter by team
                                         if team and team.lower() not in team_name.lower():
                                             continue
-                                            
+
                                         knowledge_transfers.append({
                                             "player": player_name,
                                             "team": team_name,
@@ -1648,7 +1554,7 @@ Cosa ti interessa di più?"""
                 except Exception as e:
                     LOG.debug(f"Error searching knowledge for {term}: {e}")
                     continue
-            
+
             # Additionally, get transfers by filter to ensure we capture all data
             if team and show_all:
                 try:
@@ -1657,27 +1563,27 @@ Cosa ti interessa di più?"""
                         limit=100,
                         include=["documents", "metadatas"]
                     )
-                    
+
                     if filter_results and "metadatas" in filter_results:
                         for metadata_list in filter_results["metadatas"]:
                             for metadata in metadata_list:
                                 if (metadata.get("type") == "transfer" and 
                                     metadata.get("direction") == "in"):
-                                    
+
                                     player_name = metadata.get("player", "")
                                     team_name = metadata.get("team", "")
-                                    
+
                                     if player_name and team_name:
                                         # Apply team corrections
                                         if self.corrections_manager:
                                             corrected_team = self.corrections_manager.get_corrected_team(player_name, team_name)
                                             if corrected_team:
                                                 team_name = corrected_team
-                                        
+
                                         # Filter by team
                                         if team and team.lower() not in team_name.lower():
                                             continue
-                                            
+
                                         knowledge_transfers.append({
                                             "player": player_name,
                                             "team": team_name,
@@ -1688,22 +1594,22 @@ Cosa ti interessa di più?"""
                                         })
                 except Exception as e:
                     LOG.debug(f"Error getting transfers by filter: {e}")
-            
+
             # Combine and validate transfers
             all_transfers = roster_transfers + knowledge_transfers
-            
+
             # Final deduplication and validation
             validated_transfers = []
             player_names_seen = set()
-            
+
             for t in all_transfers:
                 player_lower = t["player"].lower().strip()
-                
+
                 # Skip if already processed
                 if player_lower in player_names_seen:
                     continue
                 player_names_seen.add(player_lower)
-                
+
                 # Skip excluded players - apply the same logic as roster transfers
                 should_skip = False
                 for excluded in excluded_players:
@@ -1722,7 +1628,7 @@ Cosa ti interessa di più?"""
                         break
                 if should_skip:
                     continue
-                
+
                 # Check if this player has been corrected to play for a different team
                 if self.corrections_manager:
                     corrected_team = self.corrections_manager.get_corrected_team(t["player"], t["team"])
@@ -1741,21 +1647,21 @@ Cosa ti interessa di più?"""
                             # No specific team filter, update team info
                             t["team"] = corrected_team
                             t["corrected"] = True
-                
+
                 # Validate player exists in current Serie A context
                 is_valid_transfer = True
-                
+
                 # Check if player has conflicting data (plays for different team)
                 for roster_player in self.roster:
                     roster_name = (roster_player.get("name") or "").lower().strip()
                     roster_team = roster_player.get("team", "").lower().strip()
-                    
+
                     if (roster_name == player_lower and 
                         roster_player.get("type") != "transfer" and
                         roster_team != t["team"].lower().strip()):
-                        
+
                         LOG.warning(f"[Transfers] Conflicting data for {t['player']}: transfer says {t['team']}, roster says {roster_player.get('team')}")
-                        
+
                         # If corrections manager has info, use that
                         if self.corrections_manager:
                             corrected_team = self.corrections_manager.get_corrected_team(t["player"], roster_player.get("team", ""))
@@ -1770,9 +1676,9 @@ Cosa ti interessa di più?"""
                             else:
                                 # Mark as potentially invalid
                                 t["needs_validation"] = True
-                
+
                 validated_transfers.append(t)
-            
+
             if validated_transfers:
                 if team:
                     if show_all:
@@ -1784,18 +1690,18 @@ Cosa ti interessa di più?"""
                         reply = "🔄 **Tutti gli acquisti Serie A (2025-26):**\n\n"
                     else:
                         reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
-                
+
                 # Determine how many to show - if show_all is True, show everything
                 if show_all:
                     transfers_to_show = validated_transfers
                 else:
                     transfers_to_show = validated_transfers[:10]
-                
+
                 for i, transfer in enumerate(transfers_to_show, 1):
                     fee_info = ""
                     if transfer.get("fee") and "fine prestito" not in transfer.get("fee", "").lower():
                         fee_info = f" • {transfer['fee']}"
-                    
+
                     source_info = ""
                     if "apify" in transfer.get("source", "").lower():
                         source_info = " 🆕"
@@ -1803,34 +1709,34 @@ Cosa ti interessa di più?"""
                         source_info = " ✅"
                     elif transfer.get("needs_validation"):
                         source_info = " ⚠️"
-                    
+
                     reply += f"{i}. **{transfer['player']}** → {transfer['team']}{fee_info}{source_info}\n"
-                
+
                 if not show_all and len(validated_transfers) > 10:
                     reply += f"\n*...e altri {len(validated_transfers) - 10} acquisti*"
                 elif show_all:
                     reply += f"\n\n📊 *Totale completo: {len(validated_transfers)} acquisti mostrati*"
-                
+
                 # Add validation notes
                 validation_notes = []
                 corrected_count = sum(1 for t in validated_transfers if t.get("corrected"))
                 needs_validation_count = sum(1 for t in validated_transfers if t.get("needs_validation"))
-                
+
                 if corrected_count > 0:
                     validation_notes.append(f"✅ {corrected_count} correzioni applicate")
                 if needs_validation_count > 0:
                     validation_notes.append(f"⚠️ {needs_validation_count} da verificare")
-                
+
                 if validation_notes:
                     reply += f"\n\n💡 *{', '.join(validation_notes)}*"
-                    
+
                 return reply
             else:
                 if team:
-                    return f"❌ Non ho trovato acquisti recenti validati per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono conflitti nei dati di trasferimento"
+                    return f"❌ Non ho trovato acquisti recenti validati per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
                 else:
                     return "❌ Non ho trovato acquisti recenti validati nel database.\n\n🔄 **Possibili cause:**\n• I dati necessitano di refresh\n• Conflitti nei dati di trasferimento\n• Problema temporaneo con la knowledge base"
-                    
+
         except Exception as e:
             LOG.error(f"Error in _handle_transfers_request: {e}")
             return "⚠️ Errore nel recupero dei dati di mercato. Riprova più tardi."
@@ -1839,17 +1745,17 @@ Cosa ti interessa di più?"""
         """Extract player name from transfer document text"""
         if not text:
             return ""
-        
+
         # Look for patterns like "Transfer IN: Player Name" or "Player Name → Team"
         import re
-        
+
         patterns = [
             r"Transfer IN:\s*([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s*→|\s*\(|\s*$)",
             r"([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)\s*→",
             r"Player:\s*([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s|$)",
             r"^([A-ZÀ-ÿ][a-zA-ZÀ-ÿ\s]+?)(?:\s*\(|\s*-|\s*→)"
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, text)
             if match:
@@ -1857,14 +1763,14 @@ Cosa ti interessa di più?"""
                 # Basic validation
                 if len(player_name) > 2 and not any(word in player_name.lower() for word in ["transfer", "from", "to", "team"]):
                     return player_name
-        
+
         return ""
 
     def _handle_team_formation_request(self, team: str, user_text: str) -> str:
         """Handle team formation requests with current roster data"""
         if not team:
             return "Per quale squadra vuoi vedere la formazione? Specifica il nome della squadra (es. 'formazione Juventus')."
-        
+
         try:
             # Get current players from the team
             team_players = []
@@ -1881,26 +1787,26 @@ Cosa ti interessa di più?"""
                             team_players.append(p)
                     else:
                         team_players.append(p)
-            
+
             if not team_players:
                 return f"❌ Non ho trovato giocatori per **{team}** nel roster corrente.\n\n💡 Possibili cause:\n• Il nome della squadra potrebbe essere scritto diversamente\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
-            
+
             # Group by role
             roles = {"P": [], "D": [], "C": [], "A": []}
             for p in team_players:
                 role = _role_letter(p.get("role") or p.get("role_raw", ""))
                 if role in roles:
                     roles[role].append(p)
-            
+
             # Sort each role by fantamedia descending
             for role in roles:
                 roles[role].sort(key=lambda x: -(x.get("_fm") or 0.0))
-            
+
             # Build formation display
             reply = f"🏆 **Rosa attuale {team} (2025-26):**\n\n"
-            
+
             role_names = {"P": "Portieri", "D": "Difensori", "C": "Centrocampisti", "A": "Attaccanti"}
-            
+
             for role, role_name in role_names.items():
                 players = roles[role]
                 if players:
@@ -1909,23 +1815,23 @@ Cosa ti interessa di più?"""
                         name = p.get("name", "N/D")
                         fm = p.get("_fm")
                         price = p.get("_price")
-                        
+
                         fm_str = f"FM {fm:.2f}" if isinstance(fm, (int, float)) else "FM N/D"
                         price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
-                        
+
                         reply += f"{i}. **{name}** — {fm_str}, {price_str}\n"
                     reply += "\n"
                 else:
                     reply += f"**{role_name}:** Nessun giocatore trovato\n\n"
-            
+
             total_players = len(team_players)
             avg_fm = sum(p.get("_fm", 0) for p in team_players if p.get("_fm")) / max(len([p for p in team_players if p.get("_fm")]), 1)
-            
+
             reply += f"📊 **Totale giocatori:** {total_players} • **FM media:** {avg_fm:.2f}\n"
             reply += f"💡 *Dati aggiornati alla stagione 2025-26*"
-            
+
             return reply
-            
+
         except Exception as e:
             LOG.error(f"Error in _handle_team_formation_request: {e}")
             return f"⚠️ Errore nel recupero della formazione per {team}. Riprova più tardi."
@@ -2200,14 +2106,14 @@ Cosa ti interessa di più?"""
                             "role": msg["role"],
                             "content": msg["content"]
                         })
-            
+
             # Add external context messages if provided
             if context_messages:
                 messages.extend(context_messages)
 
             # Add specific context for different query types
             user_lower = user_text.lower()
-            
+
             # Enhanced context for specific queries
             if any(term in user_lower for term in ["attaccant", "miglior", "top", "punta"]):
                 attackers = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "A"]
@@ -2225,7 +2131,7 @@ Cosa ti interessa di più?"""
 
                     roster_context = f"ATTACCANTI DISPONIBILI NEL ROSTER:\n" + "\n".join(top_attackers)
                     messages.append({"role": "system", "content": roster_context})
-            
+
             elif any(term in user_lower for term in ["centrocamp", "mediano", "mezz"]):
                 midfielders = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == "C"]
                 if midfielders:
