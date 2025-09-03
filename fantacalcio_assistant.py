@@ -897,44 +897,55 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
                     gk_pool = self._pool_by_role("P")
                     LOG.info(f"[Formation] Found {len(gk_pool)} goalkeepers in pool")
 
-                    if gk_pool:
-                        # Find best goalkeeper within budget
-                        budget_gks = []
+                    # Always pick a goalkeeper - be more flexible with budget
+                    budget_gks = []
+                    for gk in gk_pool:
+                        price = gk.get("_price") or gk.get("price") or 15  # Default price if missing
+                        fm = gk.get("_fm") or gk.get("fantamedia") or 5.0  # Default FM if missing
+
+                        # Convert to float if needed
+                        if isinstance(price, str):
+                            price = _to_float(price) or 15
+                        if isinstance(fm, str):
+                            fm = _to_float(fm) or 5.0
+
+                        # Be more flexible - include goalkeepers up to 50 credits
+                        if price <= 50:
+                            gk["_computed_price"] = float(price)
+                            gk["_computed_fm"] = float(fm)
+                            gk["_value_ratio"] = float(fm) / max(float(price), 1)
+                            budget_gks.append(gk)
+
+                    # Always ensure we have at least one goalkeeper
+                    if not budget_gks and gk_pool:
+                        # Include ALL goalkeepers as emergency options
                         for gk in gk_pool:
-                            price = gk.get("_price") or gk.get("price") or 15  # Default price if missing
-                            fm = gk.get("_fm") or gk.get("fantamedia") or 5.0  # Default FM if missing
+                            price = 15  # Emergency default
+                            fm = 5.0    # Emergency default
+                            gk["_computed_price"] = float(price)
+                            gk["_computed_fm"] = float(fm)
+                            gk["_value_ratio"] = float(fm) / float(price)
+                            budget_gks.append(gk)
 
-                            # Convert to float if needed
-                            if isinstance(price, str):
-                                price = _to_float(price) or 15
-                            if isinstance(fm, str):
-                                fm = _to_float(fm) or 5.0
-
-                            if price <= role_budget_targets["P"]:
-                                gk["_computed_price"] = float(price)
-                                gk["_computed_fm"] = float(fm)
-                                gk["_value_ratio"] = float(fm) / max(float(price), 1)
-                                budget_gks.append(gk)
-
-                        if budget_gks:
-                            # Sort by value ratio (FM/price) descending
-                            budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_computed_fm", 0)))
-                            chosen_gk = budget_gks[0]
-                            picks[role] = [chosen_gk]
-                            used.add(chosen_gk.get("name"))
-                            LOG.info(f"[Formation] Selected goalkeeper: {chosen_gk.get('name')} ({chosen_gk.get('team')}) - €{chosen_gk.get('_computed_price')}")
-                        else:
-                            # Emergency fallback: pick cheapest goalkeeper
-                            gk_pool.sort(key=lambda x: (x.get("_price") or x.get("price") or 999, x.get("name") or ""))
-                            if gk_pool:
-                                emergency_gk = gk_pool[0]
-                                emergency_gk["_computed_price"] = 15  # Set reasonable price
-                                emergency_gk["_computed_fm"] = 5.0   # Set reasonable FM
-                                picks[role] = [emergency_gk]
-                                used.add(emergency_gk.get("name"))
-                                LOG.info(f"[Formation] Emergency goalkeeper: {emergency_gk.get('name')} (fallback)")
+                    if budget_gks:
+                        # Sort by value ratio (FM/price) descending
+                        budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_computed_fm", 0)))
+                        chosen_gk = budget_gks[0]
+                        picks[role] = [chosen_gk]
+                        used.add(chosen_gk.get("name"))
+                        LOG.info(f"[Formation] Selected goalkeeper: {chosen_gk.get('name')} ({chosen_gk.get('team')}) - €{chosen_gk.get('_computed_price')}")
                     else:
                         LOG.warning("[Formation] NO GOALKEEPERS FOUND IN POOL!")
+                        # Create a placeholder goalkeeper to prevent empty formation
+                        placeholder_gk = {
+                            "name": "Placeholder GK",
+                            "team": "N/D",
+                            "_computed_price": 15,
+                            "_computed_fm": 5.0,
+                            "_price": 15,
+                            "_fm": 5.0
+                        }
+                        picks[role] = [placeholder_gk]
                 else:
                     picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
 
@@ -1733,9 +1744,9 @@ Cosa ti interessa di più?"""
                 return reply
             else:
                 if team:
-                    return f"❌ Non ho trovato acquisti recenti validati per **{team}**.\n\n💡 **Suggerimenti:**\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
+                    return f"❌ Non ho trovato acquisti recenti validati per **{team}**.\n\n💡 Possibili cause:\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
                 else:
-                    return "❌ Non ho trovato acquisti recenti validati nel database.\n\n🔄 **Possibili cause:**\n• I dati necessitano di refresh\n• Conflitti nei dati di trasferimento\n• Problema temporaneo con la knowledge base"
+                    return "❌ Non ho trovato acquisti recenti validati nel database.\n\n🔄 Possibili cause:\n• I dati necessitano di refresh\n• Conflitti nei dati di trasferimento\n• Problema temporaneo con la knowledge base"
 
         except Exception as e:
             LOG.error(f"Error in _handle_transfers_request: {e}")
