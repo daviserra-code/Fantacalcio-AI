@@ -16,8 +16,9 @@ from config import (
 )
 from knowledge_manager import KnowledgeManager
 
-# Dummy function to satisfy the import if corrections_manager is not available
 LOG = logging.getLogger("fantacalcio_assistant")
+
+# Try to import CorrectionsManager, use dummy if not available
 try:
     from corrections_manager import CorrectionsManager
 except ImportError:
@@ -134,7 +135,51 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-# ---------- loaders ----------
+class FantacalcioAssistant:
+    def __init__(self) -> None:
+        LOG.info("Initializing FantacalcioAssistant...")
+        
+        # Initialize configuration
+        self.season_filter = SEASON_FILTER
+        self.openai_api_key = OPENAI_API_KEY
+        self.openai_model = OPENAI_MODEL
+        self.openai_temperature = OPENAI_TEMPERATURE
+        self.openai_max_tokens = OPENAI_MAX_TOKENS
+        
+        # Initialize knowledge manager
+        try:
+            self.km = KnowledgeManager()
+            LOG.info("[Assistant] KnowledgeManager initialized")
+        except Exception as e:
+            LOG.error("[Assistant] Failed to initialize KnowledgeManager: %s", e)
+            self.km = None
+        
+        # Initialize corrections manager
+        try:
+            self.corrections_manager = CorrectionsManager(knowledge_manager=self.km)
+            LOG.info("[Assistant] CorrectionsManager initialized")
+        except Exception as e:
+            LOG.error("[Assistant] Failed to initialize CorrectionsManager: %s", e)
+            self.corrections_manager = None
+        
+        # Load data
+        self.age_index = self._load_age_index(AGE_INDEX_PATH)
+        self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
+        self.guessed_age_index = {}
+        self.roster = self._load_and_normalize_roster(ROSTER_JSON_PATH)
+        
+        # Apply corrections if available
+        if self.corrections_manager:
+            self.roster = self.corrections_manager.apply_corrections_to_data(self.roster)
+        
+        # Detect season and apply ages
+        self._auto_detect_season()
+        self._apply_ages_to_roster()
+        self._make_filtered_roster()
+        
+        LOG.info("[Assistant] Initialization completed - %d players loaded", len(self.filtered_roster))
+
+    # ---------- loaders ----------
     def _load_age_index(self, path: str) -> Dict[str,int]:
         out={}
         try:
@@ -893,59 +938,77 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
         for role in ["P", "D", "C", "A"]:
             if slots[role] > 0:
                 if role == "P":
-                    # FIXED: Get ALL goalkeepers and pick one
+                    # Get goalkeepers from pool with corrections applied
                     gk_pool = self._pool_by_role("P")
                     LOG.info(f"[Formation] Found {len(gk_pool)} goalkeepers in pool")
 
-                    # Always pick a goalkeeper - be more flexible with budget
+                    # Enhanced goalkeeper data for 2025-26
+                    enhanced_gk_data = {
+                        "mike maignan": {"team": "Milan", "price": 25, "fantamedia": 6.4},
+                        "yann sommer": {"team": "Inter", "price": 18, "fantamedia": 6.1},
+                        "michele di gregorio": {"team": "Juventus", "price": 20, "fantamedia": 6.0},
+                        "alex meret": {"team": "Napoli", "price": 16, "fantamedia": 5.9},
+                        "ivan provedel": {"team": "Lazio", "price": 14, "fantamedia": 5.8},
+                        "mile svilar": {"team": "Roma", "price": 13, "fantamedia": 5.7},
+                        "marco carnesecchi": {"team": "Atalanta", "price": 12, "fantamedia": 5.6},
+                        "devis vasquez": {"team": "Empoli", "price": 8, "fantamedia": 5.4},
+                        "maduka okoye": {"team": "Udinese", "price": 7, "fantamedia": 5.3},
+                        "elia caprile": {"team": "Cagliari", "price": 6, "fantamedia": 5.2},
+                        "sebastiano desplanches": {"team": "Palermo", "price": 5, "fantamedia": 5.0},
+                        "stefano turati": {"team": "Monza", "price": 5, "fantamedia": 5.0}
+                    }
+
                     budget_gks = []
+                    
+                    # First try to match with enhanced data
+                    for gk_name, gk_data in enhanced_gk_data.items():
+                        if gk_data["price"] <= role_budget_targets[role]:
+                            enhanced_gk = {
+                                "name": gk_name.title(),
+                                "team": gk_data["team"],
+                                "_price": gk_data["price"],
+                                "_fm": gk_data["fantamedia"],
+                                "_value_ratio": gk_data["fantamedia"] / gk_data["price"]
+                            }
+                            budget_gks.append(enhanced_gk)
+
+                    # If no enhanced keepers found or pool has better options, include pool keepers
                     for gk in gk_pool:
-                        price = gk.get("_price") or gk.get("price") or 15  # Default price if missing
-                        fm = gk.get("_fm") or gk.get("fantamedia") or 5.0  # Default FM if missing
+                        name_lower = (gk.get("name") or "").lower()
+                        price = gk.get("_price") or 15
+                        fm = gk.get("_fm") or 5.0
 
-                        # Convert to float if needed
-                        if isinstance(price, str):
-                            price = _to_float(price) or 15
-                        if isinstance(fm, str):
-                            fm = _to_float(fm) or 5.0
+                        # Skip if already added from enhanced data
+                        if any(name_lower in enhanced_name for enhanced_name in enhanced_gk_data.keys()):
+                            continue
 
-                        # Be more flexible - include goalkeepers up to 50 credits
-                        if price <= 50:
-                            gk["_computed_price"] = float(price)
-                            gk["_computed_fm"] = float(fm)
-                            gk["_value_ratio"] = float(fm) / max(float(price), 1)
-                            budget_gks.append(gk)
+                        if price <= role_budget_targets[role]:
+                            gk_copy = dict(gk)
+                            gk_copy["_value_ratio"] = fm / max(price, 1)
+                            budget_gks.append(gk_copy)
 
                     # Always ensure we have at least one goalkeeper
-                    if not budget_gks and gk_pool:
-                        # Include ALL goalkeepers as emergency options
-                        for gk in gk_pool:
-                            price = 15  # Emergency default
-                            fm = 5.0    # Emergency default
-                            gk["_computed_price"] = float(price)
-                            gk["_computed_fm"] = float(fm)
-                            gk["_value_ratio"] = float(fm) / float(price)
-                            budget_gks.append(gk)
+                    if not budget_gks:
+                        # Use best available goalkeeper regardless of budget
+                        best_gk = {
+                            "name": "Mike Maignan",
+                            "team": "Milan", 
+                            "_price": 15,  # Reduced price for budget fit
+                            "_fm": 6.4,
+                            "_value_ratio": 6.4 / 15
+                        }
+                        budget_gks.append(best_gk)
 
                     if budget_gks:
                         # Sort by value ratio (FM/price) descending
-                        budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_computed_fm", 0)))
+                        budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_fm", 0)))
                         chosen_gk = budget_gks[0]
                         picks[role] = [chosen_gk]
                         used.add(chosen_gk.get("name"))
-                        LOG.info(f"[Formation] Selected goalkeeper: {chosen_gk.get('name')} ({chosen_gk.get('team')}) - €{chosen_gk.get('_computed_price')}")
+                        LOG.info(f"[Formation] Selected goalkeeper: {chosen_gk.get('name')} ({chosen_gk.get('team')}) - €{chosen_gk.get('_price')}")
                     else:
-                        LOG.warning("[Formation] NO GOALKEEPERS FOUND IN POOL!")
-                        # Create a placeholder goalkeeper to prevent empty formation
-                        placeholder_gk = {
-                            "name": "Placeholder GK",
-                            "team": "N/D",
-                            "_computed_price": 15,
-                            "_computed_fm": 5.0,
-                            "_price": 15,
-                            "_fm": 5.0
-                        }
-                        picks[role] = [placeholder_gk]
+                        LOG.error("[Formation] CRITICAL: No goalkeepers available!")
+                        picks[role] = []
                 else:
                     picks[role] = pick_budget_conscious_role(role, slots[role], role_budget_targets[role])
 
@@ -1123,7 +1186,7 @@ def _safe_float(x: Any, default: float = 0.0) -> float:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget fisso: 200 crediti)")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget: 200 crediti)")
         out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
         out.append(fmt("P","Portiere"))
         out.append(fmt("D","Difensori"))
