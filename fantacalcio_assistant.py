@@ -1149,7 +1149,7 @@ class FantacalcioAssistant:
             rows=[]
             LOG.info(f"[Formation Display] Formatting {len(picks[r])} players for role {r}")
             
-            for p in picks[r]:
+            for i, p in enumerate(picks[r], 1):
                 # Apply team corrections one more time for display with known corrections
                 player_name = p.get('name', 'N/D')
                 original_team = p.get('team', '—')
@@ -1178,11 +1178,15 @@ class FantacalcioAssistant:
                         LOG.info(f"[Formation Display] Applied correction manager: {player_name} {original_team} → {corrected_team}")
 
                 fm=p.get("_fm"); pr=p.get("_price"); bits=[]
-                if isinstance(fm,(int,float)): bits.append(f"FM {fm:.2f}")
-                if isinstance(pr,(int,float)): 
-                    bits.append(f"€ {int(round(pr))}")
+                if isinstance(fm,(int,float)): 
+                    bits.append(f"FM {fm:.2f}")
                 else:
-                    bits.append("prezzo N/D")
+                    bits.append("FM N/D")
+                    
+                if isinstance(pr,(int,float)): 
+                    bits.append(f"€{int(round(pr))}")
+                else:
+                    bits.append("€N/D")
                     
                 # Fix character encoding for display
                 try:
@@ -1193,12 +1197,14 @@ class FantacalcioAssistant:
                     
                     team_display_clean = team_display.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
 
-                    rows.append(f"- **{player_name_clean}** ({team_display_clean}) — " + ", ".join(bits))
+                    rows.append(f"  {i}. **{player_name_clean}** ({team_display_clean})")
+                    rows.append(f"     {' • '.join(bits)}")
                 except Exception as e:
                     LOG.warning(f"[Formation Display] Encoding fix failed for {player_name}: {e}")
-                    rows.append(f"- **{player_name}** ({team_display}) — " + ", ".join(bits))
+                    rows.append(f"  {i}. **{player_name}** ({team_display})")
+                    rows.append(f"     {' • '.join(bits)}")
             
-            return f"**{label}:**\n" + "\n".join(rows)
+            return f"🔹 **{label}:**\n" + "\n".join(rows)
 
         tot=0.0
         for r in picks:
@@ -1207,15 +1213,24 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): tot+=pr
 
         out=[]
-        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (budget fisso: 200 crediti)")
-        out.append(f"Costo effettivo: P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']}** (Budget: 200 crediti)")
+        out.append("")
+        out.append(f"💰 **Distribuzione Budget:** P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
+        out.append("")
         out.append(fmt("P","Portiere"))
+        out.append("")
         out.append(fmt("D","Difensori"))
+        out.append("")
         out.append(fmt("C","Centrocampisti"))
+        out.append("")
         out.append(fmt("A","Attaccanti"))
-        out.append(f"Totale stimato: **{int(round(tot))}** crediti • Differenza: **{int(round(leftover))}**")
-        out.append("_Criterio: Mix bilanciato di giocatori top/medi/economici per valore reale._")
-        return "\n\n".join(out)
+        out.append("")
+        out.append("─" * 50)
+        out.append(f"💵 **Totale Speso:** {int(round(tot))} crediti")
+        out.append(f"💰 **Rimanente:** {int(round(leftover))} crediti")
+        out.append("")
+        out.append("📝 *Criterio: Mix bilanciato di giocatori top/medi/economici per massimo valore.*")
+        return "\n".join(out)
 
     # ---------- parsers ----------
     def _parse_first_int(self, text: str) -> Optional[int]:
