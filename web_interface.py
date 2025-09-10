@@ -725,23 +725,18 @@ def api_search():
             team = (player.get('team') or '').lower()
 
             if query_lower in name or query_lower in team:
-                # Filter out players with completely missing/empty data
+                # Only show players with real names - skip players with missing/empty names
                 player_name = player.get('name', '').strip()
                 player_team = player.get('team', '').strip()
                 fantamedia = player.get('_fm')
                 price = player.get('_price')
                 
-                # Skip players with no meaningful data at all
-                if not player_team and fantamedia is None and price is None:
+                # Skip players without real names (no artificial display names)
+                if not player_name or len(player_name) < 2:
                     continue
                 
-                # Create display name for players with missing names
-                display_name = player_name
-                if not player_name or len(player_name) < 2:
-                    display_name = f"Player {player_team or 'Unknown'} {player.get('role', 'Unknown')}"
-                
                 results.append({
-                    'name': display_name,
+                    'name': player_name,
                     'team': player_team or 'N/D',
                     'role': player.get('role', ''),
                     'fantamedia': fantamedia,
