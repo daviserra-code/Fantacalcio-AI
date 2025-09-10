@@ -141,62 +141,59 @@ class ApifySquadScraper:
                 "userData": {"team": team_name}
             })
         
-        # Page function to extract player data from squad tables
+        # Robust pageFunction with cookie handling and header-based position extraction
         page_function = """
         async function pageFunction(context) {
-            const { page, request } = context;
-            
-            // Wait for squad table to load
-            await page.waitForSelector('.items tbody tr', { timeout: 15000 });
-            
-            // Get team name from userData
+            const { page, request, log } = context;
             const teamName = request.userData?.team || 'unknown';
             
-            // Extract player data from table
+            // Accept cookies if present (OneTrust)
+            try {
+                await page.waitForSelector('#onetrust-accept-btn-handler', { timeout: 5000 });
+                await page.click('#onetrust-accept-btn-handler');
+                await page.waitForTimeout(300);
+            } catch (_) {}
+            
+            // Wait for squad blocks
+            try {
+                await page.waitForSelector('.box .content .items', { timeout: 25000 });
+            } catch (e) {
+                log.warning(`No squad table for ${request.url}`);
+                return [];
+            }
+            
             const players = await page.evaluate(() => {
-                const rows = document.querySelectorAll('.items tbody tr');
+                const singularPos = (hdr) => {
+                    const t = (hdr||'').toLowerCase();
+                    if (t.includes('portier')) return 'Portiere';
+                    if (t.includes('difens') || t.includes('verteid') || t.includes('defen')) return 'Difensore';
+                    if (t.includes('centroc') || t.includes('mittelfeld') || t.includes('midfield')) return 'Centrocampista';
+                    if (t.includes('attacc') || t.includes('sturm') || t.includes('forward') || t.includes('angriff')) return 'Attaccante';
+                    return '';
+                };
+                
                 const results = [];
+                const boxes = Array.from(document.querySelectorAll('.box'));
                 
-                // First, find the position column index by checking headers
-                const headers = document.querySelectorAll('.items thead th');
-                let positionColumnIndex = -1;
-                
-                headers.forEach((header, index) => {
-                    const headerText = header.textContent.trim().toLowerCase();
-                    if (headerText.includes('pos') || headerText.includes('position')) {
-                        positionColumnIndex = index;
-                    }
-                });
-                
-                // Fallback: assume position is in column 2 (common for Transfermarkt)
-                if (positionColumnIndex === -1) positionColumnIndex = 1;
-                
-                rows.forEach(row => {
-                    const nameCell = row.querySelector('.hauptlink a');
-                    const cells = row.querySelectorAll('td');
+                for (const box of boxes) {
+                    const header = box.querySelector('.header h2')?.textContent?.trim() || '';
+                    const pos = singularPos(header);
+                    const table = box.querySelector('.content .items');
+                    if (!table) continue;
                     
-                    if (nameCell && cells.length > positionColumnIndex) {
-                        const name = nameCell.textContent.trim();
-                        const position = cells[positionColumnIndex].textContent.trim();
-                        
-                        if (name && position && name !== 'Name') {
-                            results.push({
-                                name: name,
-                                position: position
-                            });
-                        }
+                    for (const row of table.querySelectorAll('tbody tr')) {
+                        const a = row.querySelector('.hauptlink a');
+                        if (!a) continue;
+                        const name = a.textContent.trim();
+                        if (!name || name === 'Name') continue;
+                        results.push({ name, position: pos });
                     }
-                });
+                }
                 
                 return results;
             });
             
-            // Add team name to each player
-            return players.map(player => ({
-                ...player,
-                team: teamName,
-                source_url: request.url
-            }));
+            return players.map(p => ({ ...p, team: teamName, source_url: request.url }));
         }
         """
         
@@ -204,8 +201,12 @@ class ApifySquadScraper:
             "startUrls": start_urls,
             "pageFunction": page_function,
             "maxRequestsPerCrawl": 20,
-            "maxConcurrency": 2,
-            "requestTimeoutSecs": 60
+            "maxConcurrency": 1,  # Start with 1 for reliability, increase to 2 later
+            "requestTimeoutSecs": 90,
+            "navigationTimeoutSecs": 45,
+            "maxRequestRetries": 1,
+            "proxyConfiguration": {"useApifyProxy": True},
+            "crawlerType": "playwright"
         }
     
     def run_squad_scraper(self) -> List[Dict[str, Any]]:
@@ -215,10 +216,10 @@ class ApifySquadScraper:
         
         config = self.create_squad_scraper_config()
         
-        # Use Apify's Web Scraper actor
+        # Use Apify's Web Scraper actor (wrap config in "input" key)
         response = self.session.post(
             "https://api.apify.com/v2/acts/apify~web-scraper/runs",
-            json=config
+            json={"input": config}
         )
         response.raise_for_status()
         run_data = response.json()
@@ -226,25 +227,40 @@ class ApifySquadScraper:
         run_id = run_data["data"]["id"]
         LOG.info(f"🚀 Squad scraper started, run ID: {run_id}")
         
-        # Wait for completion
-        timeout = 300  # 5 minutes
+        # Wait for completion with better debugging
+        timeout = 600  # Increase to 10 minutes for 20 pages
         start_time = datetime.now()
         
         while (datetime.now() - start_time).seconds < timeout:
             status_response = self.session.get(f"https://api.apify.com/v2/actor-runs/{run_id}")
             status_response.raise_for_status()
-            status = status_response.json()["data"]["status"]
+            status_data = status_response.json()["data"]
+            status = status_data["status"]
             
             LOG.info(f"📊 Squad scraper status: {status}")
             
+            # Log additional debug info
+            if "stats" in status_data:
+                stats = status_data["stats"]
+                LOG.info(f"   Pages processed: {stats.get('requestsFinished', 0)}/{stats.get('requestsTotal', 0)}")
+                
             if status == "SUCCEEDED":
                 break
             elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
+                # Get error details
+                error_info = status_data.get("exitCode", "Unknown error")
+                LOG.error(f"Squad scraper failed with status: {status}, exit code: {error_info}")
                 raise RuntimeError(f"Squad scraper failed with status: {status}")
             
-            time.sleep(10)
+            time.sleep(15)  # Check every 15 seconds instead of 10
         else:
-            raise TimeoutError("Squad scraper timeout")
+            LOG.error(f"Squad scraper timeout after {timeout} seconds")
+            # Try to get final status for debugging
+            final_response = self.session.get(f"https://api.apify.com/v2/actor-runs/{run_id}")
+            if final_response.status_code == 200:
+                final_status = final_response.json()["data"]
+                LOG.error(f"Final status: {final_status.get('status')}, stats: {final_status.get('stats', {})}")
+            raise TimeoutError(f"Squad scraper timeout after {timeout} seconds")
         
         # Get results
         dataset_id = status_response.json()["data"]["defaultDatasetId"]
@@ -317,7 +333,8 @@ def backfill_positions_from_squads(dry_run: bool = True) -> Dict[str, int]:
                 stats["unchanged"] += 1
                 
         except Exception as e:
-            LOG.error(f"❌ Error processing {name}: {e}")
+            player_name = player.get("name", "Unknown") 
+            LOG.error(f"❌ Error processing {player_name}: {e}")
             stats["errors"] += 1
     
     if not dry_run:
