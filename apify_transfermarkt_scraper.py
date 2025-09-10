@@ -150,7 +150,7 @@ class ApifyTransfermarktScraper:
 
         # 1. Avvia il run
         run_url = f"{APIFY_BASE_URL}/acts/{actor_id}/runs"
-        LOG.info("[APIFY] Avvio actor %s", actor_id)
+        LOG.info("[APIFY] Avvio actor %s con input: %s", actor_id, input_data)
 
         response = self.session.post(run_url, json=input_data)
         response.raise_for_status()
@@ -208,8 +208,10 @@ class ApifyTransfermarktScraper:
             "teamUrl": team_url,
             "season": season,
             "extractTransfers": True,
-            "extractArrivals": not arrivals_only or True,
-            "extractDepartures": not arrivals_only
+            "extractArrivals": True,
+            "extractDepartures": not arrivals_only,
+            "extractPlayerPositions": include_positions,
+            "includePlayerDetails": include_positions
         }
 
         LOG.info("[APIFY] Scraping %s transfers per stagione %s", team, season)
