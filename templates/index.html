@@ -1043,16 +1043,13 @@
             <option value="C">{{ t.midfielder }}</option>
             <option value="A">{{ t.forward }}</option>
           </select>
-          <button onclick="downloadData()" class="filter-btn">📊 Esporta Dati</button>
-          <button onclick="exportLogs()" class="filter-btn">📋 Esporta Log</button>
-
         </div>
 
         <div id="advancedFilters" class="advanced-filters" style="display: none;">
             <h4>Filtri Statistiche</h4>
             <div class="filter-row">
-                <label for="roleFilter">Ruolo:</label>
-                <select id="roleFilter" class="filter-select" onchange="updateStatistics()">
+                <label for="statsRoleFilter">Ruolo:</label>
+                <select id="statsRoleFilter" class="filter-select" onchange="updateStatistics()">
                     <option value="all">Tutti</option>
                     <option value="P">Portieri</option>
                     <option value="D">Difensori</option>
@@ -1427,22 +1424,23 @@
         if (!container) return;
 
         try {
+            // Use correct filter IDs for statistics tab
             const teamFilter = document.getElementById('teamFilter');
-            const roleFilter = document.getElementById('roleFilter');
+            const roleFilter = document.getElementById('statsRoleFilter');
 
             if (!teamFilter || !roleFilter) {
-                console.error('Filter elements not found');
+                console.error('Filter elements not found in statistics tab');
                 return;
             }
 
-            const team = teamFilter.value;
+            const team = teamFilter.value.trim();
             const role = roleFilter.value;
 
             container.innerHTML = '<div class="loading">Caricamento statistiche...</div>';
 
             const url = new URL('/api/statistics', window.location.origin);
             if (team) url.searchParams.set('team', team);
-            if (role) url.searchParams.set('role', role);
+            if (role && role !== 'all') url.searchParams.set('role', role);
 
             const response = await fetch(url);
             const data = await response.json();
@@ -1456,7 +1454,7 @@
 
     async function performSearch() {
         const searchQuery = document.getElementById('searchInput');
-        const roleFilter = document.getElementById('roleFilter');
+        const roleFilter = document.querySelector('#historical select[id="roleFilter"]');
         const resultsContainer = document.getElementById('searchResults');
 
         if (!searchQuery || !roleFilter || !resultsContainer) {
@@ -1482,7 +1480,7 @@
                 },
                 body: JSON.stringify({
                     query: query,
-                    role: role
+                    role: role === 'all' ? '' : role
                 })
             });
 
@@ -1497,54 +1495,68 @@
     function showAdvancedFilters() {
         const filtersDiv = document.getElementById('advancedFilters');
         if (filtersDiv) {
-            filtersDiv.style.display = filtersDiv.style.display === 'none' ? 'block' : 'none';
+            if (filtersDiv.style.display === 'none') {
+                filtersDiv.style.display = 'block';
+                // Initialize statistics when showing filters
+                setTimeout(updateStatistics, 100);
+            } else {
+                filtersDiv.style.display = 'none';
+            }
         }
     }
 
     function displayStatistics(data) {
-      const container = document.getElementById('statisticsResults');
-      if (!container) return;
+        const container = document.getElementById('statisticsResults');
+        if (!container) return;
 
-      if (!data.success) {
-        container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
-        return;
-      }
+        if (!data.success) {
+            container.innerHTML = `<div class="error">Errore: ${data.error || 'Errore sconosciuto'}</div>`;
+            return;
+        }
 
-      container.innerHTML = '';
+        container.innerHTML = '';
 
-      // Display role statistics
-      Object.entries(data.role_statistics).forEach(([role, stats]) => {
-        const roleDiv = document.createElement('div');
-        roleDiv.className = 'role-stats';
+        if (!data.role_statistics || Object.keys(data.role_statistics).length === 0) {
+            container.innerHTML = '<div class="no-results">Nessuna statistica trovata per i filtri selezionati</div>';
+            return;
+        }
 
-        const roleName = {
-          'P': 'Portieri',
-          'D': 'Difensori',
-          'C': 'Centrocampisti',
-          'A': 'Attaccanti'
-        }[role] || role;
+        // Display role statistics
+        Object.entries(data.role_statistics).forEach(([role, stats]) => {
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'role-stats';
 
-        roleDiv.innerHTML = `
-          <h5>${roleName} (${stats.count} giocatori)</h5>
-          <div class="role-summary">
-            <span>Media FM: ${stats.avg_fantamedia}</span>
-            <span>Prezzo medio: €${stats.avg_price}</span>
-          </div>
-          <div class="role-top">
-            <strong>Top giocatori:</strong>
-            ${stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')}
-          </div>
-        `;
+            const roleName = {
+                'P': 'Portieri',
+                'D': 'Difensori',
+                'C': 'Centrocampisti',
+                'A': 'Attaccanti'
+            }[role] || role;
 
-        container.appendChild(roleDiv);
-      });
+            roleDiv.innerHTML = `
+                <h5>${roleName} (${stats.count} giocatori)</h5>
+                <div class="role-summary">
+                    <span>Media FM: ${stats.avg_fantamedia || 0}</span>
+                    <span>Prezzo medio: €${stats.avg_price || 0}</span>
+                </div>
+                <div class="role-top">
+                    <strong>Top giocatori:</strong>
+                    ${stats.top_players && stats.top_players.length > 0 
+                        ? stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')
+                        : 'Nessun giocatore trovato'
+                    }
+                </div>
+            `;
 
-      // Add summary
-      const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + stats.count, 0);
-      const summaryDiv = document.createElement('div');
-      summaryDiv.className = 'statistics-summary';
-      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
-      container.appendChild(summaryDiv);
+            container.appendChild(roleDiv);
+        });
+
+        // Add summary
+        const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + (stats.count || 0), 0);
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'statistics-summary';
+        summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
+        container.appendChild(summaryDiv);
     }
 
     function addEnterKeySupport() {
@@ -1562,6 +1574,17 @@
                 });
             }
         });
+
+        // Add enter key support for search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+        }
     }
 
     function displaySearchResults(results) {
@@ -1570,7 +1593,7 @@
 
         container.innerHTML = '';
 
-        if (results.length === 0) {
+        if (!results || results.length === 0) {
             container.innerHTML = '<div class="no-results">Nessun risultato trovato</div>';
             return;
         }
