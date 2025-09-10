@@ -480,12 +480,12 @@
       }
 
       body.mode-league-rules .btn-primary {
-          background: linear-gradient(135deg, #00ff88, #00d979);
+          background: linear-gradient(135deg, #00ff88, #00796b);
           color: #0b1220;
       }
 
       body.mode-league-rules .btn-primary:hover {
-          background: linear-gradient(135deg, #00d979, #00c26d);
+          background: linear-gradient(135deg, #00796b, #004d40);
           transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
       }
@@ -1451,58 +1451,92 @@
         }
     }
 
-    async function performSearch() {
-        const searchQuery = document.getElementById('searchInput');
-        const roleFilter = document.getElementById('roleFilter'); // Use the correct ID for search role filter
-        const resultsContainer = document.getElementById('searchResults');
+    function performSearch(){
+      const searchInput = document.getElementById('searchInput');
+      const roleFilter = document.getElementById('roleFilter');
 
-        if (!searchQuery || !roleFilter || !resultsContainer) {
-            console.error('Search elements not found');
-            return;
-        }
+      if (!searchInput || !roleFilter) {
+        console.error('Search elements not found');
+        return;
+      }
 
-        const query = searchQuery.value.trim();
-        const role = roleFilter.value;
+      const q = searchInput.value.trim();
+      const role = roleFilter.value;
 
-        if (!query) {
-            resultsContainer.innerHTML = '<div class="no-results">Inserisci un termine di ricerca</div>';
-            return;
-        }
+      if(!q){alert('Inserisci un termine di ricerca'); return;}
 
-        try {
-            resultsContainer.innerHTML = '<div class="loading">Ricerca in corso...</div>';
-
-            const response = await fetch('/api/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: query,
-                    role: role === 'all' ? '' : role
-                })
-            });
-
-            const data = await response.json();
-            // Pass debug info to displaySearchResults if available
-            displaySearchResults(data.results || [], data.debug_info); 
-        } catch (error) {
-            console.error('Search error:', error);
-            resultsContainer.innerHTML = '<div class="error">Errore nella ricerca</div>';
-        }
+      fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,role:role})})
+      .then(r=>r.json())
+      .then(data=>{
+        displaySearchResults(data.results || [], data.total || 0, {
+          query: q,
+          role_filter: role,
+          data_source: data.debug_info?.data_source || 'unknown',
+          total_pool_size: data.debug_info?.total_pool_size || 0,
+          matching_players: data.debug_info?.matching_players || 0,
+          role_filtered: data.debug_info?.role_filtered || 'N/A'
+        });
+      })
+      .catch(e=>{console.error('Search error:',e); alert('Errore nella ricerca')});
     }
 
-    function showAdvancedFilters() {
-        const filtersDiv = document.getElementById('advancedFilters');
-        if (filtersDiv) {
-            if (filtersDiv.style.display === 'none') {
-                filtersDiv.style.display = 'block';
-                // Initialize statistics when showing filters
-                setTimeout(updateStatistics, 100);
-            } else {
-                filtersDiv.style.display = 'none';
+    function updateStatistics(){
+      const teamFilter = document.getElementById('teamFilter');
+      const roleFilterStats = document.getElementById('roleFilterStats');
+
+      if (!teamFilter || !roleFilterStats) {
+        console.warn('Statistics filter elements not found');
+        return;
+      }
+
+      const team = teamFilter.value;
+      const role = roleFilterStats.value;
+
+      let url = '/api/statistics';
+      const params = new URLSearchParams();
+      if (team) params.append('team', team);
+      if (role) params.append('role', role);
+      if (params.toString()) url += '?' + params.toString();
+
+      fetch(url)
+      .then(r=>r.json())
+      .then(data=>{
+        displayStatistics(data);
+      })
+      .catch(e=>{console.error('Statistics error:',e)});
+    }
+
+    function showAdvancedFilters(){
+      const filtersDiv = document.getElementById('advancedFilters');
+      if (filtersDiv) {
+        filtersDiv.style.display = filtersDiv.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function addEnterKeySupport(){
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            performSearch();
+          }
+        });
+      }
+
+      // Add enter key support for message inputs
+      const inputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
+      inputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              const mode = inputId.replace('messageInput', '').toLowerCase() || 'classic';
+              sendMessage(mode === 'super' ? 'superscudetto' : mode);
             }
+          });
         }
+      });
     }
 
     function displayStatistics(data) {
@@ -1614,9 +1648,10 @@
         }
     }
 
-    function displaySearchResults(results, debugInfo = null) {
+    function displaySearchResults(results, total, debugInfo = null) {
         console.log('displaySearchResults called with:', { 
             resultsCount: results?.length || 0, 
+            totalResults: total,
             debugInfo 
         });
 
@@ -1663,7 +1698,146 @@
             </div>
         `).join('');
 
-        container.innerHTML += `<h4>Risultati (${results.length})</h4>${resultsHtml}`;
+        container.innerHTML += `<h4>Risultati (${results.length}/${total})</h4>${resultsHtml}`;
+    }
+
+    // Placeholder functions for league rules
+    function loadRulesSummary() {
+        console.log("Loading rules summary...");
+        // Simulate fetching rules summary
+        setTimeout(() => {
+            const summaryContainer = document.getElementById('rules-summary');
+            if (summaryContainer) {
+                summaryContainer.innerHTML = `
+                    <h6>League Name: Fantalega 2024</h6>
+                    <p><strong>Participants:</strong> 10</p>
+                    <p><strong>Budget:</strong> €500</p>
+                    <p><strong>Formation:</strong> Flexible (Max 3-4-3)</p>
+                    <p><strong>Scoring:</strong> Standard Fanta Rules + Bonus Assist</p>
+                `;
+            }
+        }, 500);
+    }
+
+    function loadRulesSection() {
+        const selectElement = document.getElementById('rules-section-select');
+        const editorDiv = document.getElementById('rules-editor');
+        const editorTextarea = document.getElementById('rules-json-editor');
+        const selectedSection = selectElement.value;
+
+        if (!selectedSection) {
+            editorDiv.style.display = 'none';
+            return;
+        }
+
+        // Simulate fetching rules for the selected section
+        const rulesData = {
+            league_info: JSON.stringify({ name: "Fantalega 2024", participants: 10, budget: 500 }, null, 2),
+            roster_composition: JSON.stringify({ goalkeepers: 2, defenders: 6, midfielders: 6, forwards: 4, max_players: 20 }, null, 2),
+            budget_rules: JSON.stringify({ starting_budget: 500, auction_budget_increment: 50 }, null, 2),
+            auction_rules: JSON.stringify({ auction_type: "open_cry", max_bids_per_player: 5 }, null, 2),
+            formation_rules: JSON.stringify({ allowed_formations: ["3-5-2", "3-4-3", "4-3-3", "4-4-2"], min_players_per_formation: 10 }, null, 2),
+            scoring_system: JSON.stringify({ goal: 3, assist: 2, clean_sheet_goalkeeper: 5, clean_sheet_defender: 4 }, null, 2),
+            transfer_rules: JSON.stringify({ free_transfers_per_week: 1, cost_per_additional_transfer: 5 }, null, 2),
+            playoff_rules: JSON.stringify({ num_teams: 4, structure: "single_elimination" }, null, 2),
+            special_rules: JSON.stringify({ bonus_assist: true, bonus_clean_sheet: true }, null, 2),
+            penalties: JSON.stringify({ late_payment_fine: 10, no_show_auction_penalty: 20 }, null, 2)
+        };
+
+        editorTextarea.value = rulesData[selectedSection] || "{}";
+        editorDiv.style.display = 'block';
+    }
+
+    function saveRulesSection() {
+        const selectElement = document.getElementById('rules-section-select');
+        const editorTextarea = document.getElementById('rules-json-editor');
+        const section = selectElement.value;
+        const rules = editorTextarea.value;
+
+        if (!section) {
+            alert("Please select a section to save.");
+            return;
+        }
+
+        console.log(`Saving rules for section: ${section}`, rules);
+        alert(`Rules for ${section} saved successfully! (Simulated)`);
+        // In a real application, you would send this data to the server
+    }
+
+    function importRulesDocument() {
+        const selectElement = document.getElementById('document-file-select');
+        const file = selectElement.value;
+
+        if (!file) {
+            alert("Please select a document to import.");
+            return;
+        }
+
+        console.log(`Importing rules from: ${file}`);
+        alert(`Rules imported from ${file} successfully! (Simulated)`);
+        // In a real application, you would handle file uploads and parsing
+    }
+
+    function addCustomRule() {
+        const typeSelect = document.getElementById('custom-rule-type');
+        const descriptionTextarea = document.getElementById('custom-rule-description');
+        const type = typeSelect.value;
+        const description = descriptionTextarea.value.trim();
+
+        if (!description) {
+            alert("Please enter a description for the custom rule.");
+            return;
+        }
+
+        console.log(`Adding custom rule - Type: ${type}, Description: ${description}`);
+        alert("Custom rule added successfully! (Simulated)");
+        descriptionTextarea.value = ''; // Clear the textarea
+        // In a real application, you would add this rule to the rules summary or a list
+    }
+
+    function exportRules(format) {
+        console.log(`Exporting rules in format: ${format}`);
+        alert(`Rules exported as ${format}! (Simulated)`);
+        // In a real application, you would generate and download the file
+    }
+
+    function validateFormation() {
+        const input = document.getElementById('formation-input');
+        const resultDiv = document.getElementById('formation-result');
+        const formation = input.value.trim();
+
+        if (!formation) {
+            resultDiv.textContent = 'Please enter a formation.';
+            resultDiv.style.color = 'orange';
+            return;
+        }
+
+        // Simple regex for common formations like 3-5-2, 4-3-3 etc.
+        const formationRegex = /^\d{1,2}-\d{1,2}-\d{1,2}$/;
+        if (formationRegex.test(formation)) {
+            resultDiv.textContent = `Formation ${formation} is valid.`;
+            resultDiv.style.color = 'lightgreen';
+        } else {
+            resultDiv.textContent = `Formation ${formation} is invalid. Use format like 4-4-2.`;
+            resultDiv.style.color = 'red';
+        }
+    }
+
+    function checkTransferWindow() {
+        const resultDiv = document.getElementById('transfer-window-result');
+        console.log("Checking transfer window status...");
+        // Simulate checking status
+        const isOpen = Math.random() > 0.5; // Randomly open or closed
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 30) + 15); // Random end date within 15-45 days
+
+        if (isOpen) {
+            resultDiv.textContent = `The transfer window is currently OPEN. It will close around ${endDate.toLocaleDateString()}.`;
+            resultDiv.style.color = 'lightgreen';
+        } else {
+            resultDiv.textContent = `The transfer window is currently CLOSED. It will open again on a future date.`;
+            resultDiv.style.color = 'salmon';
+        }
     }
 
     // Initial setup
