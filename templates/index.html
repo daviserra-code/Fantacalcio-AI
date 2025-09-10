@@ -1460,29 +1460,50 @@
         }
     }
 
-    function displaySearchResults(results) {
-        const tbody = document.querySelector('#search-results tbody');
-        if (!tbody) return;
+    function addEnterKeySupport() {
+        // Add enter key support for all message inputs
+        const inputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
+        inputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const mode = inputId.replace('messageInput', '').toLowerCase() || 'classic';
+                        sendMessage(mode === 'super' ? 'superscudetto' : mode);
+                    }
+                });
+            }
+        });
+    }
 
-        tbody.innerHTML = '';
+    function displaySearchResults(results) {
+        const container = document.getElementById('searchResults');
+        if (!container) return;
+
+        container.innerHTML = '';
 
         if (results.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nessun risultato trovato</td></tr>';
+            container.innerHTML = '<div class="no-results">Nessun risultato trovato</div>';
             return;
         }
 
-        results.forEach(player => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${player.name || 'N/D'}</td>
-                <td>${player.team || 'N/D'}</td>
-                <td>${player.role || 'N/D'}</td>
-                <td>${player.fantamedia ? player.fantamedia.toFixed(2) : 'N/D'}</td>
-                <td>€${player.price || 'N/D'}</td>
-                <td>${player.age || 'N/D'}</td>
-            `;
-            tbody.appendChild(row);
-        });
+        const resultsHtml = results.map(player => `
+            <div class="player-card">
+                <div class="player-header">
+                    <span class="player-name">${player.name || 'N/D'}</span>
+                    <span class="player-role">${player.role || 'N/D'}</span>
+                </div>
+                <div class="player-details">
+                    <span><strong>Squadra:</strong> ${player.team || 'N/D'}</span>
+                    <span><strong>FM:</strong> ${player.fantamedia ? player.fantamedia.toFixed(2) : 'N/D'}</span>
+                    <span><strong>Prezzo:</strong> €${player.price || 'N/D'}</span>
+                    <span><strong>Età:</strong> ${player.age || 'N/D'}</span>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = `<h4>Risultati (${results.length})</h4>${resultsHtml}`;
     }
 
     async function updateStatistics() {
@@ -1518,6 +1539,52 @@
           container.innerHTML = '<div class="error">Errore nel caricamento delle statistiche</div>';
         }
       }
+    }
+
+    function displayStatistics(data) {
+      const container = document.getElementById('statisticsResults');
+      if (!container) return;
+
+      if (!data.success) {
+        container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+
+      // Display role statistics
+      Object.entries(data.role_statistics).forEach(([role, stats]) => {
+        const roleDiv = document.createElement('div');
+        roleDiv.className = 'role-stats';
+
+        const roleName = {
+          'P': 'Portieri',
+          'D': 'Difensori', 
+          'C': 'Centrocampisti',
+          'A': 'Attaccanti'
+        }[role] || role;
+
+        roleDiv.innerHTML = `
+          <h5>${roleName} (${stats.count} giocatori)</h5>
+          <div class="role-summary">
+            <span>Media FM: ${stats.avg_fantamedia}</span>
+            <span>Prezzo medio: €${stats.avg_price}</span>
+          </div>
+          <div class="role-top">
+            <strong>Top giocatori:</strong>
+            ${stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')}
+          </div>
+        `;
+
+        container.appendChild(roleDiv);
+      });
+
+      // Add summary
+      const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + stats.count, 0);
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'statistics-summary';
+      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
+      container.appendChild(summaryDiv);
     }
 
     function displayStatistics(data) {
