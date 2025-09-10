@@ -1486,16 +1486,25 @@
     }
 
     async function updateStatistics() {
-        const roleFilter = document.getElementById('roleFilter').value;
-        const teamFilter = document.getElementById('teamFilter')?.value || ''; // Use optional chaining for teamFilter
+        const roleFilter = document.getElementById('roleFilter');
+        const teamFilter = document.getElementById('teamSearch');
+
+        if (!roleFilter) {
+            console.error('Role filter element not found');
+            return;
+        }
+
+        const role = roleFilter.value;
+        const team = teamFilter ? teamFilter.value.trim() : '';
 
         try {
             let url = '/api/statistics';
             const params = new URLSearchParams();
-            if (roleFilter && roleFilter !== 'all') params.append('role', roleFilter);
-            if (teamFilter && teamFilter !== 'all') params.append('team', teamFilter);
+            if (role && role !== 'all') params.append('role', role);
+            if (team) params.append('team', team);
             if (params.toString()) url += '?' + params.toString();
 
+            console.log(`Fetching statistics: ${url}`);
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2109,6 +2118,84 @@
 
       // Activate selected tab
       event.target.classList.add('active');
+    }
+
+    function showAdvancedFilters() {
+      const filtersContainer = document.getElementById('advancedFilters');
+      if (filtersContainer) {
+        if (filtersContainer.style.display === 'none' || !filtersContainer.style.display) {
+          filtersContainer.style.display = 'block';
+        } else {
+          filtersContainer.style.display = 'none';
+        }
+      }
+    }
+
+    async function performSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const roleFilter = document.getElementById('roleFilter');
+      
+      if (!searchInput || !roleFilter) {
+        console.error('Search elements not found');
+        return;
+      }
+
+      const query = searchInput.value.trim();
+      const role = roleFilter.value;
+
+      if (!query) {
+        document.getElementById('searchResults').innerHTML = '<div class="no-results">Inserisci un termine di ricerca</div>';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: query,
+            role: role === 'all' ? '' : role
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        displaySearchResults(data.results);
+      } catch (error) {
+        console.error('Error in search:', error);
+        document.getElementById('searchResults').innerHTML = '<div class="error">Errore nella ricerca</div>';
+      }
+    }
+
+    function displaySearchResults(results) {
+      const container = document.getElementById('searchResults');
+      if (!container) return;
+
+      if (!results || results.length === 0) {
+        container.innerHTML = '<div class="no-results">Nessun risultato trovato</div>';
+        return;
+      }
+
+      let html = '<div class="search-results-grid">';
+      results.forEach(player => {
+        html += `
+          <div class="player-card">
+            <h4>${player.name || 'N/D'}</h4>
+            <p><strong>Squadra:</strong> ${player.team || 'N/D'}</p>
+            <p><strong>Ruolo:</strong> ${player.role || 'N/D'}</p>
+            <p><strong>Fantamedia:</strong> ${player.fantamedia ? player.fantamedia.toFixed(2) : 'N/D'}</p>
+            <p><strong>Prezzo:</strong> €${player.price || 'N/D'}</p>
+            ${player.age ? `<p><strong>Età:</strong> ${player.age}</p>` : ''}
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
     }
 
     // Statistics functions - complete implementation

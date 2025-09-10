@@ -752,17 +752,18 @@ def api_statistics():
         role_filter = request.args.get('role', '').strip().upper()
         team_filter = request.args.get('team', '').strip().lower()
 
+        LOG.info(f"[Statistics] Filters - Role: '{role_filter}', Team: '{team_filter}'")
+
         # Aggregate statistics by role
         role_stats = {}
-        roles = ['P', 'D', 'C', 'A']
+        roles = ['P', 'D', 'C', 'A'] if not role_filter else [role_filter]
 
         for role in roles:
-            # Skip if role filter is specified and doesn't match
-            if role_filter and role != role_filter:
-                continue
-
             # Get players for this role
             players = []
+            role_matches = 0
+            team_matches = 0
+            
             for p in assistant.filtered_roster:
                 # Check role match with multiple variations
                 player_role = p.get('role', '').strip().upper()
@@ -770,27 +771,39 @@ def api_statistics():
                 
                 # Enhanced role matching for Italian terms with better filtering
                 is_role_match = False
-                if role == "D":
-                    is_role_match = (player_role == "D" or player_role == "DIFENSORE" or
-                                   any(x in role_raw.upper() for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS", "TERZINO", "CENTRALE"]))
+                if role == "P":
+                    is_role_match = (player_role in ["P", "PORTIERE", "GK", "POR"] or
+                                   any(x in role_raw for x in ["PORTIER", "PORTIERE", "GK", "POR", "GOALKEEPER"]))
+                elif role == "D":
+                    is_role_match = (player_role in ["D", "DIFENSORE"] or
+                                   any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS", "TERZINO", "CENTRALE"]))
                 elif role == "C":
-                    is_role_match = (player_role == "C" or player_role == "CENTROCAMPISTA" or
-                                   any(x in role_raw.upper() for x in ["CENTROCAMP", "CENTROCAMPISTA", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ", "MEDIANO", "TREQUARTISTA"]))
+                    is_role_match = (player_role in ["C", "CENTROCAMPISTA"] or
+                                   any(x in role_raw for x in ["CENTROCAMP", "CENTROCAMPISTA", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ", "MEDIANO", "TREQUARTISTA"]))
                 elif role == "A":
-                    is_role_match = (player_role == "A" or player_role == "ATTACCANTE" or
-                                   any(x in role_raw.upper() for x in ["ATTACC", "ATTACCANTE", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN", "PRIMA PUNTA", "SECONDA PUNTA"]))
-                elif role == "P":
-                    is_role_match = (player_role == "P" or player_role == "PORTIERE" or
-                                   any(x in role_raw.upper() for x in ["PORTIER", "PORTIERE", "GK", "POR", "GOALKEEPER"]))
+                    is_role_match = (player_role in ["A", "ATTACCANTE"] or
+                                   any(x in role_raw for x in ["ATTACC", "ATTACCANTE", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN", "PRIMA PUNTA", "SECONDA PUNTA"]))
+
+                if is_role_match:
+                    role_matches += 1
 
                 if not is_role_match:
                     continue
 
                 # Apply team filter if specified
+                team_match = True
                 if team_filter:
                     player_team = p.get('team', '').strip().lower()
-                    if team_filter not in player_team:
-                        continue
+                    # More flexible team matching
+                    team_match = (team_filter in player_team or 
+                                player_team in team_filter or
+                                any(part in player_team for part in team_filter.split() if len(part) > 2))
+                    
+                    if team_match:
+                        team_matches += 1
+
+                if not team_match:
+                    continue
 
                 # Only include players with meaningful data
                 name = p.get('name', '').strip()
@@ -798,6 +811,8 @@ def api_statistics():
                     continue
 
                 players.append(p)
+
+            LOG.info(f"[Statistics] Role {role}: {role_matches} role matches, {team_matches} team matches, {len(players)} final players")
 
             if not players:
                 role_stats[role] = {
@@ -854,6 +869,8 @@ def api_statistics():
                     'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) and fm > 0 else 0,
                     'price': int(pr) if isinstance(pr, (int, float)) and pr > 0 else 0
                 })
+
+            LOG.info(f"[Statistics] Role {role} final: {len(valid_players)} valid players, top player: {top_players[0]['name'] if top_players else 'none'}")
 
             role_stats[role] = {
                 'count': len(valid_players),
