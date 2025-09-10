@@ -33,6 +33,54 @@ from typing import Dict, List, Any, Optional
 
 import requests
 
+# Position mapping from Transfermarkt to Fantasy Football roles
+POSITION_MAPPING = {
+    # Goalkeeper
+    "Goalkeeper": "P", "GK": "P", "Portiere": "P",
+    
+    # Defender
+    "Centre-Back": "D", "Left-Back": "D", "Right-Back": "D", "Defender": "D",
+    "Central Defender": "D", "Left Defender": "D", "Right Defender": "D",
+    "Difensore": "D", "Difensore centrale": "D", "Terzino": "D", 
+    "Terzino sinistro": "D", "Terzino destro": "D",
+    
+    # Midfielder 
+    "Central Midfield": "C", "Defensive Midfield": "C", "Attacking Midfield": "C",
+    "Left Midfield": "C", "Right Midfield": "C", "Midfielder": "C",
+    "Centrocampista": "C", "Mediano": "C", "Trequartista": "C",
+    "Centrocampista centrale": "C", "Esterno centrocampo": "C",
+    
+    # Wing-back (usually counted as Defender in Fantasy)
+    "Left-Back": "D", "Right-Back": "D", "Wing-Back": "D",
+    
+    # Forward/Attacker
+    "Centre-Forward": "A", "Left Winger": "A", "Right Winger": "A", 
+    "Striker": "A", "Forward": "A", "Attacker": "A",
+    "Attaccante": "A", "Punta": "A", "Ala": "A", "Esterno offensivo": "A",
+    "Prima punta": "A", "Seconda punta": "A"
+}
+
+def map_position_to_role(position: str) -> str:
+    """Convert Transfermarkt position to Fantasy Football role (P/D/C/A)"""
+    if not position:
+        return "NA"
+    
+    # Clean and normalize position string
+    position_clean = position.strip().title()
+    
+    # Direct mapping first
+    if position_clean in POSITION_MAPPING:
+        return POSITION_MAPPING[position_clean]
+    
+    # Fuzzy matching for partial strings
+    position_lower = position.lower()
+    for key, role in POSITION_MAPPING.items():
+        if key.lower() in position_lower or position_lower in key.lower():
+            return role
+    
+    # Default fallback
+    return "NA"
+
 # KnowledgeManager opzionale
 try:
     from knowledge_manager import KnowledgeManager
@@ -147,7 +195,7 @@ class ApifyTransfermarktScraper:
         }
 
     def scrape_team_transfers(self, team: str, season: str = "2025-26",
-                            arrivals_only: bool = False) -> List[Dict[str, Any]]:
+                            arrivals_only: bool = False, include_positions: bool = True) -> List[Dict[str, Any]]:
         """Scrapa i trasferimenti di una squadra"""
 
         if team not in SERIE_A_TEAMS:
@@ -261,7 +309,8 @@ class ApifyTransfermarktScraper:
                 "from_team": from_team,
                 "to_team": to_team,
                 "fee": fee,
-                "position": "",  # Non disponibile nei dati attuali
+                "position": raw_data.get("position", ""),  # Extract from Transfermarkt
+                "role": map_position_to_role(raw_data.get("position", "")),  # Map to Fantasy role
                 "source": "apify_transfermarkt",
                 "source_date": datetime.now().strftime("%Y-%m-%d"),
                 "valid_from": datetime.now().strftime("%Y-%m-%d"),
@@ -327,7 +376,7 @@ def merge_into_roster(transfers: List[Dict[str, Any]], roster_path: Path = Path(
             roster.append({
                 "name": name,
                 "team": team,
-                "role": transfer.get("position") or "NA",
+                "role": transfer.get("role") or transfer.get("position") or "NA",
                 "season": transfer.get("season"),
                 "type": "current_player",
                 "source": transfer.get("source"),
