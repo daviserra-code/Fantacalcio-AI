@@ -139,3 +139,13 @@ class RateLimiter:
             return None
             
         return int(client_requests[0] + self.time_window)
+    
+    def get_status(self) -> dict:
+        """Get current rate limiter status"""
+        return {
+            "is_deployed": self.is_deployed,
+            "max_requests": self.max_requests,
+            "time_window": self.time_window,
+            "active_clients": len(self.requests),
+            "total_requests": sum(len(client_requests) for client_requests in self.requests.values())
+        }

@@ -768,20 +768,20 @@ def api_statistics():
                 player_role = p.get('role', '').strip().upper()
                 role_raw = p.get('role_raw', '').strip().upper()
                 
-                # Enhanced role matching for Italian terms
+                # Enhanced role matching for Italian terms with better filtering
                 is_role_match = False
                 if role == "D":
-                    is_role_match = (player_role == "D" or 
-                                   any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS"]))
+                    is_role_match = (player_role == "D" or player_role == "DIFENSORE" or
+                                   any(x in role_raw.upper() for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS", "TERZINO", "CENTRALE"]))
                 elif role == "C":
-                    is_role_match = (player_role == "C" or 
-                                   any(x in role_raw for x in ["CENTROCAMP", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ"]))
+                    is_role_match = (player_role == "C" or player_role == "CENTROCAMPISTA" or
+                                   any(x in role_raw.upper() for x in ["CENTROCAMP", "CENTROCAMPISTA", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ", "MEDIANO", "TREQUARTISTA"]))
                 elif role == "A":
-                    is_role_match = (player_role == "A" or 
-                                   any(x in role_raw for x in ["ATTACC", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN"]))
+                    is_role_match = (player_role == "A" or player_role == "ATTACCANTE" or
+                                   any(x in role_raw.upper() for x in ["ATTACC", "ATTACCANTE", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN", "PRIMA PUNTA", "SECONDA PUNTA"]))
                 elif role == "P":
-                    is_role_match = (player_role == "P" or 
-                                   any(x in role_raw for x in ["PORTIER", "GK", "POR"]))
+                    is_role_match = (player_role == "P" or player_role == "PORTIERE" or
+                                   any(x in role_raw.upper() for x in ["PORTIER", "PORTIERE", "GK", "POR", "GOALKEEPER"]))
 
                 if not is_role_match:
                     continue
@@ -823,8 +823,22 @@ def api_statistics():
             avg_fm = round(sum(fantamedias) / len(fantamedias), 2) if fantamedias else 0
             avg_price = round(sum(prices) / len(prices), 2) if prices else 0
 
-            # Get top players - filter out empty records
-            valid_players = [p for p in players if p.get('name', '').strip()]
+            # Get top players - filter out empty records more strictly
+            valid_players = []
+            for p in players:
+                name = p.get('name', '').strip()
+                team = p.get('team', '').strip()
+                
+                # Skip completely empty records
+                if not name or len(name) < 2:
+                    continue
+                    
+                # Skip non-Serie A teams
+                if team and any(excluded_team in team.lower() for excluded_team in ['newcastle', 'psg', 'al hilal', 'tottenham', 'arsenal', 'manchester', 'chelsea', 'liverpool', 'real madrid', 'barcelona', 'atletico', 'bayern', 'borussia']):
+                    continue
+                    
+                valid_players.append(p)
+
             players_sorted = sorted(valid_players, key=lambda x: -(x.get('_fm') or 0))
             top_players = []
 
@@ -833,16 +847,12 @@ def api_statistics():
                 team = p.get('team', '').strip()
                 fm = p.get('_fm')
                 pr = p.get('_price')
-                
-                # Skip empty records
-                if not name:
-                    continue
 
                 top_players.append({
                     'name': name,
                     'team': team or 'N/D',
-                    'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) else 0,
-                    'price': int(pr) if isinstance(pr, (int, float)) else 0
+                    'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) and fm > 0 else 0,
+                    'price': int(pr) if isinstance(pr, (int, float)) and pr > 0 else 0
                 })
 
             role_stats[role] = {

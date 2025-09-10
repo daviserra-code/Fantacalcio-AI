@@ -1398,6 +1398,140 @@
 
     function askQuickQuestion(q){ const i=document.getElementById('messageInput'); i.value=q; sendMessage('classic'); }
     function askQuickQuestionMantra(q){ const i=document.getElementById('messageInputMantra'); i.value=q; sendMessage('mantra'); }
+
+    // Statistics functions
+    function showAdvancedFilters() {
+        const filters = document.getElementById('advanced-filters');
+        if (filters) {
+            filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    async function performSearch() {
+        const query = document.getElementById('searchQuery').value.trim();
+        const role = document.getElementById('roleFilter').value;
+        
+        if (!query) {
+            alert('Inserisci un termine di ricerca');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    role: role
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displaySearchResults(data.results || []);
+        } catch (error) {
+            console.error('Error performing search:', error);
+            alert('Errore nella ricerca. Riprova.');
+        }
+    }
+
+    function displaySearchResults(results) {
+        const tbody = document.querySelector('#search-results tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        if (results.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nessun risultato trovato</td></tr>';
+            return;
+        }
+
+        results.forEach(player => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${player.name || 'N/D'}</td>
+                <td>${player.team || 'N/D'}</td>
+                <td>${player.role || 'N/D'}</td>
+                <td>${player.fantamedia ? player.fantamedia.toFixed(2) : 'N/D'}</td>
+                <td>€${player.price || 'N/D'}</td>
+                <td>${player.age || 'N/D'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    async function updateStatistics() {
+        const roleFilter = document.getElementById('statsRoleFilter').value;
+        const teamFilter = document.getElementById('statsTeamFilter').value;
+        
+        try {
+            let url = '/api/statistics';
+            const params = new URLSearchParams();
+            if (roleFilter) params.append('role', roleFilter);
+            if (teamFilter) params.append('team', teamFilter);
+            if (params.toString()) url += '?' + params.toString();
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayStatistics(data);
+        } catch (error) {
+            console.error('Error updating statistics:', error);
+            alert('Errore nel caricamento delle statistiche. Riprova.');
+        }
+    }
+
+    function displayStatistics(data) {
+        if (!data.success) {
+            console.error('Statistics error:', data.error);
+            return;
+        }
+
+        const container = document.getElementById('statistics-content');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        // Display role statistics
+        Object.entries(data.role_statistics).forEach(([role, stats]) => {
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'role-stats';
+            
+            const roleName = {
+                'P': 'Portieri',
+                'D': 'Difensori', 
+                'C': 'Centrocampisti',
+                'A': 'Attaccanti'
+            }[role] || role;
+
+            roleDiv.innerHTML = `
+                <h3>${roleName}</h3>
+                <p>Giocatori: ${stats.count}</p>
+                <p>FM Media: ${stats.avg_fantamedia.toFixed(2)}</p>
+                <p>Prezzo Medio: €${stats.avg_price.toFixed(0)}</p>
+                <div class="top-players">
+                    <h4>Top 5:</h4>
+                    ${stats.top_players.map(p => `
+                        <div>${p.name} (${p.team}) - FM: ${p.fantamedia.toFixed(2)}, €${p.price}</div>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(roleDiv);
+        });
+    }
+
+    // Load statistics on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStatistics();
+    });
     function askQuickQuestionDraft(q){ const i=document.getElementById('messageInputDraft'); i.value=q; sendMessage('draft'); }
     function askQuickQuestionSuper(q){ const i=document.getElementById('messageInputSuper'); i.value=q; sendMessage('superscudetto'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
