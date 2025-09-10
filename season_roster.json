@@ -900,7 +900,8 @@
     "birth_year": 1997,
     "price": 12,
     "fantamedia": 6.1,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26"
   },
   {
     "name": "Federico Gatti",
@@ -909,7 +910,8 @@
     "birth_year": 1998,
     "price": 9,
     "fantamedia": 6.1,
-    "appearances": 0
+    "appearances": 0,
+    "season": "2025-26"
   },
   {
     "name": "Andrea Cambiaso",
