@@ -18,7 +18,7 @@ run = ["sh", "-c", "python web_interface.py --port 5000"]
 deploymentTarget = "cloudrun"
 
 [workflows]
-runButton = "Run Fantacalcio Assistant"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run Fantacalcio Assistant"
@@ -28,6 +28,27 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python web_interface.py --port 5000"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Fantasy Football AI Server"
+
+[[workflows.workflow]]
+name = "Fantasy Football AI Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python web_interface.py"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 5000

@@ -1480,31 +1480,6 @@
       .catch(e=>{console.error('Search error:',e); alert('Errore nella ricerca')});
     }
 
-    function updateStatistics(){
-      const teamFilter = document.getElementById('teamFilter');
-      const roleFilterStats = document.getElementById('roleFilterStats');
-
-      if (!teamFilter || !roleFilterStats) {
-        console.warn('Statistics filter elements not found');
-        return;
-      }
-
-      const team = teamFilter.value;
-      const role = roleFilterStats.value;
-
-      let url = '/api/statistics';
-      const params = new URLSearchParams();
-      if (team) params.append('team', team);
-      if (role) params.append('role', role);
-      if (params.toString()) url += '?' + params.toString();
-
-      fetch(url)
-      .then(r=>r.json())
-      .then(data=>{
-        displayStatistics(data);
-      })
-      .catch(e=>{console.error('Statistics error:',e)});
-    }
 
     function showAdvancedFilters(){
       const filtersDiv = document.getElementById('advancedFilters');
@@ -1513,31 +1488,6 @@
       }
     }
 
-    function addEnterKeySupport(){
-      const searchInput = document.getElementById('searchInput');
-      if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            performSearch();
-          }
-        });
-      }
-
-      // Add enter key support for message inputs
-      const inputs = ['messageInput', 'messageInputMantra', 'messageInputDraft', 'messageInputSuper'];
-      inputs.forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-          input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              const mode = inputId.replace('messageInput', '').toLowerCase() || 'classic';
-              sendMessage(mode === 'super' ? 'superscudetto' : mode);
-            }
-          });
-        }
-      });
-    }
 
     function displayStatistics(data) {
       console.log('displayStatistics called with:', data);
