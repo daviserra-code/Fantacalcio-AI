@@ -752,6 +752,26 @@
                 color: #666;
                 margin-bottom: 10px;
             }
+
+            /* Added styles for new elements */
+      .search-container { margin: 20px 0; }
+      .search-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+      .search-controls input, .search-controls select, .search-controls button { padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+      .search-controls button { background: #007bff; color: white; cursor: pointer; }
+      .search-controls button:hover { background: #0056b3; }
+
+      .statistics-container { margin: 20px 0; }
+      .filter-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+      .filter-controls select { padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+
+      .stats-section { margin: 15px 0; padding: 15px; border: 1px solid #eee; border-radius: 5px; }
+      .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+      .top-players { margin-top: 10px; }
+      .player-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+
+      .player-card { border: 1px solid #ddd; border-radius: 5px; padding: 10px; margin: 10px 0; background: #f9f9f9; }
+      .no-results, .error { text-align: center; padding: 20px; color: #666; }
+      .error { color: #d32f2f; }
   </style>
 </head>
 <body class="mode-classic">
@@ -845,7 +865,7 @@
         <button class="quick-action-btn" onclick="askQuickQuestion('3 centrocampisti Under 21')">👶 U21 Centrocampisti</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('2 attaccanti Under 21')">👶 U21 Attaccanti</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Giovani Under 23 tutti i ruoli')">👶 U23 Tutti i Ruoli</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Strategia per l\'asta')">🏆 Strategia Asta</button>
+        <button class="quick-action-btn" onclick="askQuickQuestion('Strategia per l'asta')">🏆 Strategia Asta</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Inter')">📈 Acquisti Inter</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Milan')">📈 Acquisti Milan</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Juventus')">📈 Acquisti Juventus</button>
@@ -1025,7 +1045,7 @@
           </select>
           <button onclick="downloadData()" class="filter-btn">📊 Esporta Dati</button>
           <button onclick="exportLogs()" class="filter-btn">📋 Esporta Log</button>
-          
+
         </div>
 
         <div id="advancedFilters" class="advanced-filters" style="display: none;">
@@ -1401,16 +1421,16 @@
 
     // Statistics functions
     function showAdvancedFilters() {
-        const filters = document.getElementById('advanced-filters');
+        const filters = document.getElementById('advancedFilters');
         if (filters) {
             filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
         }
     }
 
     async function performSearch() {
-        const query = document.getElementById('searchQuery').value.trim();
+        const query = document.getElementById('searchInput').value.trim();
         const role = document.getElementById('roleFilter').value;
-        
+
         if (!query) {
             alert('Inserisci un termine di ricerca');
             return;
@@ -1466,14 +1486,14 @@
     }
 
     async function updateStatistics() {
-        const roleFilter = document.getElementById('statsRoleFilter').value;
-        const teamFilter = document.getElementById('statsTeamFilter').value;
-        
+        const roleFilter = document.getElementById('roleFilter').value;
+        const teamFilter = document.getElementById('teamFilter')?.value || ''; // Use optional chaining for teamFilter
+
         try {
             let url = '/api/statistics';
             const params = new URLSearchParams();
-            if (roleFilter) params.append('role', roleFilter);
-            if (teamFilter) params.append('team', teamFilter);
+            if (roleFilter && roleFilter !== 'all') params.append('role', roleFilter);
+            if (teamFilter && teamFilter !== 'all') params.append('team', teamFilter);
             if (params.toString()) url += '?' + params.toString();
 
             const response = await fetch(url);
@@ -1485,18 +1505,22 @@
             displayStatistics(data);
         } catch (error) {
             console.error('Error updating statistics:', error);
-            alert('Errore nel caricamento delle statistiche. Riprova.');
+            const container = document.getElementById('statisticsContent');
+            if (container) {
+                container.innerHTML = `<div class="error">Errore nel caricamento delle statistiche. Riprova.</div>`;
+            }
         }
     }
 
     function displayStatistics(data) {
+        const container = document.getElementById('statisticsContent');
+        if (!container) return;
+
         if (!data.success) {
             console.error('Statistics error:', data.error);
+            container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
             return;
         }
-
-        const container = document.getElementById('statistics-content');
-        if (!container) return;
 
         container.innerHTML = '';
 
@@ -1504,10 +1528,10 @@
         Object.entries(data.role_statistics).forEach(([role, stats]) => {
             const roleDiv = document.createElement('div');
             roleDiv.className = 'role-stats';
-            
+
             const roleName = {
                 'P': 'Portieri',
-                'D': 'Difensori', 
+                'D': 'Difensori',
                 'C': 'Centrocampisti',
                 'A': 'Attaccanti'
             }[role] || role;
@@ -1530,15 +1554,26 @@
 
     // Load statistics on page load
     document.addEventListener('DOMContentLoaded', function() {
-        updateStatistics();
+      // Initialize the first tab
+      switchTab('classic', document.querySelector('.tabs .tab.active'));
+
+      // Load initial statistics after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        try {
+          updateStatistics();
+        } catch(e) {
+          console.log('Statistics initialization skipped:', e.message);
+        }
+      }, 500);
     });
+
     function askQuickQuestionDraft(q){ const i=document.getElementById('messageInputDraft'); i.value=q; sendMessage('draft'); }
     function askQuickQuestionSuper(q){ const i=document.getElementById('messageInputSuper'); i.value=q; sendMessage('superscudetto'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
 
     function searchPlayers(){
       const q=document.getElementById('searchInput').value.trim();
-      const role=document.getElementById('roleSelect').value;
+      const role=document.getElementById('roleFilter').value; // Corrected ID
       if(!q) {
           loadTopPerformers(); // Load top performers if search is empty
           return;
