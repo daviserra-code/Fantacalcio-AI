@@ -685,6 +685,73 @@
               max-width: 50%;
           }
       }
+
+      .statistics-results .role-stats {
+                margin: 10px 0;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+            .statistics-results .top-players {
+                margin-top: 5px;
+            }
+
+            .statistics-results .player-tag {
+                display: inline-block;
+                background: #f0f0f0;
+                padding: 2px 6px;
+                margin: 2px;
+                border-radius: 3px;
+                font-size: 0.9em;
+            }
+
+            .advanced-filters {
+                background: #f9f9f9;
+                padding: 15px;
+                margin: 10px 0;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+
+            .filter-row {
+                margin: 10px 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .filter-row label {
+                min-width: 80px;
+                font-weight: bold;
+            }
+
+            .filter-select, .filter-input {
+                flex: 1;
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+
+            .apply-filters-btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 3px;
+                cursor: pointer;
+                margin-top: 10px;
+            }
+
+            .apply-filters-btn:hover {
+                background: #0056b3;
+            }
+
+            .filter-info {
+                font-style: italic;
+                color: #666;
+                margin-bottom: 10px;
+            }
   </style>
 </head>
 <body class="mode-classic">
@@ -946,6 +1013,7 @@
         <div class="search-header">
           <input type="text" id="searchInput" placeholder="{{ t.search_placeholder }}" maxlength="100">
           <button onclick="performSearch()" class="btn btn-primary">🔍</button>
+          <button onclick="showAdvancedFilters()" class="filter-btn">📊 Statistiche</button>
         </div>
         <div class="filters">
           <select id="roleFilter" onchange="performSearch()">
@@ -957,11 +1025,32 @@
           </select>
           <button onclick="downloadData()" class="filter-btn">📊 Esporta Dati</button>
           <button onclick="exportLogs()" class="filter-btn">📋 Esporta Log</button>
-          <button class="filter-btn" onclick="showAdvancedFilters()">🔧 Advanced</button>
+          
         </div>
+
+        <div id="advancedFilters" class="advanced-filters" style="display: none;">
+            <h4>Filtri Statistiche</h4>
+            <div class="filter-row">
+                <label for="roleFilter">Ruolo:</label>
+                <select id="roleFilter" class="filter-select" onchange="updateStatistics()">
+                    <option value="all">Tutti</option>
+                    <option value="P">Portieri</option>
+                    <option value="D">Difensori</option>
+                    <option value="C">Centrocampisti</option>
+                    <option value="A">Attaccanti</option>
+                </select>
+            </div>
+            <div class="filter-row">
+                <label for="teamSearch">Squadra:</label>
+                <input type="text" id="teamSearch" placeholder="Es: juventus, milan..." class="filter-input" onkeyup="updateStatistics()">
+            </div>
+            <button onclick="updateStatistics()" class="apply-filters-btn">Applica Filtri</button>
+        </div>
+
         <div id="searchResults" class="search-results">
           <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
         </div>
+        <div id="statisticsResults" class="statistics-results"></div>
       </div>
     </div>
 
@@ -1313,9 +1402,9 @@
     function askQuickQuestionSuper(q){ const i=document.getElementById('messageInputSuper'); i.value=q; sendMessage('superscudetto'); }
     function resetChat(){ fetch('/api/reset-chat',{method:'POST'}).catch(()=>{}); }
 
-    function performSearch(){
+    function searchPlayers(){
       const q=document.getElementById('searchInput').value.trim();
-      const role=document.getElementById('roleFilter').value;
+      const role=document.getElementById('roleSelect').value;
       if(!q) {
           loadTopPerformers(); // Load top performers if search is empty
           return;
@@ -1399,7 +1488,7 @@
     document.getElementById('searchInput')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        performSearch();
+        searchPlayers();
       }
     });
 
@@ -1855,34 +1944,16 @@
 
     // Add missing advanced filters function
     function showAdvancedFilters() {
-      const modal = document.getElementById('advancedFiltersModal');
-      if (modal) {
-        modal.style.display = 'block';
+      const filtersContainer = document.getElementById('advancedFilters');
+      if (filtersContainer.style.display === 'none' || !filtersContainer.style.display) {
+        filtersContainer.style.display = 'block';
       } else {
-        // Create modal if it doesn't exist
-        const modalHTML = `
-          <div id="advancedFiltersModal" class="modal" style="display:block">
-            <div class="modal-content">
-              <span class="close" onclick="closeAdvancedFilters()">&times;</span>
-              <h2>Filtri Avanzati</h2>
-              <p>Filtri avanzati non ancora implementati</p>
-              <button onclick="closeAdvancedFilters()">Chiudi</button>
-            </div>
-          </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-      }
-    }
-
-    function closeAdvancedFilters() {
-      const modal = document.getElementById('advancedFiltersModal');
-      if (modal) {
-        modal.style.display = 'none';
+        filtersContainer.style.display = 'none';
       }
     }
 
     // Initial setup
-    document.addEventListener('DOMContentLoaded', ()=>{
+    document.addEventListener('DOMContentLoaded',()=>{
       const firstTab = document.querySelector('.tabs .tab');
       switchTab('classic', firstTab);
       addEnterKeySupport();
@@ -1908,6 +1979,11 @@
                     sendMessage('classic');
                 }
             });
+        }
+
+        // Load initial statistics on historical tab load if it's the active tab
+        if(currentTab === 'historical') {
+            loadTopPerformers();
         }
     });
 

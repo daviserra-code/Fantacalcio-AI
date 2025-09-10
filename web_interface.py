@@ -748,13 +748,56 @@ def api_statistics():
                 "total_players": 0
             }), 200
 
+        # Get query parameters for filtering
+        role_filter = request.args.get('role', '').strip().upper()
+        team_filter = request.args.get('team', '').strip().lower()
+
         # Aggregate statistics by role
         role_stats = {}
         roles = ['P', 'D', 'C', 'A']
 
         for role in roles:
-            players = [p for p in assistant.filtered_roster 
-                      if p.get('role', '').upper() == role]
+            # Skip if role filter is specified and doesn't match
+            if role_filter and role != role_filter:
+                continue
+
+            # Get players for this role
+            players = []
+            for p in assistant.filtered_roster:
+                # Check role match with multiple variations
+                player_role = p.get('role', '').strip().upper()
+                role_raw = p.get('role_raw', '').strip().upper()
+                
+                # Enhanced role matching for Italian terms
+                is_role_match = False
+                if role == "D":
+                    is_role_match = (player_role == "D" or 
+                                   any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS"]))
+                elif role == "C":
+                    is_role_match = (player_role == "C" or 
+                                   any(x in role_raw for x in ["CENTROCAMP", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ"]))
+                elif role == "A":
+                    is_role_match = (player_role == "A" or 
+                                   any(x in role_raw for x in ["ATTACC", "ATT", "ST", "CF", "LW", "RW", "SS", "PUN"]))
+                elif role == "P":
+                    is_role_match = (player_role == "P" or 
+                                   any(x in role_raw for x in ["PORTIER", "GK", "POR"]))
+
+                if not is_role_match:
+                    continue
+
+                # Apply team filter if specified
+                if team_filter:
+                    player_team = p.get('team', '').strip().lower()
+                    if team_filter not in player_team:
+                        continue
+
+                # Only include players with meaningful data
+                name = p.get('name', '').strip()
+                if not name or len(name) < 2:
+                    continue
+
+                players.append(p)
 
             if not players:
                 role_stats[role] = {
@@ -780,30 +823,47 @@ def api_statistics():
             avg_fm = round(sum(fantamedias) / len(fantamedias), 2) if fantamedias else 0
             avg_price = round(sum(prices) / len(prices), 2) if prices else 0
 
-            # Get top players
-            players_sorted = sorted(players, key=lambda x: -(x.get('_fm') or 0))
+            # Get top players - filter out empty records
+            valid_players = [p for p in players if p.get('name', '').strip()]
+            players_sorted = sorted(valid_players, key=lambda x: -(x.get('_fm') or 0))
             top_players = []
 
             for p in players_sorted[:5]:
+                name = p.get('name', '').strip()
+                team = p.get('team', '').strip()
                 fm = p.get('_fm')
                 pr = p.get('_price')
+                
+                # Skip empty records
+                if not name:
+                    continue
+
                 top_players.append({
-                    'name': p.get('name', 'N/D'),
-                    'team': p.get('team', 'N/D'),
+                    'name': name,
+                    'team': team or 'N/D',
                     'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) else 0,
                     'price': int(pr) if isinstance(pr, (int, float)) else 0
                 })
 
             role_stats[role] = {
-                'count': len(players),
+                'count': len(valid_players),
                 'avg_fantamedia': avg_fm,
                 'avg_price': avg_price,
                 'top_players': top_players
             }
 
+        # Count total filtered players
+        total_filtered = 0
+        for stats in role_stats.values():
+            total_filtered += stats.get('count', 0)
+
         return jsonify({
             'role_statistics': role_stats,
-            'total_players': len(assistant.filtered_roster) if assistant.filtered_roster else 0,
+            'total_players': total_filtered,
+            'filters_applied': {
+                'role': role_filter or 'all',
+                'team': team_filter or 'all'
+            },
             'success': True
         })
 
@@ -814,7 +874,7 @@ def api_statistics():
             "role_statistics": {},
             "total_players": 0,
             "success": False
-        }), 200
+        }), 500
 
 @app.route('/api/data-quality-report')
 def data_quality_report():
