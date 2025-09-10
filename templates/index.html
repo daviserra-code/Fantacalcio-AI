@@ -1061,8 +1061,8 @@
                 </select>
             </div>
             <div class="filter-row">
-                <label for="teamSearch">Squadra:</label>
-                <input type="text" id="teamSearch" placeholder="Es: juventus, milan..." class="filter-input" onkeyup="updateStatistics()">
+                <label for="teamFilter">Squadra:</label>
+                <input type="text" id="teamFilter" placeholder="Es: juventus, milan..." class="filter-input" onkeyup="updateStatistics()">
             </div>
             <button onclick="updateStatistics()" class="apply-filters-btn">Applica Filtri</button>
         </div>
@@ -1418,29 +1418,67 @@
 
     function askQuickQuestion(q){ const i=document.getElementById('messageInput'); i.value=q; sendMessage('classic'); }
     function askQuickQuestionMantra(q){ const i=document.getElementById('messageInputMantra'); i.value=q; sendMessage('mantra'); }
+    function askQuickQuestionDraft(q){ const i=document.getElementById('messageInputDraft'); i.value=q; sendMessage('draft'); }
+    function askQuickQuestionSuper(q){ const i=document.getElementById('messageInputSuper'); i.value=q; sendMessage('superscudetto'); }
 
     // Statistics functions
-    function showAdvancedFilters() {
-        const filters = document.getElementById('advancedFilters');
-        if (filters) {
-            filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+    async function updateStatistics() {
+        const container = document.getElementById('statisticsResults');
+        if (!container) return;
+
+        try {
+            const teamFilter = document.getElementById('teamFilter');
+            const roleFilter = document.getElementById('roleFilter');
+
+            if (!teamFilter || !roleFilter) {
+                console.error('Filter elements not found');
+                return;
+            }
+
+            const team = teamFilter.value;
+            const role = roleFilter.value;
+
+            container.innerHTML = '<div class="loading">Caricamento statistiche...</div>';
+
+            const url = new URL('/api/statistics', window.location.origin);
+            if (team) url.searchParams.set('team', team);
+            if (role) url.searchParams.set('role', role);
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            displayStatistics(data);
+        } catch (error) {
+            console.error('Error updating statistics:', error);
+            container.innerHTML = '<div class="error">Errore nel caricamento delle statistiche</div>';
         }
     }
 
     async function performSearch() {
-        const query = document.getElementById('searchInput').value.trim();
-        const role = document.getElementById('roleFilter').value;
+        const searchQuery = document.getElementById('searchInput');
+        const roleFilter = document.getElementById('roleFilter');
+        const resultsContainer = document.getElementById('searchResults');
+
+        if (!searchQuery || !roleFilter || !resultsContainer) {
+            console.error('Search elements not found');
+            return;
+        }
+
+        const query = searchQuery.value.trim();
+        const role = roleFilter.value;
 
         if (!query) {
-            alert('Inserisci un termine di ricerca');
+            resultsContainer.innerHTML = '<div class="no-results">Inserisci un termine di ricerca</div>';
             return;
         }
 
         try {
+            resultsContainer.innerHTML = '<div class="loading">Ricerca in corso...</div>';
+
             const response = await fetch('/api/search', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     query: query,
@@ -1448,16 +1486,65 @@
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
             const data = await response.json();
             displaySearchResults(data.results || []);
         } catch (error) {
-            console.error('Error performing search:', error);
-            alert('Errore nella ricerca. Riprova.');
+            console.error('Search error:', error);
+            resultsContainer.innerHTML = '<div class="error">Errore nella ricerca</div>';
         }
+    }
+
+    function showAdvancedFilters() {
+        const filtersDiv = document.getElementById('advancedFilters');
+        if (filtersDiv) {
+            filtersDiv.style.display = filtersDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function displayStatistics(data) {
+      const container = document.getElementById('statisticsResults');
+      if (!container) return;
+
+      if (!data.success) {
+        container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+
+      // Display role statistics
+      Object.entries(data.role_statistics).forEach(([role, stats]) => {
+        const roleDiv = document.createElement('div');
+        roleDiv.className = 'role-stats';
+
+        const roleName = {
+          'P': 'Portieri',
+          'D': 'Difensori',
+          'C': 'Centrocampisti',
+          'A': 'Attaccanti'
+        }[role] || role;
+
+        roleDiv.innerHTML = `
+          <h5>${roleName} (${stats.count} giocatori)</h5>
+          <div class="role-summary">
+            <span>Media FM: ${stats.avg_fantamedia}</span>
+            <span>Prezzo medio: €${stats.avg_price}</span>
+          </div>
+          <div class="role-top">
+            <strong>Top giocatori:</strong>
+            ${stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')}
+          </div>
+        `;
+
+        container.appendChild(roleDiv);
+      });
+
+      // Add summary
+      const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + stats.count, 0);
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'statistics-summary';
+      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
+      container.appendChild(summaryDiv);
     }
 
     function addEnterKeySupport() {
@@ -1504,133 +1591,6 @@
         `).join('');
 
         container.innerHTML = `<h4>Risultati (${results.length})</h4>${resultsHtml}`;
-    }
-
-    async function updateStatistics() {
-      const roleFilter = document.getElementById('roleFilter');
-      const teamFilter = document.getElementById('teamSearch');
-
-      if (!roleFilter) {
-        console.error('Role filter element not found');
-        return;
-      }
-
-      const role = roleFilter.value;
-      const team = teamFilter ? teamFilter.value.trim() : '';
-
-      try {
-        let url = '/api/statistics';
-        const params = new URLSearchParams();
-        if (role && role !== 'all') params.append('role', role);
-        if (team) params.append('team', team);
-        if (params.toString()) url += '?' + params.toString();
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        displayStatistics(data);
-      } catch (error) {
-        console.error('Error updating statistics:', error);
-        const container = document.getElementById('statisticsResults');
-        if (container) {
-          container.innerHTML = '<div class="error">Errore nel caricamento delle statistiche</div>';
-        }
-      }
-    }
-
-    function displayStatistics(data) {
-      const container = document.getElementById('statisticsResults');
-      if (!container) return;
-
-      if (!data.success) {
-        container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-
-      // Display role statistics
-      Object.entries(data.role_statistics).forEach(([role, stats]) => {
-        const roleDiv = document.createElement('div');
-        roleDiv.className = 'role-stats';
-
-        const roleName = {
-          'P': 'Portieri',
-          'D': 'Difensori', 
-          'C': 'Centrocampisti',
-          'A': 'Attaccanti'
-        }[role] || role;
-
-        roleDiv.innerHTML = `
-          <h5>${roleName} (${stats.count} giocatori)</h5>
-          <div class="role-summary">
-            <span>Media FM: ${stats.avg_fantamedia}</span>
-            <span>Prezzo medio: €${stats.avg_price}</span>
-          </div>
-          <div class="role-top">
-            <strong>Top giocatori:</strong>
-            ${stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')}
-          </div>
-        `;
-
-        container.appendChild(roleDiv);
-      });
-
-      // Add summary
-      const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + stats.count, 0);
-      const summaryDiv = document.createElement('div');
-      summaryDiv.className = 'statistics-summary';
-      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
-      container.appendChild(summaryDiv);
-    }
-
-    function displayStatistics(data) {
-      const container = document.getElementById('statisticsContent');
-      if (!container) return;
-
-      if (!data.success) {
-        container.innerHTML = `<div class="error">Errore: ${data.error}</div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-
-      // Display role statistics
-      Object.entries(data.role_statistics).forEach(([role, stats]) => {
-        const roleDiv = document.createElement('div');
-        roleDiv.className = 'role-stats';
-
-        const roleName = {
-          'P': 'Portieri',
-          'D': 'Difensori',
-          'C': 'Centrocampisti',
-          'A': 'Attaccanti'
-        }[role] || role;
-
-        roleDiv.innerHTML = `
-          <h3>${roleName} (${stats.count} giocatori)</h3>
-          <div class="role-summary">
-            <span>Media fantamedia: ${stats.avg_fantamedia}</span>
-            <span>Prezzo medio: €${stats.avg_price}</span>
-          </div>
-          <div class="role-top">
-            <strong>Top giocatori:</strong>
-            ${stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')}
-          </div>
-        `;
-
-        container.appendChild(roleDiv);
-      });
-
-      // Add summary
-      const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + stats.count, 0);
-      const summaryDiv = document.createElement('div');
-      summaryDiv.className = 'statistics-summary';
-      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
-      container.appendChild(summaryDiv);
     }
 
     // Initial setup
