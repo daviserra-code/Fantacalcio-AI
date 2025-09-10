@@ -741,8 +741,12 @@ def api_statistics():
     """Get player statistics by role"""
     try:
         assistant = get_assistant()
-        if not assistant:
-            return jsonify({"error": "Assistant not available"}), 500
+        if not assistant or not hasattr(assistant, 'filtered_roster'):
+            return jsonify({
+                "error": "Assistant not available or data not loaded",
+                "role_statistics": {},
+                "total_players": 0
+            }), 200
 
         # Aggregate statistics by role
         role_stats = {}
@@ -761,40 +765,56 @@ def api_statistics():
                 }
                 continue
 
-            # Calculate averages
-            fantamedias = [p.get('_fm') for p in players if p.get('_fm') is not None]
-            prices = [p.get('_price') for p in players if p.get('_price') is not None]
+            # Calculate averages with safer handling
+            fantamedias = []
+            prices = []
+            
+            for p in players:
+                fm = p.get('_fm')
+                pr = p.get('_price')
+                if isinstance(fm, (int, float)) and fm > 0:
+                    fantamedias.append(fm)
+                if isinstance(pr, (int, float)) and pr > 0:
+                    prices.append(pr)
 
-            avg_fm = sum(fantamedias) / len(fantamedias) if fantamedias else 0
-            avg_price = sum(prices) / len(prices) if prices else 0
+            avg_fm = round(sum(fantamedias) / len(fantamedias), 2) if fantamedias else 0
+            avg_price = round(sum(prices) / len(prices), 2) if prices else 0
 
             # Get top players
             players_sorted = sorted(players, key=lambda x: -(x.get('_fm') or 0))
             top_players = []
 
             for p in players_sorted[:5]:
+                fm = p.get('_fm')
+                pr = p.get('_price')
                 top_players.append({
-                    'name': p.get('name', ''),
-                    'team': p.get('team', ''),
-                    'fantamedia': p.get('_fm'),
-                    'price': p.get('_price')
+                    'name': p.get('name', 'N/D'),
+                    'team': p.get('team', 'N/D'),
+                    'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) else 0,
+                    'price': int(pr) if isinstance(pr, (int, float)) else 0
                 })
 
             role_stats[role] = {
                 'count': len(players),
-                'avg_fantamedia': round(avg_fm, 2),
-                'avg_price': round(avg_price, 2),
+                'avg_fantamedia': avg_fm,
+                'avg_price': avg_price,
                 'top_players': top_players
             }
 
         return jsonify({
             'role_statistics': role_stats,
-            'total_players': len(assistant.filtered_roster)
+            'total_players': len(assistant.filtered_roster) if assistant.filtered_roster else 0,
+            'success': True
         })
 
     except Exception as e:
         LOG.error(f"Error generating statistics: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({
+            "error": f"Error generating statistics: {str(e)}",
+            "role_statistics": {},
+            "total_players": 0,
+            "success": False
+        }), 200
 
 @app.route('/api/data-quality-report')
 def data_quality_report():
