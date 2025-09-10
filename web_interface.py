@@ -387,9 +387,6 @@ def handle_exclusion(msg: str, state: dict) -> str:
     """Handle player exclusions (rimuovi/escludi commands)"""
     msg_lower = msg.lower()
 
-    # Pattern: "rimuovi/escludi [player name] dalla [team]" or "rimuovi [player name] dalla lista"
-    import re
-
     # Pattern for team-specific exclusions
     team_exclusion_pattern = r"rimuovi\s+([a-zA-ZÀ-ÿ\s]+?)\s+dall[ao]\s+([a-zA-ZÀ-ÿ\s]+?)(?:\s*$)"
     team_match = re.search(team_exclusion_pattern, msg, re.IGNORECASE)
@@ -672,25 +669,146 @@ def api_reset_exclusions():
     return jsonify({"ok": True, "message": "Esclusioni rimosse"})
 
 @app.route("/api/rate-limit-status", methods=["GET"])
-def api_rate_limit_status():
-    client_ip = rate_limiter._get_client_key(request)
-    remaining = rate_limiter.get_remaining_requests(request)
-    reset_time = rate_limiter.get_reset_time(request)
+def rate_limit_status():
+    """Get current rate limiting status"""
+    try:
+        status = rate_limiter.get_status()
+        return jsonify(status)
+    except Exception as e:
+        LOG.error(f"Error getting rate limit status: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
-    # Get request history for this client (for debugging)
-    client_requests = rate_limiter.requests.get(client_ip, [])
-    request_count = len(client_requests)
+@app.route('/api/search', methods=['POST'])
+def api_search():
+    """Search functionality for statistics"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
 
-    return jsonify({
-        "is_deployed": rate_limiter.is_deployed,
-        "limit": rate_limiter.max_requests,
-        "remaining": remaining,
-        "used": request_count,
-        "reset_time": reset_time,
-        "window_seconds": rate_limiter.time_window,
-        "client_id": client_ip[:8] + "..." if len(client_ip) > 8 else client_ip,  # Partial IP for debugging
-        "tracking_method": "IP-based" if rate_limiter.is_deployed else "Development (no limits)"
-    })
+        query = data.get('query', '').strip()
+        role = data.get('role', '').strip()
+
+        if not query:
+            return jsonify({"error": "Query parameter required"}), 400
+
+        # Initialize assistant if needed
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({"error": "Assistant not initialized"}), 500
+
+        # Search players based on query and role
+        results = []
+
+        # Get all players and filter by role if specified
+        all_players = assistant.filtered_roster
+        if role:
+            all_players = [p for p in all_players if p.get('role', '').upper() == role.upper()]
+
+        # Simple text search in player names and teams
+        query_lower = query.lower()
+        for player in all_players:
+            name = (player.get('name') or '').lower()
+            team = (player.get('team') or '').lower()
+
+            if query_lower in name or query_lower in team:
+                results.append({
+                    'name': player.get('name', ''),
+                    'team': player.get('team', ''),
+                    'role': player.get('role', ''),
+                    'fantamedia': player.get('_fm'),
+                    'price': player.get('_price'),
+                    'age': assistant._age_from_by(player.get('birth_year')) if player.get('birth_year') else None
+                })
+
+        # Sort by fantamedia descending
+        results.sort(key=lambda x: -(x.get('fantamedia') or 0))
+
+        # Limit results
+        results = results[:20]
+
+        return jsonify({
+            'results': results,
+            'total': len(results)
+        })
+
+    except Exception as e:
+        LOG.error(f"Error in search endpoint: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/statistics')
+def api_statistics():
+    """Get player statistics by role"""
+    try:
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({"error": "Assistant not available"}), 500
+
+        # Aggregate statistics by role
+        role_stats = {}
+        roles = ['P', 'D', 'C', 'A']
+
+        for role in roles:
+            players = [p for p in assistant.filtered_roster 
+                      if p.get('role', '').upper() == role]
+
+            if not players:
+                role_stats[role] = {
+                    'count': 0,
+                    'avg_fantamedia': 0,
+                    'avg_price': 0,
+                    'top_players': []
+                }
+                continue
+
+            # Calculate averages
+            fantamedias = [p.get('_fm') for p in players if p.get('_fm') is not None]
+            prices = [p.get('_price') for p in players if p.get('_price') is not None]
+
+            avg_fm = sum(fantamedias) / len(fantamedias) if fantamedias else 0
+            avg_price = sum(prices) / len(prices) if prices else 0
+
+            # Get top players
+            players_sorted = sorted(players, key=lambda x: -(x.get('_fm') or 0))
+            top_players = []
+
+            for p in players_sorted[:5]:
+                top_players.append({
+                    'name': p.get('name', ''),
+                    'team': p.get('team', ''),
+                    'fantamedia': p.get('_fm'),
+                    'price': p.get('_price')
+                })
+
+            role_stats[role] = {
+                'count': len(players),
+                'avg_fantamedia': round(avg_fm, 2),
+                'avg_price': round(avg_price, 2),
+                'top_players': top_players
+            }
+
+        return jsonify({
+            'role_statistics': role_stats,
+            'total_players': len(assistant.filtered_roster)
+        })
+
+    except Exception as e:
+        LOG.error(f"Error generating statistics: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/data-quality-report')
+def data_quality_report():
+    """Get data quality report"""
+    try:
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({"error": "Assistant not available"}), 500
+
+        report = assistant.get_data_quality_report()
+        return jsonify(report)
+    except Exception as e:
+        LOG.error(f"Error generating data quality report: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/api/test", methods=["GET"])
 def api_test():
