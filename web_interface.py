@@ -682,20 +682,33 @@ def rate_limit_status():
 def api_search():
     """Search functionality for statistics"""
     try:
+        LOG.info(f"[Search API] Request received - Method: {request.method}")
+        LOG.info(f"[Search API] Content-Type: {request.content_type}")
+        LOG.info(f"[Search API] Raw data: {request.get_data()}")
+        
         data = request.get_json()
+        LOG.info(f"[Search API] Parsed JSON data: {data}")
+        
         if not data:
+            LOG.error("[Search API] No data provided in request")
             return jsonify({"error": "No data provided"}), 400
 
         query = data.get('query', '').strip()
         role = data.get('role', '').strip()
 
+        LOG.info(f"[Search API] Search parameters - Query: '{query}', Role: '{role}'")
+
         if not query:
+            LOG.error("[Search API] Query parameter is empty or missing")
             return jsonify({"error": "Query parameter required"}), 400
 
         # Initialize assistant if needed
         assistant = get_assistant()
         if not assistant:
+            LOG.error("[Search API] Assistant not initialized")
             return jsonify({"error": "Assistant not initialized"}), 500
+
+        LOG.info(f"[Search API] Assistant loaded, filtered_roster size: {len(assistant.filtered_roster)}")
 
         # Search players based on query and role
         results = []
@@ -727,32 +740,65 @@ def api_search():
         # Limit results
         results = results[:20]
 
-        return jsonify({
+        LOG.info(f"[Search API] Query '{query}' returned {len(results)} results")
+        LOG.info(f"[Search API] Sample results: {results[:3] if results else 'No results'}")
+        LOG.info(f"[Search API] Data source: filtered_roster (roster.json processed)")
+
+        response_data = {
             'results': results,
-            'total': len(results)
-        })
+            'total': len(results),
+            'debug_info': {
+                'query': query,
+                'role_filter': role,
+                'data_source': 'filtered_roster',
+                'total_pool_size': len(assistant.filtered_roster),
+                'matching_players': len([p for p in assistant.filtered_roster if query.lower() in (p.get('name') or '').lower() or query.lower() in (p.get('team') or '').lower()]),
+                'role_filtered': len([p for p in assistant.filtered_roster if role and p.get('role', '').upper() == role.upper()]) if role else 'N/A'
+            }
+        }
+
+        LOG.info(f"[Search API] Returning response: {response_data}")
+        return jsonify(response_data)
 
     except Exception as e:
-        LOG.error(f"Error in search endpoint: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        LOG.error(f"[Search API] Error in search endpoint: {e}", exc_info=True)
+        return jsonify({
+            "error": "Internal server error", 
+            "debug_info": {
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            }
+        }), 500
 
 @app.route('/api/statistics')
 def api_statistics():
     """Get player statistics by role"""
     try:
+        LOG.info(f"[Statistics API] Request received - Method: {request.method}")
+        LOG.info(f"[Statistics API] Request args: {dict(request.args)}")
+        LOG.info(f"[Statistics API] Request headers: {dict(request.headers)}")
+        
         assistant = get_assistant()
         if not assistant or not hasattr(assistant, 'filtered_roster'):
+            LOG.error("[Statistics API] Assistant not available or filtered_roster missing")
             return jsonify({
                 "error": "Assistant not available or data not loaded",
                 "role_statistics": {},
-                "total_players": 0
+                "total_players": 0,
+                "debug_info": {
+                    "assistant_available": assistant is not None,
+                    "filtered_roster_available": hasattr(assistant, 'filtered_roster') if assistant else False,
+                    "roster_length": len(assistant.filtered_roster) if assistant and hasattr(assistant, 'filtered_roster') else 0
+                }
             }), 200
 
         # Get query parameters for filtering
         role_filter = request.args.get('role', '').strip().upper()
         team_filter = request.args.get('team', '').strip().lower()
 
-        LOG.info(f"[Statistics] Filters - Role: '{role_filter}', Team: '{team_filter}'")
+        LOG.info(f"[Statistics API] Filters - Role: '{role_filter}', Team: '{team_filter}'")
+        LOG.info(f"[Statistics API] Filtered roster size: {len(assistant.filtered_roster)}")
+        LOG.info(f"[Statistics API] First 3 players sample: {[{k: v for k, v in p.items() if k in ['name', 'team', 'role', '_fm', '_price']} for p in assistant.filtered_roster[:3]]}")
 
         # Aggregate statistics by role
         role_stats = {}
@@ -884,23 +930,43 @@ def api_statistics():
         for stats in role_stats.values():
             total_filtered += stats.get('count', 0)
 
-        return jsonify({
+        response_data = {
             'role_statistics': role_stats,
             'total_players': total_filtered,
             'filters_applied': {
                 'role': role_filter or 'all',
                 'team': team_filter or 'all'
             },
-            'success': True
-        })
+            'success': True,
+            'debug_info': {
+                'data_source': 'filtered_roster',
+                'source_file': 'season_roster.json',
+                'total_roster_size': len(assistant.filtered_roster),
+                'role_breakdown': {role: stats.get('count', 0) for role, stats in role_stats.items()},
+                'sql_used': False,
+                'json_processed': True
+            }
+        }
+
+        LOG.info(f"[Statistics API] Response generated successfully")
+        LOG.info(f"[Statistics API] Role statistics: {role_stats}")
+        LOG.info(f"[Statistics API] Debug info: {response_data['debug_info']}")
+        
+        return jsonify(response_data)
 
     except Exception as e:
-        LOG.error(f"Error generating statistics: {e}")
+        LOG.error(f"[Statistics API] Error generating statistics: {e}", exc_info=True)
         return jsonify({
             "error": f"Error generating statistics: {str(e)}",
             "role_statistics": {},
             "total_players": 0,
-            "success": False
+            "success": False,
+            "debug_info": {
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+                "data_source": "failed to load",
+                "sql_used": False
+            }
         }), 500
 
 @app.route('/api/data-quality-report')

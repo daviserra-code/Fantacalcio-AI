@@ -757,7 +757,7 @@
       .search-container { margin: 20px 0; }
       .search-controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
       .search-controls input, .search-controls select, .search-controls button { padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
-      .search-controls button { background: #007bff; color: white; cursor: pointer; }
+      .search-controls button { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; }
       .search-controls button:hover { background: #0056b3; }
 
       .statistics-container { margin: 20px 0; }
@@ -1037,29 +1037,29 @@
         </div>
         <div class="filters">
           <select id="roleFilter" onchange="performSearch()">
-            <option value="all">{{ t.all_roles }}</option>
-            <option value="P">{{ t.goalkeeper }}</option>
-            <option value="D">{{ t.defender }}</option>
-            <option value="C">{{ t.midfielder }}</option>
-            <option value="A">{{ t.forward }}</option>
+            <option value="all">Tutti</option>
+            <option value="P">Portieri</option>
+            <option value="D">Difensori</option>
+            <option value="C">Centrocampisti</option>
+            <option value="A">Attaccanti</option>
           </select>
         </div>
 
         <div id="advancedFilters" class="advanced-filters" style="display: none;">
             <h4>Filtri Statistiche</h4>
             <div class="filter-row">
-                <label for="statsRoleFilter">Ruolo:</label>
-                <select id="statsRoleFilter" class="filter-select" onchange="updateStatistics()">
-                    <option value="all">Tutti</option>
+                <label for="teamFilter">Squadra:</label>
+                <input type="text" id="teamFilter" placeholder="Es: juventus, milan..." class="filter-input" onkeyup="updateStatistics()">
+            </div>
+            <div class="filter-row">
+                <label for="roleFilterStats">Ruolo:</label>
+                <select id="roleFilterStats" onchange="updateStatistics()">
+                    <option value="">Tutti</option>
                     <option value="P">Portieri</option>
                     <option value="D">Difensori</option>
                     <option value="C">Centrocampisti</option>
                     <option value="A">Attaccanti</option>
                 </select>
-            </div>
-            <div class="filter-row">
-                <label for="teamFilter">Squadra:</label>
-                <input type="text" id="teamFilter" placeholder="Es: juventus, milan..." class="filter-input" onkeyup="updateStatistics()">
             </div>
             <button onclick="updateStatistics()" class="apply-filters-btn">Applica Filtri</button>
         </div>
@@ -1424,9 +1424,8 @@
         if (!container) return;
 
         try {
-            // Use correct filter IDs for statistics tab
             const teamFilter = document.getElementById('teamFilter');
-            const roleFilter = document.getElementById('statsRoleFilter');
+            const roleFilter = document.getElementById('roleFilterStats'); // Corrected ID
 
             if (!teamFilter || !roleFilter) {
                 console.error('Filter elements not found in statistics tab');
@@ -1440,7 +1439,7 @@
 
             const url = new URL('/api/statistics', window.location.origin);
             if (team) url.searchParams.set('team', team);
-            if (role && role !== 'all') url.searchParams.set('role', role);
+            if (role) url.searchParams.set('role', role); // Removed check for 'all' as '' is handled by backend
 
             const response = await fetch(url);
             const data = await response.json();
@@ -1454,7 +1453,7 @@
 
     async function performSearch() {
         const searchQuery = document.getElementById('searchInput');
-        const roleFilter = document.querySelector('#historical select[id="roleFilter"]');
+        const roleFilter = document.getElementById('roleFilter'); // Use the correct ID for search role filter
         const resultsContainer = document.getElementById('searchResults');
 
         if (!searchQuery || !roleFilter || !resultsContainer) {
@@ -1485,7 +1484,8 @@
             });
 
             const data = await response.json();
-            displaySearchResults(data.results || []);
+            // Pass debug info to displaySearchResults if available
+            displaySearchResults(data.results || [], data.debug_info); 
         } catch (error) {
             console.error('Search error:', error);
             resultsContainer.innerHTML = '<div class="error">Errore nella ricerca</div>';
@@ -1506,57 +1506,84 @@
     }
 
     function displayStatistics(data) {
-        const container = document.getElementById('statisticsResults');
-        if (!container) return;
+      console.log('displayStatistics called with:', data);
 
-        if (!data.success) {
-            container.innerHTML = `<div class="error">Errore: ${data.error || 'Errore sconosciuto'}</div>`;
-            return;
+      const container = document.getElementById('statisticsResults');
+      if (!container) {
+        console.error('statisticsResults container not found in displayStatistics');
+        return;
+      }
+
+      if (!data.success) {
+        container.innerHTML = `<div class="error">Errore: ${data.error || 'Errore sconosciuto'}</div>`;
+
+        // Show debug info for errors
+        if (data.debug_info) {
+          const debugHtml = `
+            <div class="debug-info" style="background: #fff3cd; padding: 10px; margin: 10px 0; border-left: 3px solid #ffc107; font-size: 12px;">
+              <strong>Debug Info:</strong><br>
+              Error Type: ${data.debug_info.error_type || 'N/A'}<br>
+              Error Message: ${data.debug_info.error_message || 'N/A'}<br>
+              Data Source: ${data.debug_info.data_source || 'N/A'}<br>
+              SQL Used: ${data.debug_info.sql_used || false}
+            </div>
+          `;
+          container.insertAdjacentHTML('beforeend', debugHtml);
         }
+        return;
+      }
 
-        container.innerHTML = '';
+      container.innerHTML = '';
 
-        if (!data.role_statistics || Object.keys(data.role_statistics).length === 0) {
-            container.innerHTML = '<div class="no-results">Nessuna statistica trovata per i filtri selezionati</div>';
-            return;
-        }
+      // Show debug information if available
+      if (data.debug_info) {
+        const debugHtml = `
+          <div class="debug-info" style="background: #d4edda; padding: 10px; margin: 10px 0; border-left: 3px solid #28a745; font-size: 12px;">
+            <strong>Debug Info:</strong><br>
+            Data Source: ${data.debug_info.data_source || 'N/A'}<br>
+            Source File: ${data.debug_info.source_file || 'N/A'}<br>
+            Total Roster Size: ${data.debug_info.total_roster_size || 'N/A'}<br>
+            SQL Used: ${data.debug_info.sql_used || false}<br>
+            JSON Processed: ${data.debug_info.json_processed || false}<br>
+            Role Breakdown: ${JSON.stringify(data.debug_info.role_breakdown || {})}
+          </div>
+        `;
+        container.insertAdjacentHTML('afterbegin', debugHtml);
+      }
 
-        // Display role statistics
-        Object.entries(data.role_statistics).forEach(([role, stats]) => {
-            const roleDiv = document.createElement('div');
-            roleDiv.className = 'role-stats';
+      // Display role statistics
+      Object.entries(data.role_statistics || {}).forEach(([role, stats]) => {
+        const roleDiv = document.createElement('div');
+        roleDiv.className = 'role-stats';
 
-            const roleName = {
-                'P': 'Portieri',
-                'D': 'Difensori',
-                'C': 'Centrocampisti',
-                'A': 'Attaccanti'
-            }[role] || role;
+        const roleName = {
+          'P': 'Portieri',
+          'D': 'Difensori', 
+          'C': 'Centrocampisti',
+          'A': 'Attaccanti'
+        }[role] || role;
 
-            roleDiv.innerHTML = `
-                <h5>${roleName} (${stats.count} giocatori)</h5>
-                <div class="role-summary">
-                    <span>Media FM: ${stats.avg_fantamedia || 0}</span>
-                    <span>Prezzo medio: €${stats.avg_price || 0}</span>
-                </div>
-                <div class="role-top">
-                    <strong>Top giocatori:</strong>
-                    ${stats.top_players && stats.top_players.length > 0 
-                        ? stats.top_players.map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ')
-                        : 'Nessun giocatore trovato'
-                    }
-                </div>
-            `;
+        roleDiv.innerHTML = `
+          <h5>${roleName} (${stats.count || 0} giocatori)</h5>
+          <div class="role-summary">
+            <span>Media FM: ${stats.avg_fantamedia || 'N/D'}</span>
+            <span>Prezzo medio: €${stats.avg_price || 'N/D'}</span>
+          </div>
+          <div class="role-top">
+            <strong>Top giocatori:</strong>
+            ${(stats.top_players || []).map(p => `${p.name} (FM: ${p.fantamedia}, €${p.price})`).join(', ') || 'Nessuno'}
+          </div>
+        `;
 
-            container.appendChild(roleDiv);
-        });
+        container.appendChild(roleDiv);
+      });
 
-        // Add summary
-        const totalPlayers = Object.values(data.role_statistics).reduce((sum, stats) => sum + (stats.count || 0), 0);
-        const summaryDiv = document.createElement('div');
-        summaryDiv.className = 'statistics-summary';
-        summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
-        container.appendChild(summaryDiv);
+      // Add summary
+      const totalPlayers = Object.values(data.role_statistics || {}).reduce((sum, stats) => sum + (stats.count || 0), 0);
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'statistics-summary';
+      summaryDiv.innerHTML = `<p><strong>Totale giocatori:</strong> ${totalPlayers}</p>`;
+      container.appendChild(summaryDiv);
     }
 
     function addEnterKeySupport() {
@@ -1587,14 +1614,37 @@
         }
     }
 
-    function displaySearchResults(results) {
+    function displaySearchResults(results, debugInfo = null) {
+        console.log('displaySearchResults called with:', { 
+            resultsCount: results?.length || 0, 
+            debugInfo 
+        });
+
         const container = document.getElementById('searchResults');
-        if (!container) return;
+        if (!container) {
+            console.error('searchResults container not found in displaySearchResults');
+            return;
+        }
 
         container.innerHTML = '';
 
+        // Show debug information if available
+        if (debugInfo) {
+            const debugHtml = `
+                <div class="debug-info" style="background: #f8f9fa; padding: 10px; margin: 10px 0; border-left: 3px solid #007bff; font-size: 12px;">
+                    <strong>Debug Info:</strong><br>
+                    Query: "${debugInfo.query || 'N/A'}"<br>
+                    Data Source: ${debugInfo.data_source || 'N/A'}<br>
+                    Total Pool Size: ${debugInfo.total_pool_size || 'N/A'}<br>
+                    Matching Players: ${debugInfo.matching_players || 'N/A'}<br>
+                    Role Filtered: ${debugInfo.role_filtered || 'N/A'}
+                </div>
+            `;
+            container.insertAdjacentHTML('afterbegin', debugHtml);
+        }
+
         if (!results || results.length === 0) {
-            container.innerHTML = '<div class="no-results">Nessun risultato trovato</div>';
+            container.innerHTML += '<div class="no-results">Nessun risultato trovato</div>';
             return;
         }
 
@@ -1613,7 +1663,7 @@
             </div>
         `).join('');
 
-        container.innerHTML = `<h4>Risultati (${results.length})</h4>${resultsHtml}`;
+        container.innerHTML += `<h4>Risultati (${results.length})</h4>${resultsHtml}`;
     }
 
     // Initial setup
