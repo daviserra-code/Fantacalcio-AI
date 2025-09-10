@@ -8,6 +8,7 @@ Cost-effective solution for the 329 players with Role: "NA"
 import json
 import os
 import logging
+import time
 from pathlib import Path
 from typing import Dict, List, Any
 import requests
@@ -29,6 +30,8 @@ POSITION_MAPPING = {
     "Central Defender": "D", "Left Defender": "D", "Right Defender": "D",
     "Difensore": "D", "Difensore centrale": "D", "Terzino": "D", 
     "Terzino sinistro": "D", "Terzino destro": "D", "LB": "D", "RB": "D", "CB": "D", "IV": "D",
+    # German abbreviations for defenders
+    "LV": "D", "RV": "D", "ZIV": "D",  # Left/Right/Central Defender
     
     # Midfielder 
     "Central Midfield": "C", "Defensive Midfield": "C", "Attacking Midfield": "C",
@@ -37,6 +40,8 @@ POSITION_MAPPING = {
     "Centrocampista centrale": "C", "Esterno centrocampo": "C",
     "CM": "C", "CDM": "C", "CAM": "C", "LM": "C", "RM": "C", "DM": "C", "AM": "C",
     "Mezzala": "C", "Esterno destro": "C", "Esterno sinistro": "C",
+    # German abbreviations for midfielders
+    "ZM": "C", "OM": "C", "ZOM": "C", "DM": "C", "AM": "C",  # Central/Offensive/Defensive Midfielder
     
     # Wing-back (usually counted as Defender in Fantasy)
     "Left-Back": "D", "Right-Back": "D", "Wing-Back": "D", "LWB": "D", "RWB": "D",
@@ -47,7 +52,9 @@ POSITION_MAPPING = {
     "Attaccante": "A", "Punta": "A", "Ala": "A", "Esterno offensivo": "A",
     "Prima punta": "A", "Seconda punta": "A", "Second Striker": "A",
     "CF": "A", "LW": "A", "RW": "A", "ST": "A", "SS": "A",
-    "Ala sinistra": "A", "Ala destra": "A"
+    "Ala sinistra": "A", "Ala destra": "A",
+    # German abbreviations for forwards/wingers  
+    "MS": "A", "LA": "A", "RA": "A", "ZS": "A",  # Striker/Left/Right Wing/Central Forward
 }
 
 # Serie A teams with squad URLs
@@ -126,8 +133,13 @@ class ApifySquadScraper:
     def create_squad_scraper_config(self) -> Dict[str, Any]:
         """Create Apify Web Scraper configuration for squad pages"""
         
-        # Build start URLs for all Serie A teams
-        start_urls = [{"url": url} for url in SERIE_A_SQUAD_URLS.values()]
+        # Build start URLs for all Serie A teams with team names in userData
+        start_urls = []
+        for team_name, url in SERIE_A_SQUAD_URLS.items():
+            start_urls.append({
+                "url": url,
+                "userData": {"team": team_name}
+            })
         
         # Page function to extract player data from squad tables
         page_function = """
@@ -135,40 +147,56 @@ class ApifySquadScraper:
             const { page, request } = context;
             
             // Wait for squad table to load
-            await page.waitForSelector('.items tbody tr', { timeout: 10000 });
+            await page.waitForSelector('.items tbody tr', { timeout: 15000 });
             
-            // Extract team name from URL
-            const teamMatch = request.url.match(/\\/([^/]+)\\/kader/);
-            const teamSlug = teamMatch ? teamMatch[1] : 'unknown';
+            // Get team name from userData
+            const teamName = request.userData?.team || 'unknown';
             
             // Extract player data from table
-            const players = await page.evaluate((teamSlug) => {
+            const players = await page.evaluate(() => {
                 const rows = document.querySelectorAll('.items tbody tr');
                 const results = [];
                 
+                // First, find the position column index by checking headers
+                const headers = document.querySelectorAll('.items thead th');
+                let positionColumnIndex = -1;
+                
+                headers.forEach((header, index) => {
+                    const headerText = header.textContent.trim().toLowerCase();
+                    if (headerText.includes('pos') || headerText.includes('position')) {
+                        positionColumnIndex = index;
+                    }
+                });
+                
+                // Fallback: assume position is in column 2 (common for Transfermarkt)
+                if (positionColumnIndex === -1) positionColumnIndex = 1;
+                
                 rows.forEach(row => {
                     const nameCell = row.querySelector('.hauptlink a');
-                    const positionCell = row.querySelector('td:nth-child(2)'); // Position column
+                    const cells = row.querySelectorAll('td');
                     
-                    if (nameCell && positionCell) {
+                    if (nameCell && cells.length > positionColumnIndex) {
                         const name = nameCell.textContent.trim();
-                        const position = positionCell.textContent.trim();
+                        const position = cells[positionColumnIndex].textContent.trim();
                         
-                        if (name && position) {
+                        if (name && position && name !== 'Name') {
                             results.push({
-                                team_slug: teamSlug,
                                 name: name,
-                                position: position,
-                                url: request.url
+                                position: position
                             });
                         }
                     }
                 });
                 
                 return results;
-            }, teamSlug);
+            });
             
-            return players;
+            // Add team name to each player
+            return players.map(player => ({
+                ...player,
+                team: teamName,
+                source_url: request.url
+            }));
         }
         """
         
@@ -246,37 +274,30 @@ def backfill_positions_from_squads(dry_run: bool = True) -> Dict[str, int]:
     scraper = ApifySquadScraper()
     squad_players = scraper.run_squad_scraper()
     
-    # Create lookup index for squad data
-    squad_index = {}
-    for player in squad_players:
-        team_slug = player.get("team_slug", "").lower()
-        name_norm = normalize_name(player.get("name", ""))
-        key = f"{team_slug}_{name_norm}"
-        squad_index[key] = player
+    LOG.info(f"Extracted {len(squad_players)} players from squad pages")
     
-    LOG.info(f"Built squad index with {len(squad_index)} entries")
-    
-    # Map team names to slugs
-    team_slug_map = {
-        "atalanta": "atalanta-bergamo",
-        "bologna": "bologna-fc-1909", 
-        "cagliari": "cagliari-calcio",
-        # Add more mappings as needed
-    }
-    
+    # Create lookup by team + normalized name
     stats = {"updated": 0, "unchanged": 0, "errors": 0}
     
     for player in na_players:
         try:
             name = player.get("name", "")
-            team = player.get("team", "").lower()
+            team = player.get("team", "")
             
-            # Try to find in squad data
+            if not name or not team:
+                stats["unchanged"] += 1
+                continue
+            
+            # Find matching squad player by team and name
             name_norm = normalize_name(name)
-            team_slug = team_slug_map.get(team, team.replace(" ", "-").lower())
+            squad_player = None
             
-            key = f"{team_slug}_{name_norm}"
-            squad_player = squad_index.get(key)
+            # Look for exact team match first
+            for sp in squad_players:
+                if (sp.get("team", "").lower() == team.lower() and 
+                    normalize_name(sp.get("name", "")) == name_norm):
+                    squad_player = sp
+                    break
             
             if squad_player:
                 position = squad_player.get("position", "")
