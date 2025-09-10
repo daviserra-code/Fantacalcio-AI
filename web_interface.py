@@ -851,10 +851,13 @@ def api_statistics():
                 if not team_match:
                     continue
 
-                # Only include players with meaningful data
+                # Include all players, even those with missing names
                 name = p.get('name', '').strip()
+                # Assign default name for players with missing names but keep them in statistics
                 if not name or len(name) < 2:
-                    continue
+                    p['display_name'] = f"Player {p.get('team', 'Unknown')} {p.get('role', 'Unknown')}"
+                else:
+                    p['display_name'] = name
 
                 players.append(p)
 
@@ -884,17 +887,13 @@ def api_statistics():
             avg_fm = round(sum(fantamedias) / len(fantamedias), 2) if fantamedias else 0
             avg_price = round(sum(prices) / len(prices), 2) if prices else 0
 
-            # Get top players - filter out empty records more strictly
+            # Get top players - include all players now (since we want to show the full roster)
             valid_players = []
             for p in players:
                 name = p.get('name', '').strip()
                 team = p.get('team', '').strip()
                 
-                # Skip completely empty records
-                if not name or len(name) < 2:
-                    continue
-                    
-                # Skip non-Serie A teams
+                # Skip non-Serie A teams only
                 if team and any(excluded_team in team.lower() for excluded_team in ['newcastle', 'psg', 'al hilal', 'tottenham', 'arsenal', 'manchester', 'chelsea', 'liverpool', 'real madrid', 'barcelona', 'atletico', 'bayern', 'borussia']):
                     continue
                     
@@ -905,12 +904,13 @@ def api_statistics():
 
             for p in players_sorted[:5]:
                 name = p.get('name', '').strip()
+                display_name = p.get('display_name', name)  # Use display_name if available
                 team = p.get('team', '').strip()
                 fm = p.get('_fm')
                 pr = p.get('_price')
 
                 top_players.append({
-                    'name': name,
+                    'name': display_name or f"Player {team or 'Unknown'} {p.get('role', 'Unknown')}",
                     'team': team or 'N/D',
                     'fantamedia': round(fm, 2) if isinstance(fm, (int, float)) and fm > 0 else 0,
                     'price': int(pr) if isinstance(pr, (int, float)) and pr > 0 else 0
