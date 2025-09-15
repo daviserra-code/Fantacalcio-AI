@@ -1623,7 +1623,7 @@ Cosa ti interessa di più?"""
                 search_terms = ["acquisti Serie A 2025", "Transfer IN", "direction in"]
 
             # Increase search results when user wants to see all transfers
-            search_limit = 200 if show_all else 10
+            search_limit = 200 if show_all else 25
 
             for term in search_terms:
                 try:
