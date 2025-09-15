@@ -862,8 +862,10 @@ def api_statistics():
         LOG.info(f"[Statistics API] Filtered roster size: {len(assistant.filtered_roster)}")
         LOG.info(f"[Statistics API] First 3 players sample: {[{k: v for k, v in p.items() if k in ['name', 'team', 'role', '_fm', '_price']} for p in assistant.filtered_roster[:3]]}")
 
-        # Aggregate statistics by role
+        # Aggregate statistics by role  
         role_stats = {}
+        # When team filtering is applied, always show breakdown for all roles of that team
+        # When role filtering is applied, show only that specific role
         roles = ['P', 'D', 'C', 'A'] if not role_filter else [role_filter]
 
         for role in roles:
