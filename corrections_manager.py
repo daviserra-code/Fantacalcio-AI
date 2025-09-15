@@ -270,10 +270,9 @@ class CorrectionsManager:
         """Initialize SQLite database for persistent corrections"""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                # Drop and recreate table to fix schema issues
-                conn.execute("DROP TABLE IF EXISTS corrections")
+                # Create table if it doesn't exist (preserve existing data)
                 conn.execute("""
-                    CREATE TABLE corrections (
+                    CREATE TABLE IF NOT EXISTS corrections (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         player_name TEXT NOT NULL,
                         correction_type TEXT NOT NULL,
