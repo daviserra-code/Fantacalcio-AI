@@ -1001,7 +1001,7 @@ class FantacalcioAssistant:
 
                     if budget_gks:
                         # Sort by value ratio (FM/price) descending
-                        budget_gks.sort(key=lambda x: (-x.get("_value_ratio", 0), -x.get("_fm", 0)))
+                        budget_gks.sort(key=lambda x: (-(x.get("_value_ratio") or 0), -(x.get("_fm") or 0)))
                         chosen_gk = budget_gks[0]
                         picks[role] = [chosen_gk]
                         used.add(chosen_gk.get("name"))
