@@ -54,6 +54,10 @@ outputType = "webview"
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 34093
+externalPort = 3000
+
 [agent]
 expertMode = true
 integrations = ["web_scraper:1.0.0"]
