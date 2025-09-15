@@ -994,9 +994,19 @@ def api_statistics():
         for stats in role_stats.values():
             total_filtered += stats.get('count', 0)
 
+        # Add clearer messaging about what data is being shown
+        filter_description = "All Serie A players"
+        if team_filter and role_filter:
+            filter_description = f"{team_filter.title()} {role_filter} players"
+        elif team_filter:
+            filter_description = f"{team_filter.title()} players"
+        elif role_filter:
+            filter_description = f"All Serie A {role_filter} players"
+
         response_data = {
             'role_statistics': role_stats,
             'total_players': total_filtered,
+            'filter_description': filter_description,
             'filters_applied': {
                 'role': role_filter or 'all',
                 'team': team_filter or 'all'
@@ -1008,11 +1018,15 @@ def api_statistics():
                 'total_roster_size': len(assistant.filtered_roster),
                 'role_breakdown': {role: stats.get('count', 0) for role, stats in role_stats.items()},
                 'sql_used': False,
-                'json_processed': True
+                'json_processed': True,
+                'is_filtered': bool(team_filter or role_filter),
+                'active_filters': f"Team: {team_filter or 'none'}, Role: {role_filter or 'none'}"
             }
         }
 
         LOG.info(f"[Statistics API] Response generated successfully")
+        LOG.info(f"[Statistics API] Filter description: {filter_description}")
+        LOG.info(f"[Statistics API] Total players after filtering: {total_filtered}")
         LOG.info(f"[Statistics API] Role statistics: {role_stats}")
         LOG.info(f"[Statistics API] Debug info: {response_data['debug_info']}")
         
