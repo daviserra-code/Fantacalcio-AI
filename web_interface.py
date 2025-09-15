@@ -400,16 +400,44 @@ def handle_exclusion(msg: str, state: dict) -> str:
         team_name = re.sub(r'\b(lista|squadra)\b', '', team_name, flags=re.IGNORECASE).strip()
 
         if len(player_name) > 2 and len(team_name) > 2:
-            # Use team-specific exclusions
-            team_exclusions = state.setdefault("team_exclusions", {})
-            if team_name not in team_exclusions:
-                team_exclusions[team_name] = []
+            # Use persistent team-specific exclusions
+            try:
+                corrections_manager = get_corrections_manager()
+                if corrections_manager:
+                    # Call persistent add_exclusion method for team-specific exclusion
+                    result = corrections_manager.add_exclusion(player_name, team_name)
+                    
+                    # Also add to session for immediate effect in current session
+                    team_exclusions = state.setdefault("team_exclusions", {})
+                    if team_name not in team_exclusions:
+                        team_exclusions[team_name] = []
+                    if player_name not in team_exclusions[team_name]:
+                        team_exclusions[team_name].append(player_name)
+                    
+                    return result
+                else:
+                    # Fallback to session-only if corrections manager unavailable
+                    team_exclusions = state.setdefault("team_exclusions", {})
+                    if team_name not in team_exclusions:
+                        team_exclusions[team_name] = []
 
-            if player_name not in team_exclusions[team_name]:
-                team_exclusions[team_name].append(player_name)
-                return f"✅ **{player_name}** è stato escluso dalle liste della **{team_name}**. Potrà ancora apparire se trasferito in altre squadre."
-            else:
-                return f"**{player_name}** è già escluso dalle liste della **{team_name}**."
+                    if player_name not in team_exclusions[team_name]:
+                        team_exclusions[team_name].append(player_name)
+                        return f"✅ **{player_name}** è stato escluso dalle liste della **{team_name}** (solo sessione corrente). Potrà ancora apparire se trasferito in altre squadre."
+                    else:
+                        return f"**{player_name}** è già escluso dalle liste della **{team_name}**."
+            except Exception as e:
+                LOG.error(f"Error using corrections manager for team exclusion {player_name} from {team_name}: {e}")
+                # Fallback to session-only storage
+                team_exclusions = state.setdefault("team_exclusions", {})
+                if team_name not in team_exclusions:
+                    team_exclusions[team_name] = []
+
+                if player_name not in team_exclusions[team_name]:
+                    team_exclusions[team_name].append(player_name)
+                    return f"✅ **{player_name}** è stato escluso dalle liste della **{team_name}** (solo sessione corrente). Potrà ancora apparire se trasferito in altre squadre."
+                else:
+                    return f"**{player_name}** è già escluso dalle liste della **{team_name}**."
 
     # Fallback patterns for general exclusions
     patterns = [
@@ -426,12 +454,36 @@ def handle_exclusion(msg: str, state: dict) -> str:
             player_name = re.sub(r'\b(dalla?|lista|squadre?|non|di|serie|a)\b', '', player_name, flags=re.IGNORECASE).strip()
 
             if len(player_name) > 2:  # Avoid very short matches
-                excluded_players = state.setdefault("excluded_players", [])
-                if player_name not in excluded_players:
-                    excluded_players.append(player_name)
-                    return f"✅ **{player_name}** è stato escluso dalle future liste globalmente. Usa 'rimuovi [nome] dalla [squadra]' per esclusioni specifiche per squadra."
-                else:
-                    return f"**{player_name}** è già escluso dalle liste."
+                # Use persistent corrections manager instead of session-only storage
+                try:
+                    corrections_manager = get_corrections_manager()
+                    if corrections_manager:
+                        # Call persistent remove_player method
+                        result = corrections_manager.remove_player(player_name, reason="User web interface request")
+                        
+                        # Also add to session for immediate effect in current session
+                        excluded_players = state.setdefault("excluded_players", [])
+                        if player_name not in excluded_players:
+                            excluded_players.append(player_name)
+                        
+                        return result
+                    else:
+                        # Fallback to session-only if corrections manager unavailable
+                        excluded_players = state.setdefault("excluded_players", [])
+                        if player_name not in excluded_players:
+                            excluded_players.append(player_name)
+                            return f"✅ **{player_name}** è stato escluso dalle future liste (solo sessione corrente - riavvia per applicare permanentemente)."
+                        else:
+                            return f"**{player_name}** è già escluso dalle liste."
+                except Exception as e:
+                    LOG.error(f"Error using corrections manager for {player_name}: {e}")
+                    # Fallback to session-only storage
+                    excluded_players = state.setdefault("excluded_players", [])
+                    if player_name not in excluded_players:
+                        excluded_players.append(player_name)
+                        return f"✅ **{player_name}** è stato escluso dalle future liste (solo sessione corrente)."
+                    else:
+                        return f"**{player_name}** è già escluso dalle liste."
 
     return None
 
