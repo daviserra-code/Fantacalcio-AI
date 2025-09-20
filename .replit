@@ -55,8 +55,8 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 38627
-externalPort = 3000
+localPort = 35807
+externalPort = 3001
 
 [agent]
 expertMode = true

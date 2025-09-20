@@ -234,9 +234,12 @@
     async function searchPlayers() {
         try {
             // Build query parameters
-            const searchQuery = document.getElementById('searchInput')?.value || '';
-            const isU21Active = document.getElementById('u21Toggle')?.classList.contains('active') || false;
-            const isFormActive = document.getElementById('formToggle')?.classList.contains('active') || false;
+            const searchInputEl = document.getElementById('searchInput');
+            const searchQuery = searchInputEl ? searchInputEl.value : '';
+            const u21ToggleEl = document.getElementById('u21Toggle');
+            const isU21Active = u21ToggleEl ? u21ToggleEl.classList.contains('active') : false;
+            const formToggleEl = document.getElementById('formToggle');
+            const isFormActive = formToggleEl ? formToggleEl.classList.contains('active') : false;
             
             const params = new URLSearchParams();
             if (searchQuery) params.append('search', searchQuery);
@@ -351,7 +354,8 @@
         }
         
         // Find the search card element with the search input and add quick actions after it
-        const searchSection = document.querySelector('.card.pad .toolbar')?.closest('.card.pad');
+        const searchCard = document.querySelector('#playersCount');
+        const searchSection = searchCard ? searchCard.closest('.card.pad') : null;
         console.log('Found search section:', searchSection);
         if (searchSection) {
             const quickActionsHtml = `
