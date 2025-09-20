@@ -67,7 +67,7 @@ rate_limiter = RateLimiter(max_requests=10, time_window=3600)
 # Global singleton to prevent re-initialization
 _global_assistant = None
 
-def get_assistant() -> FantacalcioAssistant:
+def get_assistant():
     global _global_assistant
 
     # Use global singleton instead of Flask g to prevent re-initialization
@@ -523,7 +523,7 @@ def handle_exclusion(msg: str, state: dict) -> str:
                     else:
                         return f"**{player_name}** è già escluso dalle liste."
 
-    return None
+    return ""
 
 def apply_exclusions_to_text(text: str, excluded_players: list) -> str:
     """Remove excluded players from response text, considering team-specific exclusions"""
@@ -744,7 +744,7 @@ def handle_correction(user_message: str, fantacalcio_assistant) -> str:
             except Exception as e:
                 return f"❌ Errore nel generare il report: {e}"
 
-    return None
+    return ""
 
 @app.route("/api/reset-chat", methods=["POST"])
 def api_reset_chat():
