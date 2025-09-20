@@ -841,7 +841,7 @@
       </div>
       <div class="actions">
         {% if user and user.is_authenticated %}
-          <a href="/dashboard" class="header-btn">
+          <a href="#" onclick="switchTab('league-rules', null); return false;" class="header-btn">
             <i class="fas fa-cog"></i> Leghe
           </a>
           {% if user.is_pro %}
