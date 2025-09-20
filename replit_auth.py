@@ -5,7 +5,7 @@ import uuid
 from functools import wraps
 from urllib.parse import urlencode
 
-from flask import g, session, redirect, request, render_template, url_for
+from flask import g, session, redirect, request, render_template, url_for, flash
 from flask_dance.consumer import (
     OAuth2ConsumerBlueprint,
     oauth_authorized,
@@ -95,6 +95,7 @@ def make_replit_blueprint():
         scope=["openid", "profile", "email", "offline_access"],
         storage=UserSessionStorage(),
     )
+    
 
     @replit_bp.before_app_request
     def set_applocal_session():

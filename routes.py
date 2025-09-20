@@ -31,6 +31,27 @@ def dashboard():
                          leagues=user_leagues,
                          is_pro=current_user.is_pro if current_user.is_authenticated else False)
 
+@app.route('/demo-login')
+def demo_login():
+    """Demo login for testing (temporary)"""
+    # Create a demo user for testing
+    demo_user = User()
+    demo_user.id = 'demo_user_123'
+    demo_user.email = 'demo@fantacalcio.com'
+    demo_user.first_name = 'Demo'
+    demo_user.last_name = 'User'
+    demo_user.is_pro = True  # Give demo user pro access
+    
+    # Save demo user (merge in case it exists)
+    merged_user = db.session.merge(demo_user)
+    db.session.commit()
+    
+    # Log in the demo user
+    from flask_login import login_user
+    login_user(merged_user)
+    
+    return redirect('/')
+
 @app.route('/upgrade')
 def upgrade_to_pro():
     """Upgrade to pro subscription page"""
