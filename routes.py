@@ -46,22 +46,54 @@ def landing():
 @app.route('/demo-login')
 def demo_login():
     """Demo login for testing (temporary)"""
-    # Create a demo user for testing
-    demo_user = User()
-    demo_user.id = 'demo_user_123'
-    demo_user.email = 'demo@fantacalcio.com'
-    demo_user.first_name = 'Demo'
-    demo_user.last_name = 'User'
-    demo_user.is_pro = True  # Give demo user pro access
+    from flask_login import login_user
+    from datetime import datetime, timedelta
     
-    # Save demo user (merge in case it exists)
-    merged_user = db.session.merge(demo_user)
-    db.session.commit()
+    # Use a fixed demo user ID to avoid database issues
+    demo_user_id = "demo_user_123"
+    demo_email = "demo@fantacalcio.ai"
+    
+    # Try to get existing demo user or create one
+    try:
+        user = User.query.filter_by(id=demo_user_id).first()
+        if not user:
+            user = User.query.filter_by(email=demo_email).first()
+        
+        if not user:
+            user = User(
+                id=demo_user_id,  # Set explicit ID
+                email=demo_email,
+                first_name="Demo",
+                last_name="User"
+            )
+            db.session.add(user)
+            db.session.commit()
+            
+            # Create a pro subscription for demo user
+            subscription = Subscription(
+                user_id=user.id,
+                stripe_subscription_id="demo_subscription",
+                status="active",
+                current_period_start=datetime.utcnow(),
+                current_period_end=datetime.utcnow() + timedelta(days=365)
+            )
+            db.session.add(subscription)
+            db.session.commit()
+            
+    except Exception as e:
+        # If all else fails, create a simple in-memory user
+        from models import User
+        user = User()
+        user.id = demo_user_id
+        user.email = demo_email
+        user.first_name = "Demo"
+        user.last_name = "User"
+        user.is_pro = True  # Set pro directly
     
     # Log in the demo user
-    from flask_login import login_user
-    login_user(merged_user)
+    login_user(user, remember=True)
     
+    # Redirect to main page with auth
     return redirect('/')
 
 @app.route('/upgrade')

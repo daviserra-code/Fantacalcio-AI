@@ -61,13 +61,16 @@
       flex-wrap:wrap;gap:4px;max-width:200px;justify-content:flex-end;
     }
     .header-btn{
-      background:rgba(255,255,255,.2);border:0;color:#fff;
-      padding:4px 8px;border-radius:12px;cursor:pointer;font-size:.75rem;
-      text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px;
+      background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5);color:#fff;
+      padding:6px 12px;border-radius:15px;cursor:pointer;font-size:.8rem;
+      text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+      font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3);
+      box-shadow:0 2px 4px rgba(0,0,0,.2);
     }
-    .header-btn.active{background:rgba(255,255,255,.4)}
-    .header-btn:hover{background:rgba(255,255,255,.3)}
-    .header-btn i{font-size:.7rem;}
+    .header-btn.active{background:rgba(255,255,255,.5);border-color:rgba(255,255,255,.7);}
+    .header-btn:hover{background:rgba(255,255,255,.4);transform:translateY(-1px);}
+    .header-btn i{font-size:.75rem;}
+    .header-btn.pro-badge{background:rgba(255,215,0,.8);color:#000;border-color:rgba(255,215,0,1);}
 
     /* ====== TABS: SEMPRE SCURI ====== */
     .tabs{
@@ -811,7 +814,9 @@
             <i class="fas fa-cog"></i> Leghe
           </a>
           {% if user.is_pro %}
-            <span class="header-btn" style="background:rgba(255,215,0,.3);">PRO</span>
+            <span class="header-btn pro-badge">
+              <i class="fas fa-crown"></i> PRO
+            </span>
           {% endif %}
         {% else %}
           <a href="/demo-login" class="header-btn">
