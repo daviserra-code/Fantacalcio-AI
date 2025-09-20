@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FantacalcioAI – Aste, Consigli, Roster</title>
+  <link rel="icon" type="image/svg+xml" href="/static/assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/styles/fantacalcioai.css">
+  <meta name="theme-color" content="#0A84FF">
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <a class="brand" href="/">
+        <img src="/static/assets/logo-fantacalcioai.svg" alt="FantacalcioAI">
+        <span class="word">FantacalcioAI</span>
+      </a>
+      <nav class="spacer"></nav>
+      <a class="btn" href="#funzioni">Funzioni</a>
+      <a class="btn" href="#prezzi">Prezzi</a>
+      <a class="btn btn-primary" href="/app">Apri App</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container wrap">
+      <div>
+        <span class="kicker">⚽ + 🤖 Consigli data-driven</span>
+        <h1 class="h1">Aste intelligenti e consigli in tempo reale per la Serie A</h1>
+        <p class="lead">Ranking dinamici, budget optimizer, scouting U21 e analisi avversari. Mobile-first, ora anche “website-like”.</p>
+        <div class="btn-group mt-2">
+          <a class="btn cta" href="/app">Apri l’app</a>
+          <a class="btn ghost" href="#funzioni">Scopri le funzioni</a>
+        </div>
+        <div class="kpis mt-3">
+          <div class="kpi"><div class="label">Database giocatori</div><div class="value">800+</div></div>
+          <div class="kpi"><div class="label">Ruoli & filtri</div><div class="value">30+</div></div>
+          <div class="kpi"><div class="label">Consigli/ora</div><div class="value">∞</div></div>
+          <div class="kpi"><div class="label">Modalità</div><div class="value">Classic • Mantra</div></div>
+        </div>
+      </div>
+      <div class="card pad">
+        <div class="toolbar">
+          <div class="search" style="flex:1">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Cerca giocatori, ruoli, squadra…">
+          </div>
+          <button class="btn toggle">U21</button>
+          <button class="btn toggle active">In forma</button>
+        </div>
+        <div class="mt-2">
+          <table class="table">
+            <thead><tr><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Indice</th></tr></thead>
+            <tbody>
+              <tr><td>Mario Rossi</td><td><span class="role D">D</span></td><td>Atalanta</td><td>82</td></tr>
+              <tr><td>Luca Bianchi</td><td><span class="role C">C</span></td><td>Inter</td><td>77</td></tr>
+              <tr><td>G. Verdi</td><td><span class="role A">A</span></td><td>Fiorentina</td><td>85</td></tr>
+            </tbody>
+          </table>
+          <p class="help mt-1">Esempio statico: collega i tuoi dati per la popolazione reale.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="funzioni" class="section">
+    <div class="container grid-2">
+      <div class="card pad">
+        <h2>Ranking & Fantamedia intelligente</h2>
+        <p>Combina fantamedie storiche, xG/xA, forma e calendario. Filtri per ruolo: <span class="chip active">P</span> <span class="chip active">D</span> <span class="chip">C</span> <span class="chip">A</span></p>
+      </div>
+      <div class="card pad">
+        <h2>Budget optimizer</h2>
+        <p>Strategie d’asta simulate: aggressiva, bilanciata, low-cost con slot e vincoli di lega.</p>
+      </div>
+      <div class="card pad">
+        <h2>Scouting U21</h2>
+        <p>Rileva prospetti con minuti crescenti e valore fantacalcistico in aumento.</p>
+      </div>
+      <div class="card pad">
+        <h2>Assistenza in tempo reale</h2>
+        <p>Suggerimenti live per schieramento, cambi e ballottaggi.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="container grid-2">
+      <div>
+        <h2>Un’unica UI per mobile e desktop</h2>
+        <p>La stessa base CSS gestisce l’interfaccia “app-like” e il layout “website-like”. Meno manutenzione, più consistenza.</p>
+        <div class="btn-group mt-2">
+          <a class="btn primary" href="/app">Apri App</a>
+          <a class="btn" href="/docs">Documentazione</a>
+        </div>
+      </div>
+      <div class="card pad">
+        <form class="form">
+          <div>
+            <label class="label">Modalità di lega</label>
+            <select class="select"><option>Classic</option><option>Mantra</option></select>
+          </div>
+          <div>
+            <label class="label">Budget iniziale</label>
+            <input class="input" type="number" placeholder="500"/>
+            <div class="help">Valore per squadra</div>
+          </div>
+          <div>
+            <label class="label">Formazione preferita</label>
+            <select class="select"><option>3-4-3</option><option>3-5-2</option><option>4-3-3</option><option>4-4-2</option></select>
+          </div>
+          <button class="btn cta">Genera strategia d’asta</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="prezzi" class="section">
+    <div class="container grid-2">
+      <div class="card pad">
+        <h2>Free</h2>
+        <p>Consigli base, ranking standard, fino a 1 lega.</p>
+        <a class="btn primary mt-2" href="/signup">Inizia gratis</a>
+      </div>
+      <div class="card pad">
+        <h2>Pro</h2>
+        <p>Optimizer, U21+, confronto avversari, multi-lega, export.</p>
+        <a class="btn cta mt-2" href="/signup">Passa a Pro</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">© <span id="y"></span> FantacalcioAI. Tutti i diritti riservati.</div>
+  </footer>
+
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
