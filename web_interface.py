@@ -114,18 +114,14 @@ T = {
 @app.route("/", methods=["GET"])
 def index():
     try:
-        # Check if user is authenticated and redirect accordingly
-        if current_user.is_authenticated:
-            return render_template("dashboard.html", 
-                                 user=current_user,
-                                 is_pro=current_user.is_pro,
-                                 leagues=current_user.leagues)
-        
         lang = request.args.get("lang", "it")
         page_id = uuid.uuid4().hex[:16]
         LOG.info("Request: GET / from %s", request.remote_addr)
         LOG.info("Page view: %s, lang: %s", page_id, lang)
-        return render_template("landing.html", lang=lang, t=T.get(lang,T["it"]))
+        
+        # Return the original Fantasy Football AI interface
+        return render_template("index.html", lang=lang, t=T.get(lang,T["it"]), 
+                             user=current_user if current_user.is_authenticated else None)
     except Exception as e:
         LOG.error(f"Error serving index page: {e}")
         # Fallback HTML if template fails

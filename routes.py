@@ -31,6 +31,12 @@ def dashboard():
                          leagues=user_leagues,
                          is_pro=current_user.is_pro if current_user.is_authenticated else False)
 
+@app.route('/landing')
+def landing():
+    """Landing page for new users"""
+    lang = request.args.get("lang", "it")
+    return render_template("landing.html", lang=lang, t=T.get(lang, T["it"]))
+
 @app.route('/demo-login')
 def demo_login():
     """Demo login for testing (temporary)"""
