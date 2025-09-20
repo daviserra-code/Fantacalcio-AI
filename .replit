@@ -14,7 +14,7 @@ language = "python3"
 REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
 
 [deployment]
-run = ["python", "main.py"]
+run = ["python", "wsgi.py"]
 deploymentTarget = "autoscale"
 
 [workflows]
@@ -42,17 +42,21 @@ args = "Fantasy Football AI Server"
 name = "Fantasy Football AI Server"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python main.py"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python wsgi.py"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 41853
+externalPort = 3000
 
 [agent]
 expertMode = true
