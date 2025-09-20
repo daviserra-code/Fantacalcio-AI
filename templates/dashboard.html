@@ -97,9 +97,9 @@
                     <h4 class="text-muted">Nessuna lega ancora</h4>
                     <p class="text-muted">
                         {% if is_pro %}
-                            Clicca su "Nuova Lega" per iniziare!
+                            Clicca su "Nuova Lega" per iniziare! Potrai importare regolamenti da documenti, modificare regole avanzate e esportare tutto.
                         {% else %}
-                            Upgrade a Pro per creare la tua prima lega personalizzata.
+                            Upgrade a Pro per creare leghe personalizzate con gestione regolamenti completa.
                         {% endif %}
                     </p>
                 </div>
@@ -182,13 +182,24 @@
             div.innerHTML = `
                 <div class="card league-card h-100" onclick="openLeague(${league.id})">
                     <div class="card-body">
-                        <h5 class="card-title">${league.name}</h5>
+                        <h5 class="card-title">
+                            ${league.name}
+                            <span class="badge bg-primary ms-2">PRO</span>
+                        </h5>
                         <p class="card-text text-muted">
                             <small><i class="fas fa-calendar me-1"></i>Creata: ${new Date(league.created_at).toLocaleDateString()}</small>
                         </p>
                         <p class="card-text text-muted">
                             <small><i class="fas fa-edit me-1"></i>Aggiornata: ${new Date(league.updated_at).toLocaleDateString()}</small>
                         </p>
+                        <div class="mt-2">
+                            <span class="badge bg-success me-1">
+                                <i class="fas fa-cog me-1"></i>Regole Avanzate
+                            </span>
+                            <span class="badge bg-info me-1">
+                                <i class="fas fa-upload me-1"></i>Import/Export
+                            </span>
+                        </div>
                     </div>
                     <div class="card-footer bg-transparent">
                         <small class="text-muted">

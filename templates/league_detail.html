@@ -186,17 +186,372 @@
                     </div>
                 </div>
                 {% endif %}
+
+                <!-- League Rules Management Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-cogs me-2"></i>Gestione Regolamento Avanzata</h5>
+                            
+                            <!-- Document Upload -->
+                            <div class="mb-4">
+                                <h6><i class="fas fa-upload me-2"></i>Importa Regolamento</h6>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="file" class="form-control" id="ruleDocumentUpload" accept=".docx,.pdf,.txt" onchange="handleDocumentUpload()">
+                                        <small class="text-muted">Supporta file Word (.docx), PDF e TXT</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-outline-primary" onclick="importDocument()">
+                                            <i class="fas fa-file-import me-2"></i>Importa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Rules Editor -->
+                            <div class="mb-4">
+                                <h6><i class="fas fa-edit me-2"></i>Editor Rapido Regole</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Budget Totale</label>
+                                            <input type="number" class="form-control" id="totalBudget" value="{{ league_data.get('budget_rules', {}).get('total_budget', 500) }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Partecipanti</label>
+                                            <input type="number" class="form-control" id="participants" value="{{ league_data.get('league_info', {}).get('participants', 8) }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Rilancio Minimo</label>
+                                            <input type="number" class="form-control" id="minBid" value="{{ league_data.get('budget_rules', {}).get('minimum_bid', 1) }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Max Giocatori Stessa Squadra</label>
+                                            <input type="number" class="form-control" id="maxSameTeam" value="{{ league_data.get('auction_rules', {}).get('max_same_team_players', 3) }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Export Options -->
+                            <div class="mb-4">
+                                <h6><i class="fas fa-download me-2"></i>Esporta Regolamento</h6>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-outline-secondary" onclick="exportRules('txt')">
+                                        <i class="fas fa-file-alt me-2"></i>TXT
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="exportRules('json')">
+                                        <i class="fas fa-file-code me-2"></i>JSON
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="exportRules('pdf')">
+                                        <i class="fas fa-file-pdf me-2"></i>PDF
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Rules Summary Display -->
+                            <div class="mb-4">
+                                <h6><i class="fas fa-list me-2"></i>Riepilogo Regole</h6>
+                                <div id="rulesSummary" class="border p-3 bg-light rounded">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Budget:</strong> €{{ league_data.get('budget_rules', {}).get('total_budget', 500) }}</p>
+                                            <p><strong>Partecipanti:</strong> {{ league_data.get('league_info', {}).get('participants', 8) }}</p>
+                                            <p><strong>Rosa:</strong> {{ league_data.get('roster_composition', {}).get('total_players', 25) }} giocatori</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Formazioni:</strong> {{ league_data.get('formation_rules', {}).get('allowed_formations', [])|length }} disponibili</p>
+                                            <p><strong>Finestre Mercato:</strong> {{ league_data.get('transfer_rules', {}).get('transfer_windows', [])|length }}</p>
+                                            <p><strong>Ultimo Aggiornamento:</strong> {{ league.updated_at.strftime('%d/%m/%Y') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success" onclick="saveQuickRules()">
+                                    <i class="fas fa-save me-2"></i>Salva Modifiche
+                                </button>
+                                <button class="btn btn-warning" onclick="resetToDefaults()">
+                                    <i class="fas fa-undo me-2"></i>Reset Default
+                                </button>
+                                <button class="btn btn-info" onclick="validateRules()">
+                                    <i class="fas fa-check-circle me-2"></i>Valida Regolamento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const leagueId = {{ league.id }};
+        
         function editLeague() {
-            // For now, just redirect back to dashboard
-            // In the future, this could open an edit modal or navigate to an edit page
-            alert('Funzionalità di modifica in arrivo! Per ora puoi gestire le regole dalla sezione "Regole Lega" nella homepage.');
-            window.location.href = '/?tab=league-rules';
+            // Scroll to the advanced rules management section
+            document.querySelector('.rule-section h5').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function handleDocumentUpload() {
+            const fileInput = document.getElementById('ruleDocumentUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                showStatus('Caricamento documento...', 'info');
+                const response = await fetch(`/api/leagues/${leagueId}/import`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus('Regolamento importato con successo!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    const error = await response.json();
+                    showStatus('Errore: ' + error.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Errore durante l\'importazione', 'error');
+            }
+        }
+
+        async function importDocument() {
+            const fileInput = document.getElementById('ruleDocumentUpload');
+            if (!fileInput.files[0]) {
+                showStatus('Seleziona un file prima di importare', 'warning');
+                return;
+            }
+            await handleDocumentUpload();
+        }
+
+        async function saveQuickRules() {
+            const rules = {
+                budget_rules: {
+                    total_budget: parseInt(document.getElementById('totalBudget').value),
+                    minimum_bid: parseInt(document.getElementById('minBid').value)
+                },
+                league_info: {
+                    participants: parseInt(document.getElementById('participants').value)
+                },
+                auction_rules: {
+                    max_same_team_players: parseInt(document.getElementById('maxSameTeam').value)
+                }
+            };
+            
+            try {
+                showStatus('Salvando modifiche...', 'info');
+                const response = await fetch(`/api/leagues/${leagueId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rules: rules })
+                });
+                
+                if (response.ok) {
+                    showStatus('Regole salvate con successo!', 'success');
+                    updateRulesSummary();
+                } else {
+                    const error = await response.json();
+                    showStatus('Errore: ' + error.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Errore durante il salvataggio', 'error');
+            }
+        }
+
+        async function resetToDefaults() {
+            if (!confirm('Sei sicuro di voler ripristinare le regole predefinite?')) return;
+            
+            try {
+                showStatus('Ripristinando regole predefinite...', 'info');
+                const response = await fetch('/api/rules/summary');
+                const defaultRules = await response.json();
+                
+                // Update form fields
+                document.getElementById('totalBudget').value = 500;
+                document.getElementById('participants').value = 8;
+                document.getElementById('minBid').value = 1;
+                document.getElementById('maxSameTeam').value = 3;
+                
+                showStatus('Regole ripristinate (non ancora salvate)', 'warning');
+            } catch (error) {
+                showStatus('Errore durante il ripristino', 'error');
+            }
+        }
+
+        async function validateRules() {
+            try {
+                showStatus('Validando regolamento...', 'info');
+                const response = await fetch(`/api/leagues/${leagueId}`);
+                const league = await response.json();
+                
+                const issues = [];
+                
+                // Basic validation
+                if (!league.rules.budget_rules?.total_budget || league.rules.budget_rules.total_budget < 100) {
+                    issues.push('Budget troppo basso (minimo 100)');
+                }
+                
+                if (!league.rules.league_info?.participants || league.rules.league_info.participants < 2) {
+                    issues.push('Numero partecipanti insufficiente (minimo 2)');
+                }
+                
+                if (issues.length === 0) {
+                    showStatus('✅ Regolamento valido!', 'success');
+                } else {
+                    showStatus('⚠️ Issues trovati: ' + issues.join(', '), 'warning');
+                }
+            } catch (error) {
+                showStatus('Errore durante la validazione', 'error');
+            }
+        }
+
+        async function exportRules(format) {
+            try {
+                showStatus(`Esportando in formato ${format.toUpperCase()}...`, 'info');
+                
+                const response = await fetch(`/api/leagues/${leagueId}`);
+                const league = await response.json();
+                
+                let content, filename, mimeType;
+                
+                switch (format) {
+                    case 'json':
+                        content = JSON.stringify(league.rules, null, 2);
+                        filename = `regolamento_${league.name.replace(/\s+/g, '_')}.json`;
+                        mimeType = 'application/json';
+                        break;
+                    case 'txt':
+                        content = generateTextExport(league.rules);
+                        filename = `regolamento_${league.name.replace(/\s+/g, '_')}.txt`;
+                        mimeType = 'text/plain';
+                        break;
+                    case 'pdf':
+                        showStatus('Export PDF in sviluppo', 'warning');
+                        return;
+                }
+                
+                downloadFile(content, filename, mimeType);
+                showStatus('Export completato!', 'success');
+            } catch (error) {
+                showStatus('Errore durante l\'export', 'error');
+            }
+        }
+
+        function generateTextExport(rules) {
+            let text = `🏆 REGOLAMENTO LEGA\n`;
+            text += `==================\n\n`;
+            
+            text += `📋 INFORMAZIONI GENERALI\n`;
+            text += `Nome: ${rules.league_info?.name || 'N/A'}\n`;
+            text += `Partecipanti: ${rules.league_info?.participants || 'N/A'}\n`;
+            text += `Stagione: ${rules.league_info?.season || '2024-25'}\n\n`;
+            
+            text += `💰 BUDGET E ASTA\n`;
+            text += `Budget totale: €${rules.budget_rules?.total_budget || 500}\n`;
+            text += `Rilancio minimo: €${rules.budget_rules?.minimum_bid || 1}\n`;
+            text += `Max giocatori stessa squadra: ${rules.auction_rules?.max_same_team_players || 3}\n\n`;
+            
+            text += `👥 COMPOSIZIONE ROSA\n`;
+            const roster = rules.roster_composition || {};
+            text += `Portieri: ${roster.portieri || 3}\n`;
+            text += `Difensori: ${roster.difensori || 8}\n`;
+            text += `Centrocampisti: ${roster.centrocampisti || 8}\n`;
+            text += `Attaccanti: ${roster.attaccanti || 6}\n`;
+            text += `Totale: ${roster.total_players || 25} giocatori\n\n`;
+            
+            text += `⚽ FORMAZIONI CONSENTITE\n`;
+            const formations = rules.formation_rules?.allowed_formations || [];
+            text += formations.join(', ') + '\n\n';
+            
+            text += `🎯 PUNTEGGI\n`;
+            const scoring = rules.scoring_system || {};
+            text += `Gol: +${scoring.bonus_gol || 3}\n`;
+            text += `Assist: +${scoring.bonus_assist || 1}\n`;
+            text += `Porta inviolata (P): +${scoring.clean_sheet_portiere || 1}\n`;
+            text += `Porta inviolata (D): +${scoring.clean_sheet_difensore || 1}\n\n`;
+            
+            text += `Generated on ${new Date().toLocaleDateString('it-IT')}\n`;
+            
+            return text;
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateRulesSummary() {
+            const budget = document.getElementById('totalBudget').value;
+            const participants = document.getElementById('participants').value;
+            
+            const summaryHtml = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Budget:</strong> €${budget}</p>
+                        <p><strong>Partecipanti:</strong> ${participants}</p>
+                        <p><strong>Rosa:</strong> {{ league_data.get('roster_composition', {}).get('total_players', 25) }} giocatori</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Formazioni:</strong> {{ league_data.get('formation_rules', {}).get('allowed_formations', [])|length }} disponibili</p>
+                        <p><strong>Finestre Mercato:</strong> {{ league_data.get('transfer_rules', {}).get('transfer_windows', [])|length }}</p>
+                        <p><strong>Ultimo Aggiornamento:</strong> ${new Date().toLocaleDateString('it-IT')}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('rulesSummary').innerHTML = summaryHtml;
+        }
+
+        function showStatus(message, type) {
+            // Remove existing status
+            const existing = document.querySelector('.status-message');
+            if (existing) existing.remove();
+            
+            const alertClass = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            }[type] || 'alert-info';
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `alert ${alertClass} status-message`;
+            statusDiv.style.position = 'fixed';
+            statusDiv.style.top = '20px';
+            statusDiv.style.right = '20px';
+            statusDiv.style.zIndex = '9999';
+            statusDiv.style.minWidth = '300px';
+            statusDiv.innerHTML = message;
+            
+            document.body.appendChild(statusDiv);
+            
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.remove();
+                }
+            }, 3000);
         }
     </script>
 </body>

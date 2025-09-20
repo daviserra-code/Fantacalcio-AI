@@ -372,6 +372,12 @@ def league_detail(league_id):
                          league_data=league_data,
                          user=current_user)
 
+@app.route('/api/rules/summary')
+def get_default_rules_summary():
+    """Get default rules summary for reference"""
+    rules_manager = LeagueRulesManager()
+    return jsonify(rules_manager.get_rules_summary())
+
 @app.route('/api/leagues/<int:league_id>/import', methods=['POST'])
 @require_login
 @require_pro
@@ -394,30 +400,40 @@ def import_league_rules(league_id):
     
     # Save uploaded file temporarily
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:
+    file_extension = os.path.splitext(file.filename)[1].lower()
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
         file.save(temp_file.name)
         
-        # Create a temporary rules manager and import
-        temp_rules_manager = LeagueRulesManager()
-        success = temp_rules_manager.import_from_document(temp_file.name)
-        
-        if success:
-            # Update league with imported rules
-            imported_rules = temp_rules_manager.get_rules()
-            imported_rules['league_info']['name'] = league.league_name
-            imported_rules['league_info']['last_updated'] = datetime.now().isoformat()
+        try:
+            # Create a temporary rules manager and import
+            temp_rules_manager = LeagueRulesManager()
+            success = temp_rules_manager.import_from_document(temp_file.name)
             
-            league.league_data = json.dumps(imported_rules)
-            league.updated_at = datetime.now()
-            db.session.commit()
+            if success:
+                # Update league with imported rules
+                imported_rules = temp_rules_manager.get_rules()
+                imported_rules['league_info']['name'] = league.league_name
+                imported_rules['league_info']['last_updated'] = datetime.now().isoformat()
+                
+                league.league_data = json.dumps(imported_rules)
+                league.updated_at = datetime.now()
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'Rules imported successfully',
+                    'rules': imported_rules
+                })
+            else:
+                return jsonify({'error': 'Failed to import rules from document'}), 400
+                
+        except Exception as e:
+            return jsonify({'error': f'Error processing document: {str(e)}'}), 400
             
-            os.unlink(temp_file.name)  # Clean up temp file
-            
-            return jsonify({
-                'success': True,
-                'message': 'Rules imported successfully',
-                'rules': imported_rules
-            })
-        else:
-            os.unlink(temp_file.name)  # Clean up temp file
-            return jsonify({'error': 'Failed to import rules from document'}), 400
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(temp_file.name)
+            except:
+                pass
