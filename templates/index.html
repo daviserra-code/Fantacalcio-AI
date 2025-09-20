@@ -1124,8 +1124,15 @@
     <div class="tab-content" id="league-rules">
         <div class="row">
             <div class="col-md-12">
-                <h4><i class="fas fa-gavel"></i> League Rules Management</h4>
-                <p class="text-muted">Manage and customize your Fantasy Football league rules</p>
+                <div class="d-flex align-items-center mb-3">
+                    <button class="btn btn-outline-secondary me-3" onclick="switchTab('classic', document.querySelector('.tab-btn[data-tab=classic]'))">
+                        <i class="fas fa-arrow-left"></i> Indietro
+                    </button>
+                    <div>
+                        <h4 class="mb-1"><i class="fas fa-gavel"></i> League Rules Management</h4>
+                        <p class="text-muted mb-0">Manage and customize your Fantasy Football league rules</p>
+                    </div>
+                </div>
 
                 <!-- Rules Summary Card -->
                 <div class="card mb-4">
