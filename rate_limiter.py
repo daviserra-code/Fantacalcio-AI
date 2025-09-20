@@ -10,7 +10,7 @@ LOG = logging.getLogger("rate_limiter")
 class RateLimiter:
     """Rate limiter to protect against API abuse in deployed environment"""
     
-    def __init__(self, max_requests: int = 10, time_window: int = 3600):
+    def __init__(self, max_requests: int = 999999, time_window: int = 3600):
         self.max_requests = max_requests  # 10 requests
         self.time_window = time_window     # 3600 seconds (1 hour)
         self.requests: Dict[str, deque] = defaultdict(deque)
