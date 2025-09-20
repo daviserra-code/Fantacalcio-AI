@@ -81,14 +81,13 @@ def demo_login():
             db.session.commit()
             
     except Exception as e:
-        # If all else fails, create a simple in-memory user
-        from models import User
+        # If all else fails, create a simple in-memory user for login
         user = User()
         user.id = demo_user_id
         user.email = demo_email
         user.first_name = "Demo"
         user.last_name = "User"
-        user.is_pro = True  # Set pro directly
+        # Note: is_pro is a calculated property, not settable
     
     # Log in the demo user
     login_user(user, remember=True)

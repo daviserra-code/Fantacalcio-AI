@@ -28,6 +28,17 @@ class User(UserMixin, db.Model):
 
     # Relationships
     leagues = db.relationship('UserLeague', back_populates='user', cascade='all, delete-orphan')
+    
+    @property
+    def is_pro(self):
+        """Check if user has an active pro subscription"""
+        from datetime import datetime
+        if hasattr(self, 'subscriptions') and self.subscriptions:
+            for subscription in self.subscriptions:
+                if (subscription.status == 'active' and 
+                    subscription.current_period_end > datetime.utcnow()):
+                    return True
+        return False
 
 # (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 class OAuth(OAuthConsumerMixin, db.Model):
