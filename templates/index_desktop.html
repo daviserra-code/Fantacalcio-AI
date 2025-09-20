@@ -340,10 +340,21 @@
 
     // Add quick actions when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        // Find the search card element and add quick actions after it
-        const searchSection = document.querySelector('section:first-of-type .card.pad');
+        // Fix existing button to prevent redirect
+        const existingButton = document.querySelector('form .btn.cta');
+        if (existingButton && existingButton.textContent.includes('Genera strategia')) {
+            existingButton.type = 'button';
+            existingButton.onclick = function(e) {
+                e.preventDefault();
+                showQuickResult('🏆 Strategia Asta', 'Strategia consigliata: concentra budget su 2-3 top player, risparmia su portiere e panchina, punta sui giovani U21 per il futuro');
+            };
+        }
+        
+        // Find the search card element with the search input and add quick actions after it
+        const searchSection = document.querySelector('.card.pad .toolbar')?.closest('.card.pad');
+        console.log('Found search section:', searchSection);
         if (searchSection) {
-            const quickActionsHtml = \`
+            const quickActionsHtml = `
                 <div style="margin-top: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white;">
                     <h3 style="margin-bottom: 16px; color: white; display: flex; align-items: center; gap: 8px;">🚀 Azioni Rapide</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
@@ -361,7 +372,7 @@
                         <button onclick="showQuickResult('📈 Acquisti Inter', 'Ultimi acquisti Inter: confermati Lautaro Martinez (380 FM), Marcus Thuram (318 FM), Denzel Dumfries (100 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">📈 Acquisti Inter</button>
                     </div>
                 </div>
-            \`;
+            `;
             searchSection.insertAdjacentHTML('afterend', quickActionsHtml);
         }
     });
