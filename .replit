@@ -44,7 +44,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python web_interface.py"
+args = "python main.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -55,9 +55,9 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 33391
+localPort = 41463
 externalPort = 3000
 
 [agent]
 expertMode = true
-integrations = ["web_scraper:1.0.0"]
+integrations = ["web_scraper:1.0.0", "python_log_in_with_replit:1.0.0", "flask_stripe:1.0.0"]

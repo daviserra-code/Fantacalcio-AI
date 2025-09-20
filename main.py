@@ -1,7 +1,21 @@
-# main.py (shim)
-from fantacalcio_assistant import FantacalcioAssistant
+# main.py - Main application entry point with authentication
+import os
+import logging
 
-# opzionale: piccolo smoke test quando lanci direttamente main.py
-if __name__ == "__main__":
-    import os
-    print("[main] Shim attivo. OPENAI_MODEL:", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+# Set up environment variable defaults
+if 'SESSION_SECRET' not in os.environ:
+    os.environ['SESSION_SECRET'] = 'dev-session-secret-12345'
+
+try:
+    from app import app
+    import routes  # noqa: F401
+    import web_interface  # noqa: F401
+    
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0", port=5000, debug=True)
+except ImportError as e:
+    logging.error(f"Import error: {e}")
+    # Fallback to original web interface
+    from web_interface import app
+    if __name__ == "__main__":
+        app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fantasy Football Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .league-card {
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .league-card:hover {
+            transform: translateY(-3px);
+        }
+        .pro-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            color: #333;
+        }
+        .upgrade-banner {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-futbol me-2"></i>Fantasy Football Assistant
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                        {% if user.profile_image_url %}
+                            <img src="{{ user.profile_image_url }}" alt="Profile" class="rounded-circle me-2" width="30" height="30" style="object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user-circle me-2" style="font-size: 24px;"></i>
+                        {% endif %}
+                        {{ user.first_name or user.email or 'Utente' }}
+                        {% if is_pro %}
+                            <span class="badge pro-badge ms-2">PRO</span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profilo</a></li>
+                        {% if not is_pro %}
+                            <li><a class="dropdown-item text-warning" href="/upgrade"><i class="fas fa-crown me-2"></i>Upgrade a Pro</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Le tue Leghe</h2>
+                    {% if is_pro %}
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeagueModal">
+                            <i class="fas fa-plus me-2"></i>Nuova Lega
+                        </button>
+                    {% endif %}
+                </div>
+
+                {% if not is_pro %}
+                <div class="alert upgrade-banner mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5><i class="fas fa-crown me-2"></i>Sblocca tutte le funzionalità!</h5>
+                            <p class="mb-0">Upgrade a Pro per creare leghe illimitate, importare regolamenti da documenti e molto altro.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="/upgrade" class="btn btn-light btn-lg">
+                                <i class="fas fa-arrow-up me-2"></i>Upgrade ora
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row" id="leaguesContainer">
+                    <!-- Leagues will be loaded here via JavaScript -->
+                </div>
+
+                {% if leagues|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-futbol fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Nessuna lega ancora</h4>
+                    <p class="text-muted">
+                        {% if is_pro %}
+                            Clicca su "Nuova Lega" per iniziare!
+                        {% else %}
+                            Upgrade a Pro per creare la tua prima lega personalizzata.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Create League Modal -->
+    <div class="modal fade" id="createLeagueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crea Nuova Lega</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createLeagueForm">
+                        <div class="mb-3">
+                            <label for="leagueName" class="form-label">Nome Lega</label>
+                            <input type="text" class="form-control" id="leagueName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="importMethod" class="form-label">Metodo di Creazione</label>
+                            <select class="form-select" id="importMethod">
+                                <option value="default">Regolamento Standard</option>
+                                <option value="document">Importa da Documento</option>
+                            </select>
+                        </div>
+                        <div id="documentUpload" style="display: none;">
+                            <div class="mb-3">
+                                <label for="ruleDocument" class="form-label">Carica Documento (Word/PDF)</label>
+                                <input type="file" class="form-control" id="ruleDocument" accept=".docx,.pdf">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" onclick="createLeague()">Crea Lega</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show/hide document upload based on selection
+        document.getElementById('importMethod').addEventListener('change', function() {
+            const documentDiv = document.getElementById('documentUpload');
+            documentDiv.style.display = this.value === 'document' ? 'block' : 'none';
+        });
+
+        // Load leagues on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLeagues();
+        });
+
+        async function loadLeagues() {
+            try {
+                const response = await fetch('/api/leagues');
+                const data = await response.json();
+                
+                const container = document.getElementById('leaguesContainer');
+                container.innerHTML = '';
+                
+                data.leagues.forEach(league => {
+                    const leagueCard = createLeagueCard(league);
+                    container.appendChild(leagueCard);
+                });
+            } catch (error) {
+                console.error('Error loading leagues:', error);
+            }
+        }
+
+        function createLeagueCard(league) {
+            const div = document.createElement('div');
+            div.className = 'col-md-6 col-lg-4 mb-3';
+            
+            div.innerHTML = `
+                <div class="card league-card h-100" onclick="openLeague(${league.id})">
+                    <div class="card-body">
+                        <h5 class="card-title">${league.name}</h5>
+                        <p class="card-text text-muted">
+                            <small><i class="fas fa-calendar me-1"></i>Creata: ${new Date(league.created_at).toLocaleDateString()}</small>
+                        </p>
+                        <p class="card-text text-muted">
+                            <small><i class="fas fa-edit me-1"></i>Aggiornata: ${new Date(league.updated_at).toLocaleDateString()}</small>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1"></i>${league.summary.participants || 'N/A'} partecipanti
+                            <span class="float-end">
+                                <i class="fas fa-euro-sign me-1"></i>${league.summary.total_budget || '500'} crediti
+                            </span>
+                        </small>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+
+        function openLeague(leagueId) {
+            window.location.href = `/league/${leagueId}`;
+        }
+
+        async function createLeague() {
+            const name = document.getElementById('leagueName').value.trim();
+            const method = document.getElementById('importMethod').value;
+            
+            if (!name) {
+                alert('Inserisci un nome per la lega');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/leagues', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createLeagueModal'));
+                    modal.hide();
+                    document.getElementById('createLeagueForm').reset();
+                    loadLeagues();
+                } else {
+                    const error = await response.json();
+                    alert('Errore: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Error creating league:', error);
+                alert('Errore nella creazione della lega');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import re # Import the re module
 import time
 from flask import Flask, request, jsonify, session, render_template, g # Import g for application context
 from flask import Response # Import Response for exporting rules
+from flask_login import current_user
 
 from config import HOST, PORT, LOG_LEVEL
 from fantacalcio_assistant import FantacalcioAssistant
@@ -16,14 +17,18 @@ from corrections_manager import CorrectionsManager
 from league_rules_manager import LeagueRulesManager
 from rate_limiter import RateLimiter
 
+# Import authentication components
+from app import app, db
+from replit_auth import require_login, make_replit_blueprint
+from models import User, UserLeague
+
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 LOG = logging.getLogger("web_interface")
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = "dev-secret"  # per sessione firmata; metti in .env se vuoi
+# Auth blueprint is registered in routes.py
 
 # Initialize rate limiter (10 requests per hour for deployed app)
 rate_limiter = RateLimiter(max_requests=10, time_window=3600)
@@ -109,11 +114,18 @@ T = {
 @app.route("/", methods=["GET"])
 def index():
     try:
+        # Check if user is authenticated and redirect accordingly
+        if current_user.is_authenticated:
+            return render_template("dashboard.html", 
+                                 user=current_user,
+                                 is_pro=current_user.is_pro,
+                                 leagues=current_user.leagues)
+        
         lang = request.args.get("lang", "it")
         page_id = uuid.uuid4().hex[:16]
         LOG.info("Request: GET / from %s", request.remote_addr)
         LOG.info("Page view: %s, lang: %s", page_id, lang)
-        return render_template("index.html", lang=lang, t=T.get(lang,T["it"]))
+        return render_template("landing.html", lang=lang, t=T.get(lang,T["it"]))
     except Exception as e:
         LOG.error(f"Error serving index page: {e}")
         # Fallback HTML if template fails
