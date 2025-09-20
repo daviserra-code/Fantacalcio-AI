@@ -1,6 +1,6 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="220" height="48" viewBox="0 0 220 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="176" height="48" viewBox="0 0 176 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">FantacalcioAI - Logo</title>
   <desc id="desc">Wordmark con monogramma a scudo, pallone e nodi AI orbitanti</desc>
 
@@ -18,11 +18,11 @@
 
   <g transform="translate(52,12)">
     <text x="0" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-          font-size="22" font-weight="700" fill="#1F2937" letter-spacing="0.2">
+          font-size="22" font-weight="700" fill="#FFFFFF" letter-spacing="0.2">
       Fantacalcio
     </text>
     <rect x="111" y="2" width="4" height="22" rx="2" fill="#0A84FF"/>
-    <text x="128" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+    <text x="118" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
           font-size="18" font-weight="800" fill="#0A84FF" letter-spacing="0.4">
       AI
     </text>
