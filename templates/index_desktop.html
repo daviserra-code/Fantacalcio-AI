@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -45,11 +46,9 @@
             </text>
           </g>
         </svg>
-        
       </a>
       <nav class="spacer"></nav>
       <a class="btn" href="#funzioni">Funzioni</a>
-      <a class="btn" href="#prezzi">Prezzi</a>
       <a class="btn btn-primary" href="/app">Apri App</a>
     </div>
   </header>
@@ -59,11 +58,10 @@
       <div>
         <span class="kicker">⚽ + 🤖 Consigli data-driven</span>
         <h1 class="h1">Aste intelligenti e consigli in tempo reale per la Serie A</h1>
-        <p class="lead">Ranking dinamici, budget optimizer, scouting U21 e analisi avversari. Mobile-first, ora anche “website-like”.</p>
+        <p class="lead">Ranking dinamici, budget optimizer, scouting U21 e analisi avversari. Mobile-first, ora anche "website-like".</p>
         <div class="btn-group mt-2">
-          <a class="btn cta" href="/app">Apri l’app</a>
-          <a class="btn ghost" href="/dashboard">Leghe</a>
-          <a class="btn ghost" href="#funzioni">Scopri le funzioni</a>
+          <a class="btn cta" href="/app">Apri l'app</a>
+          <a class="btn ghost" href="/app">Leghe</a>
         </div>
         <div class="kpis mt-3">
           <div class="kpi"><div class="label">Database giocatori</div><div class="value">800+</div></div>
@@ -85,11 +83,7 @@
           <div id="loadingIndicator" class="help">Caricamento dati giocatori...</div>
           <table class="table" id="playersTable" style="display: none;">
             <thead><tr><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Fantamedia</th><th>Prezzo</th></tr></thead>
-            <tbody id="playersTableBody">
-
-
-              <!-- Real player data will be populated here -->
-            </tbody>
+            <tbody id="playersTableBody"></tbody>
           </table>
           <div id="playersCount" class="help mt-1"></div>
         </div>
@@ -97,69 +91,95 @@
     </div>
   </section>
 
+  <!-- Enhanced Features Section with 2x2 grid -->
   <section id="funzioni" class="section">
-    <div class="container grid-2">
-      <div class="card pad">
-        <h2>Ranking & Fantamedia intelligente</h2>
-        <p>Combina fantamedie storiche, xG/xA, forma e calendario. Filtri per ruolo: <span class="chip active">P</span> <span class="chip active">D</span> <span class="chip">C</span> <span class="chip">A</span></p>
+    <div class="container">
+      <div class="grid-2" style="gap: 24px; margin-bottom: 32px;">
+        <div class="card pad">
+          <h2>🎯 Ranking & Fantamedia intelligente</h2>
+          <p>Combina fantamedie storiche, xG/xA, forma e calendario. Filtri per ruolo avanzati con analisi predittiva.</p>
+          <div class="btn-group mt-2">
+            <button onclick="getTopPlayersByRole('A')" class="btn primary">Top Attaccanti</button>
+            <button onclick="getTopPlayersByRole('C')" class="btn ghost">Top Centrocampisti</button>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>💰 Budget optimizer</h2>
+          <p>Strategie d'asta simulate: aggressiva, bilanciata, low-cost con slot e vincoli di lega personalizzati.</p>
+          <div class="btn-group mt-2">
+            <button onclick="askFormationAdvice('3-5-2')" class="btn primary">Strategia 3-5-2</button>
+            <button onclick="askFormationAdvice('4-3-3')" class="btn ghost">Strategia 4-3-3</button>
+          </div>
+        </div>
       </div>
-      <div class="card pad">
-        <h2>Budget optimizer</h2>
-        <p>Strategie d’asta simulate: aggressiva, bilanciata, low-cost con slot e vincoli di lega.</p>
-      </div>
-      <div class="card pad">
-        <h2>Scouting U21</h2>
-        <p>Rileva prospetti con minuti crescenti e valore fantacalcistico in aumento.</p>
-      </div>
-      <div class="card pad">
-        <h2>Assistenza in tempo reale</h2>
-        <p>Suggerimenti live per schieramento, cambi e ballottaggi.</p>
+      
+      <div class="grid-2" style="gap: 24px;">
+        <div class="card pad">
+          <h2>👶 Scouting U21</h2>
+          <p>Rileva prospetti con minuti crescenti e valore fantacalcistico in aumento. Algoritmi di machine learning.</p>
+          <div class="btn-group mt-2">
+            <button onclick="getU21PlayersByRole('A')" class="btn primary">U21 Attaccanti</button>
+            <button onclick="getU21PlayersByRole('C')" class="btn ghost">U21 Centrocampisti</button>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>⚡ Assistenza in tempo reale</h2>
+          <p>Suggerimenti live per schieramento, cambi e ballottaggi. Notifiche automatiche sugli infortuni.</p>
+          <div class="btn-group mt-2">
+            <a class="btn primary" href="/app">Inizia ora</a>
+            <button onclick="getTeamAcquisitions('Inter')" class="btn ghost">Acquisti Inter</button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- Working Demo Section -->
   <section class="section alt">
     <div class="container grid-2">
       <div>
-        <h2>Un’unica UI per mobile e desktop</h2>
-        <p>La stessa base CSS gestisce l’interfaccia “app-like” e il layout “website-like”. Meno manutenzione, più consistenza.</p>
+        <h2>Un'unica UI per mobile e desktop</h2>
+        <p>La stessa base CSS gestisce l'interfaccia "app-like" e il layout "website-like". Meno manutenzione, più consistenza.</p>
         <div class="btn-group mt-2">
           <a class="btn primary" href="/app">Apri App</a>
-          <a class="btn" href="/docs">Documentazione</a>
+          <a class="btn" href="#funzioni">Vedi funzioni</a>
         </div>
       </div>
       <div class="card pad">
-        <form class="form">
+        <h3>🔧 Configurazione Lega</h3>
+        <form class="form" onsubmit="return handleLeagueSetup(event)">
           <div>
             <label class="label">Modalità di lega</label>
-            <select class="select"><option>Classic</option><option>Mantra</option></select>
+            <select class="select" id="leagueMode"><option>Classic</option><option>Mantra</option><option>Draft</option></select>
           </div>
           <div>
             <label class="label">Budget iniziale</label>
-            <input class="input" type="number" placeholder="500"/>
+            <input class="input" type="number" id="initialBudget" placeholder="500" value="500"/>
             <div class="help">Valore per squadra</div>
           </div>
           <div>
             <label class="label">Formazione preferita</label>
-            <select class="select"><option>3-4-3</option><option>3-5-2</option><option>4-3-3</option><option>4-4-2</option></select>
+            <select class="select" id="preferredFormation"><option>3-4-3</option><option>3-5-2</option><option>4-3-3</option><option>4-4-2</option></select>
           </div>
-          <button class="btn cta">Genera strategia d’asta</button>
+          <button type="submit" class="btn cta">Genera strategia d'asta</button>
         </form>
       </div>
     </div>
   </section>
 
-  <section id="prezzi" class="section">
-    <div class="container grid-2">
-      <div class="card pad">
-        <h2>Free</h2>
-        <p>Consigli base, ranking standard, fino a 1 lega.</p>
-        <a class="btn primary mt-2" href="/signup">Inizia gratis</a>
-      </div>
-      <div class="card pad">
-        <h2>Pro</h2>
-        <p>Optimizer, U21+, confronto avversari, multi-lega, export.</p>
-        <a class="btn cta mt-2" href="/signup">Passa a Pro</a>
+  <!-- Live Player Data Section -->
+  <section class="section">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 32px;">🔥 Dati Live Serie A 2025-26</h2>
+      <div id="liveDataContainer" class="grid-2" style="gap: 24px;">
+        <div class="card pad">
+          <h3>⚽ Top Attaccanti</h3>
+          <div id="topAttackers">Caricamento...</div>
+        </div>
+        <div class="card pad">
+          <h3>🎯 Top Centrocampisti</h3>
+          <div id="topMidfielders">Caricamento...</div>
+        </div>
       </div>
     </div>
   </section>
@@ -179,6 +199,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadPlayersData();
         setupEventListeners();
+        loadLiveData();
     });
 
     function setupEventListeners() {
@@ -190,23 +211,9 @@
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     filterAndDisplayPlayers();
-                }, 300); // Wait 300ms after user stops typing
+                }, 300);
             });
         }
-
-        // Role filter tabs
-        const tabs = document.querySelectorAll('.tab[data-role]');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
-                tabs.forEach(t => t.classList.remove('active'));
-                // Add active class to clicked tab
-                this.classList.add('active');
-                // Update current role
-                currentRole = this.getAttribute('data-role');
-                filterAndDisplayPlayers();
-            });
-        });
 
         // Toggle buttons
         const u21Toggle = document.getElementById('u21Toggle');
@@ -228,12 +235,11 @@
     }
 
     async function loadPlayersData() {
-        await searchPlayers(); // Load initial data
+        await searchPlayers();
     }
 
     async function searchPlayers() {
         try {
-            // Build query parameters
             const searchInputEl = document.getElementById('searchInput');
             const searchQuery = searchInputEl ? searchInputEl.value : '';
             const u21ToggleEl = document.getElementById('u21Toggle');
@@ -245,24 +251,21 @@
             if (searchQuery) params.append('search', searchQuery);
             if (isU21Active) params.append('u21', 'true');
             if (isFormActive) params.append('in_forma', 'true');
-            params.append('limit', '20'); // Show top 20 results
+            params.append('limit', '20');
             
             const response = await fetch(`/api/players?${params.toString()}`);
             const data = await response.json();
             
-            // Hide loading indicator
             const loadingIndicator = document.getElementById('loadingIndicator');
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
             }
 
-            // Show table
             const table = document.getElementById('playersTable');
             if (table) {
                 table.style.display = 'table';
             }
 
-            // Use the players data directly
             const players = data.players || [];
             displayPlayers(players);
             updatePlayersCount(players.length, data.total || 0);
@@ -277,7 +280,6 @@
     }
 
     function filterAndDisplayPlayers() {
-        // Instead of filtering locally, make a new API call with current filters
         searchPlayers();
     }
 
@@ -305,16 +307,15 @@
 
     function getRoleColor(role) {
         const colors = {
-            'P': '#22C55E',  // Green for goalkeepers
-            'D': '#3B82F6',  // Blue for defenders  
-            'C': '#F59E0B',  // Orange for midfielders
-            'A': '#EF4444'   // Red for forwards
+            'P': '#22C55E',
+            'D': '#3B82F6',
+            'C': '#F59E0B',
+            'A': '#EF4444'
         };
         return colors[role] || '#6B7280';
     }
 
     function showQuickResult(title, message) {
-        // Create and show a modal with the result
         const resultDiv = document.createElement('div');
         resultDiv.style.cssText = `
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -328,7 +329,6 @@
                     style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">Chiudi</button>
         `;
         
-        // Add overlay
         const overlay = document.createElement('div');
         overlay.id = 'overlay';
         overlay.style.cssText = `
@@ -351,7 +351,7 @@
             const roleName = roleNames[role] || 'Giocatori';
             
             if (players.length > 0) {
-                const playersList = players.map(p => `${p.display_name || p.name} (${p.team}, ${p.fantamedia} FM)`).join(', ');
+                const playersList = players.map(p => `${p.display_name || p.name} (${p.team}, FM ${p.fantamedia})`).join(', ');
                 showQuickResult(`🎯 Top ${roleName}`, `I migliori ${roleName.toLowerCase()} in forma: ${playersList}`);
             } else {
                 showQuickResult(`🎯 Top ${roleName}`, `Nessun ${roleName.toLowerCase()} trovato in questo momento.`);
@@ -409,45 +409,71 @@
         }
     }
 
-    // Add quick actions when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fix existing button to prevent redirect
-        const existingButton = document.querySelector('form .btn.cta');
-        if (existingButton && existingButton.textContent.includes('Genera strategia')) {
-            existingButton.type = 'button';
-            existingButton.onclick = function(e) {
-                e.preventDefault();
-                showQuickResult('🏆 Strategia Asta', 'Strategia consigliata: concentra budget su 2-3 top player, risparmia su portiere e panchina, punta sui giovani U21 per il futuro');
-            };
-        }
+    function handleLeagueSetup(event) {
+        event.preventDefault();
+        const mode = document.getElementById('leagueMode').value;
+        const budget = document.getElementById('initialBudget').value;
+        const formation = document.getElementById('preferredFormation').value;
         
-        // Find the search card element with the search input and add quick actions after it
-        const searchCard = document.querySelector('#playersCount');
-        const searchSection = searchCard ? searchCard.closest('.card.pad') : null;
-        console.log('Found search section:', searchSection);
-        if (searchSection) {
-            const quickActionsHtml = `
-                <div style="margin-top: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white;">
-                    <h3 style="margin-bottom: 16px; color: white; display: flex; align-items: center; gap: 8px;">🚀 Azioni Rapide</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                        <button onclick="getTopPlayersByRole('A')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🎯 Top Attaccanti</button>
-                        <button onclick="getTopPlayersByRole('C')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Top Centrocampisti</button>
-                        <button onclick="getTopPlayersByRole('D')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🛡️ Top Difensori</button>
-                        <button onclick="getTopPlayersByRole('P')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🥅 Top Portieri</button>
-                        <button onclick="askFormationAdvice('3-5-2')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Formazione 3-5-2</button>
-                        <button onclick="askFormationAdvice('4-3-3')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Formazione 4-3-3</button>
-                        <button onclick="getU21PlayersByRole('D')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Difensori</button>
-                        <button onclick="getU21PlayersByRole('C')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Centrocampisti</button>
-                        <button onclick="getU21PlayersByRole('A')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Attaccanti</button>
-                        <button onclick="showQuickResult('🏆 Strategia Asta', 'Strategia generale: concentra budget sui top player, diversifica per ruolo, sfrutta occasioni sui giovani emergenti')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🏆 Strategia Asta</button>
-                        <button onclick="getTeamAcquisitions('Juventus')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">📈 Acquisti Juventus</button>
-                        <button onclick="getTeamAcquisitions('Inter')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">📈 Acquisti Inter</button>
+        showQuickResult(
+            '🏆 Strategia Personalizzata', 
+            `Modalità: ${mode} | Budget: €${budget} | Formazione: ${formation}<br><br>` +
+            `✅ Strategia consigliata: concentra il 60% del budget sui top player, diversifica per ruolo, ` +
+            `punta sui giovani U21 per il futuro. Inizia con la formazione ${formation} e adatta in base agli acquisti.`
+        );
+        return false;
+    }
+
+    async function loadLiveData() {
+        try {
+            // Load top attackers
+            const attackersResponse = await fetch('/api/players?role=A&in_forma=true&limit=3');
+            const attackersData = await attackersResponse.json();
+            const topAttackers = attackersData.players || [];
+            
+            // Load top midfielders
+            const midfieldersResponse = await fetch('/api/players?role=C&in_forma=true&limit=3');
+            const midfieldersData = await midfieldersResponse.json();
+            const topMidfielders = midfieldersData.players || [];
+            
+            // Display top attackers
+            const attackersContainer = document.getElementById('topAttackers');
+            if (attackersContainer && topAttackers.length > 0) {
+                attackersContainer.innerHTML = topAttackers.map((player, index) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${player.display_name || player.name}</strong><br>
+                            <small style="color: #666;">${player.team}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #EF4444;">FM ${player.fantamedia}</div>
+                            <div style="font-size: 12px; color: #666;">€${player.price}</div>
+                        </div>
                     </div>
-                </div>
-            `;
-            searchSection.insertAdjacentHTML('afterend', quickActionsHtml);
+                `).join('');
+            }
+            
+            // Display top midfielders
+            const midfieldersContainer = document.getElementById('topMidfielders');
+            if (midfieldersContainer && topMidfielders.length > 0) {
+                midfieldersContainer.innerHTML = topMidfielders.map((player, index) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${player.display_name || player.name}</strong><br>
+                            <small style="color: #666;">${player.team}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold; color: #F59E0B;">FM ${player.fantamedia}</div>
+                            <div style="font-size: 12px; color: #666;">€${player.price}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+        } catch (error) {
+            console.error('Error loading live data:', error);
         }
-    });
+    }
   </script>
 </body>
 </html>
