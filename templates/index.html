@@ -176,7 +176,14 @@
     .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
     .filter-btn{
       padding:6px 12px;border:2px solid var(--accent);background:#f8f9fa;color:var(--accent);
-      border-radius:14px;font-size:.8rem;font-weight:600;cursor:pointer
+      border-radius:14px;font-size:.8rem;font-weight:600;cursor:pointer;margin:2px;
+      transition: all 0.3s ease;
+    }
+    .filter-btn.active{
+      background:var(--accent);color:#fff;
+    }
+    .filter-btn:hover{
+      background:var(--accent);color:#fff;
     }
 
     .player-card{background:var(--classic-card-bg);border:1px solid #eee;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
@@ -1082,6 +1089,8 @@
         <div class="search-header">
           <input type="text" id="searchInput" placeholder="{{ t.search_placeholder }}" maxlength="100">
           <button onclick="performSearch()" class="btn btn-primary">🔍</button>
+          <button id="u21Filter" onclick="toggleU21Filter()" class="filter-btn">U21</button>
+          <button id="formaFilter" onclick="toggleFormaFilter()" class="filter-btn active">In forma</button>
           <button onclick="showAdvancedFilters()" class="filter-btn">📊 Statistiche</button>
         </div>
         <div class="filters">
@@ -1507,6 +1516,34 @@
         }
     }
 
+    // Global filter state
+    let currentFilters = {
+      u21: false,
+      inForma: false
+    };
+
+    function toggleU21Filter() {
+      currentFilters.u21 = !currentFilters.u21;
+      const button = document.getElementById('u21Filter');
+      if (currentFilters.u21) {
+        button.classList.add('active');
+      } else {
+        button.classList.remove('active');
+      }
+      performSearch();
+    }
+
+    function toggleFormaFilter() {
+      currentFilters.inForma = !currentFilters.inForma;
+      const button = document.getElementById('formaFilter');
+      if (currentFilters.inForma) {
+        button.classList.add('active');
+      } else {
+        button.classList.remove('active');
+      }
+      performSearch();
+    }
+
     function performSearch(){
       const searchInput = document.getElementById('searchInput');
       const roleFilter = document.getElementById('roleFilter');
@@ -1517,20 +1554,26 @@
       }
 
       const q = searchInput.value.trim();
-      const role = roleFilter.value;
+      const role = roleFilter.value === 'all' ? '' : roleFilter.value;
 
-      if(!q){alert('Inserisci un termine di ricerca'); return;}
+      // Build API URL with filters
+      let url = '/api/players?limit=50';
+      if (q) url += `&search=${encodeURIComponent(q)}`;
+      if (role) url += `&role=${encodeURIComponent(role)}`;
+      if (currentFilters.u21) url += '&u21=true';
+      if (currentFilters.inForma) url += '&in_forma=true';
 
-      fetch('/api/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,role:role})})
+      console.log('Searching with URL:', url);
+
+      fetch(url)
       .then(r=>r.json())
       .then(data=>{
-        displaySearchResults(data.results || [], data.total || 0, {
+        displaySearchResults(data.players || [], data.total || 0, {
           query: q,
           role_filter: role,
-          data_source: data.debug_info?.data_source || 'unknown',
-          total_pool_size: data.debug_info?.total_pool_size || 0,
-          matching_players: data.debug_info?.matching_players || 0,
-          role_filtered: data.debug_info?.role_filtered || 'N/A'
+          u21_filter: currentFilters.u21,
+          in_forma_filter: currentFilters.inForma,
+          filters_applied: data.filters_applied || {}
         });
       })
       .catch(e=>{console.error('Search error:',e); alert('Errore nella ricerca')});
