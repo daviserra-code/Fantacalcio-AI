@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">FantacalcioAI - Monogramma</title>
+  <desc id="desc">Scudo con pallone e orbite AI</desc>
+  <defs>
+    <linearGradient id="g" x1="8" y1="6" x2="48" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A84FF"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <path d="M28 4 L48 10 C48 26 39 38 28 48 C17 38 8 26 8 10 L28 4Z" fill="url(#g)"/>
+  <circle cx="28" cy="24" r="11.5" fill="white"/>
+  <polygon points="28,15 33,19 32,25 24,25 23,19" fill="#0A84FF"/>
+  <circle cx="22.8" cy="21.5" r="2.3" fill="#0A84FF"/>
+  <circle cx="33.2" cy="21.5" r="2.3" fill="#0A84FF"/>
+  <circle cx="28" cy="28.2" r="2.3" fill="#0A84FF"/>
+  <path d="M16,18 C28,8 40,16 39,27" stroke="#72E3A6" stroke-width="2" fill="none"/>
+  <circle cx="16" cy="18" r="2.6" fill="#72E3A6"/>
+  <circle cx="39" cy="27" r="2.6" fill="#72E3A6"/>
+</svg>
