@@ -75,21 +75,22 @@
         <div class="toolbar">
           <div class="search" style="flex:1">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <input type="text" placeholder="Cerca giocatori, ruoli, squadra…">
+            <input id="searchInput" type="text" placeholder="Cerca giocatori, squadra, ruolo…">
           </div>
-          <button class="btn toggle">U21</button>
-          <button class="btn toggle active">In forma</button>
+          <button class="btn toggle" id="u21Toggle">U21</button>
+          <button class="btn toggle active" id="formToggle">In forma</button>
         </div>
         <div class="mt-2">
-          <table class="table">
-            <thead><tr><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Indice</th></tr></thead>
-            <tbody>
-              <tr><td>Mario Rossi</td><td><span class="role D">D</span></td><td>Atalanta</td><td>82</td></tr>
-              <tr><td>Luca Bianchi</td><td><span class="role C">C</span></td><td>Inter</td><td>77</td></tr>
-              <tr><td>G. Verdi</td><td><span class="role A">A</span></td><td>Fiorentina</td><td>85</td></tr>
+          <div id="loadingIndicator" class="help">Caricamento dati giocatori...</div>
+          <table class="table" id="playersTable" style="display: none;">
+            <thead><tr><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Fantamedia</th><th>Prezzo</th></tr></thead>
+            <tbody id="playersTableBody">
+
+
+              <!-- Real player data will be populated here -->
             </tbody>
           </table>
-          <p class="help mt-1">Esempio statico: collega i tuoi dati per la popolazione reale.</p>
+          <div id="playersCount" class="help mt-1"></div>
         </div>
       </div>
     </div>
@@ -166,6 +167,172 @@
     <div class="container">© <span id="y"></span> FantacalcioAI. Tutti i diritti riservati.</div>
   </footer>
 
-  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+  <script>
+    document.getElementById('y').textContent=new Date().getFullYear();
+
+    // Desktop App Functionality - Real API Integration
+    let currentRole = 'all';
+    let playersData = [];
+    
+    // Load real player data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPlayersData();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterAndDisplayPlayers();
+            });
+        }
+
+        // Role filter tabs
+        const tabs = document.querySelectorAll('.tab[data-role]');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                // Update current role
+                currentRole = this.getAttribute('data-role');
+                filterAndDisplayPlayers();
+            });
+        });
+
+        // Toggle buttons
+        const u21Toggle = document.getElementById('u21Toggle');
+        const formToggle = document.getElementById('formToggle');
+        
+        if (u21Toggle) {
+            u21Toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                filterAndDisplayPlayers();
+            });
+        }
+
+        if (formToggle) {
+            formToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                filterAndDisplayPlayers();
+            });
+        }
+    }
+
+    async function loadPlayersData() {
+        try {
+            const response = await fetch('/api/statistics');
+            const data = await response.json();
+            
+            // Hide loading indicator
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+
+            // Show table
+            const table = document.getElementById('playersTable');
+            if (table) {
+                table.style.display = 'table';
+            }
+
+            // Process and store data
+            playersData = [];
+            if (data.role_statistics) {
+                // Extract all players from role statistics
+                Object.keys(data.role_statistics).forEach(role => {
+                    if (data.role_statistics[role].top_players) {
+                        data.role_statistics[role].top_players.forEach(player => {
+                            playersData.push({
+                                name: player.name,
+                                role: role,
+                                team: player.team,
+                                fantamedia: player.fantamedia,
+                                price: player.price
+                            });
+                        });
+                    }
+                });
+            }
+
+            displayPlayers(playersData);
+            updatePlayersCount(playersData.length);
+
+        } catch (error) {
+            console.error('Error loading players data:', error);
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                loadingIndicator.textContent = 'Errore nel caricamento dei dati. Riprova più tardi.';
+            }
+        }
+    }
+
+    function filterAndDisplayPlayers() {
+        let filteredData = [...playersData];
+        
+        // Filter by role
+        if (currentRole !== 'all') {
+            filteredData = filteredData.filter(player => player.role === currentRole);
+        }
+        
+        // Filter by search query
+        const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        if (searchQuery) {
+            filteredData = filteredData.filter(player => 
+                player.name.toLowerCase().includes(searchQuery) ||
+                player.team.toLowerCase().includes(searchQuery) ||
+                player.role.toLowerCase().includes(searchQuery)
+            );
+        }
+
+        // Apply toggle filters (simplified for now)
+        const isU21Active = document.getElementById('u21Toggle')?.classList.contains('active') || false;
+        const isFormActive = document.getElementById('formToggle')?.classList.contains('active') || false;
+
+        // Sort by fantamedia descending
+        filteredData.sort((a, b) => (b.fantamedia || 0) - (a.fantamedia || 0));
+
+        displayPlayers(filteredData);
+        updatePlayersCount(filteredData.length);
+    }
+
+    function displayPlayers(players) {
+        const tbody = document.getElementById('playersTableBody');
+        if (!tbody) return;
+
+        // Limit to top 10 for better performance
+        const displayPlayers = players.slice(0, 10);
+        
+        tbody.innerHTML = displayPlayers.map(player => `
+            <tr>
+                <td><strong>${player.name}</strong></td>
+                <td><span style="padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold; color: white; background: ${getRoleColor(player.role)}">${player.role}</span></td>
+                <td>${player.team}</td>
+                <td>${player.fantamedia || 0}</td>
+                <td>€${player.price || 0}</td>
+            </tr>
+        `).join('');
+    }
+
+    function updatePlayersCount(count) {
+        const countElement = document.getElementById('playersCount');
+        if (countElement) {
+            countElement.textContent = `Visualizzati ${Math.min(count, 10)} di ${count} giocatori trovati - dati reali da FantacalcioAI`;
+        }
+    }
+
+    function getRoleColor(role) {
+        const colors = {
+            'P': '#22C55E',  // Green for goalkeepers
+            'D': '#3B82F6',  // Blue for defenders  
+            'C': '#F59E0B',  // Orange for midfielders
+            'A': '#EF4444'   // Red for forwards
+        };
+        return colors[role] || '#6B7280';
+    }
+  </script>
 </body>
 </html>
