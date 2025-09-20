@@ -41,7 +41,8 @@ def upgrade_to_pro():
 def create_checkout_session():
     """Create Stripe checkout session for pro subscription"""
     try:
-        YOUR_DOMAIN = os.environ.get('REPLIT_DEV_DOMAIN') if os.environ.get('REPLIT_DEPLOYMENT') != '' else os.environ.get('REPLIT_DOMAINS').split(',')[0]
+        # Use request.url_root for reliable domain
+        base_url = request.url_root.rstrip('/')
         
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
@@ -62,8 +63,8 @@ def create_checkout_session():
                 },
             ],
             mode='subscription',
-            success_url='https://' + YOUR_DOMAIN + '/subscription-success',
-            cancel_url='https://' + YOUR_DOMAIN + '/upgrade',
+            success_url=base_url + '/subscription-success',
+            cancel_url=base_url + '/upgrade',
             metadata={
                 'user_id': current_user.id
             }
@@ -87,24 +88,70 @@ def stripe_webhook():
     
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, os.environ.get('STRIPE_WEBHOOK_SECRET')
+            payload, sig_header, os.environ.get('STRIPE_WEBHOOK_SECRET', 'dev-webhook-secret')
         )
     except (ValueError, stripe.error.SignatureVerificationError):
         return jsonify({'error': 'Invalid signature'}), 400
     
-    if event['type'] == 'checkout.session.completed':
-        session_data = event['data']['object']
-        user_id = session_data['metadata'].get('user_id')
-        
-        if user_id:
+    event_type = event['type']
+    event_data = event['data']['object']
+    
+    if event_type == 'checkout.session.completed':
+        # Handle successful subscription signup
+        user_id = event_data['metadata'].get('user_id')
+        if user_id and event_data['mode'] == 'subscription':
             user = User.query.get(user_id)
             if user:
+                # Get the subscription details from Stripe
+                subscription_id = event_data['subscription']
+                subscription = stripe.Subscription.retrieve(subscription_id)
+                
+                # Create subscription record
+                new_subscription = Subscription(
+                    user_id=user_id,
+                    stripe_subscription_id=subscription_id,
+                    status=subscription['status'],
+                    current_period_start=datetime.fromtimestamp(subscription['current_period_start']),
+                    current_period_end=datetime.fromtimestamp(subscription['current_period_end'])
+                )
+                db.session.add(new_subscription)
+                
+                # Update user
                 user.is_pro = True
-                user.stripe_customer_id = session_data['customer']
-                user.pro_expires_at = datetime.fromtimestamp(
-                    session_data['expires_at']
-                ) if session_data.get('expires_at') else None
+                user.stripe_customer_id = event_data['customer']
+                user.pro_expires_at = datetime.fromtimestamp(subscription['current_period_end'])
                 db.session.commit()
+                
+    elif event_type == 'customer.subscription.updated':
+        # Handle subscription changes
+        subscription_id = event_data['id']
+        subscription_record = Subscription.query.filter_by(stripe_subscription_id=subscription_id).first()
+        if subscription_record:
+            subscription_record.status = event_data['status']
+            subscription_record.current_period_end = datetime.fromtimestamp(event_data['current_period_end'])
+            
+            # Update user pro status
+            user = subscription_record.user
+            if user:
+                user.is_pro = event_data['status'] == 'active'
+                user.pro_expires_at = datetime.fromtimestamp(event_data['current_period_end'])
+            
+            db.session.commit()
+            
+    elif event_type == 'customer.subscription.deleted':
+        # Handle subscription cancellation
+        subscription_id = event_data['id']
+        subscription_record = Subscription.query.filter_by(stripe_subscription_id=subscription_id).first()
+        if subscription_record:
+            subscription_record.status = 'canceled'
+            
+            # Downgrade user
+            user = subscription_record.user
+            if user:
+                user.is_pro = False
+                user.pro_expires_at = None
+            
+            db.session.commit()
     
     return jsonify({'status': 'success'})
 
@@ -131,6 +178,7 @@ def get_user_leagues():
     })
 
 @app.route('/api/leagues', methods=['POST'])
+@require_login
 @require_pro
 def create_league():
     """Create a new league (Pro users only)"""
@@ -196,6 +244,7 @@ def get_league(league_id):
     })
 
 @app.route('/api/leagues/<int:league_id>', methods=['PUT'])
+@require_login
 @require_pro
 def update_league(league_id):
     """Update league rules (Pro users only)"""
@@ -222,6 +271,7 @@ def update_league(league_id):
     return jsonify({'status': 'updated'})
 
 @app.route('/api/leagues/<int:league_id>', methods=['DELETE'])
+@require_login
 @require_pro
 def delete_league(league_id):
     """Delete a league (Pro users only)"""
@@ -239,6 +289,7 @@ def delete_league(league_id):
     return jsonify({'status': 'deleted'})
 
 @app.route('/api/leagues/<int:league_id>/import', methods=['POST'])
+@require_login
 @require_pro
 def import_league_rules(league_id):
     """Import rules from document for a specific league"""

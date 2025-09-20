@@ -19,7 +19,7 @@ from rate_limiter import RateLimiter
 
 # Import authentication components
 from app import app, db
-from replit_auth import require_login, make_replit_blueprint
+from replit_auth import require_login, require_pro, make_replit_blueprint
 from models import User, UserLeague
 
 logging.basicConfig(
@@ -1301,6 +1301,8 @@ def api_check_transfer_window():
     return jsonify({"transfer_window_open": is_open, "date": date_str or "today"})
 
 @app.route("/api/rules/import", methods=["POST"])
+@require_login
+@require_pro
 def api_import_rules_document():
     """Import rules from uploaded document"""
     data = request.get_json()
