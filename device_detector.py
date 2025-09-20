@@ -49,15 +49,21 @@ class DeviceDetector:
             # No user agent, default to desktop UI
             return False
         
-        # Check for mobile patterns first
-        for pattern in cls.MOBILE_PATTERNS:
-            if re.search(pattern, user_agent, re.IGNORECASE):
-                return True
+        # Check for tablet patterns FIRST - these get desktop UI
+        # This prevents iPads from being classified as mobile
         
-        # Check for tablet patterns - these get desktop UI
+        # Special case for iPadOS 13+ that sends desktop-like UA with Macintosh + Mobile
+        if re.search(r'Macintosh.*Mobile', user_agent, re.IGNORECASE):
+            return False  # Treat as tablet/desktop
+        
         for pattern in cls.TABLET_PATTERNS:
             if re.search(pattern, user_agent, re.IGNORECASE):
                 return False
+        
+        # Then check for mobile patterns
+        for pattern in cls.MOBILE_PATTERNS:
+            if re.search(pattern, user_agent, re.IGNORECASE):
+                return True
         
         # Default: assume desktop/laptop for unknown devices
         return False
@@ -75,15 +81,20 @@ class DeviceDetector:
         if not user_agent:
             return 'desktop'
         
-        # Check mobile first
-        for pattern in cls.MOBILE_PATTERNS:
-            if re.search(pattern, user_agent, re.IGNORECASE):
-                return 'mobile'
+        # Check tablet first (includes iPad)
         
-        # Check tablet
+        # Special case for iPadOS 13+ that sends desktop-like UA with Macintosh + Mobile
+        if re.search(r'Macintosh.*Mobile', user_agent, re.IGNORECASE):
+            return 'tablet'
+        
         for pattern in cls.TABLET_PATTERNS:
             if re.search(pattern, user_agent, re.IGNORECASE):
                 return 'tablet'
+        
+        # Then check mobile
+        for pattern in cls.MOBILE_PATTERNS:
+            if re.search(pattern, user_agent, re.IGNORECASE):
+                return 'mobile'
         
         return 'desktop'
     

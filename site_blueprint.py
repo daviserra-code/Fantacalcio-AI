@@ -43,4 +43,30 @@ def healthz():
 @site_bp.route("/app")
 def app():
     """Route for the mobile app interface - serves the original mobile UI."""
-    return render_template("index.html")
+    from flask import request
+    from flask_login import current_user
+    
+    # Import translations from web_interface
+    T = {
+        "it": {
+            "title": "Fantasy Football Assistant",
+            "subtitle": "Consigli per asta, formazioni e strategie",
+            "participants": "Partecipanti",
+            "budget": "Budget",
+            "reset_chat": "Reset Chat",
+            "welcome": "Ciao! Sono qui per aiutarti con il fantacalcio.",
+            "send": "Invia",
+            "search_placeholder": "Cerca giocatori/club/metriche",
+            "all_roles": "Tutti",
+            "goalkeeper": "Portiere",
+            "defender": "Difensore",
+            "midfielder": "Centrocampista",
+            "forward": "Attaccante",
+        }
+    }
+    
+    lang = request.args.get("lang", "it")
+    return render_template("index.html", 
+                         lang=lang, 
+                         t=T.get(lang, T["it"]), 
+                         user=current_user if current_user.is_authenticated else None)

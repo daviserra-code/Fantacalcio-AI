@@ -141,8 +141,9 @@ T = {
     }
 }
 
-@app.route("/", methods=["GET"])
-def index():
+# Route moved to site_blueprint.py for device detection
+# @app.route("/", methods=["GET"])
+def index_legacy():
     try:
         lang = request.args.get("lang", "it")
         page_id = uuid.uuid4().hex[:16]
