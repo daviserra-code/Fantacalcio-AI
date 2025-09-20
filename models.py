@@ -17,7 +17,6 @@ class User(UserMixin, db.Model):
     profile_image_url = db.Column(db.String, nullable=True)
     
     # Pro subscription fields
-    is_pro = db.Column(db.Boolean, default=False)
     pro_expires_at = db.Column(db.DateTime, nullable=True)
     stripe_customer_id = db.Column(db.String, nullable=True)
 

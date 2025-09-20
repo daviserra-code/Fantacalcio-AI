@@ -50,8 +50,8 @@ def demo_login():
     from datetime import datetime, timedelta
     
     # Use a fixed demo user ID to avoid database issues
-    demo_user_id = "demo_user_123"
-    demo_email = "demo@fantacalcio.ai"
+    demo_user_id = "pro_test_user_456"
+    demo_email = "protest@fantacalcio.ai"
     
     # Try to get existing demo user or create one
     try:
@@ -63,16 +63,18 @@ def demo_login():
             user = User(
                 id=demo_user_id,  # Set explicit ID
                 email=demo_email,
-                first_name="Demo",
-                last_name="User"
+                first_name="Pro",
+                last_name="Tester"
             )
             db.session.add(user)
             db.session.commit()
             
-            # Create a pro subscription for demo user
+        # Always ensure pro subscription exists for test user
+        existing_subscription = Subscription.query.filter_by(user_id=user.id).first()
+        if not existing_subscription:
             subscription = Subscription(
                 user_id=user.id,
-                stripe_subscription_id="demo_subscription",
+                stripe_subscription_id="pro_test_subscription",
                 status="active",
                 current_period_start=datetime.utcnow(),
                 current_period_end=datetime.utcnow() + timedelta(days=365)
@@ -85,15 +87,14 @@ def demo_login():
         user = User()
         user.id = demo_user_id
         user.email = demo_email
-        user.first_name = "Demo"
-        user.last_name = "User"
-        # Note: is_pro is a calculated property, not settable
+        user.first_name = "Pro"
+        user.last_name = "Tester"
     
     # Log in the demo user
     login_user(user, remember=True)
     
-    # Redirect to main page with auth
-    return redirect('/')
+    # Redirect to dashboard to see league features
+    return redirect('/dashboard')
 
 @app.route('/upgrade')
 def upgrade_to_pro():
