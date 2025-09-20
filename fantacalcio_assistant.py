@@ -162,10 +162,26 @@ class FantacalcioAssistant:
             LOG.error("[Assistant] Failed to initialize CorrectionsManager: %s", e)
             self.corrections_manager = None
         
+        # Initialize data containers for lazy loading
+        self.age_index = None
+        self.overrides = None
+        self.guessed_age_index = {}
+        self.roster = None
+        self.filtered_roster = None
+        self._data_loaded = False
+        
+        LOG.info("[Assistant] Fast initialization completed - data will load on first use")
+
+    def _ensure_data_loaded(self):
+        """Lazy load data when first needed"""
+        if self._data_loaded:
+            return
+        
+        LOG.info("[Assistant] Loading data on first use...")
+        
         # Load data
         self.age_index = self._load_age_index(AGE_INDEX_PATH)
         self.overrides = self._load_overrides(AGE_OVERRIDES_PATH)
-        self.guessed_age_index = {}
         self.roster = self._load_and_normalize_roster(ROSTER_JSON_PATH)
         
         # Apply corrections if available
@@ -177,7 +193,8 @@ class FantacalcioAssistant:
         self._apply_ages_to_roster()
         self._make_filtered_roster()
         
-        LOG.info("[Assistant] Initialization completed - %d players loaded", len(self.filtered_roster))
+        self._data_loaded = True
+        LOG.info("[Assistant] Data loading completed - %d players loaded", len(self.filtered_roster))
 
     # ---------- loaders ----------
     def _load_age_index(self, path: str) -> Dict[str,int]:

@@ -898,6 +898,9 @@ def api_statistics():
         team_filter = request.args.get('team', '').strip().lower()
 
         LOG.info(f"[Statistics API] Filters - Role: '{role_filter}', Team: '{team_filter}'")
+        
+        # Ensure data is loaded before accessing roster
+        assistant._ensure_data_loaded()
         LOG.info(f"[Statistics API] Filtered roster size: {len(assistant.filtered_roster)}")
         LOG.info(f"[Statistics API] First 3 players sample: {[{k: v for k, v in p.items() if k in ['name', 'team', 'role', '_fm', '_price']} for p in assistant.filtered_roster[:3]]}")
 

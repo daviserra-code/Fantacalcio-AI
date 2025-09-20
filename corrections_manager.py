@@ -23,7 +23,7 @@ class CorrectionsManager:
 
 
     def add_correction(self, correction_type: str, incorrect_info: str,
-                      correct_info: str, context: str = None):
+                      correct_info: str, context: Optional[str] = None):
         """Add a new correction to the system"""
         if not self.knowledge_manager:
             return "corrections_disabled"
@@ -59,7 +59,7 @@ class CorrectionsManager:
             return None
 
     def add_player_correction(self, player_name: str, field_name: str,
-                            old_value: str, new_value: str, reason: str = None):
+                            old_value: str, new_value: str, reason: Optional[str] = None):
         """Add a player-specific correction"""
         return self.add_correction(
             "player_data",
@@ -262,9 +262,12 @@ class CorrectionsManager:
         """Search corrections using knowledge manager"""
         return self.get_relevant_corrections(query, n_results)
 
-    def get_corrections(self, limit: int = 50) -> List[Dict]:
-        """Get all corrections"""
-        return self.get_recent_corrections(limit)
+    def get_corrections(self, limit: int = 50, persistent_only: bool = True) -> List[Dict]:
+        """Get all corrections - wrapper for compatibility"""
+        if persistent_only:
+            return self.get_corrections_filtered(persistent_only=True)
+        else:
+            return self.get_recent_corrections(limit)
 
     def _init_db(self):
         """Initialize SQLite database for persistent corrections"""
@@ -353,7 +356,7 @@ class CorrectionsManager:
             logger.error(f"Failed to initialize corrections database: {e}")
 
     def add_persistent_correction(self, player_name: str, field_name: str, 
-                                old_value: str, new_value: str, reason: str = None):
+                                old_value: str, new_value: str, reason: Optional[str] = None):
         """Add correction to persistent database"""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -393,7 +396,7 @@ class CorrectionsManager:
             logger.error(f"Failed to get persistent corrections: {e}")
             return []
 
-    def add_correction_to_db(self, player_name: str, correction_type: str, old_value: str = None, new_value: str = None, persistent: bool = True):
+    def add_correction_to_db(self, player_name: str, correction_type: str, old_value: Optional[str] = None, new_value: Optional[str] = None, persistent: bool = True):
         """Add correction to the database, with options for persistence and current season."""
         try:
             with sqlite3.connect(self.db_path) as conn:
@@ -422,7 +425,7 @@ class CorrectionsManager:
             logger.error(f"Failed to add correction: {e}")
             return False
 
-    def get_corrections(self, applied: bool = None, persistent_only: bool = True):
+    def get_corrections_filtered(self, applied: Optional[bool] = None, persistent_only: bool = True):
         """Retrieve corrections, with options to filter by applied status and persistence."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -456,7 +459,7 @@ class CorrectionsManager:
         """Permanently remove a player from all recommendations."""
         try:
             # Add to corrections database with persistent flag
-            success = self.add_correction_to_db(player_name, "REMOVE", None, "EXCLUDED", persistent=True)
+            success = self.add_correction_to_db(player_name, "REMOVE", "ACTIVE", "EXCLUDED", persistent=True)
 
             # Also add to knowledge manager for immediate effect
             if self.knowledge_manager:
@@ -610,7 +613,7 @@ class CorrectionsManager:
     def apply_corrections_to_data(self, players_data: list):
         """Apply all persistent corrections and filters to a list of player dictionaries."""
         excluded_players = set(self.get_excluded_players())
-        corrections = self.get_corrections(persistent_only=True)
+        corrections = self.get_corrections_filtered(persistent_only=True)
 
         # Build correction maps for efficient lookup (case-insensitive)
         team_updates = {}
@@ -733,7 +736,7 @@ class CorrectionsManager:
     def get_corrected_name(self, name: str) -> Optional[str]:
         """Get the corrected name for a player if one exists"""
         try:
-            corrections = self.get_corrections(persistent_only=True)
+            corrections = self.get_corrections_filtered(persistent_only=True)
             for correction in corrections:
                 if len(correction) > 4 and correction[2] == "NAME_UPDATE" and correction[1] == name:
                     return correction[4]  # new_value

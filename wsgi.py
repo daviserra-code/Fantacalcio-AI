@@ -58,24 +58,34 @@ def main():
     """Main entry point for production server"""
     from waitress import serve
     
-    # Get port configuration
+    # Get port configuration - ensure it's properly set
     port = int(os.getenv("PORT", 5000))
     host = "0.0.0.0"
     
+    # Validate port configuration
+    if port <= 0 or port > 65535:
+        logger.error(f"Invalid port configuration: {port}")
+        port = 5000
+    
     logger.info(f"Starting Waitress server on {host}:{port}")
     logger.info(f"Production mode: {is_production()}")
+    logger.info(f"Environment PORT: {os.getenv('PORT', 'not set')}")
+    logger.info("Health check available at /health")
+    logger.info("Readiness check available at /ready")
     
     # Serve with Waitress - production WSGI server
+    # Optimized for fast startup and reliable deployment
     serve(
         application,
         host=host,
         port=port,
-        threads=4,  # Handle multiple concurrent requests
-        cleanup_interval=30,  # Clean up inactive connections
-        connection_limit=100,  # Maximum concurrent connections
-        channel_timeout=120,  # Socket timeout
-        max_request_body_size=10485760,  # 10MB max request size
+        threads=2,  # Reduced for faster startup
+        cleanup_interval=60,  # Increased for better resource management
+        connection_limit=50,  # Reduced for faster startup
+        channel_timeout=60,  # Reduced timeout for faster response
+        max_request_body_size=5242880,  # 5MB max request size
         asyncore_use_poll=True,  # Better for production
+        ident="FantasyFootballAI/1.0",  # Server identification
     )
 
 if __name__ == "__main__":

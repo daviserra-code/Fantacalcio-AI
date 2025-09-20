@@ -5,6 +5,7 @@ from sqlalchemy.orm import DeclarativeBase
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -33,9 +34,22 @@ from site_blueprint import site_bp
 app.register_blueprint(site_bp)
 logging.info("Site blueprint registered")
 
+# Add readiness check endpoint for deployment monitoring
+@app.route('/ready')
+def readiness_check():
+    """Readiness check endpoint for deployment monitoring"""
+    try:
+        # Check database connection
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
+        return {"status": "ready", "timestamp": str(datetime.now())}, 200
+    except Exception as e:
+        return {"status": "not ready", "error": str(e), "timestamp": str(datetime.now())}, 503
+
 # Create tables
 # Need to put this in module-level to make it work with Gunicorn.
 with app.app_context():
     import models  # noqa: F401
+    from datetime import datetime
     db.create_all()
     logging.info("Database tables created")

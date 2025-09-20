@@ -9,7 +9,6 @@ import shutil
 import chromadb
 from chromadb.config import Settings
 from chromadb.utils import embedding_functions
-from sentence_transformers import SentenceTransformer
 
 LOG = logging.getLogger("knowledge_manager")
 logging.basicConfig(
@@ -70,11 +69,33 @@ class KnowledgeManager:
 
         self.collection_name = collection_name
 
+        # Lazy load SentenceTransformer model for faster startup
+        self.model = None
+        self._model_loading = False
+        LOG.info("🚀 KnowledgeManager initialized with lazy model loading")
 
-        # Embeddings
-        LOG.info("🔄 Initializing SentenceTransformer (attempt 1/10)...")
-        self.model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-        LOG.info("✅ SentenceTransformer initialized successfully on attempt 1")
+    def _ensure_model_loaded(self):
+        """Lazy load SentenceTransformer model when needed"""
+        if self.model is not None:
+            return
+        
+        if self._model_loading:
+            # Another thread is loading, wait briefly
+            import time
+            time.sleep(0.1)
+            return
+        
+        self._model_loading = True
+        try:
+            LOG.info("🔄 Loading SentenceTransformer model on-demand...")
+            from sentence_transformers import SentenceTransformer
+            self.model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+            LOG.info("✅ SentenceTransformer model loaded successfully")
+        except Exception as e:
+            LOG.error(f"❌ Failed to load SentenceTransformer model: {e}")
+            self.model = None
+        finally:
+            self._model_loading = False
 
     # ---------- filter normalization ----------
     def _normalize_where(self, where: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -123,6 +144,10 @@ class KnowledgeManager:
             return self.get_by_filter(where=where_n, limit=n_results, include=include)
 
         # query vettoriale
+        self._ensure_model_loaded()
+        if self.model is None:
+            LOG.warning("SentenceTransformer model not available, falling back to text search")
+            return self.get_by_filter(where=where_n, limit=n_results, include=include)
         emb = self.model.encode([text]).tolist()
         # Chroma 0.5+ usa 'query' in collection
         res = self.collection.query(
