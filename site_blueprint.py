@@ -44,10 +44,9 @@ def _render_app_interface():
 @site_bp.route("/")
 def home():
     """
-    Unified homepage that serves the same working app interface for all devices.
-    Both mobile and desktop get identical functionality.
+    Desktop homepage with custom design but working search functionality.
     """
-    return _render_app_interface()
+    return render_template("index_desktop.html")
 
 # Rotte comode ma non invasive: le esponiamo SOLO se le monti.
 @site_bp.route("/docs")

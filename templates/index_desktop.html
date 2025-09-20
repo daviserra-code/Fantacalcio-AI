@@ -182,11 +182,15 @@
     });
 
     function setupEventListeners() {
-        // Search functionality
+        // Search functionality with debouncing
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
+            let searchTimeout;
             searchInput.addEventListener('input', function() {
-                filterAndDisplayPlayers();
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterAndDisplayPlayers();
+                }, 300); // Wait 300ms after user stops typing
             });
         }
 
@@ -224,8 +228,23 @@
     }
 
     async function loadPlayersData() {
+        await searchPlayers(); // Load initial data
+    }
+
+    async function searchPlayers() {
         try {
-            const response = await fetch('/api/statistics');
+            // Build query parameters
+            const searchQuery = document.getElementById('searchInput')?.value || '';
+            const isU21Active = document.getElementById('u21Toggle')?.classList.contains('active') || false;
+            const isFormActive = document.getElementById('formToggle')?.classList.contains('active') || false;
+            
+            const params = new URLSearchParams();
+            if (searchQuery) params.append('search', searchQuery);
+            if (isU21Active) params.append('u21', 'true');
+            if (isFormActive) params.append('in_forma', 'true');
+            params.append('limit', '20'); // Show top 20 results
+            
+            const response = await fetch(`/api/players?${params.toString()}`);
             const data = await response.json();
             
             // Hide loading indicator
@@ -240,27 +259,10 @@
                 table.style.display = 'table';
             }
 
-            // Process and store data
-            playersData = [];
-            if (data.role_statistics) {
-                // Extract all players from role statistics
-                Object.keys(data.role_statistics).forEach(role => {
-                    if (data.role_statistics[role].top_players) {
-                        data.role_statistics[role].top_players.forEach(player => {
-                            playersData.push({
-                                name: player.name,
-                                role: role,
-                                team: player.team,
-                                fantamedia: player.fantamedia,
-                                price: player.price
-                            });
-                        });
-                    }
-                });
-            }
-
-            displayPlayers(playersData);
-            updatePlayersCount(playersData.length);
+            // Use the players data directly
+            const players = data.players || [];
+            displayPlayers(players);
+            updatePlayersCount(players.length, data.total || 0);
 
         } catch (error) {
             console.error('Error loading players data:', error);
@@ -272,44 +274,17 @@
     }
 
     function filterAndDisplayPlayers() {
-        let filteredData = [...playersData];
-        
-        // Filter by role
-        if (currentRole !== 'all') {
-            filteredData = filteredData.filter(player => player.role === currentRole);
-        }
-        
-        // Filter by search query
-        const searchQuery = document.getElementById('searchInput')?.value.toLowerCase() || '';
-        if (searchQuery) {
-            filteredData = filteredData.filter(player => 
-                player.name.toLowerCase().includes(searchQuery) ||
-                player.team.toLowerCase().includes(searchQuery) ||
-                player.role.toLowerCase().includes(searchQuery)
-            );
-        }
-
-        // Apply toggle filters (simplified for now)
-        const isU21Active = document.getElementById('u21Toggle')?.classList.contains('active') || false;
-        const isFormActive = document.getElementById('formToggle')?.classList.contains('active') || false;
-
-        // Sort by fantamedia descending
-        filteredData.sort((a, b) => (b.fantamedia || 0) - (a.fantamedia || 0));
-
-        displayPlayers(filteredData);
-        updatePlayersCount(filteredData.length);
+        // Instead of filtering locally, make a new API call with current filters
+        searchPlayers();
     }
 
     function displayPlayers(players) {
         const tbody = document.getElementById('playersTableBody');
         if (!tbody) return;
-
-        // Limit to top 10 for better performance
-        const displayPlayers = players.slice(0, 10);
         
-        tbody.innerHTML = displayPlayers.map(player => `
+        tbody.innerHTML = players.map(player => `
             <tr>
-                <td><strong>${player.name}</strong></td>
+                <td><strong>${player.display_name || player.name}</strong></td>
                 <td><span style="padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold; color: white; background: ${getRoleColor(player.role)}">${player.role}</span></td>
                 <td>${player.team}</td>
                 <td>${player.fantamedia || 0}</td>
@@ -318,10 +293,10 @@
         `).join('');
     }
 
-    function updatePlayersCount(count) {
+    function updatePlayersCount(displayed, total) {
         const countElement = document.getElementById('playersCount');
         if (countElement) {
-            countElement.textContent = `Visualizzati ${Math.min(count, 10)} di ${count} giocatori trovati - dati reali da FantacalcioAI`;
+            countElement.textContent = `Visualizzati ${displayed} di ${total} giocatori trovati - dati reali da FantacalcioAI`;
         }
     }
 
