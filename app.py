@@ -28,6 +28,11 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # No need to call db.init_app(app) here, it's already done in the constructor.
 db = SQLAlchemy(app, model_class=Base)
 
+# Register blueprints
+from site_blueprint import site_bp
+app.register_blueprint(site_bp)
+logging.info("Site blueprint registered")
+
 # Create tables
 # Need to put this in module-level to make it work with Gunicorn.
 with app.app_context():
