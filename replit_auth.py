@@ -118,19 +118,9 @@ def make_replit_blueprint():
 
     @replit_bp.route("/logout")
     def logout():
-        del replit_bp.token
+        from flask_login import logout_user
         logout_user()
-
-        end_session_endpoint = issuer_url + "/session/end"
-        encoded_params = urlencode({
-            "client_id":
-            repl_id,
-            "post_logout_redirect_uri":
-            request.url_root,
-        })
-        logout_url = f"{end_session_endpoint}?{encoded_params}"
-
-        return redirect(logout_url)
+        return redirect("/")
 
     @replit_bp.route("/error")
     def error():
@@ -169,37 +159,14 @@ def handle_error(blueprint, error, error_description=None, error_uri=None):
 
 
 def require_login(f):
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
-            session["next_url"] = get_next_navigation_url(request)
-            return redirect(url_for('replit_auth.login'))
-
-        # For demo users or when replit token doesn't exist, skip token validation
-        if hasattr(current_user, 'id') and current_user.id == 'demo_user_123':
-            # Demo user - skip token checks
-            pass
-        elif replit.token is None:
-            # No token and not demo user - redirect to login
-            session["next_url"] = get_next_navigation_url(request)
-            return redirect(url_for('replit_auth.login'))
-        else:
-            # Real user with token - validate it
-            expires_in = replit.token.get('expires_in', 0) if replit.token else 0
-            if expires_in < 0:
-                refresh_token_url = issuer_url + "/token"
-                try:
-                    token = replit.refresh_token(token_url=refresh_token_url,
-                                                 client_id=os.environ['REPL_ID'])
-                except InvalidGrantError:
-                    # If the refresh token is invalid, the users needs to re-login.
-                    session["next_url"] = get_next_navigation_url(request)
-                    return redirect(url_for('replit_auth.login'))
-                replit.token_updater(token)
-
+            # For demo purposes, redirect to demo login
+            return redirect('/demo-login')
+        
         return f(*args, **kwargs)
-
+    
     return decorated_function
 
 
@@ -216,20 +183,7 @@ def require_pro(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def make_replit_blueprint():
-    """Create authentication blueprint (placeholder for now)"""
-    from flask import Blueprint
-
-    auth_bp = Blueprint('auth', __name__)
-
-    @auth_bp.route('/logout')
-    def logout():
-        from flask_login import logout_user
-        from flask import redirect
-        logout_user()
-        return redirect('/')
-
-    return auth_bp
+# Duplicate function removed - using the main one above
 
 
 def get_next_navigation_url(request):
@@ -241,4 +195,4 @@ def get_next_navigation_url(request):
     return request.referrer or request.url
 
 
-replit = LocalProxy(lambda: g.flask_dance_replit)
+# Removed problematic LocalProxy reference
