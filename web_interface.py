@@ -19,7 +19,7 @@ from rate_limiter import RateLimiter
 
 # Import authentication components
 from app import app, db
-from replit_auth import require_login, require_pro, make_replit_blueprint
+from replit_auth import require_login, require_pro, make_replit_blueprint, init_login_manager
 from models import User, UserLeague
 
 logging.basicConfig(
@@ -28,7 +28,37 @@ logging.basicConfig(
 )
 LOG = logging.getLogger("web_interface")
 
-# Auth blueprint is registered in routes.py
+# Initialize Flask-Login if not already initialized
+try:
+    # Check if login_manager is already initialized
+    if not hasattr(app, 'login_manager'):
+        LOG.info("Initializing Flask-Login in web_interface.py")
+        init_login_manager(app)
+    else:
+        LOG.info("Flask-Login already initialized")
+except Exception as e:
+    LOG.error(f"Error initializing Flask-Login: {e}")
+
+# Register authentication blueprint if not already registered
+try:
+    # Check if auth blueprint is already registered
+    auth_blueprint_exists = any(bp.name == 'replit_auth' for bp in app.blueprints.values())
+    if not auth_blueprint_exists:
+        LOG.info("Registering authentication blueprint in web_interface.py")
+        app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
+    else:
+        LOG.info("Authentication blueprint already registered")
+except Exception as e:
+    LOG.error(f"Error registering authentication blueprint: {e}")
+
+# Import routes to ensure all routes are registered
+try:
+    import routes  # noqa: F401
+    LOG.info("Routes imported successfully")
+except ImportError as e:
+    LOG.warning(f"Could not import routes: {e}")
+except Exception as e:
+    LOG.error(f"Error importing routes: {e}")
 
 # Initialize rate limiter (10 requests per hour for deployed app)
 rate_limiter = RateLimiter(max_requests=10, time_window=3600)
