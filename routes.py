@@ -35,6 +35,12 @@ def dashboard():
 def landing():
     """Landing page for new users"""
     lang = request.args.get("lang", "it")
+    T = {
+        "it": {
+            "title": "Fantasy Football Assistant",
+            "subtitle": "Consigli per asta, formazioni e strategie"
+        }
+    }
     return render_template("landing.html", lang=lang, t=T.get(lang, T["it"]))
 
 @app.route('/demo-login')

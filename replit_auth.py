@@ -165,7 +165,13 @@ def require_login(f):
             session["next_url"] = get_next_navigation_url(request)
             return redirect(url_for('replit_auth.login'))
 
-        expires_in = replit.token.get('expires_in', 0)
+        # Check if we have a valid token
+        if replit.token is None:
+            # No token - user needs to login
+            session["next_url"] = get_next_navigation_url(request)
+            return redirect(url_for('demo_login'))  # Use demo login for now
+        
+        expires_in = replit.token.get('expires_in', 0) if replit.token else 0
         if expires_in < 0:
             refresh_token_url = issuer_url + "/token"
             try:
@@ -174,7 +180,7 @@ def require_login(f):
             except InvalidGrantError:
                 # If the refresh token is invalid, the users needs to re-login.
                 session["next_url"] = get_next_navigation_url(request)
-                return redirect(url_for('replit_auth.login'))
+                return redirect(url_for('demo_login'))  # Use demo login for now
             replit.token_updater(token)
 
         return f(*args, **kwargs)

@@ -57,15 +57,17 @@
     .header h1{font-size:1.25rem;margin-bottom:6px}
     .header p{opacity:.9;font-size:.9rem}
     .header .actions{
-      position:absolute;top:12px;right:12px;display:flex;gap:8px
+      position:absolute;top:8px;right:8px;display:flex;
+      flex-wrap:wrap;gap:4px;max-width:200px;justify-content:flex-end;
     }
     .header-btn{
       background:rgba(255,255,255,.2);border:0;color:#fff;
-      padding:6px 10px;border-radius:14px;cursor:pointer;font-size:.8rem;
-      text-decoration:none;
+      padding:4px 8px;border-radius:12px;cursor:pointer;font-size:.75rem;
+      text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:4px;
     }
     .header-btn.active{background:rgba(255,255,255,.4)}
     .header-btn:hover{background:rgba(255,255,255,.3)}
+    .header-btn i{font-size:.7rem;}
 
     /* ====== TABS: SEMPRE SCURI ====== */
     .tabs{
