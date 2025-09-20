@@ -86,59 +86,17 @@ class RateLimiter:
     
     def is_allowed(self, request) -> bool:
         """Check if request is allowed based on rate limits"""
-        # Skip rate limiting in development
-        if not self.is_deployed:
-            LOG.debug("Rate limiting disabled in development environment")
-            return True
-            
-        client_key = self._get_client_key(request)
-        current_time = time.time()
-        
-        # Clean old requests
-        self._cleanup_old_requests(client_key)
-        
-        # Check if under limit
-        client_requests = self.requests[client_key]
-        requests_count = len(client_requests)
-        
-        if requests_count >= self.max_requests:
-            LOG.warning(f"Rate limit exceeded for client {client_key}: {requests_count}/{self.max_requests} requests in window")
-            # Log the timestamps of existing requests for debugging
-            if client_requests:
-                oldest = min(client_requests)
-                newest = max(client_requests)
-                window_used = newest - oldest
-                LOG.warning(f"Client {client_key} request window: {window_used:.1f}s (oldest: {oldest}, newest: {newest})")
-            return False
-        
-        # Add current request
-        client_requests.append(current_time)
-        LOG.info(f"Request allowed for client {client_key}: {requests_count + 1}/{self.max_requests}")
+        # Rate limiting completely disabled
+        LOG.debug("Rate limiting disabled for all environments")
         return True
     
     def get_remaining_requests(self, request) -> int:
         """Get number of remaining requests for client"""
-        if not self.is_deployed:
-            return self.max_requests  # Unlimited in dev
-            
-        client_key = self._get_client_key(request)
-        self._cleanup_old_requests(client_key)
-        
-        used_requests = len(self.requests[client_key])
-        return max(0, self.max_requests - used_requests)
+        return 999999  # Unlimited for all environments
     
     def get_reset_time(self, request) -> Optional[int]:
         """Get timestamp when rate limit resets"""
-        if not self.is_deployed:
-            return None
-            
-        client_key = self._get_client_key(request)
-        client_requests = self.requests[client_key]
-        
-        if not client_requests:
-            return None
-            
-        return int(client_requests[0] + self.time_window)
+        return None  # No rate limits, so no reset time
     
     def get_status(self) -> dict:
         """Get current rate limiter status"""
