@@ -1,32 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="176" height="48" viewBox="0 0 176 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">FantacalcioAI - Logo</title>
-  <desc id="desc">Wordmark con monogramma a scudo, pallone e nodi AI orbitanti</desc>
+<svg width="300" height="48" viewBox="0 0 300 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">FantacalcioAI — Logo</title>
+  <desc id="desc">Wordmark with shield monogram, ball panels and AI orbits; expanded width and lighter title weight for readability.</desc>
 
+  <!-- Monogram (shield + ball) -->
   <g transform="translate(4,4)">
+    <!-- Shield -->
     <path d="M20 0 L38 6 C38 20 31 31 20 40 C9 31 2 20 2 6 L20 0Z" fill="#0A84FF"/>
-    <circle cx="20" cy="18" r="9" fill="white"/>
+    <!-- Ball panels -->
+    <circle cx="20" cy="18" r="9" fill="#FFFFFF"/>
     <polygon points="20,11 24,14 23,19 17,19 16,14" fill="#0A84FF"/>
     <circle cx="15.5" cy="16.5" r="2" fill="#0A84FF"/>
     <circle cx="24.5" cy="16.5" r="2" fill="#0A84FF"/>
     <circle cx="20" cy="21.5" r="2" fill="#0A84FF"/>
+    <!-- AI orbits -->
     <path d="M9,12 C20,3 31,10 30,19" stroke="#72E3A6" stroke-width="1.5" fill="none"/>
     <circle cx="9" cy="12" r="2" fill="#72E3A6"/>
-    <circle cx="30" cy="19" r="2" fill="#72E3A6"/>
+    <circle cx="30" cy="19" r="1.8" fill="#72E3A6"/>
   </g>
 
+  <!-- Wordmark -->
   <g transform="translate(52,12)">
-    <text x="0" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-          font-size="18" font-weight="700" fill="#0A0A0B" letter-spacing="0.2">
+    <!-- Lighter title weight (600 instead of 700) -->
+    <text x="0" y="16"
+          font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+          font-size="18" font-weight="600" fill="#0A0A0B" letter-spacing="0.2">
       Fantacalcio
     </text>
+
+    <!-- Separator + AI accent -->
     <rect x="111" y="2" width="4" height="22" rx="2" fill="#0A84FF"/>
-    <text x="118" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+    <text x="118" y="16"
+          font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
           font-size="18" font-weight="800" fill="#0A84FF" letter-spacing="0.4">
       AI
     </text>
-    <text x="0" y="32" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-          font-size="10.5" fill="#4B5563" letter-spacing="0.3">
+
+    <!-- Tagline: canvas widened so nothing gets cut -->
+    <text x="0" y="32"
+          font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
+          font-size="10.5" font-weight="400" fill="#4B5563" letter-spacing="0.3">
       insights • aste • consigli in tempo reale
     </text>
   </g>
