@@ -12,7 +12,7 @@ from flask_dance.consumer import (
     oauth_error,
 )
 from flask_dance.consumer.storage import BaseStorage
-from flask_login import LoginManager, login_user, logout_user, current_user
+from flask_login import LoginManager, login_required, current_user
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from sqlalchemy.exc import NoResultFound
 from werkzeug.local import LocalProxy
@@ -20,7 +20,18 @@ from werkzeug.local import LocalProxy
 from app import app, db
 from models import OAuth, User
 
-login_manager = LoginManager(app)
+# Initialize login manager
+login_manager = LoginManager()
+
+def init_login_manager(app):
+    """Initialize Flask-Login with the app"""
+    login_manager.init_app(app)
+    login_manager.login_view = 'auth.login'
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        from models import User
+        return User.query.get(user_id)
 
 
 @login_manager.user_loader
@@ -95,7 +106,7 @@ def make_replit_blueprint():
         scope=["openid", "profile", "email", "offline_access"],
         storage=UserSessionStorage(),
     )
-    
+
 
     @replit_bp.before_app_request
     def set_applocal_session():
@@ -193,21 +204,32 @@ def require_login(f):
 
 
 def require_pro(f):
-    """Decorator to require pro subscription for route access"""
+    """Decorator to require pro subscription"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        from datetime import datetime
-        
         if not current_user.is_authenticated:
-            session["next_url"] = get_next_navigation_url(request)
-            return redirect(url_for('replit_auth.login'))
-        
-        if not current_user.is_pro or (current_user.pro_expires_at and current_user.pro_expires_at < datetime.now()):
-            return redirect(url_for('upgrade_to_pro'))
-        
+            return jsonify({'error': 'Authentication required'}), 401
+
+        if not current_user.is_pro:
+            return jsonify({'error': 'Pro subscription required'}), 403
+
         return f(*args, **kwargs)
-    
     return decorated_function
+
+def make_replit_blueprint():
+    """Create authentication blueprint (placeholder for now)"""
+    from flask import Blueprint
+
+    auth_bp = Blueprint('auth', __name__)
+
+    @auth_bp.route('/logout')
+    def logout():
+        from flask_login import logout_user
+        from flask import redirect
+        logout_user()
+        return redirect('/')
+
+    return auth_bp
 
 
 def get_next_navigation_url(request):

@@ -8,6 +8,11 @@ if 'SESSION_SECRET' not in os.environ:
 
 try:
     from app import app
+    from replit_auth import init_login_manager
+    
+    # Initialize Flask-Login
+    init_login_manager(app)
+    
     import routes  # noqa: F401
     import web_interface  # noqa: F401
     

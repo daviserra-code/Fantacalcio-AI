@@ -4,7 +4,7 @@ import json
 import os
 import stripe
 from flask import session, request, jsonify, render_template, redirect, url_for, flash
-from flask_login import current_user
+from flask_login import current_user, login_user
 from app import app, db
 from replit_auth import require_login, require_pro, make_replit_blueprint
 from models import User, UserLeague, Subscription
@@ -46,7 +46,6 @@ def landing():
 @app.route('/demo-login')
 def demo_login():
     """Demo login for testing (temporary)"""
-    from flask_login import login_user
     from datetime import datetime, timedelta
     
     # Use a fixed demo user ID to avoid database issues
