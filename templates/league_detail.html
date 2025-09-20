@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ league.league_name }} - Fantasy Football Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .rule-section {
+            background: #fff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
+        }
+        .edit-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-futbol me-2"></i>Fantasy Football Assistant
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-arrow-left me-2"></i>Torna al Dashboard
+                </a>
+                <a class="nav-link" href="/auth/logout">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-trophy me-2"></i>{{ league.league_name }}</h2>
+                    <button class="btn btn-primary edit-btn" onclick="editLeague()">
+                        <i class="fas fa-edit me-2"></i>Modifica Regole
+                    </button>
+                </div>
+
+                <!-- League Stats Overview -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h5>{{ league_data.get('league_info', {}).get('participants', 'N/A') }}</h5>
+                                <small class="text-muted">Partecipanti</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-euro-sign fa-2x text-success mb-2"></i>
+                                <h5>€{{ league_data.get('budget_rules', {}).get('starting_budget', 'N/A') }}</h5>
+                                <small class="text-muted">Budget Iniziale</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar fa-2x text-warning mb-2"></i>
+                                <h5>{{ league.created_at.strftime('%d/%m/%Y') }}</h5>
+                                <small class="text-muted">Data Creazione</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card stat-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-sync fa-2x text-info mb-2"></i>
+                                <h5>{{ league.updated_at.strftime('%d/%m/%Y') }}</h5>
+                                <small class="text-muted">Ultimo Aggiornamento</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rules Sections -->
+                <div class="row">
+                    <div class="col-lg-6 mb-4">
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-info-circle me-2"></i>Informazioni Lega</h5>
+                            {% set league_info = league_data.get('league_info', {}) %}
+                            <p><strong>Nome:</strong> {{ league_info.get('name', league.league_name) }}</p>
+                            <p><strong>Partecipanti:</strong> {{ league_info.get('participants', 'N/A') }}</p>
+                            <p><strong>Descrizione:</strong> {{ league_info.get('description', 'Nessuna descrizione') }}</p>
+                        </div>
+
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-users me-2"></i>Composizione Rosa</h5>
+                            {% set roster = league_data.get('roster_composition', {}) %}
+                            <div class="row">
+                                <div class="col-6">
+                                    <p><strong>Portieri:</strong> {{ roster.get('goalkeepers', 'N/A') }}</p>
+                                    <p><strong>Difensori:</strong> {{ roster.get('defenders', 'N/A') }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <p><strong>Centrocampisti:</strong> {{ roster.get('midfielders', 'N/A') }}</p>
+                                    <p><strong>Attaccanti:</strong> {{ roster.get('forwards', 'N/A') }}</p>
+                                </div>
+                            </div>
+                            <p><strong>Max Giocatori:</strong> {{ roster.get('max_players', 'N/A') }}</p>
+                        </div>
+
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-euro-sign me-2"></i>Regole Budget</h5>
+                            {% set budget = league_data.get('budget_rules', {}) %}
+                            <p><strong>Budget Iniziale:</strong> €{{ budget.get('starting_budget', 'N/A') }}</p>
+                            <p><strong>Incremento Asta:</strong> €{{ budget.get('auction_budget_increment', 'N/A') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-4">
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-gavel me-2"></i>Regole Asta</h5>
+                            {% set auction = league_data.get('auction_rules', {}) %}
+                            <p><strong>Tipo Asta:</strong> {{ auction.get('auction_type', 'N/A') }}</p>
+                            <p><strong>Max Rilanci:</strong> {{ auction.get('max_bids_per_player', 'N/A') }}</p>
+                        </div>
+
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-tactics me-2"></i>Formazioni</h5>
+                            {% set formations = league_data.get('formation_rules', {}) %}
+                            <p><strong>Formazioni Consentite:</strong></p>
+                            <ul>
+                                {% for formation in formations.get('allowed_formations', []) %}
+                                    <li>{{ formation }}</li>
+                                {% endfor %}
+                            </ul>
+                            <p><strong>Min Giocatori:</strong> {{ formations.get('min_players_per_formation', 'N/A') }}</p>
+                        </div>
+
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-star me-2"></i>Sistema Punteggi</h5>
+                            {% set scoring = league_data.get('scoring_system', {}) %}
+                            <p><strong>Gol:</strong> {{ scoring.get('goal', 'N/A') }} punti</p>
+                            <p><strong>Assist:</strong> {{ scoring.get('assist', 'N/A') }} punti</p>
+                            <p><strong>Porta Inviolata (P):</strong> {{ scoring.get('clean_sheet_goalkeeper', 'N/A') }} punti</p>
+                            <p><strong>Porta Inviolata (D):</strong> {{ scoring.get('clean_sheet_defender', 'N/A') }} punti</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Rules and Notes -->
+                {% if league_data.get('special_rules') or league_data.get('penalties') %}
+                <div class="row">
+                    <div class="col-12">
+                        {% if league_data.get('special_rules') %}
+                        <div class="rule-section p-4 mb-4">
+                            <h5><i class="fas fa-magic me-2"></i>Regole Speciali</h5>
+                            {% set special = league_data.get('special_rules', {}) %}
+                            <p><strong>Bonus Assist:</strong> {{ 'Sì' if special.get('bonus_assist') else 'No' }}</p>
+                            <p><strong>Bonus Porta Inviolata:</strong> {{ 'Sì' if special.get('bonus_clean_sheet') else 'No' }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if league_data.get('penalties') %}
+                        <div class="rule-section p-4">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Penalità</h5>
+                            {% set penalties = league_data.get('penalties', {}) %}
+                            <p><strong>Multa Ritardo Pagamento:</strong> €{{ penalties.get('late_payment_fine', 'N/A') }}</p>
+                            <p><strong>Penalità Assenza Asta:</strong> €{{ penalties.get('no_show_auction_penalty', 'N/A') }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editLeague() {
+            // For now, just redirect back to dashboard
+            // In the future, this could open an edit modal or navigate to an edit page
+            alert('Funzionalità di modifica in arrivo! Per ora puoi gestire le regole dalla sezione "Regole Lega" nella homepage.');
+            window.location.href = '/?tab=league-rules';
+        }
+    </script>
+</body>
+</html>

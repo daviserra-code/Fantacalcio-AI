@@ -352,6 +352,26 @@ def delete_league(league_id):
     
     return jsonify({'status': 'deleted'})
 
+@app.route('/league/<int:league_id>')
+@require_login
+def league_detail(league_id):
+    """Display league detail page"""
+    league = UserLeague.query.filter_by(
+        id=league_id,
+        user_id=current_user.id
+    ).first()
+    
+    if not league:
+        flash('League not found', 'error')
+        return redirect('/dashboard')
+    
+    league_data = json.loads(league.league_data) if league.league_data else {}
+    
+    return render_template('league_detail.html', 
+                         league=league,
+                         league_data=league_data,
+                         user=current_user)
+
 @app.route('/api/leagues/<int:league_id>/import', methods=['POST'])
 @require_login
 @require_pro
