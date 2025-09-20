@@ -53,12 +53,21 @@
       padding:15px 20px;
       position:relative;
       z-index:6;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      min-height:70px;
+    }
+    .header .content{
+      flex:1;
+      margin-right:20px;
     }
     .header h1{font-size:1.25rem;margin-bottom:6px}
     .header p{opacity:.9;font-size:.9rem}
     .header .actions{
-      position:absolute;top:8px;right:8px;display:flex;
+      display:flex;
       flex-wrap:wrap;gap:3px;max-width:250px;justify-content:flex-end;
+      flex-shrink:0;
     }
     .header-btn{
       background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5);color:#fff;
@@ -231,6 +240,24 @@
     /* Mobile tweaks */
     @media (max-width:768px){
       .container{border-radius:0;min-height:100vh}
+      .header{
+        flex-direction:column;
+        align-items:stretch;
+        min-height:auto;
+        padding:12px 16px;
+      }
+      .header .content{
+        margin-right:0;
+        margin-bottom:10px;
+      }
+      .header .actions{
+        max-width:100%;
+        justify-content:center;
+      }
+      .header-btn{
+        padding:4px 8px;
+        font-size:.75rem;
+      }
       .tabs{overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch}
       .tabs .swipe-hint{display:block}
       .tab{min-width:100px; flex-shrink:0}
@@ -808,6 +835,10 @@
 
   <div class="container">
     <div class="header">
+      <div class="content">
+        <h1>🏆 {{ t.title }}</h1>
+        <p>{{ t.subtitle }}</p>
+      </div>
       <div class="actions">
         {% if user and user.is_authenticated %}
           <a href="/dashboard" class="header-btn">
@@ -828,8 +859,6 @@
         <button onclick="openModal('analyticsModal')" class="header-btn">📊</button>
         <button onclick="openModal('comparisonModal')" class="header-btn">⚖️</button>
       </div>
-      <h1>🏆 {{ t.title }}</h1>
-      <p>{{ t.subtitle }}</p>
     </div>
 
     <!-- TAB BAR (sempre scura) -->
