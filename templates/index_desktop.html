@@ -337,6 +337,34 @@
         document.body.appendChild(overlay);
         document.body.appendChild(resultDiv);
     }
+
+    // Add quick actions when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find the search card element and add quick actions after it
+        const searchSection = document.querySelector('section:first-of-type .card.pad');
+        if (searchSection) {
+            const quickActionsHtml = \`
+                <div style="margin-top: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; color: white;">
+                    <h3 style="margin-bottom: 16px; color: white; display: flex; align-items: center; gap: 8px;">🚀 Azioni Rapide</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <button onclick="showQuickResult('🎯 Top Attaccanti Budget', 'I migliori attaccanti per budget 150 crediti sono: Lautaro Martinez (Inter, 380 FM), Moise Kean (Fiorentina, 375 FM), Romelu Lukaku (Napoli, 341 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🎯 Top Attaccanti Budget</button>
+                        <button onclick="showQuickResult('⚽ Top Centrocampisti', 'I migliori centrocampisti per budget 120 sono: Riccardo Orsolini (Bologna, 220 FM), Christian Pulisic (Milan, 216 FM), Mattia Zaccagni (Lazio, 203 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Top Centrocampisti</button>
+                        <button onclick="showQuickResult('🛡️ Top Difensori', 'I migliori difensori per budget 100 sono: Denzel Dumfries (Inter, 100 FM), Federico Dimarco (Inter, 96 FM), Robin Gosens (Fiorentina, 86 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🛡️ Top Difensori</button>
+                        <button onclick="showQuickResult('🥅 Top Portieri', 'I migliori portieri per budget 40 sono: Alex Meret (Napoli, 92 FM), Michele Di Gregorio (Juventus, 83 FM), Mile Svilar (Roma, 82 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🥅 Top Portieri</button>
+                        <button onclick="showQuickResult('⚽ Formazione 3-5-2', 'Formazione 3-5-2 con budget 200: Portiere budget 15, 3 difensori budget 45, 5 centrocampisti budget 100, 2 attaccanti budget 40')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Formazione 3-5-2</button>
+                        <button onclick="showQuickResult('⚽ Formazione 4-3-3', 'Formazione 4-3-3 con budget 250: Portiere budget 15, 4 difensori budget 80, 3 centrocampisti budget 90, 3 attaccanti budget 65')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">⚽ Formazione 4-3-3</button>
+                        <button onclick="showQuickResult('👶 U21 Difensori', 'I migliori difensori Under 21: Jonas Rouhi (Juventus, 21 anni), Andrea Cambiaso (Juventus, 20 anni), diversi prospetti emergenti')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Difensori</button>
+                        <button onclick="showQuickResult('👶 U21 Centrocampisti', 'I migliori centrocampisti Under 21: Kenan Yıldız (Juventus, 20 anni), Francisco Conceição (Juventus, 22 anni), diversi prospetti emergenti')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Centrocampisti</button>
+                        <button onclick="showQuickResult('👶 U21 Attaccanti', 'I migliori attaccanti Under 21: Kenan Yıldız (Juventus, 20 anni), Francesco Camarda (Milan, 16 anni), diversi giovani talenti')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">👶 U21 Attaccanti</button>
+                        <button onclick="showQuickResult('🏆 Strategia Asta', 'Strategia consigliata: concentra budget su 2-3 top player, risparmia su portiere e panchina, punta sui giovani U21 per il futuro')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">🏆 Strategia Asta</button>
+                        <button onclick="showQuickResult('📈 Acquisti Juventus', 'Ultimi acquisti Juventus: Juan David Cabal (278 FM), Kenan Yıldız confermato (235 FM), Francisco Conceição (91 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">📈 Acquisti Juventus</button>
+                        <button onclick="showQuickResult('📈 Acquisti Inter', 'Ultimi acquisti Inter: confermati Lautaro Martinez (380 FM), Marcus Thuram (318 FM), Denzel Dumfries (100 FM)')" style="background: linear-gradient(135deg,#00c851,#007e33); border: 2px solid #00c851; border-radius: 14px; padding: 10px 14px; font-size: 0.85rem; color: white; font-weight: 600; cursor: pointer; transition: transform 0.15s ease;">📈 Acquisti Inter</button>
+                    </div>
+                </div>
+            \`;
+            searchSection.insertAdjacentHTML('afterend', quickActionsHtml);
+        }
+    });
   </script>
 </body>
 </html>
