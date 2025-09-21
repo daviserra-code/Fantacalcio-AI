@@ -264,29 +264,43 @@ def sync_subscription():
         print(f"Subscription sync error: {e}")
         return jsonify({'error': 'Sync failed'}), 500
 
-@app.route('/webhook/stripe', methods=['POST'])
+@app.route('/webhook/stripe', methods=['POST', 'GET'])
 def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
+    # Handle GET requests for webhook verification
+    if request.method == 'GET':
+        return jsonify({
+            'status': 'Stripe webhook endpoint active',
+            'url': request.url,
+            'stripe_configured': STRIPE_CONFIGURED,
+            'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
+        })
+    
+    # Handle POST requests (actual webhooks)
     if not STRIPE_CONFIGURED:
-        print("Webhook received but Stripe not configured")
+        print(f"Webhook received but Stripe not configured - URL: {request.url}")
         return jsonify({'error': 'Stripe not configured'}), 400
         
     payload = request.get_data()
     sig_header = request.headers.get('Stripe-Signature')
     webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
     
+    print(f"Webhook POST received at: {request.url}")
+    print(f"Signature header present: {bool(sig_header)}")
+    print(f"Webhook secret configured: {bool(webhook_secret)}")
+    
     if not webhook_secret:
-        print("WARNING: STRIPE_WEBHOOK_SECRET not configured, using dev fallback")
-        webhook_secret = 'dev-webhook-secret'
+        print("ERROR: STRIPE_WEBHOOK_SECRET not configured!")
+        return jsonify({'error': 'Webhook secret not configured'}), 400
     
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
-        print(f"Webhook received: {event['type']}")
+        print(f"✅ Webhook verified successfully: {event['type']}")
     except ValueError as e:
-        print(f"Webhook error - Invalid payload: {e}")
+        print(f"❌ Webhook error - Invalid payload: {e}")
         return jsonify({'error': 'Invalid payload'}), 400
     except stripe.error.SignatureVerificationError as e:
-        print(f"Webhook error - Invalid signature: {e}")
+        print(f"❌ Webhook error - Invalid signature: {e}")
         return jsonify({'error': 'Invalid signature'}), 400
     
     event_type = event['type']
