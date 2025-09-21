@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, render_template
+from device_detector import DeviceDetector
 
 # Blueprint isolato per la landing "website-like".
 # Non tocca la tua logica esistente: basta registrarlo in app.py / server.py.
@@ -44,9 +45,15 @@ def _render_app_interface():
 @site_bp.route("/")
 def home():
     """
-    Desktop homepage with custom design but working search functionality.
+    Smart homepage that detects device type and serves appropriate interface.
+    Mobile devices get the mobile app, desktop/tablets get the desktop homepage.
     """
-    return render_template("index_desktop.html")
+    if DeviceDetector.is_mobile_device():
+        # Mobile devices get the mobile app interface
+        return _render_app_interface()
+    else:
+        # Desktop and tablets get the desktop homepage
+        return render_template("index_desktop.html")
 
 # Rotte comode ma non invasive: le esponiamo SOLO se le monti.
 @site_bp.route("/docs")
