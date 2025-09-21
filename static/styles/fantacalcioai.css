@@ -17,7 +17,9 @@
 body{margin:0;font-family:var(--fcai-font);color:var(--fcai-text);
   background: radial-gradient(1200px 600px at 80% -10%, rgba(124,58,237,.15), rgba(10,132,255,.12) 40%, transparent 60%), var(--fcai-bg);
   -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
-img{max-width:100%;display:block} a{color:var(--fcai-primary);text-decoration:none} a:hover{text-decoration:underline}
+img{max-width:100%;display:block} 
+img[src$=".svg"]{height:auto;max-height:100%;flex-shrink:0}
+a{color:var(--fcai-primary);text-decoration:none} a:hover{text-decoration:underline}
 .container{width:min(100%,var(--fcai-container));margin-inline:auto;padding:0 20px}
 .hidden{display:none!important}
 .mt-0{margin-top:0}.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}.mt-4{margin-top:32px}
