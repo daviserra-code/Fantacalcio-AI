@@ -207,20 +207,86 @@ def subscription_success():
     """Handle successful subscription"""
     return render_template('subscription_success.html')
 
+@app.route('/sync-subscription', methods=['POST'])
+@require_login
+def sync_subscription():
+    """Manually sync subscription status from Stripe (fallback for missing webhooks)"""
+    if not STRIPE_CONFIGURED:
+        return jsonify({'error': 'Stripe not configured'}), 400
+    
+    try:
+        # Get user's customer ID
+        if not current_user.stripe_customer_id:
+            return jsonify({'error': 'No Stripe customer found'}), 404
+        
+        # Fetch subscriptions from Stripe
+        subscriptions = stripe.Subscription.list(
+            customer=current_user.stripe_customer_id,
+            status='all'
+        )
+        
+        # Update user based on active subscriptions
+        has_active = False
+        for sub in subscriptions.data:
+            if sub.status == 'active':
+                has_active = True
+                # Update or create subscription record
+                subscription_record = Subscription.query.filter_by(
+                    stripe_subscription_id=sub.id
+                ).first()
+                
+                if not subscription_record:
+                    subscription_record = Subscription(
+                        user_id=current_user.id,
+                        stripe_subscription_id=sub.id,
+                        status=sub.status,
+                        current_period_start=datetime.fromtimestamp(sub.current_period_start),
+                        current_period_end=datetime.fromtimestamp(sub.current_period_end)
+                    )
+                    db.session.add(subscription_record)
+                else:
+                    subscription_record.status = sub.status
+                    subscription_record.current_period_end = datetime.fromtimestamp(sub.current_period_end)
+                
+                current_user.pro_expires_at = datetime.fromtimestamp(sub.current_period_end)
+                break
+        
+        current_user.is_pro = has_active
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'synced',
+            'is_pro': has_active,
+            'expires_at': current_user.pro_expires_at.isoformat() if current_user.pro_expires_at else None
+        })
+        
+    except Exception as e:
+        print(f"Subscription sync error: {e}")
+        return jsonify({'error': 'Sync failed'}), 500
+
 @app.route('/webhook/stripe', methods=['POST'])
 def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     if not STRIPE_CONFIGURED:
+        print("Webhook received but Stripe not configured")
         return jsonify({'error': 'Stripe not configured'}), 400
         
     payload = request.get_data()
     sig_header = request.headers.get('Stripe-Signature')
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+    
+    if not webhook_secret:
+        print("WARNING: STRIPE_WEBHOOK_SECRET not configured, using dev fallback")
+        webhook_secret = 'dev-webhook-secret'
     
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, os.environ.get('STRIPE_WEBHOOK_SECRET', 'dev-webhook-secret')
-        )
-    except (ValueError, stripe.error.SignatureVerificationError):
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        print(f"Webhook received: {event['type']}")
+    except ValueError as e:
+        print(f"Webhook error - Invalid payload: {e}")
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError as e:
+        print(f"Webhook error - Invalid signature: {e}")
         return jsonify({'error': 'Invalid signature'}), 400
     
     event_type = event['type']
