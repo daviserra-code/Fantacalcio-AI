@@ -5,14 +5,14 @@ import uuid
 from functools import wraps
 from urllib.parse import urlencode
 
-from flask import g, session, redirect, request, render_template, url_for, flash
+from flask import g, session, redirect, request, render_template, url_for, flash, jsonify
 from flask_dance.consumer import (
     OAuth2ConsumerBlueprint,
     oauth_authorized,
     oauth_error,
 )
 from flask_dance.consumer.storage import BaseStorage
-from flask_login import LoginManager, login_required, current_user
+from flask_login import LoginManager, login_user, current_user
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 from sqlalchemy.exc import NoResultFound
 from werkzeug.local import LocalProxy
@@ -159,14 +159,19 @@ def handle_error(blueprint, error, error_description=None, error_uri=None):
 
 
 def require_login(f):
+    """Decorator to require authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
-            # For demo purposes, redirect to demo login
-            return redirect('/demo-login')
-        
+            # For API requests, return JSON error
+            if request.is_json or request.path.startswith('/api/'):
+                return jsonify({'error': 'Authentication required'}), 401
+
+            # For regular requests, redirect to login
+            next_url = get_next_navigation_url(request)
+            return redirect(url_for('replit_auth.login', next=next_url))
+
         return f(*args, **kwargs)
-    
     return decorated_function
 
 

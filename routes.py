@@ -27,6 +27,15 @@ app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
 def make_session_permanent():
     session.permanent = True
 
+@app.route('/')
+def home():
+    """Home route - redirect to appropriate interface"""
+    # Check if user is authenticated
+    if current_user.is_authenticated:
+        return redirect('/dashboard')
+    else:
+        return redirect('/landing')
+
 @app.route('/dashboard')
 @require_login
 def dashboard():
@@ -48,6 +57,15 @@ def landing():
         }
     }
     return render_template("landing.html", lang=lang, t=T.get(lang, T["it"]))
+
+@app.route('/auth-status')
+def auth_status():
+    """Debug route to check authentication status"""
+    return jsonify({
+        'authenticated': current_user.is_authenticated,
+        'user_id': current_user.id if current_user.is_authenticated else None,
+        'is_pro': current_user.is_pro if current_user.is_authenticated else False
+    })
 
 @app.route('/demo-login')
 def demo_login():
