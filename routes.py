@@ -72,6 +72,22 @@ def stripe_status():
     """Debug route to check Stripe configuration"""
     secret_key = os.environ.get('STRIPE_SECRET_KEY', '')
     webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+    publishable_key = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+    
+    # Test Stripe API connection
+    stripe_api_test = {'connected': False, 'error': None}
+    if secret_key:
+        try:
+            # Test basic Stripe API call
+            test_customer = stripe.Customer.list(limit=1)
+            stripe_api_test['connected'] = True
+            stripe_api_test['test_call'] = 'SUCCESS - Customer.list() worked'
+        except stripe.error.AuthenticationError as e:
+            stripe_api_test['error'] = f'Authentication failed: {str(e)}'
+        except stripe.error.APIConnectionError as e:
+            stripe_api_test['error'] = f'API connection failed: {str(e)}'
+        except Exception as e:
+            stripe_api_test['error'] = f'Unexpected error: {str(e)}'
     
     return jsonify({
         'stripe_configured': STRIPE_CONFIGURED,
@@ -79,11 +95,14 @@ def stripe_status():
             'secret_key': {
                 'configured': bool(secret_key),
                 'starts_with_sk': secret_key.startswith('sk_') if secret_key else False,
-                'length': len(secret_key) if secret_key else 0
+                'length': len(secret_key) if secret_key else 0,
+                'environment': 'test' if secret_key.startswith('sk_test_') else 'live' if secret_key.startswith('sk_live_') else 'unknown'
             },
             'publishable_key': {
-                'configured': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
-                'starts_with_pk': os.environ.get('STRIPE_PUBLISHABLE_KEY', '').startswith('pk_')
+                'configured': bool(publishable_key),
+                'starts_with_pk': publishable_key.startswith('pk_') if publishable_key else False,
+                'length': len(publishable_key) if publishable_key else 0,
+                'environment': 'test' if publishable_key.startswith('pk_test_') else 'live' if publishable_key.startswith('pk_live_') else 'unknown'
             },
             'webhook_secret': {
                 'configured': bool(webhook_secret),
@@ -91,13 +110,26 @@ def stripe_status():
                 'length': len(webhook_secret) if webhook_secret else 0
             }
         },
+        'stripe_api_test': stripe_api_test,
         'stripe_api_key_set': bool(stripe.api_key),
-        'deployment_url': f"{request.url_root.rstrip('/')}/webhook/stripe",
-        'next_steps': [
-            'Verify all three Stripe keys are configured in Replit Secrets',
-            'Use the deployment_url above in your Stripe Dashboard webhook configuration',
-            'Test the webhook with a small transaction'
-        ]
+        'deployment_urls': {
+            'webhook': f"{request.url_root.rstrip('/')}/webhook/stripe",
+            'current_request_base': request.url_root,
+            'success_url': f"{request.url_root.rstrip('/')}/subscription-success",
+            'cancel_url': f"{request.url_root.rstrip('/')}/upgrade"
+        },
+        'troubleshooting': {
+            'keys_match_environment': (
+                secret_key.startswith('sk_test_') and publishable_key.startswith('pk_test_')
+            ) or (
+                secret_key.startswith('sk_live_') and publishable_key.startswith('pk_live_')
+            ) if secret_key and publishable_key else False,
+            'recommended_actions': [
+                'Ensure all keys are from the same Stripe environment (test/live)',
+                'Test webhook endpoint accessibility',
+                'Verify webhook events are configured in Stripe Dashboard'
+            ]
+        }
     })
 
 @app.route('/demo-login')
@@ -173,13 +205,30 @@ def create_checkout_session():
         flash('Stripe Publishable Key not configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
         return redirect(url_for('upgrade_to_pro'))
     
+    # Verify keys are from same environment
+    if (stripe_secret.startswith('sk_test_') and not stripe_publishable.startswith('pk_test_')) or \
+       (stripe_secret.startswith('sk_live_') and not stripe_publishable.startswith('pk_live_')):
+        flash('Stripe keys mismatch - secret and publishable keys must be from same environment (test/live)', 'error')
+        return redirect(url_for('upgrade_to_pro'))
+    
     try:
         # Use request.url_root for reliable domain
         base_url = request.url_root.rstrip('/')
         
-        # Debug logging
-        print(f"Creating Stripe session for user: {current_user.email}")
-        print(f"Base URL: {base_url}")
+        # Debug logging with more details
+        print(f"🔄 Creating Stripe session for user: {current_user.email}")
+        print(f"🌐 Base URL: {base_url}")
+        print(f"🔑 Secret key environment: {'test' if stripe_secret.startswith('sk_test_') else 'live'}")
+        print(f"📧 Customer email: {current_user.email}")
+        
+        # Test Stripe connectivity first
+        try:
+            stripe.Customer.list(limit=1)
+            print("✅ Stripe API connectivity verified")
+        except Exception as conn_test:
+            print(f"❌ Stripe API connectivity failed: {conn_test}")
+            flash(f'Cannot connect to Stripe API: {str(conn_test)}', 'error')
+            return redirect(url_for('upgrade_to_pro'))
         
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
@@ -207,19 +256,28 @@ def create_checkout_session():
             }
         )
         
-        print(f"Stripe session created: {checkout_session.id}")
+        print(f"✅ Stripe session created successfully: {checkout_session.id}")
+        print(f"🔗 Redirecting to: {checkout_session.url}")
         return redirect(checkout_session.url, code=303)
         
     except stripe.error.InvalidRequestError as e:
-        print(f"Stripe Invalid Request: {str(e)}")
+        error_msg = f"Stripe Invalid Request: {str(e)}"
+        print(f"❌ {error_msg}")
         flash(f'Stripe configuration error: {str(e)}. Please contact support at daviserra@gmail.com', 'error')
         return redirect(url_for('upgrade_to_pro'))
     except stripe.error.AuthenticationError as e:
-        print(f"Stripe Authentication Error: {str(e)}")
+        error_msg = f"Stripe Authentication Error: {str(e)}"
+        print(f"❌ {error_msg}")
         flash('Stripe authentication failed. Please contact support at daviserra@gmail.com', 'error')
         return redirect(url_for('upgrade_to_pro'))
+    except stripe.error.APIConnectionError as e:
+        error_msg = f"Stripe API Connection Error: {str(e)}"
+        print(f"❌ {error_msg}")
+        flash(f'Cannot reach Stripe servers: {str(e)}. Please try again later.', 'error')
+        return redirect(url_for('upgrade_to_pro'))
     except Exception as e:
-        print(f"General Stripe error: {str(e)}")
+        error_msg = f"General Stripe error: {str(e)}"
+        print(f"❌ {error_msg}")
         flash(f'Payment system error: {str(e)}. Please contact support at daviserra@gmail.com', 'error')
         return redirect(url_for('upgrade_to_pro'))
 
