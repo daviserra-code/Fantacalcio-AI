@@ -67,6 +67,17 @@ def auth_status():
         'is_pro': current_user.is_pro if current_user.is_authenticated else False
     })
 
+@app.route('/stripe-status')
+def stripe_status():
+    """Debug route to check Stripe configuration"""
+    return jsonify({
+        'stripe_configured': STRIPE_CONFIGURED,
+        'has_secret_key': bool(os.environ.get('STRIPE_SECRET_KEY')),
+        'has_publishable_key': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
+        'has_webhook_secret': bool(os.environ.get('STRIPE_WEBHOOK_SECRET')),
+        'stripe_api_key_set': bool(stripe.api_key)
+    })
+
 @app.route('/demo-login')
 def demo_login():
     """Demo login for testing (temporary)"""
@@ -128,13 +139,25 @@ def upgrade_to_pro():
 @require_login
 def create_checkout_session():
     """Create Stripe checkout session for pro subscription"""
-    if not STRIPE_CONFIGURED:
-        flash('Payment system is currently being configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
+    # Check individual Stripe configuration
+    stripe_secret = os.environ.get('STRIPE_SECRET_KEY')
+    stripe_publishable = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+    
+    if not stripe_secret:
+        flash('Stripe Secret Key not configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
+        return redirect(url_for('upgrade_to_pro'))
+    
+    if not stripe_publishable:
+        flash('Stripe Publishable Key not configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
         return redirect(url_for('upgrade_to_pro'))
     
     try:
         # Use request.url_root for reliable domain
         base_url = request.url_root.rstrip('/')
+        
+        # Debug logging
+        print(f"Creating Stripe session for user: {current_user.email}")
+        print(f"Base URL: {base_url}")
         
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
@@ -161,9 +184,21 @@ def create_checkout_session():
                 'user_id': current_user.id
             }
         )
+        
+        print(f"Stripe session created: {checkout_session.id}")
         return redirect(checkout_session.url, code=303)
+        
+    except stripe.error.InvalidRequestError as e:
+        print(f"Stripe Invalid Request: {str(e)}")
+        flash(f'Stripe configuration error: {str(e)}. Please contact support at daviserra@gmail.com', 'error')
+        return redirect(url_for('upgrade_to_pro'))
+    except stripe.error.AuthenticationError as e:
+        print(f"Stripe Authentication Error: {str(e)}")
+        flash('Stripe authentication failed. Please contact support at daviserra@gmail.com', 'error')
+        return redirect(url_for('upgrade_to_pro'))
     except Exception as e:
-        flash(f'Payment system error. Please contact support at daviserra@gmail.com', 'error')
+        print(f"General Stripe error: {str(e)}")
+        flash(f'Payment system error: {str(e)}. Please contact support at daviserra@gmail.com', 'error')
         return redirect(url_for('upgrade_to_pro'))
 
 @app.route('/subscription-success')

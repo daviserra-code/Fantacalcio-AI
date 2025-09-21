@@ -813,6 +813,109 @@
       .player-card { border: 1px solid #ddd; border-radius: 5px; padding: 10px; margin: 10px 0; background: #f9f9f9; }
       .no-results, .error { text-align: center; padding: 20px; color: #666; }
       .error { color: #d32f2f; }
+
+      /* Wide screen layout adjustments */
+      @media (min-width: 1200px) {
+        .container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          max-width: 1400px;
+          align-items: start;
+        }
+
+        .header {
+          grid-column: 1 / -1;
+        }
+
+        .main-content {
+          grid-column: 1;
+          align-self: start;
+        }
+
+        .stats-sidebar {
+          grid-column: 2;
+          position: sticky;
+          top: 80px;
+          height: fit-content;
+          align-self: start;
+        }
+
+        /* Ensure both columns start at the same level */
+        .main-content, .stats-sidebar {
+          margin-top: 0;
+          padding-top: 0;
+        }
+      }
+
+      /* Statistics styling */
+      .statistics-container {
+        background: var(--dark-card-bg);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      /* Wide screen statistics alignment */
+      @media (min-width: 1200px) {
+        .statistics-container {
+          margin-top: 0;
+          height: fit-content;
+        }
+      }
+
+    /* Added styles for League Rules Management Tab's layout */
+    @media (min-width: 768px) { /* Apply these styles for medium screens and up */
+      .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+      }
+      .row > [class*="col-md-"] {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+    }
+
+    /* Adjusted container for wide screens to accommodate two columns */
+    @media (min-width: 1200px) {
+      .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+        gap: 20px; /* Space between columns */
+        max-width: 1400px; /* Max width for the container */
+        align-items: start; /* Align items to the top */
+      }
+
+      .header {
+        grid-column: 1 / -1; /* Header spans across both columns */
+      }
+
+      .main-content { /* Assuming this refers to the chat/input area */
+        grid-column: 1; /* Main content in the first column */
+        align-self: start; /* Align to the top */
+      }
+
+      .stats-sidebar { /* Assuming this refers to the historical stats or other side content */
+        grid-column: 2; /* Stats sidebar in the second column */
+        position: sticky; /* Make it sticky */
+        top: 80px; /* Stick to the top, adjust based on header height */
+        height: fit-content; /* Fit content height */
+        align-self: start; /* Align to the top */
+      }
+
+      /* Ensure both columns start at the same level */
+      .main-content, .stats-sidebar {
+        margin-top: 0;
+        padding-top: 0;
+      }
+    }
+
+
+    /* Animations */
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+    @keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
   </style>
 </head>
 <body class="mode-classic">
