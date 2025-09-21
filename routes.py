@@ -13,6 +13,12 @@ from league_rules_manager import LeagueRulesManager
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 
+# Check if Stripe is properly configured
+STRIPE_CONFIGURED = bool(
+    os.environ.get('STRIPE_SECRET_KEY') and 
+    os.environ.get('STRIPE_PUBLISHABLE_KEY')
+)
+
 # Register authentication blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
 
@@ -104,6 +110,10 @@ def upgrade_to_pro():
 @require_login
 def create_checkout_session():
     """Create Stripe checkout session for pro subscription"""
+    if not STRIPE_CONFIGURED:
+        flash('Payment system is currently being configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
+        return redirect(url_for('upgrade_to_pro'))
+    
     try:
         # Use request.url_root for reliable domain
         base_url = request.url_root.rstrip('/')
@@ -135,7 +145,7 @@ def create_checkout_session():
         )
         return redirect(checkout_session.url, code=303)
     except Exception as e:
-        flash(f'Error creating checkout session: {str(e)}', 'error')
+        flash(f'Payment system error. Please contact support at daviserra@gmail.com', 'error')
         return redirect(url_for('upgrade_to_pro'))
 
 @app.route('/subscription-success')
@@ -147,6 +157,9 @@ def subscription_success():
 @app.route('/webhook/stripe', methods=['POST'])
 def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
+    if not STRIPE_CONFIGURED:
+        return jsonify({'error': 'Stripe not configured'}), 400
+        
     payload = request.get_data()
     sig_header = request.headers.get('Stripe-Signature')
     
