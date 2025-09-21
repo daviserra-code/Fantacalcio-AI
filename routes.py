@@ -70,12 +70,34 @@ def auth_status():
 @app.route('/stripe-status')
 def stripe_status():
     """Debug route to check Stripe configuration"""
+    secret_key = os.environ.get('STRIPE_SECRET_KEY', '')
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+    
     return jsonify({
         'stripe_configured': STRIPE_CONFIGURED,
-        'has_secret_key': bool(os.environ.get('STRIPE_SECRET_KEY')),
-        'has_publishable_key': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
-        'has_webhook_secret': bool(os.environ.get('STRIPE_WEBHOOK_SECRET')),
-        'stripe_api_key_set': bool(stripe.api_key)
+        'configuration_details': {
+            'secret_key': {
+                'configured': bool(secret_key),
+                'starts_with_sk': secret_key.startswith('sk_') if secret_key else False,
+                'length': len(secret_key) if secret_key else 0
+            },
+            'publishable_key': {
+                'configured': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
+                'starts_with_pk': os.environ.get('STRIPE_PUBLISHABLE_KEY', '').startswith('pk_')
+            },
+            'webhook_secret': {
+                'configured': bool(webhook_secret),
+                'starts_with_whsec': webhook_secret.startswith('whsec_') if webhook_secret else False,
+                'length': len(webhook_secret) if webhook_secret else 0
+            }
+        },
+        'stripe_api_key_set': bool(stripe.api_key),
+        'deployment_url': f"{request.url_root.rstrip('/')}/webhook/stripe",
+        'next_steps': [
+            'Verify all three Stripe keys are configured in Replit Secrets',
+            'Use the deployment_url above in your Stripe Dashboard webhook configuration',
+            'Test the webhook with a small transaction'
+        ]
     })
 
 @app.route('/demo-login')
@@ -274,9 +296,19 @@ def stripe_webhook():
             'url': request.url,
             'method': 'GET',
             'stripe_configured': STRIPE_CONFIGURED,
-            'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET')),
+            'stripe_keys': {
+                'secret_key_configured': bool(os.environ.get('STRIPE_SECRET_KEY')),
+                'publishable_key_configured': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
+                'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
+            },
+            'recommended_webhook_url': f"{request.url_root.rstrip('/')}/webhook/stripe",
             'timestamp': datetime.utcnow().isoformat(),
-            'message': 'Webhook endpoint is accessible and ready to receive Stripe events'
+            'message': 'Webhook endpoint is accessible and ready to receive Stripe events',
+            'setup_instructions': {
+                '1': 'Add STRIPE_WEBHOOK_SECRET to Replit Secrets',
+                '2': 'Use this URL in Stripe Dashboard',
+                '3': 'Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted'
+            }
         }), 200
     
     # Handle POST requests (actual webhooks)
