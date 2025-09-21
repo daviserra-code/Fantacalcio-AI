@@ -264,17 +264,20 @@ def sync_subscription():
         print(f"Subscription sync error: {e}")
         return jsonify({'error': 'Sync failed'}), 500
 
-@app.route('/webhook/stripe', methods=['POST', 'GET'])
+@app.route('/webhook/stripe', methods=['GET', 'POST'])
 def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
-    # Handle GET requests for webhook verification
+    # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
         return jsonify({
             'status': 'Stripe webhook endpoint active',
             'url': request.url,
+            'method': 'GET',
             'stripe_configured': STRIPE_CONFIGURED,
-            'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
-        })
+            'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET')),
+            'timestamp': datetime.utcnow().isoformat(),
+            'message': 'Webhook endpoint is accessible and ready to receive Stripe events'
+        }), 200
     
     # Handle POST requests (actual webhooks)
     if not STRIPE_CONFIGURED:
