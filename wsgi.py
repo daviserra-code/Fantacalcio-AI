@@ -29,6 +29,15 @@ try:
     # Import the Flask app
     from app import app
     
+    # Fix HTTPS detection for production - critical for Replit Auth
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    app.config.update(
+        PREFERRED_URL_SCHEME='https',
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SAMESITE='Lax'
+    )
+    
     # Initialize authentication if needed
     from replit_auth import init_login_manager
     if not hasattr(app, 'login_manager'):
