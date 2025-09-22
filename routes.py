@@ -73,7 +73,7 @@ def stripe_status():
     secret_key = os.environ.get('STRIPE_SECRET_KEY', '')
     webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
     publishable_key = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
-    
+
     # Test Stripe API connection
     stripe_api_test = {'connected': False, 'error': None}
     if secret_key:
@@ -88,7 +88,7 @@ def stripe_status():
             stripe_api_test['error'] = f'API connection failed: {str(e)}'
         except Exception as e:
             stripe_api_test['error'] = f'Unexpected error: {str(e)}'
-    
+
     return jsonify({
         'stripe_configured': STRIPE_CONFIGURED,
         'configuration_details': {
@@ -136,17 +136,17 @@ def stripe_status():
 def demo_login():
     """Demo login for testing (temporary)"""
     from datetime import datetime, timedelta
-    
+
     # Use a fixed demo user ID to avoid database issues
     demo_user_id = "pro_test_user_456"
     demo_email = "protest@fantacalcio.ai"
-    
+
     # Try to get existing demo user or create one
     try:
         user = User.query.filter_by(id=demo_user_id).first()
         if not user:
             user = User.query.filter_by(email=demo_email).first()
-        
+
         if not user:
             user = User(
                 id=demo_user_id,  # Set explicit ID
@@ -156,7 +156,7 @@ def demo_login():
             )
             db.session.add(user)
             db.session.commit()
-            
+
         # Always ensure pro subscription exists for test user
         existing_subscription = Subscription.query.filter_by(user_id=user.id).first()
         if not existing_subscription:
@@ -169,7 +169,7 @@ def demo_login():
             )
             db.session.add(subscription)
             db.session.commit()
-            
+
     except Exception as e:
         # If all else fails, create a simple in-memory user for login
         user = User()
@@ -177,10 +177,10 @@ def demo_login():
         user.email = demo_email
         user.first_name = "Pro"
         user.last_name = "Tester"
-    
+
     # Log in the demo user
     login_user(user, remember=True)
-    
+
     # Redirect to dashboard to see league features
     return redirect('/dashboard')
 
@@ -196,32 +196,26 @@ def create_checkout_session():
     # Check individual Stripe configuration
     stripe_secret = os.environ.get('STRIPE_SECRET_KEY')
     stripe_publishable = os.environ.get('STRIPE_PUBLISHABLE_KEY')
-    
+
     if not stripe_secret:
         flash('Stripe Secret Key not configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
         return redirect(url_for('upgrade_to_pro'))
-    
+
     if not stripe_publishable:
         flash('Stripe Publishable Key not configured. Please contact support at daviserra@gmail.com for Pro access.', 'warning')
         return redirect(url_for('upgrade_to_pro'))
-    
+
     # Verify keys are from same environment
     if (stripe_secret.startswith('sk_test_') and not stripe_publishable.startswith('pk_test_')) or \
        (stripe_secret.startswith('sk_live_') and not stripe_publishable.startswith('pk_live_')):
         flash('Stripe keys mismatch - secret and publishable keys must be from same environment (test/live)', 'error')
         return redirect(url_for('upgrade_to_pro'))
-    
+
     try:
-        # Use proper domain for URLs - check if deployed
-        if request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https://'):
-            base_url = request.url_root.replace('http://', 'https://').rstrip('/')
-        else:
-            base_url = request.url_root.rstrip('/')
-        
-        # For Replit deployment, use the deployed URL
-        if 'replit.dev' in request.headers.get('Host', '') or 'replit.app' in request.headers.get('Host', ''):
-            base_url = f"https://{request.headers.get('Host')}"
-        
+        # ALWAYS force HTTPS (required for Stripe live mode)
+        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+        base_url = f"https://{host}"
+
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
         print(f"🌐 Base URL: {base_url}")
@@ -229,7 +223,7 @@ def create_checkout_session():
         print(f"📧 Customer email: {current_user.email}")
         print(f"🌍 Host header: {request.headers.get('Host', 'N/A')}")
         print(f"🔒 Proto header: {request.headers.get('X-Forwarded-Proto', 'N/A')}")
-        
+
         # Test Stripe connectivity first
         try:
             test_response = stripe.Customer.list(limit=1)
@@ -238,7 +232,7 @@ def create_checkout_session():
             print(f"❌ Stripe API connectivity failed: {conn_test}")
             flash(f'Cannot connect to Stripe API: {str(conn_test)}', 'error')
             return redirect(url_for('upgrade_to_pro'))
-        
+
         # Create checkout session with proper URLs
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
@@ -269,14 +263,14 @@ def create_checkout_session():
                 'user_email': current_user.email
             }
         )
-        
+
         print(f"✅ Stripe session created successfully: {checkout_session.id}")
         print(f"🔗 Success URL: {checkout_session.success_url}")
         print(f"🔗 Cancel URL: {checkout_session.cancel_url}")
         print(f"🔗 Redirecting to: {checkout_session.url}")
-        
+
         return redirect(checkout_session.url, code=303)
-        
+
     except stripe.error.InvalidRequestError as e:
         error_msg = f"Stripe Invalid Request: {str(e)}"
         print(f"❌ {error_msg}")
@@ -315,18 +309,18 @@ def sync_subscription():
     """Manually sync subscription status from Stripe (fallback for missing webhooks)"""
     if not STRIPE_CONFIGURED:
         return jsonify({'error': 'Stripe not configured'}), 400
-    
+
     try:
         # Get user's customer ID
         if not current_user.stripe_customer_id:
             return jsonify({'error': 'No Stripe customer found'}), 404
-        
+
         # Fetch subscriptions from Stripe
         subscriptions = stripe.Subscription.list(
             customer=current_user.stripe_customer_id,
             status='all'
         )
-        
+
         # Update user based on active subscriptions
         has_active = False
         for sub in subscriptions.data:
@@ -336,7 +330,7 @@ def sync_subscription():
                 subscription_record = Subscription.query.filter_by(
                     stripe_subscription_id=sub.id
                 ).first()
-                
+
                 if not subscription_record:
                     subscription_record = Subscription(
                         user_id=current_user.id,
@@ -349,19 +343,19 @@ def sync_subscription():
                 else:
                     subscription_record.status = sub.status
                     subscription_record.current_period_end = datetime.fromtimestamp(sub.current_period_end)
-                
+
                 current_user.pro_expires_at = datetime.fromtimestamp(sub.current_period_end)
                 break
-        
+
         current_user.is_pro = has_active
         db.session.commit()
-        
+
         return jsonify({
             'status': 'synced',
             'is_pro': has_active,
             'expires_at': current_user.pro_expires_at.isoformat() if current_user.pro_expires_at else None
         })
-        
+
     except Exception as e:
         print(f"Subscription sync error: {e}")
         return jsonify({'error': 'Sync failed'}), 500
@@ -371,10 +365,12 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
-        # Check if this is HTTPS for production
-        is_secure = request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https://')
-        base_url = request.url_root.replace('http://', 'https://').rstrip('/') if is_secure else request.url_root.rstrip('/')
-        
+        # ALWAYS force HTTPS for webhook URLs (Stripe requirement)
+        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+
+        # Force HTTPS for ALL cases - Stripe requires HTTPS webhooks
+        base_url = f"https://{host}"
+
         return jsonify({
             'status': 'Stripe webhook endpoint active',
             'url': request.url,
@@ -387,7 +383,7 @@ def stripe_webhook():
                 'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
             },
             'webhook_url_for_stripe_dashboard': f"{base_url}/webhook/stripe",
-            'is_https': is_secure,
+            'is_https': True,
             'timestamp': datetime.utcnow().isoformat(),
             'message': 'Webhook endpoint is accessible and ready to receive Stripe events',
             'setup_instructions': {
@@ -396,28 +392,28 @@ def stripe_webhook():
                 '3': "Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted",
                 '4': "Make sure webhook endpoint is HTTPS for live mode"
             },
-            'current_issues': [] if is_secure else ['Webhook URL should be HTTPS for live Stripe keys']
+            'current_issues': []
         }), 200
-    
+
     # Handle POST requests (actual webhooks)
     if not STRIPE_CONFIGURED:
         print(f"Webhook received but Stripe not configured - URL: {request.url}")
         return jsonify({'error': 'Stripe not configured'}), 400
-        
+
     payload = request.get_data()
     sig_header = request.headers.get('Stripe-Signature')
     webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    
+
     print(f"Webhook POST received at: {request.url}")
     print(f"Signature header present: {bool(sig_header)}")
     print(f"Webhook secret configured: {bool(webhook_secret)}")
     print(f"Request method: {request.method}")
     print(f"Request headers: {dict(request.headers)}")
-    
+
     if not webhook_secret:
         print("ERROR: STRIPE_WEBHOOK_SECRET not configured!")
         return jsonify({'error': 'Webhook secret not configured', 'help': 'Set STRIPE_WEBHOOK_SECRET in Replit Secrets'}), 400
-    
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
         print(f"✅ Webhook verified successfully: {event['type']}")
@@ -427,10 +423,10 @@ def stripe_webhook():
     except stripe.error.SignatureVerificationError as e:
         print(f"❌ Webhook error - Invalid signature: {e}")
         return jsonify({'error': 'Invalid signature'}), 400
-    
+
     event_type = event['type']
     event_data = event['data']['object']
-    
+
     if event_type == 'checkout.session.completed':
         # Handle successful subscription signup
         user_id = event_data['metadata'].get('user_id')
@@ -440,7 +436,7 @@ def stripe_webhook():
                 # Get the subscription details from Stripe
                 subscription_id = event_data['subscription']
                 subscription = stripe.Subscription.retrieve(subscription_id)
-                
+
                 # Create subscription record
                 new_subscription = Subscription(
                     user_id=user_id,
@@ -450,13 +446,13 @@ def stripe_webhook():
                     current_period_end=datetime.fromtimestamp(subscription['current_period_end'])
                 )
                 db.session.add(new_subscription)
-                
+
                 # Update user
                 user.is_pro = True
                 user.stripe_customer_id = event_data['customer']
                 user.pro_expires_at = datetime.fromtimestamp(subscription['current_period_end'])
                 db.session.commit()
-                
+
     elif event_type == 'customer.subscription.updated':
         # Handle subscription changes
         subscription_id = event_data['id']
@@ -464,30 +460,30 @@ def stripe_webhook():
         if subscription_record:
             subscription_record.status = event_data['status']
             subscription_record.current_period_end = datetime.fromtimestamp(event_data['current_period_end'])
-            
+
             # Update user pro status
             user = subscription_record.user
             if user:
                 user.is_pro = event_data['status'] == 'active'
                 user.pro_expires_at = datetime.fromtimestamp(event_data['current_period_end'])
-            
+
             db.session.commit()
-            
+
     elif event_type == 'customer.subscription.deleted':
         # Handle subscription cancellation
         subscription_id = event_data['id']
         subscription_record = Subscription.query.filter_by(stripe_subscription_id=subscription_id).first()
         if subscription_record:
             subscription_record.status = 'canceled'
-            
+
             # Downgrade user
             user = subscription_record.user
             if user:
                 user.is_pro = False
                 user.pro_expires_at = None
-            
+
             db.session.commit()
-    
+
     return jsonify({'status': 'success'})
 
 # League management routes
@@ -505,7 +501,7 @@ def get_user_leagues():
             'updated_at': league.updated_at.isoformat(),
             'summary': league_data.get('league_info', {})
         })
-    
+
     return jsonify({
         'leagues': leagues,
         'is_pro': current_user.is_pro,
@@ -519,37 +515,37 @@ def create_league():
     """Create a new league (Pro users only)"""
     data = request.get_json()
     league_name = data.get('name', '').strip()
-    
+
     if not league_name:
         return jsonify({'error': 'League name is required'}), 400
-    
+
     # Check if league name already exists for this user
     existing = UserLeague.query.filter_by(
         user_id=current_user.id, 
         league_name=league_name
     ).first()
-    
+
     if existing:
         return jsonify({'error': 'A league with this name already exists'}), 400
-    
+
     # Create league with default rules
     rules_manager = LeagueRulesManager()
     default_rules = rules_manager.get_rules()
     default_rules['league_info']['name'] = league_name
-    
+
     # Apply any custom rules from request
     if 'base_rules' in data:
         default_rules.update(data['base_rules'])
-    
+
     new_league = UserLeague(
         user_id=current_user.id,
         league_name=league_name,
         league_data=json.dumps(default_rules)
     )
-    
+
     db.session.add(new_league)
     db.session.commit()
-    
+
     return jsonify({
         'id': new_league.id,
         'name': new_league.league_name,
@@ -564,12 +560,12 @@ def get_league(league_id):
         id=league_id,
         user_id=current_user.id
     ).first()
-    
+
     if not league:
         return jsonify({'error': 'League not found'}), 404
-    
+
     league_data = json.loads(league.league_data) if league.league_data else {}
-    
+
     return jsonify({
         'id': league.id,
         'name': league.league_name,
@@ -587,22 +583,22 @@ def update_league(league_id):
         id=league_id,
         user_id=current_user.id
     ).first()
-    
+
     if not league:
         return jsonify({'error': 'League not found'}), 404
-    
+
     data = request.get_json()
     current_rules = json.loads(league.league_data) if league.league_data else {}
-    
+
     # Update rules
     if 'rules' in data:
         current_rules.update(data['rules'])
         current_rules['league_info']['last_updated'] = datetime.now().isoformat()
-        
+
         league.league_data = json.dumps(current_rules)
         league.updated_at = datetime.now()
         db.session.commit()
-    
+
     return jsonify({'status': 'updated'})
 
 @app.route('/api/leagues/<int:league_id>', methods=['DELETE'])
@@ -614,13 +610,13 @@ def delete_league(league_id):
         id=league_id,
         user_id=current_user.id
     ).first()
-    
+
     if not league:
         return jsonify({'error': 'League not found'}), 404
-    
+
     db.session.delete(league)
     db.session.commit()
-    
+
     return jsonify({'status': 'deleted'})
 
 @app.route('/league/<int:league_id>')
@@ -631,13 +627,13 @@ def league_detail(league_id):
         id=league_id,
         user_id=current_user.id
     ).first()
-    
+
     if not league:
         flash('League not found', 'error')
         return redirect('/dashboard')
-    
+
     league_data = json.loads(league.league_data) if league.league_data else {}
-    
+
     return render_template('league_detail.html', 
                          league=league,
                          league_data=league_data,
@@ -658,39 +654,39 @@ def import_league_rules(league_id):
         id=league_id,
         user_id=current_user.id
     ).first()
-    
+
     if not league:
         return jsonify({'error': 'League not found'}), 404
-    
+
     if 'file' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
-    
+
     # Save uploaded file temporarily
     import tempfile
     file_extension = os.path.splitext(file.filename)[1].lower()
-    
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
         file.save(temp_file.name)
-        
+
         try:
             # Create a temporary rules manager and import
             temp_rules_manager = LeagueRulesManager()
             success = temp_rules_manager.import_from_document(temp_file.name)
-            
+
             if success:
                 # Update league with imported rules
                 imported_rules = temp_rules_manager.get_rules()
                 imported_rules['league_info']['name'] = league.league_name
                 imported_rules['league_info']['last_updated'] = datetime.now().isoformat()
-                
+
                 league.league_data = json.dumps(imported_rules)
                 league.updated_at = datetime.now()
                 db.session.commit()
-                
+
                 return jsonify({
                     'success': True,
                     'message': 'Rules imported successfully',
@@ -698,10 +694,10 @@ def import_league_rules(league_id):
                 })
             else:
                 return jsonify({'error': 'Failed to import rules from document'}), 400
-                
+
         except Exception as e:
             return jsonify({'error': f'Error processing document: {str(e)}'}), 400
-            
+
         finally:
             # Clean up temp file
             try:
