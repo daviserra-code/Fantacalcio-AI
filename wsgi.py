@@ -56,6 +56,7 @@ application = app
 
 def main():
     """Main entry point for production server"""
+    import signal
     from waitress import serve
     
     # Get port configuration - ensure it's properly set
@@ -73,20 +74,39 @@ def main():
     logger.info("Health check available at /health")
     logger.info("Readiness check available at /ready")
     
-    # Serve with Waitress - production WSGI server
-    # Optimized for fast startup and reliable deployment
-    serve(
-        application,
-        host=host,
-        port=port,
-        threads=2,  # Reduced for faster startup
-        cleanup_interval=60,  # Increased for better resource management
-        connection_limit=50,  # Reduced for faster startup
-        channel_timeout=60,  # Reduced timeout for faster response
-        max_request_body_size=5242880,  # 5MB max request size
-        asyncore_use_poll=True,  # Better for production
-        ident="FantasyFootballAI/1.0",  # Server identification
-    )
+    # Graceful shutdown handler
+    def signal_handler(signum, frame):
+        logger.info(f"Received signal {signum}, shutting down gracefully...")
+        sys.exit(0)
+    
+    # Register signal handlers for graceful shutdown
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+    
+    try:
+        # Serve with Waitress - optimized for Replit deployment
+        serve(
+            application,
+            host=host,
+            port=port,
+            threads=1,  # Single thread for reduced memory usage
+            cleanup_interval=30,  # More frequent cleanup
+            connection_limit=25,  # Lower connection limit
+            channel_timeout=30,  # Shorter timeout for faster response
+            max_request_body_size=2097152,  # 2MB max request size
+            asyncore_use_poll=True,  # Better for production
+            ident="FantasyFootballAI/1.0",  # Server identification
+            # Additional optimizations for Replit
+            send_bytes=8192,  # Smaller send buffer
+            recv_bytes=8192,  # Smaller receive buffer
+        )
+    except KeyboardInterrupt:
+        logger.info("Received KeyboardInterrupt, shutting down...")
+    except Exception as e:
+        logger.error(f"Server error: {e}")
+        raise
+    finally:
+        logger.info("Server shutdown complete")
 
 if __name__ == "__main__":
     main()

@@ -34,7 +34,12 @@ from site_blueprint import site_bp
 app.register_blueprint(site_bp)
 logging.info("Site blueprint registered")
 
-# Add readiness check endpoint for deployment monitoring
+# Add health and readiness check endpoints for deployment monitoring
+@app.route('/health')
+def health_check():
+    """Health check endpoint - lightweight check"""
+    return {"status": "healthy", "timestamp": str(datetime.now())}, 200
+
 @app.route('/ready')
 def readiness_check():
     """Readiness check endpoint for deployment monitoring"""
