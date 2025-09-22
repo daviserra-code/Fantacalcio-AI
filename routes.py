@@ -21,19 +21,25 @@ STRIPE_CONFIGURED = bool(
 
 def get_canonical_base_url(request):
     """
-    Centralized function to get the correct base URL with proper HTTPS detection
-    for Replit deployments. Always returns HTTPS for Replit domains.
+    Get the correct base URL using Replit environment variables (recommended approach)
     """
-    host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-    proto = request.headers.get('X-Forwarded-Proto', 'http')
-    
-    # FORCE HTTPS for ALL Replit domains regardless of headers
-    if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-        host.endswith('.replit.app') or 'replit' in host or 
-        proto == 'https' or request.is_secure):
-        return f"https://{host}", True
+    # Use Replit's built-in domain detection (from Flask Stripe integration)
+    if os.environ.get('REPLIT_DEPLOYMENT') != '':
+        domain = os.environ.get('REPLIT_DEV_DOMAIN')
+        return f"https://{domain}", True
+    elif os.environ.get('REPLIT_DOMAINS'):
+        domain = os.environ.get('REPLIT_DOMAINS').split(',')[0]
+        return f"https://{domain}", True
     else:
-        return f"http://{host}", False
+        # Fallback to manual detection for local development
+        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+        proto = request.headers.get('X-Forwarded-Proto', 'http')
+        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+            host.endswith('.replit.app') or 'replit' in host or 
+            proto == 'https' or request.is_secure):
+            return f"https://{host}", True
+        else:
+            return f"http://{host}", False
 
 # Register authentication blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
@@ -238,7 +244,6 @@ def create_checkout_session():
         print(f"📧 Customer email: {current_user.email}")
         print(f"🌍 Host header: {request.headers.get('Host', 'N/A')}")
         print(f"🔒 Proto header: {request.headers.get('X-Forwarded-Proto', 'N/A')}")
-        print(f"🌐 Detected protocol: {proto}")
         print(f"🔗 Final base URL: {base_url}")
         print(f"🚀 HTTPS properly detected: {base_url.startswith('https')}")
 
