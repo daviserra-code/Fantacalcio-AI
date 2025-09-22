@@ -113,7 +113,7 @@ def stripe_status():
         'stripe_api_test': stripe_api_test,
         'stripe_api_key_set': bool(stripe.api_key),
         'deployment_urls': {
-            'webhook': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/webhook/stripe",
+            'webhook': f"{'https' if request.headers.get('Host', '').endswith('.replit.dev') or request.headers.get('Host', '').endswith('.repl.co') or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') or request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/webhook/stripe",
             'current_request_base': request.url_root,
             'success_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/subscription-success",
             'cancel_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/upgrade"
@@ -222,10 +222,8 @@ def create_checkout_session():
             host.endswith('.replit.app') or 'replit' in host or 
             proto == 'https' or request.is_secure):
             base_url = f"https://{host}"
-            print(f"🚀 FORCED HTTPS for checkout session: {host}")
         else:
             base_url = f"http://{host}"
-            print(f"⚠️ Using HTTP for checkout session: {host}")
 
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
@@ -379,20 +377,9 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
-        # Debug logging - print ALL headers
-        print("🔍 WEBHOOK DEBUG - ALL REQUEST HEADERS:")
-        for header_name, header_value in request.headers:
-            print(f"  {header_name}: {header_value}")
-        print(f"🔍 Request URL: {request.url}")
-        print(f"🔍 Request is_secure: {request.is_secure}")
-        print(f"🔍 Request scheme: {request.scheme}")
-        
-        # Properly detect HTTPS using X-Forwarded-Proto (Replit proxy header)
+        # Get host and always force HTTPS for Replit domains  
         host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
         proto = request.headers.get('X-Forwarded-Proto', 'http')
-        
-        print(f"🔍 Extracted Host: {host}")
-        print(f"🔍 Extracted Proto: {proto}")
         
         # Force HTTPS for production/deployment (required for Stripe webhooks)
         # ALWAYS use HTTPS for ANY Replit domain regardless of headers
@@ -401,11 +388,10 @@ def stripe_webhook():
             proto == 'https' or request.is_secure):
             base_url = f"https://{host}"
             is_https_detected = True
-            print(f"🚀 FORCED HTTPS for Replit domain: {host}")
+            is_https_detected = True
         else:
             base_url = f"http://{host}"
             is_https_detected = False
-            print(f"⚠️ Using HTTP for local/non-Replit: {host}")
 
         return jsonify({
             'status': 'Stripe webhook endpoint active',
