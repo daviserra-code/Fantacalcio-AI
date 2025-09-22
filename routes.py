@@ -201,8 +201,15 @@ def demo_login():
         user.first_name = "Pro"
         user.last_name = "Tester"
 
-    # Log in the demo user
-    login_user(user, remember=True)
+    # Log in the demo user with explicit session configuration
+    login_user(user, remember=True, duration=timedelta(hours=24))
+    
+    # Ensure session is properly saved
+    session.permanent = True
+    session['user_id'] = user.id
+    session['demo_login'] = True
+    
+    print(f"✅ Demo login successful for {user.email} - Session ID: {session.get('_id', 'N/A')}")
 
     # Redirect to dashboard to see league features
     return redirect('/dashboard')

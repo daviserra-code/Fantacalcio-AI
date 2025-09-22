@@ -33,12 +33,27 @@ try:
     try:
         from werkzeug.middleware.proxy_fix import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-        app.config.update(
-            PREFERRED_URL_SCHEME='https',
-            SESSION_COOKIE_SECURE=True,
-            SESSION_COOKIE_SAMESITE='Lax'
-        )
-        logger.info("ProxyFix middleware applied successfully")
+        
+        # Production environment detection
+        is_prod = os.environ.get('REPLIT_DEPLOYMENT') == '1'
+        
+        if is_prod:
+            # Production: Secure cookies required
+            app.config.update(
+                PREFERRED_URL_SCHEME='https',
+                SESSION_COOKIE_SECURE=True,
+                SESSION_COOKIE_SAMESITE='None',  # Important for cross-origin
+                SESSION_COOKIE_HTTPONLY=True
+            )
+        else:
+            # Development: Relaxed settings
+            app.config.update(
+                PREFERRED_URL_SCHEME='https',
+                SESSION_COOKIE_SECURE=False,
+                SESSION_COOKIE_SAMESITE='Lax'
+            )
+        
+        logger.info(f"ProxyFix middleware applied successfully (production: {is_prod})")
     except Exception as e:
         logger.warning(f"ProxyFix middleware failed: {e} - using fallback config")
         app.config.update(PREFERRED_URL_SCHEME='https')
