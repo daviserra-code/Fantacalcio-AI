@@ -212,24 +212,34 @@ def create_checkout_session():
         return redirect(url_for('upgrade_to_pro'))
     
     try:
-        # Use request.url_root for reliable domain
-        base_url = request.url_root.rstrip('/')
+        # Use proper domain for URLs - check if deployed
+        if request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https://'):
+            base_url = request.url_root.replace('http://', 'https://').rstrip('/')
+        else:
+            base_url = request.url_root.rstrip('/')
+        
+        # For Replit deployment, use the deployed URL
+        if 'replit.dev' in request.headers.get('Host', '') or 'replit.app' in request.headers.get('Host', ''):
+            base_url = f"https://{request.headers.get('Host')}"
         
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
         print(f"🌐 Base URL: {base_url}")
         print(f"🔑 Secret key environment: {'test' if stripe_secret.startswith('sk_test_') else 'live'}")
         print(f"📧 Customer email: {current_user.email}")
+        print(f"🌍 Host header: {request.headers.get('Host', 'N/A')}")
+        print(f"🔒 Proto header: {request.headers.get('X-Forwarded-Proto', 'N/A')}")
         
         # Test Stripe connectivity first
         try:
-            stripe.Customer.list(limit=1)
-            print("✅ Stripe API connectivity verified")
+            test_response = stripe.Customer.list(limit=1)
+            print(f"✅ Stripe API connectivity verified - found {len(test_response.data)} customers")
         except Exception as conn_test:
             print(f"❌ Stripe API connectivity failed: {conn_test}")
             flash(f'Cannot connect to Stripe API: {str(conn_test)}', 'error')
             return redirect(url_for('upgrade_to_pro'))
         
+        # Create checkout session with proper URLs
         checkout_session = stripe.checkout.Session.create(
             customer_email=current_user.email,
             line_items=[
@@ -237,8 +247,8 @@ def create_checkout_session():
                     'price_data': {
                         'currency': 'eur',
                         'product_data': {
-                            'name': 'Fantasy Football Pro Subscription',
-                            'description': 'Access to premium league management features',
+                            'name': 'FantacalcioAI Pro',
+                            'description': 'Premium fantasy football management features',
                         },
                         'unit_amount': 999,  # €9.99 in cents
                         'recurring': {
@@ -249,31 +259,43 @@ def create_checkout_session():
                 },
             ],
             mode='subscription',
-            success_url=base_url + '/subscription-success',
-            cancel_url=base_url + '/upgrade',
+            success_url=f"{base_url}/subscription-success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}/upgrade",
+            automatic_tax={'enabled': False},
+            allow_promotion_codes=True,
+            billing_address_collection='required',
             metadata={
-                'user_id': current_user.id
+                'user_id': str(current_user.id),
+                'user_email': current_user.email
             }
         )
         
         print(f"✅ Stripe session created successfully: {checkout_session.id}")
+        print(f"🔗 Success URL: {checkout_session.success_url}")
+        print(f"🔗 Cancel URL: {checkout_session.cancel_url}")
         print(f"🔗 Redirecting to: {checkout_session.url}")
+        
         return redirect(checkout_session.url, code=303)
         
     except stripe.error.InvalidRequestError as e:
         error_msg = f"Stripe Invalid Request: {str(e)}"
         print(f"❌ {error_msg}")
-        flash(f'Stripe configuration error: {str(e)}. Please contact support at daviserra@gmail.com', 'error')
+        flash(f'Invalid request to Stripe: {str(e)}', 'error')
         return redirect(url_for('upgrade_to_pro'))
     except stripe.error.AuthenticationError as e:
         error_msg = f"Stripe Authentication Error: {str(e)}"
         print(f"❌ {error_msg}")
-        flash('Stripe authentication failed. Please contact support at daviserra@gmail.com', 'error')
+        flash('Stripe authentication failed. Please check API keys.', 'error')
         return redirect(url_for('upgrade_to_pro'))
     except stripe.error.APIConnectionError as e:
         error_msg = f"Stripe API Connection Error: {str(e)}"
         print(f"❌ {error_msg}")
         flash(f'Cannot reach Stripe servers: {str(e)}. Please try again later.', 'error')
+        return redirect(url_for('upgrade_to_pro'))
+    except stripe.error.RateLimitError as e:
+        error_msg = f"Stripe Rate Limit Error: {str(e)}"
+        print(f"❌ {error_msg}")
+        flash('Too many requests to Stripe. Please try again in a moment.', 'error')
         return redirect(url_for('upgrade_to_pro'))
     except Exception as e:
         error_msg = f"General Stripe error: {str(e)}"
@@ -349,24 +371,32 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
+        # Check if this is HTTPS for production
+        is_secure = request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https://')
+        base_url = request.url_root.replace('http://', 'https://').rstrip('/') if is_secure else request.url_root.rstrip('/')
+        
         return jsonify({
             'status': 'Stripe webhook endpoint active',
             'url': request.url,
             'method': 'GET',
             'stripe_configured': STRIPE_CONFIGURED,
+            'environment': 'live' if os.environ.get('STRIPE_SECRET_KEY', '').startswith('sk_live_') else 'test',
             'stripe_keys': {
                 'secret_key_configured': bool(os.environ.get('STRIPE_SECRET_KEY')),
                 'publishable_key_configured': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
                 'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
             },
-            'recommended_webhook_url': f"{request.url_root.rstrip('/')}/webhook/stripe",
+            'webhook_url_for_stripe_dashboard': f"{base_url}/webhook/stripe",
+            'is_https': is_secure,
             'timestamp': datetime.utcnow().isoformat(),
             'message': 'Webhook endpoint is accessible and ready to receive Stripe events',
             'setup_instructions': {
-                '1': 'Add STRIPE_WEBHOOK_SECRET to Replit Secrets',
-                '2': 'Use this URL in Stripe Dashboard',
-                '3': 'Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted'
-            }
+                '1': f"Add STRIPE_WEBHOOK_SECRET to Replit Secrets",
+                '2': f"In Stripe Dashboard, add webhook endpoint: {base_url}/webhook/stripe",
+                '3': "Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted",
+                '4': "Make sure webhook endpoint is HTTPS for live mode"
+            },
+            'current_issues': [] if is_secure else ['Webhook URL should be HTTPS for live Stripe keys']
         }), 200
     
     # Handle POST requests (actual webhooks)
@@ -381,10 +411,12 @@ def stripe_webhook():
     print(f"Webhook POST received at: {request.url}")
     print(f"Signature header present: {bool(sig_header)}")
     print(f"Webhook secret configured: {bool(webhook_secret)}")
+    print(f"Request method: {request.method}")
+    print(f"Request headers: {dict(request.headers)}")
     
     if not webhook_secret:
         print("ERROR: STRIPE_WEBHOOK_SECRET not configured!")
-        return jsonify({'error': 'Webhook secret not configured'}), 400
+        return jsonify({'error': 'Webhook secret not configured', 'help': 'Set STRIPE_WEBHOOK_SECRET in Replit Secrets'}), 400
     
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
