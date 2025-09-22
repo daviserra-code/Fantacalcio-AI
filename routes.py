@@ -113,10 +113,10 @@ def stripe_status():
         'stripe_api_test': stripe_api_test,
         'stripe_api_key_set': bool(stripe.api_key),
         'deployment_urls': {
-            'webhook': f"{request.url_root.rstrip('/')}/webhook/stripe",
+            'webhook': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/webhook/stripe",
             'current_request_base': request.url_root,
-            'success_url': f"{request.url_root.rstrip('/')}/subscription-success",
-            'cancel_url': f"{request.url_root.rstrip('/')}/upgrade"
+            'success_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/subscription-success",
+            'cancel_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/upgrade"
         },
         'troubleshooting': {
             'keys_match_environment': (
