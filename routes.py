@@ -217,7 +217,9 @@ def create_checkout_session():
         proto = request.headers.get('X-Forwarded-Proto', 'http')
         
         # Force HTTPS for production/deployment (required for Stripe live mode)
-        if proto == 'https' or request.is_secure or host.endswith('.replit.dev') or host.endswith('.repl.co'):
+        if (proto == 'https' or request.is_secure or 
+            host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+            host.endswith('.replit.app') or 'replit' in host):
             base_url = f"https://{host}"
         else:
             base_url = f"http://{host}"
@@ -379,7 +381,9 @@ def stripe_webhook():
         proto = request.headers.get('X-Forwarded-Proto', 'http')
         
         # Force HTTPS for production/deployment (required for Stripe webhooks)
-        if proto == 'https' or request.is_secure or host.endswith('.replit.dev') or host.endswith('.repl.co'):
+        if (proto == 'https' or request.is_secure or 
+            host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+            host.endswith('.replit.app') or 'replit' in host):
             base_url = f"https://{host}"
             is_https_detected = True
         else:
