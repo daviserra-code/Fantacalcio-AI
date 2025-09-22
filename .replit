@@ -15,7 +15,6 @@ REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "python wsgi.py"]
 
 [workflows]
 runButton = "Project"
