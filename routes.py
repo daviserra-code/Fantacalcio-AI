@@ -19,6 +19,22 @@ STRIPE_CONFIGURED = bool(
     os.environ.get('STRIPE_PUBLISHABLE_KEY')
 )
 
+def get_canonical_base_url(request):
+    """
+    Centralized function to get the correct base URL with proper HTTPS detection
+    for Replit deployments. Always returns HTTPS for Replit domains.
+    """
+    host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+    proto = request.headers.get('X-Forwarded-Proto', 'http')
+    
+    # FORCE HTTPS for ALL Replit domains regardless of headers
+    if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+        host.endswith('.replit.app') or 'replit' in host or 
+        proto == 'https' or request.is_secure):
+        return f"https://{host}", True
+    else:
+        return f"http://{host}", False
+
 # Register authentication blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
 
@@ -113,10 +129,10 @@ def stripe_status():
         'stripe_api_test': stripe_api_test,
         'stripe_api_key_set': bool(stripe.api_key),
         'deployment_urls': {
-            'webhook': f"{'https' if request.headers.get('Host', '').endswith('.replit.dev') or request.headers.get('Host', '').endswith('.repl.co') or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') or request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/webhook/stripe",
+            'webhook': f"{get_canonical_base_url(request)[0]}/webhook/stripe",
             'current_request_base': request.url_root,
-            'success_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/subscription-success",
-            'cancel_url': f"{'https' if request.headers.get('X-Forwarded-Proto') == 'https' or request.is_secure or request.headers.get('Host', '').endswith('.replit.app') or 'replit' in request.headers.get('Host', '') else 'http'}://{request.headers.get('Host', request.environ.get('HTTP_HOST', ''))}/upgrade"
+            'success_url': f"{get_canonical_base_url(request)[0]}/subscription-success",
+            'cancel_url': f"{get_canonical_base_url(request)[0]}/upgrade"
         },
         'troubleshooting': {
             'keys_match_environment': (
@@ -212,18 +228,8 @@ def create_checkout_session():
         return redirect(url_for('upgrade_to_pro'))
 
     try:
-        # Properly detect HTTPS using X-Forwarded-Proto (Replit proxy header)
-        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-        proto = request.headers.get('X-Forwarded-Proto', 'http')
-        
-        # Force HTTPS for production/deployment (required for Stripe live mode)
-        # ALWAYS use HTTPS for ANY Replit domain regardless of headers
-        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-            host.endswith('.replit.app') or 'replit' in host or 
-            proto == 'https' or request.is_secure):
-            base_url = f"https://{host}"
-        else:
-            base_url = f"http://{host}"
+        # Use centralized base URL helper
+        base_url, _ = get_canonical_base_url(request)
 
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
@@ -377,21 +383,10 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
-        # Get host and always force HTTPS for Replit domains  
-        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+        # Use centralized base URL helper
+        base_url, is_https_detected = get_canonical_base_url(request)
         proto = request.headers.get('X-Forwarded-Proto', 'http')
-        
-        # Force HTTPS for production/deployment (required for Stripe webhooks)
-        # ALWAYS use HTTPS for ANY Replit domain regardless of headers
-        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-            host.endswith('.replit.app') or 'replit' in host or 
-            proto == 'https' or request.is_secure):
-            base_url = f"https://{host}"
-            is_https_detected = True
-            is_https_detected = True
-        else:
-            base_url = f"http://{host}"
-            is_https_detected = False
+        webhook_url = f"{base_url}/webhook/stripe"
 
         return jsonify({
             'status': 'Stripe webhook endpoint active',
@@ -404,26 +399,17 @@ def stripe_webhook():
                 'publishable_key_configured': bool(os.environ.get('STRIPE_PUBLISHABLE_KEY')),
                 'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
             },
-            'webhook_url_for_stripe_dashboard': f"{base_url}/webhook/stripe",
+            'recommended_webhook_url': webhook_url,  # The field the user sees
+            'webhook_url_for_stripe_dashboard': webhook_url,  # Alternative field name
             'is_https': is_https_detected,
             'detected_proto': proto,
             'x_forwarded_proto': request.headers.get('X-Forwarded-Proto', 'not_set'),
             'timestamp': datetime.utcnow().isoformat(),
             'message': 'Webhook endpoint is accessible and ready to receive Stripe events',
             'setup_instructions': {
-                '1': f"Add STRIPE_WEBHOOK_SECRET to Replit Secrets",
-                '2': f"In Stripe Dashboard, add webhook endpoint: {base_url}/webhook/stripe",
-                '3': "Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted",
-                '4': "Make sure webhook endpoint is HTTPS for live mode"
-            },
-            'current_issues': [] if is_https_detected else [
-                '⚠️  HTTP detected - Stripe requires HTTPS for live mode webhooks',
-                '💡 This endpoint will work correctly when deployed to Replit (HTTPS auto-enabled)'
-            ],
-            'deployment_status': {
-                'local_development': not (host.endswith('.replit.dev') or host.endswith('.repl.co')),
-                'replit_deployment': host.endswith('.replit.dev') or host.endswith('.repl.co'),
-                'https_available': is_https_detected
+                '1': "Add STRIPE_WEBHOOK_SECRET to Replit Secrets",
+                '2': "Use this URL in Stripe Dashboard",
+                '3': "Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted"
             }
         }), 200
 
