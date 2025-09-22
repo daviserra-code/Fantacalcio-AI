@@ -217,12 +217,15 @@ def create_checkout_session():
         proto = request.headers.get('X-Forwarded-Proto', 'http')
         
         # Force HTTPS for production/deployment (required for Stripe live mode)
-        if (proto == 'https' or request.is_secure or 
-            host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-            host.endswith('.replit.app') or 'replit' in host):
+        # ALWAYS use HTTPS for ANY Replit domain regardless of headers
+        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+            host.endswith('.replit.app') or 'replit' in host or 
+            proto == 'https' or request.is_secure):
             base_url = f"https://{host}"
+            print(f"🚀 FORCED HTTPS for checkout session: {host}")
         else:
             base_url = f"http://{host}"
+            print(f"⚠️ Using HTTP for checkout session: {host}")
 
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
@@ -376,19 +379,33 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
+        # Debug logging - print ALL headers
+        print("🔍 WEBHOOK DEBUG - ALL REQUEST HEADERS:")
+        for header_name, header_value in request.headers:
+            print(f"  {header_name}: {header_value}")
+        print(f"🔍 Request URL: {request.url}")
+        print(f"🔍 Request is_secure: {request.is_secure}")
+        print(f"🔍 Request scheme: {request.scheme}")
+        
         # Properly detect HTTPS using X-Forwarded-Proto (Replit proxy header)
         host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
         proto = request.headers.get('X-Forwarded-Proto', 'http')
         
+        print(f"🔍 Extracted Host: {host}")
+        print(f"🔍 Extracted Proto: {proto}")
+        
         # Force HTTPS for production/deployment (required for Stripe webhooks)
-        if (proto == 'https' or request.is_secure or 
-            host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-            host.endswith('.replit.app') or 'replit' in host):
+        # ALWAYS use HTTPS for ANY Replit domain regardless of headers
+        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+            host.endswith('.replit.app') or 'replit' in host or 
+            proto == 'https' or request.is_secure):
             base_url = f"https://{host}"
             is_https_detected = True
+            print(f"🚀 FORCED HTTPS for Replit domain: {host}")
         else:
             base_url = f"http://{host}"
             is_https_detected = False
+            print(f"⚠️ Using HTTP for local/non-Replit: {host}")
 
         return jsonify({
             'status': 'Stripe webhook endpoint active',
