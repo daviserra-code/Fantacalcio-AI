@@ -31,8 +31,9 @@ def get_canonical_base_url(request):
             return f"https://{host}", True
     
     # Development environment - use REPLIT_DOMAINS
-    if os.environ.get('REPLIT_DOMAINS'):
-        domain = os.environ.get('REPLIT_DOMAINS').split(',')[0]
+    domains = os.environ.get('REPLIT_DOMAINS')
+    if domains:
+        domain = domains.split(',')[0]
         return f"https://{domain}", True
     
     # Fallback to manual detection
