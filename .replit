@@ -14,7 +14,6 @@ language = "python3"
 REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
 
 [deployment]
-run = ["python", "wsgi.py"]
 deploymentTarget = "autoscale"
 
 [workflows]

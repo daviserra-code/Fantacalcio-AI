@@ -21,25 +21,29 @@ STRIPE_CONFIGURED = bool(
 
 def get_canonical_base_url(request):
     """
-    Get the correct base URL using Replit environment variables (recommended approach)
+    Get the correct base URL - prioritize production .replit.app domain
     """
-    # Use Replit's built-in domain detection (from Flask Stripe integration)
-    if os.environ.get('REPLIT_DEPLOYMENT') != '':
-        domain = os.environ.get('REPLIT_DEV_DOMAIN')
-        return f"https://{domain}", True
-    elif os.environ.get('REPLIT_DOMAINS'):
+    # Check if we're in production deployment
+    if os.environ.get('REPLIT_DEPLOYMENT') == '1':
+        # In production, use the actual request host (should be .replit.app)
+        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+        if host:
+            return f"https://{host}", True
+    
+    # Development environment - use REPLIT_DOMAINS
+    if os.environ.get('REPLIT_DOMAINS'):
         domain = os.environ.get('REPLIT_DOMAINS').split(',')[0]
         return f"https://{domain}", True
+    
+    # Fallback to manual detection
+    host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
+    proto = request.headers.get('X-Forwarded-Proto', 'http')
+    if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
+        host.endswith('.replit.app') or 'replit' in host or 
+        proto == 'https' or request.is_secure):
+        return f"https://{host}", True
     else:
-        # Fallback to manual detection for local development
-        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-        proto = request.headers.get('X-Forwarded-Proto', 'http')
-        if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-            host.endswith('.replit.app') or 'replit' in host or 
-            proto == 'https' or request.is_secure):
-            return f"https://{host}", True
-        else:
-            return f"http://{host}", False
+        return f"http://{host}", False
 
 # Register authentication blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
