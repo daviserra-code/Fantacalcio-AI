@@ -21,30 +21,26 @@ STRIPE_CONFIGURED = bool(
 
 def get_canonical_base_url(request):
     """
-    Get the correct base URL - prioritize production .replit.app domain
+    Get the correct base URL - ALWAYS use HTTPS for all replit domains
     """
-    # Check if we're in production deployment
-    if os.environ.get('REPLIT_DEPLOYMENT') == '1':
-        # In production, use the actual request host (should be .replit.app)
-        host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-        if host:
-            return f"https://{host}", True
-    
-    # Development environment - use REPLIT_DOMAINS
-    domains = os.environ.get('REPLIT_DOMAINS')
-    if domains:
-        domain = domains.split(',')[0]
-        return f"https://{domain}", True
-    
-    # Fallback to manual detection
+    # Get host from request
     host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-    proto = request.headers.get('X-Forwarded-Proto', 'http')
-    if (host.endswith('.replit.dev') or host.endswith('.repl.co') or 
-        host.endswith('.replit.app') or 'replit' in host or 
-        proto == 'https' or request.is_secure):
+    
+    # If no host, try environment variables
+    if not host:
+        if os.environ.get('REPLIT_DEPLOYMENT') == '1':
+            host = 'fanta-calcio-ai-daviserra3.replit.app'  # Force production domain
+        else:
+            domains = os.environ.get('REPLIT_DOMAINS')
+            if domains:
+                host = domains.split(',')[0]
+    
+    # ALWAYS use HTTPS for any replit domain
+    if host and ('replit' in host or host.endswith('.repl.co')):
         return f"https://{host}", True
-    else:
-        return f"http://{host}", False
+    
+    # Fallback
+    return f"https://{host or 'localhost:5000'}", True
 
 # Register authentication blueprint
 app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")

@@ -30,13 +30,18 @@ try:
     from app import app
     
     # Fix HTTPS detection for production - critical for Replit Auth
-    from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    app.config.update(
-        PREFERRED_URL_SCHEME='https',
-        SESSION_COOKIE_SECURE=True,
-        SESSION_COOKIE_SAMESITE='Lax'
-    )
+    try:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+        app.config.update(
+            PREFERRED_URL_SCHEME='https',
+            SESSION_COOKIE_SECURE=True,
+            SESSION_COOKIE_SAMESITE='Lax'
+        )
+        logger.info("ProxyFix middleware applied successfully")
+    except Exception as e:
+        logger.warning(f"ProxyFix middleware failed: {e} - using fallback config")
+        app.config.update(PREFERRED_URL_SCHEME='https')
     
     # Initialize authentication if needed
     from replit_auth import init_login_manager
