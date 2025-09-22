@@ -212,9 +212,15 @@ def create_checkout_session():
         return redirect(url_for('upgrade_to_pro'))
 
     try:
-        # ALWAYS force HTTPS (required for Stripe live mode)
+        # Properly detect HTTPS using X-Forwarded-Proto (Replit proxy header)
         host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-        base_url = f"https://{host}"
+        proto = request.headers.get('X-Forwarded-Proto', 'http')
+        
+        # Force HTTPS for production/deployment (required for Stripe live mode)
+        if proto == 'https' or request.is_secure or host.endswith('.replit.dev') or host.endswith('.repl.co'):
+            base_url = f"https://{host}"
+        else:
+            base_url = f"http://{host}"
 
         # Debug logging with more details
         print(f"🔄 Creating Stripe session for user: {current_user.email}")
@@ -223,6 +229,9 @@ def create_checkout_session():
         print(f"📧 Customer email: {current_user.email}")
         print(f"🌍 Host header: {request.headers.get('Host', 'N/A')}")
         print(f"🔒 Proto header: {request.headers.get('X-Forwarded-Proto', 'N/A')}")
+        print(f"🌐 Detected protocol: {proto}")
+        print(f"🔗 Final base URL: {base_url}")
+        print(f"🚀 HTTPS properly detected: {base_url.startswith('https')}")
 
         # Test Stripe connectivity first
         try:
@@ -365,11 +374,17 @@ def stripe_webhook():
     """Handle Stripe webhooks for subscription updates"""
     # Handle GET requests for webhook verification and testing
     if request.method == 'GET':
-        # ALWAYS force HTTPS for webhook URLs (Stripe requirement)
+        # Properly detect HTTPS using X-Forwarded-Proto (Replit proxy header)
         host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-
-        # Force HTTPS for ALL cases - Stripe requires HTTPS webhooks
-        base_url = f"https://{host}"
+        proto = request.headers.get('X-Forwarded-Proto', 'http')
+        
+        # Force HTTPS for production/deployment (required for Stripe webhooks)
+        if proto == 'https' or request.is_secure or host.endswith('.replit.dev') or host.endswith('.repl.co'):
+            base_url = f"https://{host}"
+            is_https_detected = True
+        else:
+            base_url = f"http://{host}"
+            is_https_detected = False
 
         return jsonify({
             'status': 'Stripe webhook endpoint active',
@@ -383,7 +398,9 @@ def stripe_webhook():
                 'webhook_secret_configured': bool(os.environ.get('STRIPE_WEBHOOK_SECRET'))
             },
             'webhook_url_for_stripe_dashboard': f"{base_url}/webhook/stripe",
-            'is_https': True,
+            'is_https': is_https_detected,
+            'detected_proto': proto,
+            'x_forwarded_proto': request.headers.get('X-Forwarded-Proto', 'not_set'),
             'timestamp': datetime.utcnow().isoformat(),
             'message': 'Webhook endpoint is accessible and ready to receive Stripe events',
             'setup_instructions': {
@@ -392,7 +409,15 @@ def stripe_webhook():
                 '3': "Select events: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted",
                 '4': "Make sure webhook endpoint is HTTPS for live mode"
             },
-            'current_issues': []
+            'current_issues': [] if is_https_detected else [
+                '⚠️  HTTP detected - Stripe requires HTTPS for live mode webhooks',
+                '💡 This endpoint will work correctly when deployed to Replit (HTTPS auto-enabled)'
+            ],
+            'deployment_status': {
+                'local_development': not (host.endswith('.replit.dev') or host.endswith('.repl.co')),
+                'replit_deployment': host.endswith('.replit.dev') or host.endswith('.repl.co'),
+                'https_available': is_https_detected
+            }
         }), 200
 
     # Handle POST requests (actual webhooks)
