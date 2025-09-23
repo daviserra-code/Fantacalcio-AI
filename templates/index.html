@@ -995,11 +995,14 @@
               <i class="fas fa-crown"></i> Diventa PRO!
             </a>
           {% endif %}
-        {% else %}
-          <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
-            <i class="fas fa-crown"></i> Diventa PRO!
+          <a href="/auth/logout" class="header-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
           </a>
-          <a href="/demo-login" class="header-btn">
+        {% else %}
+          <a href="/login" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
+            <i class="fas fa-crown"></i> Accedi per PRO
+          </a>
+          <a href="/login" class="header-btn">
             <i class="fas fa-sign-in-alt"></i> Accedi
           </a>
         {% endif %}
@@ -1299,117 +1302,136 @@
                     </div>
                 </div>
 
-                {% if user and user.is_authenticated and user.is_pro %}
-                <!-- Pro Users: Full Rules Management Interface -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-edit"></i> Edit Rules Sections</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="rules-section-select" class="form-label">Select Section:</label>
-                                    <select class="form-select" id="rules-section-select" onchange="loadRulesSection()">
-                                        <option value="">Choose a section...</option>
-                                        <option value="league_info">League Information</option>
-                                        <option value="roster_composition">Roster Composition</option>
-                                        <option value="budget_rules">Budget Rules</option>
-                                        <option value="auction_rules">Auction Rules</option>
-                                        <option value="formation_rules">Formation Rules</option>
-                                        <option value="scoring_system">Scoring System</option>
-                                        <option value="transfer_rules">Transfer Rules</option>
-                                        <option value="playoff_rules">Playoff Rules</option>
-                                        <option value="special_rules">Special Rules</option>
-                                        <option value="penalties">Penalties</option>
-                                    </select>
+                {% if user and user.is_authenticated %}
+                    {% if user.is_pro %}
+                    <!-- Pro Users: Full Rules Management Interface -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-edit"></i> Edit Rules Sections</h5>
                                 </div>
-
-                                <div id="rules-editor" style="display: none;">
+                                <div class="card-body">
                                     <div class="mb-3">
-                                        <label for="rules-json-editor" class="form-label">Edit Rules (JSON):</label>
-                                        <textarea class="form-control" id="rules-json-editor" rows="10" style="font-family: monospace;"></textarea>
+                                        <label for="rules-section-select" class="form-label">Select Section:</label>
+                                        <select class="form-select" id="rules-section-select" onchange="loadRulesSection()">
+                                            <option value="">Choose a section...</option>
+                                            <option value="league_info">League Information</option>
+                                            <option value="roster_composition">Roster Composition</option>
+                                            <option value="budget_rules">Budget Rules</option>
+                                            <option value="auction_rules">Auction Rules</option>
+                                            <option value="formation_rules">Formation Rules</option>
+                                            <option value="scoring_system">Scoring System</option>
+                                            <option value="transfer_rules">Transfer Rules</option>
+                                            <option value="playoff_rules">Playoff Rules</option>
+                                            <option value="special_rules">Special Rules</option>
+                                            <option value="penalties">Penalties</option>
+                                        </select>
                                     </div>
-                                    <button class="btn btn-primary" onclick="saveRulesSection()">
-                                        <i class="fas fa-save"></i> Save Section
+
+                                    <div id="rules-editor" style="display: none;">
+                                        <div class="mb-3">
+                                            <label for="rules-json-editor" class="form-label">Edit Rules (JSON):</label>
+                                            <textarea class="form-control" id="rules-json-editor" rows="10" style="font-family: monospace;"></textarea>
+                                        </div>
+                                        <button class="btn btn-primary" onclick="saveRulesSection()">
+                                            <i class="fas fa-save"></i> Save Section
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-upload"></i> Import from Document</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Import rules from your uploaded DOCX or TXT file</p>
+                                    <div class="mb-3">
+                                        <label for="document-file-select" class="form-label">Select Document:</label>
+                                        <select class="form-select" id="document-file-select">
+                                            <option value="">Choose a file...</option>
+                                            <option value="Regolamento LEGA FANTATSS_202508210948339773_1755783342170.docx">League Rules DOCX</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="importRulesDocument()">
+                                        <i class="fas fa-upload"></i> Import Rules
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-plus"></i> Add Custom Rule</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="custom-rule-type" class="form-label">Rule Type:</label>
+                                        <select class="form-select" id="custom-rule-type">
+                                            <option value="house_rules">House Rules</option>
+                                            <option value="modifications">Modifications</option>
+                                            <option value="notes">Notes</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="custom-rule-description" class="form-label">Rule Description:</label>
+                                        <textarea class="form-control" id="custom-rule-description" rows="3" placeholder="Enter your custom rule description..."></textarea>
+                                    </div>
+                                    <button class="btn btn-success" onclick="addCustomRule()">
+                                        <i class="fas fa-plus"></i> Add Rule
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-download"></i> Export Rules</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Download your league rules in different formats</p>
+                                    <button class="btn btn-outline-primary me-2" onclick="exportRules('txt')">
+                                        <i class="fas fa-file-alt"></i> Export as Text
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="exportRules('json')">
+                                        <i class="fas fa-code"></i> Export as JSON
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5><i class="fas fa-upload"></i> Import from Document</h5>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-muted">Import rules from your uploaded DOCX or TXT file</p>
-                                <div class="mb-3">
-                                    <label for="document-file-select" class="form-label">Select Document:</label>
-                                    <select class="form-select" id="document-file-select">
-                                        <option value="">Choose a file...</option>
-                                        <option value="Regolamento LEGA FANTATSS_202508210948339773_1755783342170.docx">League Rules DOCX</option>
-                                    </select>
-                                </div>
-                                <button class="btn btn-primary" onclick="importRulesDocument()">
-                                    <i class="fas fa-upload"></i> Import Rules
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5><i class="fas fa-plus"></i> Add Custom Rule</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="custom-rule-type" class="form-label">Rule Type:</label>
-                                    <select class="form-select" id="custom-rule-type">
-                                        <option value="house_rules">House Rules</option>
-                                        <option value="modifications">Modifications</option>
-                                        <option value="notes">Notes</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="custom-rule-description" class="form-label">Rule Description:</label>
-                                    <textarea class="form-control" id="custom-rule-description" rows="3" placeholder="Enter your custom rule description..."></textarea>
-                                </div>
-                                <button class="btn btn-success" onclick="addCustomRule()">
-                                    <i class="fas fa-plus"></i> Add Rule
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-download"></i> Export Rules</h5>
-                            </div>
-                            <div class="card-body">
-                                <p class="text-muted">Download your league rules in different formats</p>
-                                <button class="btn btn-outline-primary me-2" onclick="exportRules('txt')">
-                                    <i class="fas fa-file-alt"></i> Export as Text
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="exportRules('json')">
-                                    <i class="fas fa-code"></i> Export as JSON
-                                </button>
+                    {% else %}
+                    <!-- Logged Users without Pro: Upgrade Prompt -->
+                    <div class="card text-center" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border: none;">
+                        <div class="card-body">
+                            <i class="fas fa-crown fa-3x mb-3" style="opacity: 0.8;"></i>
+                            <h4>Funzionalità Pro Richiesta</h4>
+                            <p class="mb-4">Ciao {{ user.first_name or user.email }}! Accedi a tutte le funzionalità avanzate di gestione leghe con l'abbonamento Pro.</p>
+                            <a href="/upgrade" class="btn btn-light btn-lg">
+                                <i class="fas fa-arrow-up me-2"></i>Diventa Pro - €9.99/mese
+                            </a>
+                            <div class="mt-3">
+                                <small style="opacity: 0.9;">
+                                    ✨ Leghe illimitate • 📄 Importa regolamenti • ⚙️ Regole personalizzate • 📤 Esportazione dati
+                                </small>
                             </div>
                         </div>
                     </div>
-                </div>
+                    {% endif %}
                 {% else %}
-                <!-- Non-Pro Users: Upgrade Prompt -->
-                <div class="card text-center" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border: none;">
+                <!-- Not Logged Users: Login Required -->
+                <div class="card text-center" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
                     <div class="card-body">
-                        <i class="fas fa-crown fa-3x mb-3" style="opacity: 0.8;"></i>
-                        <h4>Funzionalità Pro Richiesta</h4>
-                        <p class="mb-4">Accedi a tutte le funzionalità avanzate di gestione leghe: creazione leghe personalizzate, importazione documenti, regole avanzate e molto altro!</p>
-                        <a href="/upgrade" class="btn btn-light btn-lg">
-                            <i class="fas fa-arrow-up me-2"></i>Diventa Pro - €9.99/mese
+                        <i class="fas fa-sign-in-alt fa-3x mb-3" style="opacity: 0.8;"></i>
+                        <h4>Accesso Richiesto</h4>
+                        <p class="mb-4">Effettua l'accesso per gestire le tue leghe e accedere alle funzionalità premium.</p>
+                        <a href="/login?next=/league-rules" class="btn btn-light btn-lg me-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Accedi
                         </a>
                         <div class="mt-3">
                             <small style="opacity: 0.9;">
-                                ✨ Leghe illimitate • 📄 Importa regolamenti • ⚙️ Regole personalizzate • 📤 Esportazione dati
+                                Dopo l'accesso potrai creare leghe personalizzate e molto altro!
                             </small>
                         </div>
                     </div>

@@ -149,7 +149,7 @@ def index_legacy():
         page_id = uuid.uuid4().hex[:16]
         LOG.info("Request: GET / from %s", request.remote_addr)
         LOG.info("Page view: %s, lang: %s", page_id, lang)
-        
+
         # Return the original Fantasy Football AI interface
         return render_template("index.html", lang=lang, t=T.get(lang,T["it"]), 
                              user=current_user if current_user.is_authenticated else None)
@@ -169,6 +169,7 @@ def index_legacy():
         """, 500
 
 @app.route("/api/chat", methods=["POST"])
+@require_login # Ensure the user is logged in
 def api_chat():
     try:
         # Log client info for debugging
@@ -445,14 +446,14 @@ def handle_exclusion(msg: str, state: dict) -> str:
                 if corrections_manager:
                     # Call persistent add_exclusion method for team-specific exclusion
                     result = corrections_manager.add_exclusion(player_name, team_name)
-                    
+
                     # Also add to session for immediate effect in current session
                     team_exclusions = state.setdefault("team_exclusions", {})
                     if team_name not in team_exclusions:
                         team_exclusions[team_name] = []
                     if player_name not in team_exclusions[team_name]:
                         team_exclusions[team_name].append(player_name)
-                    
+
                     return result
                 else:
                     # Fallback to session-only if corrections manager unavailable
@@ -499,12 +500,12 @@ def handle_exclusion(msg: str, state: dict) -> str:
                     if corrections_manager:
                         # Call persistent remove_player method
                         result = corrections_manager.remove_player(player_name, reason="User web interface request")
-                        
+
                         # Also add to session for immediate effect in current session
                         excluded_players = state.setdefault("excluded_players", [])
                         if player_name not in excluded_players:
                             excluded_players.append(player_name)
-                        
+
                         return result
                     else:
                         # Fallback to session-only if corrections manager unavailable
@@ -776,10 +777,10 @@ def api_search():
         LOG.info(f"[Search API] Request received - Method: {request.method}")
         LOG.info(f"[Search API] Content-Type: {request.content_type}")
         LOG.info(f"[Search API] Raw data: {request.get_data()}")
-        
+
         data = request.get_json()
         LOG.info(f"[Search API] Parsed JSON data: {data}")
-        
+
         if not data:
             LOG.error("[Search API] No data provided in request")
             return jsonify({"error": "No data provided"}), 400
@@ -821,11 +822,11 @@ def api_search():
                 player_team = player.get('team', '').strip()
                 fantamedia = player.get('_fm')
                 price = player.get('_price')
-                
+
                 # Skip players without real names (no artificial display names)
                 if not player_name or len(player_name) < 2:
                     continue
-                
+
                 results.append({
                     'name': player_name,
                     'team': player_team or 'N/D',
@@ -877,7 +878,7 @@ def api_players():
     try:
         LOG.info(f"[Players API] Request received - Method: {request.method}")
         LOG.info(f"[Players API] Request args: {dict(request.args)}")
-        
+
         # Get query parameters
         search_query = request.args.get('search', '').strip()
         role_filter = request.args.get('role', '').strip().upper()
@@ -885,9 +886,9 @@ def api_players():
         u21_filter = request.args.get('u21', '').lower() == 'true'
         in_forma_filter = request.args.get('in_forma', '').lower() == 'true'
         limit = int(request.args.get('limit', 50))
-        
+
         LOG.info(f"[Players API] Filters - Search: '{search_query}', Role: '{role_filter}', Team: '{team_filter}', U21: {u21_filter}, In forma: {in_forma_filter}")
-        
+
         assistant = get_assistant()
         if not assistant:
             LOG.error("[Players API] Assistant not available")
@@ -896,10 +897,10 @@ def api_players():
                 "total": 0,
                 "error": "Assistant not available"
             }), 200
-        
+
         # Ensure data is loaded
         assistant._ensure_data_loaded()
-        
+
         # Use sample data if roster is not available
         players = []
         if hasattr(assistant, 'filtered_roster') and assistant.filtered_roster:
@@ -919,11 +920,11 @@ def api_players():
                 {"name": "Donnarumma", "team": "PSG", "role": "P", "_fm": 6.5, "_price": 25, "birth_year": 1999},
                 {"name": "Maignan", "team": "Milan", "role": "P", "_fm": 6.3, "_price": 22, "birth_year": 1995}
             ]
-        
+
         # Apply filters
         filtered_players = []
         current_year = 2025
-        
+
         for player in players:
             # Search filter
             if search_query:
@@ -932,41 +933,41 @@ def api_players():
                 if (search_query.lower() not in player_name and 
                     search_query.lower() not in player_team):
                     continue
-            
+
             # Role filter
             if role_filter:
                 player_role = (player.get('role') or '').upper()
                 if player_role != role_filter:
                     continue
-            
+
             # Team filter
             if team_filter:
                 player_team = (player.get('team') or '').lower()
                 if team_filter not in player_team:
                     continue
-            
+
             # U21 filter
             if u21_filter:
                 birth_year = player.get('birth_year')
                 if not birth_year or (current_year - birth_year) > 21:
                     continue
-            
+
             # In forma filter (players with high fantamedia)
             if in_forma_filter:
                 fm = player.get('_fm') or 0
                 if fm < 6.5:  # Consider players "in forma" if fantamedia >= 6.5
                     continue
-            
+
             filtered_players.append(player)
-        
+
         # Sort by fantamedia descending
         filtered_players.sort(key=lambda x: x.get('_fm') or 0, reverse=True)
-        
+
         # Limit results
         filtered_players = filtered_players[:limit]
-        
+
         LOG.info(f"[Players API] Returning {len(filtered_players)} players")
-        
+
         return jsonify({
             "players": filtered_players,
             "total": len(filtered_players),
@@ -978,7 +979,7 @@ def api_players():
                 "in_forma": in_forma_filter
             }
         }), 200
-        
+
     except Exception as e:
         LOG.error(f"[Players API] Error: {str(e)}", exc_info=True)
         return jsonify({
@@ -993,7 +994,7 @@ def api_statistics():
     try:
         LOG.info(f"[Statistics API] Request received - Method: {request.method}")
         LOG.info(f"[Statistics API] Request args: {dict(request.args)}")
-        
+
         assistant = get_assistant()
         if not assistant:
             return jsonify({
@@ -1007,13 +1008,13 @@ def api_statistics():
         team_filter = request.args.get('team', '').strip().lower()
 
         LOG.info(f"[Statistics API] Filters - Role: '{role_filter}', Team: '{team_filter}'")
-        
+
         # Try to ensure data is loaded
         try:
             assistant._ensure_data_loaded()
         except Exception as e:
             LOG.warning(f"[Statistics API] Data loading failed: {e}")
-        
+
         # Use available data or fallback to sample
         players = []
         if hasattr(assistant, 'filtered_roster') and assistant.filtered_roster:
@@ -1027,7 +1028,7 @@ def api_statistics():
                 {"name": "Theo Hernandez", "team": "Milan", "role": "D", "_fm": 6.8, "_price": 32},
                 {"name": "Donnarumma", "team": "PSG", "role": "P", "_fm": 6.5, "_price": 25}
             ]
-            
+
         LOG.info(f"[Statistics API] Using {len(players)} players for statistics")
 
         # Aggregate statistics by role  
@@ -1041,12 +1042,12 @@ def api_statistics():
             players = []
             role_matches = 0
             team_matches = 0
-            
+
             for p in assistant.filtered_roster:
                 # Check role match with multiple variations
                 player_role = p.get('role', '').strip().upper()
                 role_raw = p.get('role_raw', '').strip().upper()
-                
+
                 # Enhanced role matching for Italian terms with better filtering
                 is_role_match = False
                 if role == "P":
@@ -1076,7 +1077,7 @@ def api_statistics():
                     team_match = (team_filter in player_team or 
                                 player_team in team_filter or
                                 any(part in player_team for part in team_filter.split() if len(part) > 2))
-                    
+
                     if team_match:
                         team_matches += 1
 
@@ -1107,7 +1108,7 @@ def api_statistics():
             # Calculate averages with safer handling
             fantamedias = []
             prices = []
-            
+
             for p in players:
                 fm = p.get('_fm')
                 pr = p.get('_price')
@@ -1124,11 +1125,11 @@ def api_statistics():
             for p in players:
                 name = p.get('name', '').strip()
                 team = p.get('team', '').strip()
-                
+
                 # Skip non-Serie A teams only
                 if team and any(excluded_team in team.lower() for excluded_team in ['newcastle', 'psg', 'al hilal', 'tottenham', 'arsenal', 'manchester', 'chelsea', 'liverpool', 'real madrid', 'barcelona', 'atletico', 'bayern', 'borussia']):
                     continue
-                    
+
                 valid_players.append(p)
 
             players_sorted = sorted(valid_players, key=lambda x: -(x.get('_fm') or 0))
@@ -1197,7 +1198,7 @@ def api_statistics():
         LOG.info(f"[Statistics API] Total players after filtering: {total_filtered}")
         LOG.info(f"[Statistics API] Role statistics: {role_stats}")
         LOG.info(f"[Statistics API] Debug info: {response_data['debug_info']}")
-        
+
         return jsonify(response_data)
 
     except Exception as e:

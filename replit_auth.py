@@ -151,6 +151,9 @@ def logged_in(blueprint, token):
     next_url = session.pop("next_url", None)
     if next_url is not None:
         return redirect(next_url)
+    else:
+        # Default redirect after login
+        return redirect("/dashboard")
 
 
 @oauth_error.connect

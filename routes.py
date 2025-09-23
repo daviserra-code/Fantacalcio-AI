@@ -43,7 +43,22 @@ def get_canonical_base_url(request):
     return f"https://{host or 'localhost:5000'}", True
 
 # Register authentication blueprint
-app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
+auth_bp = make_replit_blueprint()
+app.register_blueprint(auth_bp, url_prefix="/auth")
+
+@app.route('/login')
+def login():
+    """Login route that redirects to Replit Auth"""
+    from flask import request
+    # Store the next URL for after login
+    next_url = request.args.get('next', '/')
+    session['next_url'] = next_url
+    return redirect(url_for('replit_auth.login'))
+
+@app.route('/auth/login')
+def auth_login():
+    """Replit Auth login endpoint"""
+    return redirect('/auth/replit_auth')
 
 # Make session permanent
 @app.before_request
@@ -52,12 +67,49 @@ def make_session_permanent():
 
 @app.route('/')
 def home():
-    """Home route - redirect to appropriate interface"""
-    # Check if user is authenticated
-    if current_user.is_authenticated:
-        return redirect('/dashboard')
+    """Home route - serve appropriate interface based on device and auth status"""
+    # Import device detection
+    from device_detector import DeviceDetector
+    
+    # Check if mobile device
+    if DeviceDetector.is_mobile_device():
+        # Mobile users get the app interface (logged in or not)
+        return _render_mobile_app_interface()
     else:
-        return redirect('/landing')
+        # Desktop users - check authentication for dashboard vs landing
+        if current_user.is_authenticated:
+            return redirect('/dashboard')
+        else:
+            return render_template("index_desktop.html")
+
+def _render_mobile_app_interface():
+    """Render mobile app interface with authentication context"""
+    from flask import request
+    
+    # Centralized translations
+    T = {
+        "it": {
+            "title": "Fantasy Football Assistant",
+            "subtitle": "Consigli per asta, formazioni e strategie",
+            "participants": "Partecipanti",
+            "budget": "Budget",
+            "reset_chat": "Reset Chat",
+            "welcome": "Ciao! Sono qui per aiutarti con il fantacalcio.",
+            "send": "Invia",
+            "search_placeholder": "Cerca giocatori/club/metriche",
+            "all_roles": "Tutti",
+            "goalkeeper": "Portiere",
+            "defender": "Difensore",
+            "midfielder": "Centrocampista",
+            "forward": "Attaccante",
+        }
+    }
+    
+    lang = request.args.get("lang", "it")
+    return render_template("index.html", 
+                         lang=lang, 
+                         t=T.get(lang, T["it"]), 
+                         user=current_user if current_user.is_authenticated else None)
 
 @app.route('/dashboard')
 @require_login
@@ -215,9 +267,15 @@ def demo_login():
     return redirect('/dashboard')
 
 @app.route('/upgrade')
+@require_login
 def upgrade_to_pro():
-    """Upgrade to pro subscription page"""
-    return render_template('upgrade.html')
+    """Upgrade to pro subscription page - requires login"""
+    # Check if user is already pro
+    if current_user.is_pro:
+        flash('You already have an active Pro subscription!', 'info')
+        return redirect('/dashboard')
+    
+    return render_template('upgrade.html', user=current_user)
 
 @app.route('/create-checkout-session', methods=['POST'])
 @require_login
