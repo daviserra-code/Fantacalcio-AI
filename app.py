@@ -1,6 +1,7 @@
-# app.py - Authentication and database setup from Replit Auth integration
+# app.py - Main Flask application with custom authentication
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from sqlalchemy.orm import DeclarativeBase
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -29,10 +30,26 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 # No need to call db.init_app(app) here, it's already done in the constructor.
 db = SQLAlchemy(app, model_class=Base)
 
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+@login_manager.user_loader
+def load_user(user_id):
+    from models import User
+    return User.query.get(int(user_id))
+
 # Register blueprints
 from site_blueprint import site_bp
+from auth import auth_bp
+
 app.register_blueprint(site_bp)
+app.register_blueprint(auth_bp, url_prefix='/auth')
 logging.info("Site blueprint registered")
+logging.info("Auth blueprint registered")
 
 # Add readiness check endpoint for deployment monitoring
 @app.route('/ready')

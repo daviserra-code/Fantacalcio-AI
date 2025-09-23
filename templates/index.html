@@ -995,14 +995,14 @@
               <i class="fas fa-crown"></i> Diventa PRO!
             </a>
           {% endif %}
-          <a href="/auth/logout" class="header-btn">
+          <a href="{{ url_for('auth.logout') }}" class="header-btn">
             <i class="fas fa-sign-out-alt"></i> Logout
           </a>
         {% else %}
-          <a href="/login" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
+          <a href="/auth/login" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
             <i class="fas fa-crown"></i> Accedi per PRO
           </a>
-          <a href="/login" class="header-btn">
+          <a href="/auth/login" class="header-btn">
             <i class="fas fa-sign-in-alt"></i> Accedi
           </a>
         {% endif %}

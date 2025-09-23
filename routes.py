@@ -6,7 +6,7 @@ import stripe
 from flask import session, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user, login_user
 from app import app, db
-from replit_auth import require_login, require_pro, make_replit_blueprint
+from flask_login import login_required, current_user
 from models import User, UserLeague, Subscription
 from league_rules_manager import LeagueRulesManager
 
@@ -42,23 +42,7 @@ def get_canonical_base_url(request):
     # Fallback
     return f"https://{host or 'localhost:5000'}", True
 
-# Register authentication blueprint
-auth_bp = make_replit_blueprint()
-app.register_blueprint(auth_bp, url_prefix="/auth")
-
-@app.route('/login')
-def login():
-    """Login route that redirects to Replit Auth"""
-    from flask import request
-    # Store the next URL for after login
-    next_url = request.args.get('next', '/')
-    session['next_url'] = next_url
-    return redirect(url_for('replit_auth.login'))
-
-@app.route('/auth/login')
-def auth_login():
-    """Replit Auth login endpoint"""
-    return redirect('/auth/replit_auth')
+# Authentication routes are now handled by auth.py blueprint
 
 # Make session permanent
 @app.before_request
@@ -112,7 +96,7 @@ def _render_mobile_app_interface():
                          user=current_user if current_user.is_authenticated else None)
 
 @app.route('/dashboard')
-@require_login
+@login_required
 def dashboard():
     """Dashboard for logged-in users"""
     user_leagues = current_user.leagues if current_user.is_authenticated else []
@@ -267,7 +251,7 @@ def demo_login():
     return redirect('/dashboard')
 
 @app.route('/upgrade')
-@require_login
+@login_required
 def upgrade_to_pro():
     """Upgrade to pro subscription page - requires login"""
     # Check if user is already pro
@@ -577,7 +561,7 @@ def stripe_webhook():
 
 # League management routes
 @app.route('/api/leagues')
-@require_login
+@login_required
 def get_user_leagues():
     """Get all leagues for the current user"""
     leagues = []
@@ -598,10 +582,12 @@ def get_user_leagues():
     })
 
 @app.route('/api/leagues', methods=['POST'])
-@require_login
-@require_pro
+@login_required
 def create_league():
     """Create a new league (Pro users only)"""
+    if not current_user.is_pro:
+        return jsonify({'error': 'Pro subscription required'}), 403
+        
     data = request.get_json()
     league_name = data.get('name', '').strip()
 
@@ -642,7 +628,7 @@ def create_league():
     }), 201
 
 @app.route('/api/leagues/<int:league_id>')
-@require_login
+@login_required
 def get_league(league_id):
     """Get a specific league"""
     league = UserLeague.query.filter_by(
