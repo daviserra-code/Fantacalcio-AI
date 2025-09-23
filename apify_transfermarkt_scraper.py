@@ -510,9 +510,21 @@ def main():
 
     # Operazioni finali
     if all_transfers:
-        # Salva file combinato
+        # Salva file combinato con timestamp
         combined_path = save_transfers_jsonl(all_transfers, "SERIE_A_COMBINED", args.season)
         LOG.info("File combinato: %s", combined_path)
+        
+        # Salva file combinato stabile (senza timestamp per uso statico)
+        data_dir = Path("./data")
+        data_dir.mkdir(exist_ok=True)
+        stable_filename = f"serie_a_transfers_{args.season.replace('/', '-')}.jsonl"
+        stable_path = data_dir / stable_filename
+        
+        with stable_path.open("w", encoding="utf-8") as f:
+            for transfer in all_transfers:
+                f.write(json.dumps(transfer, ensure_ascii=False) + "\n")
+        
+        LOG.info("File stabile per app: %s con %d trasferimenti", stable_path, len(all_transfers))
 
         # Aggiorna roster
         if args.write_roster:
