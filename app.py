@@ -78,17 +78,34 @@ with app.app_context():
         tables = inspector.get_table_names()
         logger.info(f"Database tables available: {tables}")
 
-        # Check users table columns
+        # Check users table columns and their specifications
         if 'users' in tables:
-            columns = [col['name'] for col in inspector.get_columns('users')]
+            columns_info = inspector.get_columns('users')
+            columns = [col['name'] for col in columns_info]
             logger.info(f"Users table columns: {columns}")
+
+            # Check if password_hash column has correct size
+            password_hash_col = next((col for col in columns_info if col['name'] == 'password_hash'), None)
+            schema_needs_update = False
+            
+            if password_hash_col:
+                # Check if the column size is too small for modern password hashes
+                col_type_str = str(password_hash_col['type'])
+                logger.info(f"password_hash column type: {col_type_str}")
+                if 'VARCHAR(128)' in col_type_str or col_type_str == 'VARCHAR':
+                    logger.warning("password_hash column is too small, needs update to VARCHAR(256)")
+                    schema_needs_update = True
 
             required_columns = ['id', 'username', 'email', 'password_hash']
             missing_columns = [col for col in required_columns if col not in columns]
-            if missing_columns:
-                logger.error(f"Missing required columns in users table: {missing_columns}")
-                # Only drop and recreate if there are missing columns
-                logger.info("Recreating tables due to missing columns...")
+            
+            if missing_columns or schema_needs_update:
+                if missing_columns:
+                    logger.error(f"Missing required columns in users table: {missing_columns}")
+                if schema_needs_update:
+                    logger.info("Schema update needed for password_hash column size")
+                    
+                logger.info("Recreating tables due to schema issues...")
                 db.drop_all()
                 db.create_all()
                 logger.info("Database tables recreated successfully")
