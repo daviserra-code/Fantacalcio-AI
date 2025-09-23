@@ -18,7 +18,8 @@ def is_production():
     """Check if running in production environment"""
     return (os.getenv("REPLIT_DEPLOYMENT") == "1" or 
             os.getenv("ENVIRONMENT") == "production" or
-            os.getenv("PORT") is not None)
+            os.getenv("PORT") is not None or
+            os.getenv("REPLIT_ENVIRONMENT") == "production")
 
 # Set up environment variable defaults for development only
 if not is_production() and 'SESSION_SECRET' not in os.environ:
