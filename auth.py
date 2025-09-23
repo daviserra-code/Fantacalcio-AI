@@ -102,11 +102,26 @@ def register():
         try:
             db.session.add(user)
             db.session.commit()
+            print(f"✅ User registered successfully: {username} ({email})")
             flash('Registration successful! You can now log in.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
-            flash('Registration failed. Please try again.', 'error')
+            print(f"❌ Registration failed for {username}: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            
+            # Provide more specific error messages
+            error_msg = str(e).lower()
+            if 'unique constraint' in error_msg or 'duplicate' in error_msg:
+                if 'username' in error_msg:
+                    flash('Username already taken. Please choose a different one.', 'error')
+                elif 'email' in error_msg:
+                    flash('Email already registered. Please use a different email.', 'error')
+                else:
+                    flash('Username or email already exists.', 'error')
+            else:
+                flash(f'Registration failed: {str(e)}', 'error')
             return render_template('auth/register.html')
     
     return render_template('auth/register.html')

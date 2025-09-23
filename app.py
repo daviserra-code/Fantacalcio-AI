@@ -68,10 +68,9 @@ def readiness_check():
 # Need to put this in module-level to make it work with Gunicorn.
 with app.app_context():
     try:
-        # Drop and recreate tables to ensure schema consistency
-        db.drop_all()
+        # Only create tables if they don't exist (don't drop existing data)
         db.create_all()
-        logger.info("Database tables recreated successfully")
+        logger.info("Database tables created/verified successfully")
 
         # Verify the tables were created correctly
         from sqlalchemy import inspect
@@ -88,6 +87,11 @@ with app.app_context():
             missing_columns = [col for col in required_columns if col not in columns]
             if missing_columns:
                 logger.error(f"Missing required columns in users table: {missing_columns}")
+                # Only drop and recreate if there are missing columns
+                logger.info("Recreating tables due to missing columns...")
+                db.drop_all()
+                db.create_all()
+                logger.info("Database tables recreated successfully")
             else:
                 logger.info("Users table schema is correct")
 
