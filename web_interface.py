@@ -170,7 +170,6 @@ def index_legacy():
         """, 500
 
 @app.route("/api/chat", methods=["POST"])
-@require_login # Ensure the user is logged in
 def api_chat():
     try:
         # Log client info for debugging
