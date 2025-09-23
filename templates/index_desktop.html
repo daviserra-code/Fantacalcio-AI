@@ -129,15 +129,31 @@
     }
 
     .quick-action-btn {
-        background: var(--secondary-btn-bg);
-        color: var(--secondary-btn-text);
-        border: 1px solid var(--secondary-btn-text);
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
     }
 
     .quick-action-btn:hover {
-        background: var(--primary-btn-bg);
-        color: var(--primary-btn-text);
-        border: 1px solid var(--fcai-primary); /* Assuming --fcai-primary is defined */
+        background: linear-gradient(135deg, #5a67d8, #6b46c1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .quick-action-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
     }
 
     .footer {
@@ -194,7 +210,13 @@
     /* Fix dark theme for specific elements */
     [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
     [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
-    [data-theme="dark"] .quick-action-btn { color: var(--primary-btn-text) !important; }
+    [data-theme="dark"] .quick-action-btn { 
+        background: linear-gradient(135deg, #8a8aff, #a074c4) !important;
+        color: white !important; 
+    }
+    [data-theme="dark"] .quick-action-btn:hover { 
+        background: linear-gradient(135deg, #9d9dff, #b48cd1) !important;
+    }
     [data-theme="dark"] .table { color: var(--text-color); }
     [data-theme="dark"] .table th { background-color: var(--table-header-bg); color: var(--table-text); }
     [data-theme="dark"] .table td { border-bottom-color: var(--input-border); }
