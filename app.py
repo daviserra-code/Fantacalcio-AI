@@ -10,6 +10,7 @@ from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class Base(DeclarativeBase):
     pass
@@ -66,7 +67,30 @@ def readiness_check():
 # Create tables
 # Need to put this in module-level to make it work with Gunicorn.
 with app.app_context():
-    import models  # noqa: F401
-    from datetime import datetime
-    db.create_all()
-    logging.info("Database tables created")
+    try:
+        # Drop and recreate tables to ensure schema consistency
+        db.drop_all()
+        db.create_all()
+        logger.info("Database tables recreated successfully")
+
+        # Verify the tables were created correctly
+        from sqlalchemy import inspect
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        logger.info(f"Database tables available: {tables}")
+
+        # Check users table columns
+        if 'users' in tables:
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            logger.info(f"Users table columns: {columns}")
+
+            required_columns = ['id', 'username', 'email', 'password_hash']
+            missing_columns = [col for col in required_columns if col not in columns]
+            if missing_columns:
+                logger.error(f"Missing required columns in users table: {missing_columns}")
+            else:
+                logger.info("Users table schema is correct")
+
+    except Exception as e:
+        logger.error(f"Database initialization error: {e}")
+        # Continue running even if database fails
