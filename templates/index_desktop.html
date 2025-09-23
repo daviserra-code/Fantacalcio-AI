@@ -395,14 +395,7 @@
           </div>
         </div>
 
-        <!-- Quick Actions for Desktop Chat -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px;">
-          <button onclick="askDesktopQuestion('Migliori attaccanti per budget 150 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🎯 Top Attaccanti Budget</button>
-          <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Top Centrocampisti</button>
-          <button onclick="askDesktopQuestion('Strategia per l\'asta')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🏆 Strategia Asta</button>
-          <button onclick="askDesktopQuestion('Formazione 3-5-2 con budget 500 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Formazione 3-5-2</button>
-          <button onclick="testQuickAction()" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🔧 Test</button>
-        </div>
+        <!-- Duplicate buttons removed - main quick actions are below -->
       </div>
     </div>
   </section>
@@ -645,15 +638,30 @@
 
     function askDesktopQuestion(question) {
         console.log('askDesktopQuestion called with:', question);
+        
+        // Prevent multiple calls by checking if already processing
+        if (window.isProcessingQuestion) {
+            console.log('Already processing a question, ignoring duplicate call');
+            return;
+        }
+        
+        window.isProcessingQuestion = true;
+        
         const input = document.getElementById('desktopMessageInput');
         if (!input) {
             console.error('Desktop message input not found');
+            window.isProcessingQuestion = false;
             return;
         }
         
         input.value = question;
         console.log('Input value set to:', input.value);
         sendDesktopMessage();
+        
+        // Reset the processing flag after the request completes
+        setTimeout(() => {
+            window.isProcessingQuestion = false;
+        }, 2000);
     }
 
     function resetDesktopChat() {

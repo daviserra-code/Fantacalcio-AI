@@ -19,7 +19,7 @@ run = ["sh", "-c", "python wsgi.py"]
 build = ["echo", "No build step required"]
 
 [workflows]
-runButton = "Run Fantasy App"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Run Fantacalcio Assistant"
@@ -63,6 +63,10 @@ args = "python wsgi.py"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 35333
+externalPort = 3000
 
 [agent]
 expertMode = true
