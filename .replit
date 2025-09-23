@@ -15,7 +15,7 @@ REPLIT_KEEP_PACKAGE_DEV_DEPENDENCIES = "1"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["python", "wsgi.py"]
+run = ["sh", "-c", "python wsgi.py"]
 build = ["echo", "No build step required"]
 
 [workflows]
