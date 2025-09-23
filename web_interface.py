@@ -24,7 +24,7 @@ from replit_auth import require_login, require_pro, make_replit_blueprint, init_
 from models import User, UserLeague
 
 logging.basicConfig(
-    level=LOG_LEVEL,
+    level=LOG_LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 LOG = logging.getLogger("web_interface")
@@ -500,7 +500,7 @@ def handle_exclusion(msg: str, state: dict) -> str:
                     corrections_manager = get_corrections_manager()
                     if corrections_manager:
                         # Call persistent remove_player method
-                        result = corrections_manager.remove_player(player_name, reason="User web interface request")
+                        result = corrections_manager.remove_player(player_name, "User web interface request")
 
                         # Also add to session for immediate effect in current session
                         excluded_players = state.setdefault("excluded_players", [])

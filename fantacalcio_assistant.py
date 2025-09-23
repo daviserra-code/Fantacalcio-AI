@@ -1127,7 +1127,7 @@ class FantacalcioAssistant:
                 if isinstance(pr,(int,float)): bits.append(f"€ {int(round(pr))}")
                 if isinstance(vr,(int,float)): bits.append(f"Q/P {(vr*100):.1f}%")
                 lines.append(f"- **{p.get('name','N/D')}** ({p.get('team','—')}) — " + ", ".join(bits))
-            sections.append("🎯 **Entro {budget} crediti (ordine Q/P)**\n" + "\n".join(lines))
+            sections.append(f"🎯 **Entro {budget} crediti (ordine Q/P)**\n" + "\n".join(lines))
         if fm_only:
             lines=[]
             for p in fm_only:
@@ -1492,7 +1492,7 @@ Cosa ti interessa di più?"""
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
         elif intent["type"] == "generic":
              reply = self._llm_complete(user_text, context_messages=[], state=st)
-             if not reply or "non disponibile" in reply.lower():
+             if not reply or "non disponibile" in reply.lower() or reply.strip() == "":
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
         else:
             reply = "Non ho capito la richiesta. Prova con: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
@@ -2376,7 +2376,7 @@ Cosa ti interessa di più?"""
 
         except Exception as e:
             LOG.error("[Assistant] Errore OpenAI: %s", e)
-            return "⚠️ Servizio momentaneamente non disponibile. Riprova tra poco."
+            return "⚠️ Servizio AI momentaneamente non disponibile. Prova con: *formazione 4-3-3*, *top attaccanti budget 150*, o *difensori under 21*."
 
     def _get_system_prompt(self) -> str:
         """Get enhanced system prompt for LLM with current roster context"""
