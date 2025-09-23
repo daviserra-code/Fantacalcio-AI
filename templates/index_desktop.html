@@ -658,7 +658,7 @@
         }
     }
 
-    function askDesktopQuestion(question) {
+    async function askDesktopQuestion(question) {
         console.log('askDesktopQuestion called with:', question);
         
         // Prevent multiple calls by checking if already processing
@@ -669,21 +669,40 @@
         
         window.isProcessingQuestion = true;
         
-        const input = document.getElementById('desktopMessageInput');
-        if (!input) {
-            console.error('Desktop message input not found');
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: question, mode: 'classic' })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Response status:', response.status);
+            console.log('Response data:', data);
+            
+            // Display the result using the working showQuickResult function
+            const title = question.includes('Ultimi acquisti') ? `📈 ${question}` :
+                         question.includes('Formazione') ? `⚽ ${question}` :
+                         question.includes('Under') ? `👶 ${question}` :
+                         question.includes('attaccanti') ? '🎯 Top Attaccanti' :
+                         question.includes('centrocampisti') ? '⚽ Top Centrocampisti' :
+                         question.includes('difensori') ? '🛡️ Top Difensori' :
+                         question.includes('portieri') ? '🥅 Top Portieri' :
+                         '🤖 FantacalcioAI';
+            
+            showQuickResult(title, data.response || 'Risposta non disponibile al momento.');
+            
+        } catch (error) {
+            console.error('Chat error:', error);
+            showQuickResult('❌ Errore', 'Errore nella comunicazione con l\'assistente. Riprova più tardi.');
+        } finally {
+            // Reset the processing flag
             window.isProcessingQuestion = false;
-            return;
         }
-        
-        input.value = question;
-        console.log('Input value set to:', input.value);
-        sendDesktopMessage();
-        
-        // Reset the processing flag after the request completes
-        setTimeout(() => {
-            window.isProcessingQuestion = false;
-        }, 2000);
     }
 
     function resetDesktopChat() {
