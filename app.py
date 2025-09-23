@@ -16,7 +16,7 @@ class Base(DeclarativeBase):
     pass
 
 # Initialize Flask app
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(__name__, template_folder="templates", static_folder="static", static_url_path="/static")
 app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # needed for url_for to generate with https
 

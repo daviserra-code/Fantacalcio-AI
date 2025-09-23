@@ -19,7 +19,9 @@ def is_production():
     return (os.getenv("REPLIT_DEPLOYMENT") == "1" or 
             os.getenv("ENVIRONMENT") == "production" or
             os.getenv("PORT") is not None or
-            os.getenv("REPLIT_ENVIRONMENT") == "production")
+            os.getenv("REPLIT_ENVIRONMENT") == "production" or
+            "replit.app" in os.getenv("REPLIT_URL", "") or
+            os.getenv("HOSTNAME", "").startswith("runner-"))
 
 # Set up environment variable defaults for development only
 if not is_production() and 'SESSION_SECRET' not in os.environ:

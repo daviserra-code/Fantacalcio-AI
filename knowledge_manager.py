@@ -78,13 +78,13 @@ class KnowledgeManager:
         """Lazy load SentenceTransformer model when needed"""
         if self.model is not None:
             return
-        
+
         if self._model_loading:
             # Another thread is loading, wait briefly
             import time
             time.sleep(0.1)
             return
-        
+
         self._model_loading = True
         try:
             LOG.info("🔄 Loading SentenceTransformer model on-demand...")
