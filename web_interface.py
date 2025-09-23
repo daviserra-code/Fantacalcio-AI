@@ -24,7 +24,7 @@ from replit_auth import require_login, require_pro, make_replit_blueprint, init_
 from models import User, UserLeague
 
 logging.basicConfig(
-    level=LOG_LOG_LEVEL,
+    level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 LOG = logging.getLogger("web_interface")
