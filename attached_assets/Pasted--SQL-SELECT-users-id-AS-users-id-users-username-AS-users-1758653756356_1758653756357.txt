@@ -1,0 +1,20 @@
+                                     ^
+
+[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.profile_image_url AS users_profile_image_url, users.pro_expires_at AS users_pro_expires_at, users.stripe_customer_id AS users_stripe_customer_id, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'username_1': 'pepito.spezzeguti', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2025-09-23 18:55:31,097 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:55:31,097 - web_interface - INFO - [Players API] Request args: {'in_forma': 'true', 'limit': '20'}
+2025-09-23 18:55:31,097 - web_interface - INFO - [Players API] Filters - Search: '', Role: '', Team: '', U21: False, In forma: True
+2025-09-23 18:55:31,098 - web_interface - INFO - [Players API] Returning 20 players
+2025-09-23 18:55:31,101 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:55:31,101 - web_interface - INFO - [Players API] Request args: {'role': 'A', 'in_forma': 'true', 'limit': '3'}
+2025-09-23 18:55:31,101 - web_interface - INFO - [Players API] Filters - Search: '', Role: 'A', Team: '', U21: False, In forma: True
+2025-09-23 18:55:31,101 - web_interface - INFO - [Players API] Returning 3 players
+2025-09-23 18:55:31,293 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:55:31,293 - web_interface - INFO - [Players API] Request args: {'role': 'C', 'in_forma': 'true', 'limit': '3'}
+2025-09-23 18:55:31,293 - web_interface - INFO - [Players API] Filters - Search: '', Role: 'C', Team: '', U21: False, In forma: True
+2025-09-23 18:55:31,294 - web_interface - INFO - [Players API] Returning 3 players

@@ -1,0 +1,148 @@
+2025-09-23 18:50:28,098 - root - INFO - Site blueprint registered
+2025-09-23 18:50:34,909 - root - INFO - Database tables createded
+2025-09-23 18:50:34,909 - __main__ - INFO - ProxyFix middleware applied successfully (production: False)
+2025-09-23 18:50:36,553 - web_interface - INFO - Flask-Login already initialized
+2025-09-23 18:50:36,553 - web_interface - INFO - Registering authentication blueprint in web_interface.py
+2025-09-23 18:50:36,555 - web_interface - INFO - Routes imported successfully
+2025-09-23 18:50:36,555 - rate_limiter - INFO - Deployment detection: {'REPLIT_DEPLOYMENT': None, 'REPL_DEPLOYMENT': None, 'fantacalcioai.it': False, 'ENVIRONMENT': None, 'HOSTNAME': False, 'replit.dev': False, 'repl.co': False, 'deployment_file': False} -> False
+2025-09-23 18:50:36,555 - rate_limiter - INFO - RateLimiter initialized: max_requests=10, window=3600s, deployed=False
+2025-09-23 18:50:36,563 - __main__ - INFO - Application imported successfully
+2025-09-23 18:50:36,568 - __main__ - INFO - Starting Waitress server on 0.0.0.0:5000
+2025-09-23 18:50:36,568 - __main__ - INFO - Production mode: True
+2025-09-23 18:50:36,568 - __main__ - INFO - Environment PORT: not set
+2025-09-23 18:50:36,568 - __main__ - INFO - Health check available at /health
+2025-09-23 18:50:36,568 - __main__ - INFO - Readiness check available at /ready
+2025-09-23 18:50:36,575 - waitress - INFO - Serving on http://0.0.0.0:5000
+2025-09-23 18:50:56,533 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:50:56,533 - web_interface - INFO - [Players API] Request args: {'in_forma': 'true', 'limit': '20'}
+2025-09-23 18:50:56,533 - web_interface - INFO - [Players API] Filters - Search: '', Role: '', Team: '', U21: False, In forma: True
+2025-09-23 18:50:56,533 - web_interface - INFO - Initializing FantacalcioAssistant (singleton)...
+2025-09-23 18:50:56,533 - fantacalcio_assistant - INFO - Initializing FantacalcioAssistant...
+2025-09-23 18:50:56,533 - knowledge_manager - INFO - [KM] Initializing KnowledgeManager...
+2025-09-23 18:50:56,535 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:50:56,535 - web_interface - INFO - [Players API] Request args: {'role': 'A', 'in_forma': 'true', 'limit': '3'}
+2025-09-23 18:50:56,535 - web_interface - INFO - [Players API] Filters - Search: '', Role: 'A', Team: '', U21: False, In forma: True
+2025-09-23 18:50:56,535 - web_interface - INFO - Initializing FantacalcioAssistant (singleton)...
+2025-09-23 18:50:56,535 - fantacalcio_assistant - INFO - Initializing FantacalcioAssistant...
+2025-09-23 18:50:56,535 - knowledge_manager - INFO - [KM] Initializing KnowledgeManager...
+2025-09-23 18:50:56,631 - chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-09-23 18:50:56,631 - chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+2025-09-23 18:50:56,832 - knowledge_manager - INFO - [KM] Using Chroma PersistentClient at ./chroma_db
+2025-09-23 18:50:56,833 - knowledge_manager - INFO - [KM] Collection non trovata o corrotta (Collection [fantacalcio_knowledge] does not exists), creazione: 'fantacalcio_knowledge'
+2025-09-23 18:50:56,834 - knowledge_manager - INFO - [KM] Using Chroma PersistentClient at ./chroma_db
+2025-09-23 18:50:56,856 - knowledge_manager - INFO - [KM] Fresh collection created: 'fantacalcio_knowledge'
+2025-09-23 18:50:56,859 - knowledge_manager - INFO - [KM] Collection caricata: 'fantacalcio_knowledge', count=0
+2025-09-23 18:50:56,859 - knowledge_manager - INFO - 🚀 KnowledgeManager initialized with lazy model loading
+2025-09-23 18:50:56,860 - fantacalcio_assistant - INFO - [Assistant] KnowledgeManager initialized
+2025-09-23 18:50:56,860 - fantacalcio_assistant - INFO - [Assistant] CorrectionsManager initialized
+2025-09-23 18:50:56,860 - knowledge_manager - INFO - 🚀 KnowledgeManager initialized with lazy model loading
+2025-09-23 18:50:56,861 - fantacalcio_assistant - INFO - [Assistant] Fast initialization completed - data will load on first use
+2025-09-23 18:50:56,861 - fantacalcio_assistant - INFO - [Assistant] KnowledgeManager initialized
+2025-09-23 18:50:56,861 - web_interface - INFO - FantacalcioAssistant initialized successfully
+2025-09-23 18:50:56,861 - fantacalcio_assistant - INFO - [Assistant] Loading data on first use...
+2025-09-23 18:50:56,862 - fantacalcio_assistant - INFO - [Assistant] age_index caricato: 185 chiavi
+2025-09-23 18:50:56,863 - fantacalcio_assistant - INFO - [Assistant] overrides caricato: 186 chiavi
+2025-09-23 18:50:56,863 - fantacalcio_assistant - INFO - [Assistant] override roles caricati: 186
+2025-09-23 18:50:56,863 - fantacalcio_assistant - INFO - [Assistant] CorrectionsManager initialized
+2025-09-23 18:50:56,863 - fantacalcio_assistant - INFO - [Assistant] Fast initialization completed - data will load on first use
+2025-09-23 18:50:56,863 - web_interface - INFO - FantacalcioAssistant initialized successfully
+2025-09-23 18:50:56,864 - fantacalcio_assistant - INFO - [Assistant] Loading data on first use...
+2025-09-23 18:50:56,864 - fantacalcio_assistant - INFO - [Assistant] age_index caricato: 185 chiavi
+2025-09-23 18:50:56,865 - fantacalcio_assistant - INFO - [Assistant] overrides caricato: 186 chiavi
+2025-09-23 18:50:56,865 - fantacalcio_assistant - INFO - [Assistant] override roles caricati: 186
+2025-09-23 18:50:57,179 - corrections_manager - INFO - Found team correction for Lorenzo Lucca: Napoli → Napoli
+2025-09-23 18:50:57,185 - corrections_manager - INFO - Found team correction for Lorenzo Lucca: Napoli → Napoli
+2025-09-23 18:50:57,346 - fantacalcio_assistant - INFO - [Assistant] Roster normalizzato: 511/511 record utili
+2025-09-23 18:50:57,347 - corrections_manager - INFO - [Corrections] Excluded players for all teams: 6 total - DB: 2, Cache: 0, General: 4
+2025-09-23 18:50:57,349 - corrections_manager - INFO - Applied persistent team update: Lorenzo Lucca Napoli -> Napoli
+2025-09-23 18:50:57,351 - fantacalcio_assistant - INFO - [Assistant] SEASON_FILTER auto: 2025-26
+2025-09-23 18:50:57,355 - fantacalcio_assistant - INFO - [Assistant] Età arricchite su 0 record
+2025-09-23 18:50:57,717 - fantacalcio_assistant - INFO - [Assistant] Roster normalizzato: 511/511 record utili
+2025-09-23 18:50:57,778 - corrections_manager - INFO - [Corrections] Excluded players for all teams: 6 total - DB: 2, Cache: 0, General: 4
+2025-09-23 18:50:57,789 - corrections_manager - INFO - Applied persistent team update: Lorenzo Lucca Napoli -> Napoli
+2025-09-23 18:50:57,795 - fantacalcio_assistant - INFO - [Assistant] SEASON_FILTER auto: 2025-26
+2025-09-23 18:50:57,798 - fantacalcio_assistant - INFO - [Assistant] Età arricchite su 0 record
+2025-09-23 18:50:59,067 - fantacalcio_assistant - INFO - [Assistant] Pool filtrato: 415 record principali + 139 synthetic U21, stagione=2025-26
+2025-09-23 18:50:59,072 - fantacalcio_assistant - INFO - [Assistant] Data loading completed - 415 players loaded
+2025-09-23 18:50:59,072 - web_interface - INFO - [Players API] Returning 20 players
+2025-09-23 18:50:59,511 - fantacalcio_assistant - INFO - [Assistant] Pool filtrato: 415 record principali + 139 synthetic U21, stagione=2025-26
+2025-09-23 18:50:59,511 - fantacalcio_assistant - INFO - [Assistant] Data loading completed - 415 players loaded
+2025-09-23 18:50:59,512 - web_interface - INFO - [Players API] Returning 3 players
+2025-09-23 18:50:59,642 - web_interface - INFO - [Players API] Request received - Method: GET
+2025-09-23 18:50:59,642 - web_interface - INFO - [Players API] Request args: {'role': 'C', 'in_forma': 'true', 'limit': '3'}
+2025-09-23 18:50:59,643 - web_interface - INFO - [Players API] Filters - Search: '', Role: 'C', Team: '', U21: False, In forma: True
+2025-09-23 18:50:59,643 - web_interface - INFO - [Players API] Returning 3 players
+2025-09-23 18:53:06,376 - app - ERROR - Exception on /auth/register [POST]
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column users.username does not exist
+LINE 1: SELECT users.id AS users_id, users.username AS users_usernam...
+                                     ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/auth.py", line 81, in register
+    if User.query.filter_by(username=username).first():
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+           ^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column users.username does not exist
+LINE 1: SELECT users.id AS users_id, users.username AS users_usernam...
+                                     ^
+
+[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.password_hash AS users_password_hash, users.first_name AS users_first_name, users.last_name AS users_last_name, users.profile_image_url AS users_profile_image_url, users.pro_expires_at AS users_pro_expires_at, users.stripe_customer_id AS users_stripe_customer_id, users.is_active AS users_is_active, users.created_at AS users_created_at, users.updated_at AS users_updated_at 
+FROM users 
+WHERE users.username = %(username_1)s 
+ LIMIT %(param_1)s]
+[parameters: {'username_1': 'pepito.spezzeguti', 'param_1': 1}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
