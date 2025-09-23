@@ -16,6 +16,7 @@ from corrections_manager import CorrectionsManager
 # Assuming LeagueRulesManager is in a separate file named league_rules_manager.py
 from league_rules_manager import LeagueRulesManager
 from rate_limiter import RateLimiter
+from static_transfers import get_team_arrivals, is_static_mode_enabled, get_transfer_stats
 
 # Import authentication components
 from app import app, db
@@ -768,6 +769,67 @@ def rate_limit_status():
         return jsonify(status)
     except Exception as e:
         LOG.error(f"Error getting rate limit status: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/transfers/arrivals", methods=["GET"])
+def api_transfers_arrivals():
+    """Get transfer arrivals for a specific team using static data"""
+    try:
+        team = request.args.get('team', '').strip()
+        season = request.args.get('season', '2025-26').strip()
+        
+        if not team:
+            return jsonify({"error": "Team parameter required"}), 400
+            
+        LOG.info(f"[Static Transfers API] Getting arrivals for {team}, season {season}")
+        
+        # Check if static mode is enabled
+        if not is_static_mode_enabled():
+            return jsonify({
+                "error": "Static transfers mode not enabled", 
+                "team": team,
+                "arrivals": []
+            }), 503
+            
+        # Get arrivals from static data
+        arrivals = get_team_arrivals(team, season)
+        
+        # Format response
+        formatted_arrivals = []
+        for transfer in arrivals:
+            formatted_arrivals.append({
+                "player": transfer.get("player", ""),
+                "team": transfer.get("team", ""),
+                "from_team": transfer.get("from_team", ""),
+                "fee": transfer.get("fee", ""),
+                "position": transfer.get("position", ""),
+                "season": transfer.get("season", ""),
+                "source": transfer.get("source", "Apify"),
+                "direction": transfer.get("direction", "in")
+            })
+        
+        LOG.info(f"[Static Transfers API] Returning {len(formatted_arrivals)} arrivals for {team}")
+        
+        return jsonify({
+            "team": team,
+            "season": season,
+            "arrivals": formatted_arrivals,
+            "count": len(formatted_arrivals),
+            "static_mode": True
+        })
+        
+    except Exception as e:
+        LOG.error(f"Error in transfers arrivals API: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+@app.route("/api/transfers/stats", methods=["GET"])
+def api_transfers_stats():
+    """Get transfer data statistics"""
+    try:
+        stats = get_transfer_stats()
+        return jsonify(stats)
+    except Exception as e:
+        LOG.error(f"Error getting transfer stats: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/api/search', methods=['POST'])

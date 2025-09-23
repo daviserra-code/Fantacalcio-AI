@@ -15,6 +15,7 @@ from config import (
     OPENAI_TEMPERATURE, OPENAI_MAX_TOKENS
 )
 from knowledge_manager import KnowledgeManager
+from static_transfers import get_team_arrivals, is_static_mode_enabled
 
 LOG = logging.getLogger("fantacalcio_assistant")
 
@@ -1552,6 +1553,11 @@ Cosa ti interessa di più?"""
             # Check if user wants to see all transfers
             show_all = "tutti" in user_text.lower() or "all" in user_text.lower()
 
+            # Try static data first if enabled
+            if is_static_mode_enabled():
+                LOG.info(f"[Transfers] Using static data for {team}")
+                return self._handle_static_transfers(team, user_text, show_all)
+
             # Get excluded players from corrections manager
             excluded_players = []
             if self.corrections_manager:
@@ -1867,6 +1873,60 @@ Cosa ti interessa di più?"""
         except Exception as e:
             LOG.error(f"Error in _handle_transfers_request: {e}")
             return "⚠️ Errore nel recupero dei dati di mercato. Riprova più tardi."
+
+    def _handle_static_transfers(self, team: str, user_text: str, show_all: bool = False) -> str:
+        """Handle transfer requests using static data from JSONL files"""
+        try:
+            # Get arrivals from static data
+            arrivals = get_team_arrivals(team if team else "", "2025-26")
+            
+            if not arrivals:
+                if team:
+                    return f"❌ Non ho trovato acquisti recenti per **{team}**.\n\n💡 Possibili cause:\n• Verifica che il nome della squadra sia corretto\n• I dati potrebbero necessitare di aggiornamento\n• Controlla se ci sono stati trasferimenti recenti"
+                else:
+                    return "❌ Non ho trovato acquisti recenti nel database.\n\n🔄 Possibili cause:\n• I dati necessitano di refresh\n• Problema temporaneo con i dati statici"
+            
+            # Format the response
+            if team:
+                reply = f"🔄 **Ultimi acquisti {team} (2025-26):**\n\n"
+            else:
+                reply = "🔄 **Ultimi acquisti Serie A (2025-26):**\n\n"
+            
+            # Determine how many to show
+            transfers_to_show = arrivals if show_all else arrivals[:25]
+            
+            for i, transfer in enumerate(transfers_to_show, 1):
+                player_name = transfer.get("player", "")
+                team_name = transfer.get("team", "")
+                fee = transfer.get("fee", "")
+                from_team = transfer.get("from_team", "")
+                
+                # Format fee information
+                fee_info = ""
+                if fee and "fine prestito" not in fee.lower() and fee not in ["", "-", "n/a"]:
+                    fee_info = f" • {fee}"
+                
+                # Format from team info
+                from_info = ""
+                if from_team and from_team not in ["", "-", "n/a"]:
+                    from_info = f" (da {from_team})"
+                
+                reply += f"{i}. **{player_name}** → {team_name}{from_info}{fee_info}\n"
+            
+            if not show_all and len(arrivals) > 25:
+                reply += f"\n*...e altri {len(arrivals) - 25} acquisti*"
+            elif show_all:
+                reply += f"\n\n📊 *Totale completo: {len(arrivals)} acquisti mostrati*"
+            
+            # Add source information
+            reply += f"\n\n📈 *Dati aggiornati tramite Apify Transfermarkt* (Modalità Statica)"
+            
+            LOG.info(f"[Static Transfers] Returned {len(transfers_to_show)} arrivals for {team}")
+            return reply
+            
+        except Exception as e:
+            LOG.error(f"Error in _handle_static_transfers: {e}")
+            return "⚠️ Errore nel recupero dei dati statici di mercato. Riprova più tardi."
 
     def _extract_player_from_text(self, text: str) -> str:
         """Extract player name from transfer document text"""
