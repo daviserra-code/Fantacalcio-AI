@@ -200,6 +200,19 @@
     [data-theme="dark"] .table td { border-bottom-color: var(--input-border); }
     [data-theme="dark"] .help { color: var(--text-color); opacity: 0.7; }
 
+    /* Additional dark theme fixes */
+    [data-theme="dark"] .nav a { color: #e5e7eb; }
+    [data-theme="dark"] .nav .brand .word { color: #e5e7eb; }
+    [data-theme="dark"] .lead { color: #9ca3af; }
+    [data-theme="dark"] .section { background-color: var(--bg-color); }
+    [data-theme="dark"] .section.alt { background-color: var(--card-bg); }
+    [data-theme="dark"] .chat-container { background-color: var(--card-bg); border-color: var(--input-border); }
+    [data-theme="dark"] .chat-header { background-color: var(--header-bg); color: var(--text-color); }
+    [data-theme="dark"] #desktopChatMessages div { background: var(--chat-message-assistant-bg); color: var(--text-color); }
+    [data-theme="dark"] #desktopTypingIndicator { background: var(--chat-message-assistant-bg); color: var(--text-color); }
+    [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: var(--text-color); }
+    [data-theme="dark"] .footer { background-color: var(--header-bg); color: var(--text-color); }
+
   </style>
 </head>
 <body>
@@ -444,13 +457,13 @@
         <button class="quick-action-btn" onclick="askQuickQuestion('2 attaccanti Under 21')">👶 U21 Attaccanti</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Giovani Under 23 tutti i ruoli')">👶 U23 Tutti i Ruoli</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Strategia per l\'asta')">🏆 Strategia Asta</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Inter')">📈 Acquisti Inter</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Milan')">📈 Acquisti Milan</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Juventus')">📈 Acquisti Juventus</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Napoli')">📈 Acquisti Napoli</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Roma')">📈 Acquisti Roma</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Lazio')">📈 Acquisti Lazio</button>
-        <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Atalanta')">📈 Acquisti Atalanta</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Inter')">📈 Acquisti Inter</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Milan')">📈 Acquisti Milan</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Juventus')">📈 Acquisti Juventus</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Napoli')">📈 Acquisti Napoli</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Roma')">📈 Acquisti Roma</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Lazio')">📈 Acquisti Lazio</button>
+        <button class="quick-action-btn" onclick="askDesktopQuestion('Ultimi acquisti Atalanta')">📈 Acquisti Atalanta</button>
       </div>
     </div>
   </section>
@@ -888,7 +901,7 @@
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: question })
+                body: JSON.stringify({ message: question, mode: 'classic' })
             });
             const data = await response.json();
             showQuickResult('🤖 Risposta FantacalcioAI', data.response || 'Risposta non disponibile al momento.');
