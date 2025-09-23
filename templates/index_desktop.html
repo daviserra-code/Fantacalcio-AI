@@ -70,7 +70,7 @@
       color: var(--secondary-btn-text);
       border: 1px solid var(--secondary-btn-text);
     }
-    
+
     .btn.cta, .btn.primary {
         background: var(--primary-btn-bg);
         color: var(--primary-btn-text);
@@ -121,13 +121,13 @@
       background: var(--chat-message-assistant-bg);
       color: var(--text-color);
     }
-    
+
     #searchInput, #desktopMessageInput {
         background-color: var(--card-bg);
         color: var(--text-color);
         border: 1px solid var(--input-border);
     }
-    
+
     .quick-action-btn {
         background: var(--secondary-btn-bg);
         color: var(--secondary-btn-text);
@@ -139,7 +139,7 @@
         color: var(--primary-btn-text);
         border: 1px solid var(--fcai-primary); /* Assuming --fcai-primary is defined */
     }
-    
+
     .footer {
         background-color: var(--header-bg);
         color: var(--text-color);
@@ -179,6 +179,26 @@
             margin-top: 0; /* Reset margin when stacked */
         }
     }
+
+    /* Dark Theme Specific Adjustments */
+    [data-theme="dark"] body { color: #e5e7eb; }
+    [data-theme="light"] body { color: #333; }
+    [data-theme="dark"] .container { color: #e5e7eb; }
+    [data-theme="light"] .container { color: #333; }
+
+    /* Update message colors for light theme */
+    [data-theme="light"] .assistant-message { background: #f1f3f4; color: #222; }
+    [data-theme="light"] .typing-indicator { background: #f1f3f4; color: #222; }
+    [data-theme="light"] .player-card { background: #ffffff; border-color: #eee; color: #333; }
+
+    /* Fix dark theme for specific elements */
+    [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
+    [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
+    [data-theme="dark"] .quick-action-btn { color: var(--primary-btn-text) !important; }
+    [data-theme="dark"] .table { color: var(--text-color); }
+    [data-theme="dark"] .table th { background-color: var(--table-header-bg); color: var(--table-text); }
+    [data-theme="dark"] .table td { border-bottom-color: var(--input-border); }
+    [data-theme="dark"] .help { color: var(--text-color); opacity: 0.7; }
 
   </style>
 </head>
@@ -488,7 +508,7 @@
         toggleTheme(currentTheme);
       });
     }
-    
+
     // Apply theme on load
     checkAndApplyTheme();
 
