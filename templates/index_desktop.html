@@ -556,21 +556,27 @@
 
     // Desktop Chat Functionality
     async function sendDesktopMessage() {
+        console.log('sendDesktopMessage called');
         const input = document.getElementById('desktopMessageInput');
         const container = document.getElementById('desktopChatMessages');
         const typing = document.getElementById('desktopTypingIndicator');
 
+        if (!input || !container) {
+            console.error('Required elements not found:', { input: !!input, container: !!container });
+            return;
+        }
+
         const message = input.value.trim();
+        console.log('Message to send:', message);
         if (!message) return;
 
-        // Add user message with proper theme-aware styling
+        // Add user message
         const userMsg = document.createElement('div');
-        userMsg.classList.add('user-message');
         userMsg.style.cssText = `
             margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
             margin-left: auto; border-bottom-right-radius: 6px;
-            background: var(--chat-message-user-bg, #667eea); color: var(--primary-btn-text, white);
-            animation: fadeIn 0.25s ease;
+            background: #667eea; color: white;
+            text-align: right;
         `;
         userMsg.textContent = message;
         container.appendChild(userMsg);
@@ -585,12 +591,16 @@
         }
 
         try {
+            console.log('Sending request to /api/chat');
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message, mode: 'classic' })
+                body: JSON.stringify({ message: message, mode: 'classic' })
             });
 
+            console.log('Response status:', response.status);
+
+            // Hide typing indicator
             if (typing) {
                 typing.style.display = 'none';
             }
@@ -600,14 +610,13 @@
             }
 
             const data = await response.json();
+            console.log('Response data:', data);
 
-            // Add assistant response with proper theme-aware styling
+            // Add assistant response
             const assistantMsg = document.createElement('div');
             assistantMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: var(--chat-message-assistant-bg, #f1f3f4); 
-                color: var(--text-color, #222); border-bottom-left-radius: 6px;
-                animation: fadeIn 0.25s ease;
+                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
             `;
             assistantMsg.innerHTML = data.response || 'Risposta non disponibile';
             container.appendChild(assistantMsg);
@@ -617,6 +626,7 @@
         } catch (error) {
             console.error('Chat error:', error);
             
+            // Hide typing indicator
             if (typing) {
                 typing.style.display = 'none';
             }
@@ -624,10 +634,9 @@
             const errorMsg = document.createElement('div');
             errorMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: var(--chat-message-assistant-bg, #f1f3f4); 
-                color: var(--text-color, #222); border-bottom-left-radius: 6px;
+                background: #ffebee; color: #c62828; border-bottom-left-radius: 6px;
             `;
-            errorMsg.innerHTML = '❌ Errore di connessione. Riprova più tardi.';
+            errorMsg.innerHTML = '❌ Errore di connessione: ' + error.message;
             container.appendChild(errorMsg);
 
             container.scrollTop = container.scrollHeight;
@@ -637,35 +646,48 @@
     function askDesktopQuestion(question) {
         console.log('askDesktopQuestion called with:', question);
         const input = document.getElementById('desktopMessageInput');
-        if (input) {
-            input.value = question;
-            sendDesktopMessage();
-        } else {
+        if (!input) {
             console.error('Desktop message input not found');
+            return;
         }
+        
+        input.value = question;
+        console.log('Input value set to:', input.value);
+        sendDesktopMessage();
     }
 
     function resetDesktopChat() {
         const container = document.getElementById('desktopChatMessages');
         if (container) {
             container.innerHTML = `
-                <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: var(--chat-message-assistant-bg, #f1f3f4); color: var(--text-color, #222); border-bottom-left-radius: 6px; max-width: 85%;">
+                <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
                     👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
                 </div>
             `;
         }
     }
 
+    // Test function to verify quick actions are working
+    function testQuickAction() {
+        console.log('testQuickAction called');
+        alert('Quick actions are working!');
+        askDesktopQuestion('Ciao, funzioni correttamente?');
+    }
+
     // Add enter key support for desktop chat
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded - setting up desktop chat');
         const desktopInput = document.getElementById('desktopMessageInput');
         if (desktopInput) {
+            console.log('Desktop input found, adding event listener');
             desktopInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendDesktopMessage();
                 }
             });
+        } else {
+            console.error('Desktop input not found during DOMContentLoaded');
         }
     });
 
