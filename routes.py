@@ -9,6 +9,7 @@ from app import app, db
 from flask_login import login_required, current_user
 from models import User, UserLeague, Subscription
 from league_rules_manager import LeagueRulesManager
+from replit_auth import require_login, require_pro
 
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
