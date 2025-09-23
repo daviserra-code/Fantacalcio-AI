@@ -401,6 +401,7 @@
           <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Top Centrocampisti</button>
           <button onclick="askDesktopQuestion('Strategia per l\'asta')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🏆 Strategia Asta</button>
           <button onclick="askDesktopQuestion('Formazione 3-5-2 con budget 500 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Formazione 3-5-2</button>
+          <button onclick="testQuickAction()" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🔧 Test</button>
         </div>
       </div>
     </div>
@@ -562,12 +563,13 @@
         const message = input.value.trim();
         if (!message) return;
 
-        // Add user message
+        // Add user message with proper theme-aware styling
         const userMsg = document.createElement('div');
-        userMsg.classList.add('user-message'); // Add a class for styling
+        userMsg.classList.add('user-message');
         userMsg.style.cssText = `
             margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
             margin-left: auto; border-bottom-right-radius: 6px;
+            background: var(--chat-message-user-bg, #667eea); color: var(--primary-btn-text, white);
             animation: fadeIn 0.25s ease;
         `;
         userMsg.textContent = message;
@@ -578,7 +580,9 @@
         container.scrollTop = container.scrollHeight;
 
         // Show typing indicator
-        typing.style.display = 'flex';
+        if (typing) {
+            typing.style.display = 'flex';
+        }
 
         try {
             const response = await fetch('/api/chat', {
@@ -587,14 +591,22 @@
                 body: JSON.stringify({ message, mode: 'classic' })
             });
 
-            const data = await response.json();
-            typing.style.display = 'none';
+            if (typing) {
+                typing.style.display = 'none';
+            }
 
-            // Add assistant response
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Add assistant response with proper theme-aware styling
             const assistantMsg = document.createElement('div');
             assistantMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+                background: var(--chat-message-assistant-bg, #f1f3f4); 
+                color: var(--text-color, #222); border-bottom-left-radius: 6px;
                 animation: fadeIn 0.25s ease;
             `;
             assistantMsg.innerHTML = data.response || 'Risposta non disponibile';
@@ -603,12 +615,17 @@
             container.scrollTop = container.scrollHeight;
 
         } catch (error) {
-            typing.style.display = 'none';
+            console.error('Chat error:', error);
+            
+            if (typing) {
+                typing.style.display = 'none';
+            }
 
             const errorMsg = document.createElement('div');
             errorMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+                background: var(--chat-message-assistant-bg, #f1f3f4); 
+                color: var(--text-color, #222); border-bottom-left-radius: 6px;
             `;
             errorMsg.innerHTML = '❌ Errore di connessione. Riprova più tardi.';
             container.appendChild(errorMsg);
@@ -618,18 +635,25 @@
     }
 
     function askDesktopQuestion(question) {
+        console.log('askDesktopQuestion called with:', question);
         const input = document.getElementById('desktopMessageInput');
-        input.value = question;
-        sendDesktopMessage();
+        if (input) {
+            input.value = question;
+            sendDesktopMessage();
+        } else {
+            console.error('Desktop message input not found');
+        }
     }
 
     function resetDesktopChat() {
         const container = document.getElementById('desktopChatMessages');
-        container.innerHTML = `
-            <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
-                👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
-            </div>
-        `;
+        if (container) {
+            container.innerHTML = `
+                <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: var(--chat-message-assistant-bg, #f1f3f4); color: var(--text-color, #222); border-bottom-left-radius: 6px; max-width: 85%;">
+                    👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
+                </div>
+            `;
+        }
     }
 
     // Add enter key support for desktop chat
@@ -894,6 +918,12 @@
             `punta sui giovani U21 per il futuro. Inizia con la formazione ${formation} e adatta in base agli acquisti.`
         );
         return false;
+    }
+
+    // Test function to verify quick actions are working
+    function testQuickAction() {
+        console.log('Quick action test successful!');
+        askDesktopQuestion('Ciao, funzioni correttamente?');
     }
 
     async function askQuickQuestion(question) {
