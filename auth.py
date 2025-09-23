@@ -2,7 +2,7 @@
 # auth.py - Custom authentication system
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, current_user, login_required
-from werkzeug.urls import url_parse
+from urllib.parse import urlparse
 from app import db
 from models import User
 
@@ -42,7 +42,7 @@ def login():
         
         # Redirect to next page or dashboard
         next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
+        if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('dashboard')
         return redirect(next_page)
     

@@ -19,7 +19,7 @@ run = ["python", "wsgi.py"]
 build = ["echo", "No build step required"]
 
 [workflows]
-runButton = "Project"
+runButton = "Run Fantasy App"
 
 [[workflows.workflow]]
 name = "Run Fantacalcio Assistant"
@@ -50,6 +50,15 @@ outputType = "webview"
 task = "shell.exec"
 args = "python wsgi.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Run Fantasy App"
+author = 40913427
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python wsgi.py"
 
 [[ports]]
 localPort = 5000
