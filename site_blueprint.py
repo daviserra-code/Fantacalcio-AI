@@ -48,12 +48,14 @@ def home():
     Smart homepage that detects device type and serves appropriate interface.
     Mobile devices get the mobile app, desktop/tablets get the desktop homepage.
     """
+    from flask_login import current_user
+    
     if DeviceDetector.is_mobile_device():
         # Mobile devices get the mobile app interface
         return _render_app_interface()
     else:
         # Desktop and tablets get the desktop homepage
-        return render_template("index_desktop.html")
+        return render_template("index_desktop.html", user=current_user if current_user.is_authenticated else None)
 
 # Rotte comode ma non invasive: le esponiamo SOLO se le monti.
 @site_bp.route("/docs")

@@ -24,6 +24,47 @@
       --accent:#00c851;
     }
 
+    /* Dark theme variables */
+    [data-theme="dark"]{
+      --classic-page-bg:#0b1220;
+      --classic-card-bg:#0f172a;
+      --tabbar-bg:#0b1220;
+      --tab-inactive-bg:#0e1626;
+      --tab-inactive-fg:#d1d5db;
+      --tab-border:#1f2937;
+      --tab-active-fg:#22d3ee;
+      --tab-active-underline:#22d3ee;
+      --dark-page-bg:#0b1220;
+      --dark-card-bg:#0f172a;
+      --bubble-dark:#1f2937;
+    }
+
+    /* Light theme variables */
+    [data-theme="light"]{
+      --classic-page-bg:#ffffff;
+      --classic-card-bg:#ffffff;
+      --tabbar-bg:#f8f9fa;
+      --tab-inactive-bg:#e9ecef;
+      --tab-inactive-fg:#6c757d;
+      --tab-border:#dee2e6;
+      --tab-active-fg:#0066cc;
+      --tab-active-underline:#0066cc;
+      --dark-page-bg:#ffffff;
+      --dark-card-bg:#f8f9fa;
+      --bubble-dark:#e9ecef;
+    }
+
+    /* Theme-specific text colors */
+    [data-theme="dark"] body { color: #e5e7eb; }
+    [data-theme="light"] body { color: #333; }
+    [data-theme="dark"] .container { color: #e5e7eb; }
+    [data-theme="light"] .container { color: #333; }
+    
+    /* Update message colors for light theme */
+    [data-theme="light"] .assistant-message { background: #f1f3f4; color: #222; }
+    [data-theme="light"] .typing-indicator { background: #f1f3f4; color: #222; }
+    [data-theme="light"] .player-card { background: #ffffff; border-color: #eee; color: #333; }
+
     /* Reset */
     *{box-sizing:border-box;margin:0;padding:0}
 
@@ -66,9 +107,21 @@
     .header p{opacity:.9;font-size:.9rem}
     .header .actions{
       display:flex;
-      flex-wrap:wrap;gap:3px;max-width:250px;justify-content:flex-end;
+      flex-wrap:wrap;gap:3px;max-width:300px;justify-content:flex-end;
       flex-shrink:0;
     }
+    .user-info{
+      background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;
+      padding:6px 12px;border-radius:15px;font-size:.8rem;display:flex;align-items:center;gap:6px;
+      font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3);
+    }
+    .theme-toggle{
+      background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5);color:#fff;
+      padding:6px 10px;border-radius:15px;cursor:pointer;font-size:.8rem;
+      font-weight:500;text-shadow:0 1px 2px rgba(0,0,0,.3);
+      transition:background .2s ease;
+    }
+    .theme-toggle:hover{background:rgba(255,255,255,.4)}
     .header-btn{
       background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.5);color:#fff;
       padding:6px 12px;border-radius:15px;cursor:pointer;font-size:.8rem;
@@ -983,14 +1036,17 @@
       </div>
       <div class="actions">
         {% if user and user.is_authenticated %}
+          <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span>{{ user.first_name or user.username or 'Utente' }}</span>
+            {% if user.is_pro %}
+              <span style="background:#ffd700;color:#333;padding:2px 6px;border-radius:8px;font-size:.7rem;margin-left:4px;">PRO</span>
+            {% endif %}
+          </div>
           <a href="#" onclick="switchTab('league-rules', null); return false;" class="header-btn">
             <i class="fas fa-cog"></i> Leghe
           </a>
-          {% if user.is_pro %}
-            <span class="header-btn pro-badge">
-              <i class="fas fa-crown"></i> PRO
-            </span>
-          {% else %}
+          {% if not user.is_pro %}
             <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
               <i class="fas fa-crown"></i> Diventa PRO!
             </a>
@@ -1006,6 +1062,9 @@
             <i class="fas fa-sign-in-alt"></i> Accedi
           </a>
         {% endif %}
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
         <button onclick="switchLang('it')" class="header-btn {{ 'active' if lang == 'it' else '' }}">IT</button>
         <button onclick="switchLang('en')" class="header-btn {{ 'active' if lang == 'en' else '' }}">EN</button>
         <button onclick="openModal('analyticsModal')" class="header-btn">📊</button>
@@ -1267,10 +1326,12 @@
             <button onclick="updateStatistics()" class="apply-filters-btn">Applica Filtri</button>
         </div>
 
-        <div id="searchResults" class="search-results">
-          <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
+          <div id="searchResults" class="search-results" style="flex: 1;">
+            <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
+          </div>
+          <div id="statisticsResults" class="statistics-results" style="flex: 1; position: sticky; top: 20px;"></div>
         </div>
-        <div id="statisticsResults" class="statistics-results"></div>
       </div>
     </div>
 
@@ -2072,8 +2133,38 @@
         }
     }
 
+    // Theme management
+    function toggleTheme() {
+      const body = document.body;
+      const themeToggle = document.getElementById('themeToggle');
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      
+      if (currentTheme === 'dark') {
+        body.setAttribute('data-theme', 'light');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      const themeToggle = document.getElementById('themeToggle');
+      document.body.setAttribute('data-theme', savedTheme);
+      
+      if (savedTheme === 'light') {
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      } else {
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+      }
+    }
+
     // Initial setup
     document.addEventListener('DOMContentLoaded',()=>{
+      loadTheme();
       const firstTab = document.querySelector('.tabs .tab');
       switchTab('classic', firstTab);
       addEnterKeySupport();
