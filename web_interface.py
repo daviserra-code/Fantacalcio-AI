@@ -152,7 +152,7 @@ def index_legacy():
         LOG.info("Page view: %s, lang: %s", page_id, lang)
 
         # Return the original Fantasy Football AI interface
-        return render_template("index.html", lang=lang, t=T.get(lang,T["it"]), 
+        return render_template("index.html", lang=lang, t=T.get(lang,T["it"]),
                              user=current_user if current_user.is_authenticated else None)
     except Exception as e:
         LOG.error(f"Error serving index page: {e}")
@@ -205,8 +205,8 @@ def api_chat():
     try:
         import os
         if os.path.exists("etl_build_roster.py"):
-            subprocess.Popen(["python", "etl_build_roster.py"], 
-                           stdout=subprocess.DEVNULL, 
+            subprocess.Popen(["python", "etl_build_roster.py"],
+                           stdout=subprocess.DEVNULL,
                            stderr=subprocess.DEVNULL)
             LOG.info("[ETL] Job di refresh lanciato")
         else:
@@ -777,23 +777,23 @@ def api_transfers_arrivals():
     try:
         team = request.args.get('team', '').strip()
         season = request.args.get('season', '2025-26').strip()
-        
+
         if not team:
             return jsonify({"error": "Team parameter required"}), 400
-            
+
         LOG.info(f"[Static Transfers API] Getting arrivals for {team}, season {season}")
-        
+
         # Check if static mode is enabled
         if not is_static_mode_enabled():
             return jsonify({
-                "error": "Static transfers mode not enabled", 
+                "error": "Static transfers mode not enabled",
                 "team": team,
                 "arrivals": []
             }), 503
-            
+
         # Get arrivals from static data
         arrivals = get_team_arrivals(team, season)
-        
+
         # Format response
         formatted_arrivals = []
         for transfer in arrivals:
@@ -807,9 +807,9 @@ def api_transfers_arrivals():
                 "source": transfer.get("source", "Apify"),
                 "direction": transfer.get("direction", "in")
             })
-        
+
         LOG.info(f"[Static Transfers API] Returning {len(formatted_arrivals)} arrivals for {team}")
-        
+
         return jsonify({
             "team": team,
             "season": season,
@@ -817,7 +817,7 @@ def api_transfers_arrivals():
             "count": len(formatted_arrivals),
             "static_mode": True
         })
-        
+
     except Exception as e:
         LOG.error(f"Error in transfers arrivals API: {e}")
         return jsonify({"error": "Internal server error"}), 500
@@ -927,7 +927,7 @@ def api_search():
     except Exception as e:
         LOG.error(f"[Search API] Error in search endpoint: {e}", exc_info=True)
         return jsonify({
-            "error": "Internal server error", 
+            "error": "Internal server error",
             "debug_info": {
                 "error_type": type(e).__name__,
                 "error_message": str(e)
@@ -992,7 +992,7 @@ def api_players():
             if search_query:
                 player_name = (player.get('name') or '').lower()
                 player_team = (player.get('team') or '').lower()
-                if (search_query.lower() not in player_name and 
+                if (search_query.lower() not in player_name and
                     search_query.lower() not in player_team):
                     continue
 
@@ -1093,7 +1093,7 @@ def api_statistics():
 
         LOG.info(f"[Statistics API] Using {len(players)} players for statistics")
 
-        # Aggregate statistics by role  
+        # Aggregate statistics by role
         role_stats = {}
         # When team filtering is applied, always show breakdown for all roles of that team
         # When role filtering is applied, show only that specific role
@@ -1117,7 +1117,7 @@ def api_statistics():
                                    any(x in role_raw for x in ["PORTIER", "PORTIERE", "GK", "POR", "GOALKEEPER"]))
                 elif role == "D":
                     is_role_match = (player_role in ["D", "DIFENSORE"] or
-                                   any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "CB", "RB", "LB", "TD", "TS", "TERZINO", "CENTRALE"]))
+                                   any(x in role_raw for x in ["DIFENSOR", "DIFENSORE", "DEF", "DC", "RB", "LB", "TD", "TS", "TERZINO", "CENTRALE"]))
                 elif role == "C":
                     is_role_match = (player_role in ["C", "CENTROCAMPISTA"] or
                                    any(x in role_raw for x in ["CENTROCAMP", "CENTROCAMPISTA", "MED", "MEZZ", "CM", "CAM", "CDM", "AM", "TQ", "MEDIANO", "TREQUARTISTA"]))
@@ -1136,7 +1136,7 @@ def api_statistics():
                 if team_filter:
                     player_team = p.get('team', '').strip().lower()
                     # More flexible team matching
-                    team_match = (team_filter in player_team or 
+                    team_match = (team_filter in player_team or
                                 player_team in team_filter or
                                 any(part in player_team for part in team_filter.split() if len(part) > 2))
 
@@ -1324,7 +1324,7 @@ def health_check():
         })
     except Exception as e:
         return jsonify({
-            "status": "unhealthy", 
+            "status": "unhealthy",
             "error": str(e)
         }), 500
 

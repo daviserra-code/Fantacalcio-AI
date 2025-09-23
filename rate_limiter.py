@@ -86,9 +86,7 @@ class RateLimiter:
     
     def is_allowed(self, request) -> bool:
         """Check if request is allowed based on rate limits"""
-        # Rate limiting completely disabled
-        LOG.debug("Rate limiting disabled for all environments")
-        return True
+        return True  # Rate limiting completely disabled
     
     def get_remaining_requests(self, request) -> int:
         """Get number of remaining requests for client"""
