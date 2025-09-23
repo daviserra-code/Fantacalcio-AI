@@ -138,6 +138,54 @@
     </div>
   </section>
 
+  <!-- Conversational AI Assistant Section -->
+  <section class="section">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 32px;">🤖 Assistente AI Conversazionale</h2>
+      <div class="card pad" style="max-width: 800px; margin: 0 auto;">
+        <div class="chat-container" style="min-height: 400px; border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: #f8f9fa;">
+          <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e9ecef; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: #666;">
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #28a745; animation: pulse 2s infinite;"></div>
+              <span>Assistente Online</span>
+            </div>
+            <div>
+              <button onclick="resetDesktopChat()" style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px;">Reset Chat</button>
+            </div>
+          </div>
+
+          <div id="desktopChatMessages" style="min-height: 250px; max-height: 400px; overflow-y: auto; margin-bottom: 16px; scroll-behavior: smooth;">
+            <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
+              👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
+            </div>
+          </div>
+
+          <div id="desktopTypingIndicator" style="display: none; align-items: center; gap: 8px; padding: 10px 16px; background: #f1f3f4; border-radius: 16px; max-width: 200px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 4px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite;"></span>
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite; animation-delay: 0.15s;"></span>
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite; animation-delay: 0.3s;"></span>
+            </div>
+            <span>L'assistente sta scrivendo...</span>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <textarea id="desktopMessageInput" placeholder="Scrivi la tua domanda..." style="flex: 1; padding: 12px 16px; border: 2px solid #ddd; border-radius: 20px; outline: 0; font-size: 14px; min-height: 50px; resize: vertical; font-family: system-ui;"></textarea>
+            <button onclick="sendDesktopMessage()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 12px 18px; border-radius: 20px; cursor: pointer; font-weight: 600;">Invia</button>
+          </div>
+        </div>
+
+        <!-- Quick Actions for Desktop Chat -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px;">
+          <button onclick="askDesktopQuestion('Migliori attaccanti per budget 150 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🎯 Top Attaccanti Budget</button>
+          <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Top Centrocampisti</button>
+          <button onclick="askDesktopQuestion('Strategia per l\'asta')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">🏆 Strategia Asta</button>
+          <button onclick="askDesktopQuestion('Formazione 3-5-2 con budget 500 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;">⚽ Formazione 3-5-2</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Working Demo Section -->
   <section class="section alt">
     <div class="container grid-2">
@@ -223,6 +271,115 @@
 
   <script>
     document.getElementById('y').textContent=new Date().getFullYear();
+
+    // Desktop Chat Functionality
+    async function sendDesktopMessage() {
+        const input = document.getElementById('desktopMessageInput');
+        const container = document.getElementById('desktopChatMessages');
+        const typing = document.getElementById('desktopTypingIndicator');
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add user message
+        const userMsg = document.createElement('div');
+        userMsg.style.cssText = `
+            margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
+            background: #667eea; color: white; margin-left: auto; border-bottom-right-radius: 6px;
+            animation: fadeIn 0.25s ease;
+        `;
+        userMsg.textContent = message;
+        container.appendChild(userMsg);
+
+        // Clear input and scroll
+        input.value = '';
+        container.scrollTop = container.scrollHeight;
+
+        // Show typing indicator
+        typing.style.display = 'flex';
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, mode: 'classic' })
+            });
+
+            const data = await response.json();
+            typing.style.display = 'none';
+
+            // Add assistant response
+            const assistantMsg = document.createElement('div');
+            assistantMsg.style.cssText = `
+                margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
+                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+                animation: fadeIn 0.25s ease;
+            `;
+            assistantMsg.innerHTML = data.response || 'Risposta non disponibile';
+            container.appendChild(assistantMsg);
+
+            container.scrollTop = container.scrollHeight;
+
+        } catch (error) {
+            typing.style.display = 'none';
+            
+            const errorMsg = document.createElement('div');
+            errorMsg.style.cssText = `
+                margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
+                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+            `;
+            errorMsg.innerHTML = '❌ Errore di connessione. Riprova più tardi.';
+            container.appendChild(errorMsg);
+
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    function askDesktopQuestion(question) {
+        const input = document.getElementById('desktopMessageInput');
+        input.value = question;
+        sendDesktopMessage();
+    }
+
+    function resetDesktopChat() {
+        const container = document.getElementById('desktopChatMessages');
+        container.innerHTML = `
+            <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
+                👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
+            </div>
+        `;
+    }
+
+    // Add enter key support for desktop chat
+    document.addEventListener('DOMContentLoaded', function() {
+        const desktopInput = document.getElementById('desktopMessageInput');
+        if (desktopInput) {
+            desktopInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendDesktopMessage();
+                }
+            });
+        }
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.55; }
+        }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+    `;
+    document.head.appendChild(style);
 
     // Desktop App Functionality - Real API Integration
     let currentRole = 'all';

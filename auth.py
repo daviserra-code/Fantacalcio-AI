@@ -5,6 +5,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
 from app import db
 from models import User
+from device_detector import DeviceDetector
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -40,10 +41,14 @@ def login():
         login_user(user, remember=remember_me)
         flash(f'Welcome back, {user.first_name or user.username}!', 'success')
         
-        # Redirect to next page or dashboard
+        # Redirect to next page or home (device-aware)
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
-            next_page = url_for('dashboard')
+            # Check if mobile device and redirect to appropriate home
+            if DeviceDetector.is_mobile_device():
+                next_page = url_for('site_bp.home')  # Mobile app interface
+            else:
+                next_page = url_for('site_bp.home')  # Desktop homepage
         return redirect(next_page)
     
     return render_template('auth/login.html')
@@ -104,7 +109,12 @@ def register():
             db.session.commit()
             print(f"✅ User registered successfully: {username} ({email})")
             flash('Registration successful! You can now log in.', 'success')
-            return redirect(url_for('auth.login'))
+            
+            # Device-aware redirect to login
+            if DeviceDetector.is_mobile_device():
+                return redirect(url_for('auth.login'))  # Mobile login
+            else:
+                return redirect(url_for('auth.login'))  # Desktop login
         except Exception as e:
             db.session.rollback()
             print(f"❌ Registration failed for {username}: {str(e)}")

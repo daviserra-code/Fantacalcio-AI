@@ -127,5 +127,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ensure form submission works correctly on all devices
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Let the form submit normally - server will handle device-aware redirect
+        });
+    </script>
 </body>
 </html>
