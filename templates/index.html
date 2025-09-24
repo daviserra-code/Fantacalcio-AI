@@ -1536,6 +1536,40 @@
     function closeModal(id){document.getElementById(id).classList.remove('show')}
     function switchLang(lang){ location.href='/?lang='+lang }
 
+    function comparePlayersModal(){
+      const p1=document.getElementById('player1Input').value.trim();
+      const p2=document.getElementById('player2Input').value.trim();
+      if(!p1||!p2){ alert('Inserisci entrambi i giocatori'); return; }
+      const out=document.getElementById('comparisonResults');
+      out.innerHTML='🔄 Caricamento...';
+      fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({players:[p1,p2]})})
+        .then(r=>r.ok?r.json():r.json().then(e=>Promise.reject(e)))
+        .then(d=>{
+          if(!(d.comparison&&d.comparison.length)){ out.innerHTML='❌ Giocatori non trovati'; return; }
+          const a=d.comparison[0], b=d.comparison[1]||{};
+          out.innerHTML = `
+            <table class="comparison-table">
+              <thead><tr class="comparison-header">
+                <th class="comparison-metric">Metric</th>
+                <th class="comparison-player">${a.name||'-'}</th>
+                <th class="comparison-player">${b.name||'-'}</th>
+              </tr></thead>
+              <tbody>
+                <tr class="comparison-row"><td class="comparison-metric">Squadra</td><td class="comparison-value">${a.team||'-'}</td><td class="comparison-value">${b.team||'-'}</td></tr>
+                <tr class="comparison-row"><td class="comparison-metric">Fantamedia</td><td class="comparison-value">${a.fantamedia??'-'}</td><td class="comparison-value">${b.fantamedia??'-'}</td></tr>
+                <tr class="comparison-row"><td class="comparison-metric">Prezzo</td><td class="comparison-value">${a.price??'-'}</td><td class="comparison-value">${b.price??'-'}</td></tr>
+                <tr class="comparison-row"><td class="comparison-metric">Presenze</td><td class="comparison-value">${a.appearances??'-'}</td><td class="comparison-value">${b.appearances??'-'}</td></tr>
+                <tr class="comparison-row"><td class="comparison-metric">Età</td><td class="comparison-value">${a.age??'-'}</td><td class="comparison-value">${b.age??'-'}</td></tr>
+              </tbody>
+            </table>
+          `;
+        })
+        .catch(e=>{
+          console.error('Comparison error:',e);
+          out.innerHTML='❌ Errore nel confronto';
+        });
+    }
+
     function switchTab(name, btn){
       // body class per tema contenuto
       document.body.classList.remove('mode-classic','mode-mantra','mode-draft','mode-superscudetto','mode-historical','mode-league-rules');
