@@ -847,13 +847,19 @@ def api_compare():
         assistant = get_assistant()
         if not assistant:
             return jsonify({"error": "Assistant not initialized"}), 500
+        
+        # Ensure the assistant data is loaded
+        if not hasattr(assistant, 'filtered_roster') or assistant.filtered_roster is None:
+            logger.warning("[Compare API] Assistant data not loaded, initializing...")
+            # This will trigger data loading
+            _ = assistant.get_player_pool()
             
         comparison_results = []
         
         for player_name in players:
             # Search for player in roster
             player_found = None
-            for p in assistant.filtered_roster:
+            for p in assistant.filtered_roster or []:
                 # Try both 'Name' and 'name' fields for compatibility
                 name_field = p.get('Name', '') or p.get('name', '')
                 if player_name.lower() in name_field.lower():

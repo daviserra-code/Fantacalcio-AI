@@ -617,9 +617,47 @@
     });
 
 
+    // Desktop Quick Action Functions
+    function openComparisonModal() {
+        const modal = document.getElementById('desktopComparisonModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            // Clear previous inputs and results
+            document.getElementById('desktopPlayer1Input').value = '';
+            document.getElementById('desktopPlayer2Input').value = '';
+            document.getElementById('desktopComparisonResults').innerHTML = '';
+        }
+    }
+
+    function getTopPlayersByRole(role) {
+        const queries = {
+            'A': 'Top 5 attaccanti con miglior rapporto qualità/prezzo',
+            'C': 'Top 5 centrocampisti con miglior rapporto qualità/prezzo',
+            'D': 'Top 5 difensori con miglior rapporto qualità/prezzo',
+            'P': 'Top 5 portieri con miglior rapporto qualità/prezzo'
+        };
+        
+        if (queries[role]) {
+            sendDesktopMessage(queries[role]);
+        }
+    }
+
+    function askFormationAdvice(formation) {
+        const message = `Consiglia una formazione ${formation} ottimizzata per budget 500 crediti`;
+        sendDesktopMessage(message);
+    }
+
     // Desktop Chat Functionality
-    async function sendDesktopMessage() {
-        console.log('sendDesktopMessage called');
+    let isDesktopProcessing = false;
+    
+    async function sendDesktopMessage(customMessage = null) {
+        console.log('sendDesktopMessage called with:', customMessage);
+        
+        if (isDesktopProcessing) {
+            console.log('Already processing a question, ignoring duplicate call');
+            return;
+        }
+        
         const input = document.getElementById('desktopMessageInput');
         const container = document.getElementById('desktopChatMessages');
         const typing = document.getElementById('desktopTypingIndicator');
@@ -629,9 +667,11 @@
             return;
         }
 
-        const message = input.value.trim();
+        const message = customMessage || input.value.trim();
         console.log('Message to send:', message);
         if (!message) return;
+        
+        isDesktopProcessing = true;
 
         // Add user message
         const userMsg = document.createElement('div');
@@ -644,8 +684,10 @@
         userMsg.textContent = message;
         container.appendChild(userMsg);
 
-        // Clear input and scroll
-        input.value = '';
+        // Clear input and scroll (only if not custom message)
+        if (!customMessage) {
+            input.value = '';
+        }
         container.scrollTop = container.scrollHeight;
 
         // Show typing indicator
@@ -703,55 +745,11 @@
             container.appendChild(errorMsg);
 
             container.scrollTop = container.scrollHeight;
+        } finally {
+            isDesktopProcessing = false;
         }
     }
 
-    async function askDesktopQuestion(question) {
-        console.log('askDesktopQuestion called with:', question);
-        
-        // Prevent multiple calls by checking if already processing
-        if (window.isProcessingQuestion) {
-            console.log('Already processing a question, ignoring duplicate call');
-            return;
-        }
-        
-        window.isProcessingQuestion = true;
-        
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: question, mode: 'classic' })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Response status:', response.status);
-            console.log('Response data:', data);
-            
-            // Display the result using the working showQuickResult function
-            const title = question.includes('Ultimi acquisti') ? `📈 ${question}` :
-                         question.includes('Formazione') ? `⚽ ${question}` :
-                         question.includes('Under') ? `👶 ${question}` :
-                         question.includes('attaccanti') ? '🎯 Top Attaccanti' :
-                         question.includes('centrocampisti') ? '⚽ Top Centrocampisti' :
-                         question.includes('difensori') ? '🛡️ Top Difensori' :
-                         question.includes('portieri') ? '🥅 Top Portieri' :
-                         '🤖 FantacalcioAI';
-            
-            showQuickResult(title, data.response || 'Risposta non disponibile al momento.');
-            
-        } catch (error) {
-            console.error('Chat error:', error);
-            showQuickResult('❌ Errore', 'Errore nella comunicazione con l\'assistente. Riprova più tardi.');
-        } finally {
-            // Reset the processing flag
-            window.isProcessingQuestion = false;
-        }
-    }
 
     function resetDesktopChat() {
         const container = document.getElementById('desktopChatMessages');
@@ -764,12 +762,6 @@
         }
     }
 
-    // Test function to verify quick actions are working
-    function testQuickAction() {
-        console.log('testQuickAction called');
-        alert('Quick actions are working!');
-        askDesktopQuestion('Ciao, funzioni correttamente?');
-    }
 
     // Add enter key support for desktop chat
     document.addEventListener('DOMContentLoaded', function() {
