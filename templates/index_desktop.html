@@ -347,9 +347,82 @@
           </div>
           <button class="btn toggle" id="u21Toggle">U21</button>
           <button class="btn toggle active" id="formToggle">In forma</button>
+          <button class="btn" id="advancedFiltersToggle">🔧 Filtri</button>
+        </div>
+        
+        <!-- Advanced Filters Panel -->
+        <div id="advancedFiltersPanel" class="advanced-filters" style="display: none;">
+          <div class="filter-grid">
+            <div class="filter-group">
+              <label>Prezzo</label>
+              <div class="range-inputs">
+                <input type="number" id="minPrice" placeholder="Min" min="0" max="100">
+                <span>-</span>
+                <input type="number" id="maxPrice" placeholder="Max" min="0" max="100">
+              </div>
+            </div>
+            
+            <div class="filter-group">
+              <label>Fantamedia</label>
+              <div class="range-inputs">
+                <input type="number" id="minFM" placeholder="Min" min="0" max="10" step="0.1">
+                <span>-</span>
+                <input type="number" id="maxFM" placeholder="Max" min="0" max="10" step="0.1">
+              </div>
+            </div>
+            
+            <div class="filter-group">
+              <label>Età</label>
+              <div class="range-inputs">
+                <input type="number" id="minAge" placeholder="Min" min="16" max="40">
+                <span>-</span>
+                <input type="number" id="maxAge" placeholder="Max" min="16" max="40">
+              </div>
+            </div>
+            
+            <div class="filter-group">
+              <label>Ordina per</label>
+              <select id="sortBy">
+                <option value="fantamedia">Fantamedia</option>
+                <option value="price">Prezzo</option>
+                <option value="age">Età</option>
+                <option value="name">Nome</option>
+              </select>
+              <select id="sortOrder">
+                <option value="desc">Decrescente</option>
+                <option value="asc">Crescente</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="filter-actions">
+            <button class="btn btn-secondary" id="clearFilters">Pulisci</button>
+            <button class="btn btn-primary" id="applyFilters">Applica</button>
+          </div>
         </div>
         <div class="mt-2">
           <div id="loadingIndicator" class="help">Caricamento dati giocatori...</div>
+          
+          <!-- Skeleton loading screen -->
+          <div id="skeletonLoader" class="skeleton-container" style="display: none;">
+            <div class="skeleton-table">
+              <div class="skeleton-row skeleton-header">
+                <div class="skeleton-cell"></div>
+                <div class="skeleton-cell"></div>
+                <div class="skeleton-cell"></div>
+                <div class="skeleton-cell"></div>
+                <div class="skeleton-cell"></div>
+              </div>
+              <div class="skeleton-row" v-for="i in 5">
+                <div class="skeleton-cell skeleton-shimmer"></div>
+                <div class="skeleton-cell skeleton-shimmer"></div>
+                <div class="skeleton-cell skeleton-shimmer"></div>
+                <div class="skeleton-cell skeleton-shimmer"></div>
+                <div class="skeleton-cell skeleton-shimmer"></div>
+              </div>
+            </div>
+          </div>
+          
           <table class="table" id="playersTable" style="display: none;">
             <thead><tr><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Fantamedia</th><th>Prezzo</th></tr></thead>
             <tbody id="playersTableBody"></tbody>

@@ -28,44 +28,93 @@ class KnowledgeManager:
         db_path = os.getenv("CHROMA_DB_PATH", "./chroma_db")
         collection_name = os.getenv("CHROMA_COLLECTION_NAME", "fantacalcio_knowledge")
 
-        try:
-            self.client = chromadb.PersistentClient(path=db_path)
-            LOG.info("[KM] Using Chroma PersistentClient at %s", db_path)
-        except Exception as e:
-            LOG.error("[KM] ChromaDB corruption detected: %s", e)
-            # Try to backup and recreate
-            backup_path = f"{db_path}_backup_{int(time.time())}"
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
-                shutil.move(db_path, backup_path)
-                LOG.info("[KM] Backed up corrupted DB to %s", backup_path)
-            except Exception:
-                pass
-
-            # Create fresh client
-            self.client = chromadb.PersistentClient(path=db_path)
-            LOG.info("[KM] Created fresh ChromaDB at %s", db_path)
+                # Ensure directory exists and has proper permissions
+                os.makedirs(db_path, exist_ok=True)
+                
+                # Try to create client with settings for better stability
+                settings = chromadb.config.Settings(
+                    persist_directory=db_path,
+                    anonymized_telemetry=False,
+                    allow_reset=True
+                )
+                self.client = chromadb.PersistentClient(path=db_path, settings=settings)
+                
+                # Test the connection
+                self.client.heartbeat()
+                LOG.info("[KM] Using Chroma PersistentClient at %s", db_path)
+                break
+                
+            except Exception as e:
+                LOG.error("[KM] ChromaDB error (attempt %d/%d): %s", attempt + 1, max_retries, e)
+                
+                if attempt < max_retries - 1:
+                    # Try to recover on non-final attempts
+                    backup_path = f"{db_path}_backup_{int(time.time())}"
+                    try:
+                        if os.path.exists(db_path):
+                            shutil.move(db_path, backup_path)
+                            LOG.info("[KM] Backed up corrupted DB to %s", backup_path)
+                    except Exception as backup_error:
+                        LOG.warning("[KM] Backup failed: %s", backup_error)
+                    
+                    # Clean up and retry
+                    time.sleep(1)
+                    continue
+                else:
+                    # Final attempt failed, create minimal client
+                    LOG.error("[KM] All ChromaDB attempts failed, creating in-memory client")
+                    self.client = chromadb.Client()
+                    break
 
         # Try to get existing collection, create if doesn't exist or is corrupted
-        try:
-            self.collection = self.client.get_collection(name=collection_name)
-            # Test if collection is accessible
-            count = self.collection.count()
-            LOG.info("[KM] Collection caricata: '%s', count=%d", collection_name, count)
-        except Exception as e:
-            LOG.info("[KM] Collection non trovata o corrotta (%s), creazione: '%s'", e, collection_name)
-            # Try to delete any existing corrupted collection
+        collection_attempts = 0
+        max_collection_attempts = 2
+        
+        while collection_attempts < max_collection_attempts:
             try:
-                self.client.delete_collection(name=collection_name)
-                LOG.info("[KM] Deleted corrupted collection")
-            except Exception:
-                pass  # Ignore errors when deleting
+                self.collection = self.client.get_collection(name=collection_name)
+                # Test if collection is accessible with multiple operations
+                count = self.collection.count()
+                
+                # Additional stability check - try a simple query
+                try:
+                    self.collection.peek(limit=1)
+                    LOG.info("[KM] Collection verified stable: '%s', count=%d", collection_name, count)
+                    break
+                except Exception as query_error:
+                    LOG.warning("[KM] Collection query test failed: %s", query_error)
+                    raise query_error
+                    
+            except Exception as e:
+                collection_attempts += 1
+                LOG.info("[KM] Collection issue (attempt %d/%d): %s", collection_attempts, max_collection_attempts, e)
+                
+                # Try to delete any existing corrupted collection
+                try:
+                    self.client.delete_collection(name=collection_name)
+                    LOG.info("[KM] Deleted problematic collection")
+                except Exception:
+                    pass  # Ignore errors when deleting
 
-            # Create fresh collection
-            self.collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"description": "Fantacalcio knowledge base for RAG"}
-            )
-            LOG.info("[KM] Fresh collection created: '%s'", collection_name)
+                # Create fresh collection with enhanced metadata
+                try:
+                    self.collection = self.client.create_collection(
+                        name=collection_name,
+                        metadata={
+                            "description": "Fantacalcio knowledge base for RAG",
+                            "created_at": str(datetime.now()),
+                            "version": "2.0"
+                        }
+                    )
+                    LOG.info("[KM] Fresh collection created: '%s'", collection_name)
+                    break
+                except Exception as create_error:
+                    if collection_attempts >= max_collection_attempts:
+                        LOG.error("[KM] Failed to create collection after %d attempts: %s", max_collection_attempts, create_error)
+                        raise create_error
 
         self.collection_name = collection_name
 

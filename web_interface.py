@@ -499,7 +499,7 @@ def handle_exclusion(msg: str, state: dict) -> str:
                     corrections_manager = get_corrections_manager()
                     if corrections_manager:
                         # Call persistent remove_player method
-                        result = corrections_manager.remove_player(player_name, "User web interface request")
+                        result = corrections_manager.remove_player(player_name, "Web interface user request")
 
                         # Also add to session for immediate effect in current session
                         excluded_players = state.setdefault("excluded_players", [])
@@ -837,35 +837,35 @@ def api_compare():
     try:
         data = request.get_json()
         players = data.get('players', [])
-        
+
         if len(players) != 2:
             return jsonify({"error": "Exactly 2 players required"}), 400
-            
+
         LOG.info(f"[Compare API] Comparing {players[0]} vs {players[1]}")
-        
+
         # Initialize assistant
         assistant = get_assistant()
         if not assistant:
             return jsonify({"error": "Assistant not initialized"}), 500
-        
+
         # Ensure the assistant data is loaded
         if not hasattr(assistant, 'filtered_roster') or assistant.filtered_roster is None:
             logger.warning("[Compare API] Assistant data not loaded, initializing...")
             # This will trigger data loading
             _ = assistant.get_player_pool()
-            
+
         comparison_results = []
-        
+
         for player_name in players:
             # Search for player in roster
             player_found = None
-            for p in assistant.filtered_roster or []:
+            for p in assistant.filtered_roster:
                 # Try both 'Name' and 'name' fields for compatibility
                 name_field = p.get('Name', '') or p.get('name', '')
                 if player_name.lower() in name_field.lower():
                     player_found = p
                     break
-            
+
             if player_found:
                 comparison_results.append({
                     "name": player_found.get('Name', '') or player_found.get('name', ''),
@@ -890,14 +890,14 @@ def api_compare():
                     "gol": 0,
                     "assist": 0
                 })
-        
+
         LOG.info(f"[Compare API] Returning comparison for {len(comparison_results)} players")
-        
+
         return jsonify({
             "comparison": comparison_results,
             "success": True
         })
-        
+
     except Exception as e:
         LOG.error(f"Error in compare API: {e}")
         return jsonify({"error": "Internal server error"}), 500
@@ -1006,20 +1006,33 @@ def api_search():
 
 @app.route('/api/players')
 def api_players():
-    """Get filtered players with U21 and In forma options"""
+    """Get filtered players with advanced filtering options"""
     try:
         LOG.info(f"[Players API] Request received - Method: {request.method}")
         LOG.info(f"[Players API] Request args: {dict(request.args)}")
 
-        # Get query parameters
-        search_query = request.args.get('search', '').strip()
+        # Get filter parameters
+        search_query = request.args.get('search', '').strip().lower()
         role_filter = request.args.get('role', '').strip().upper()
         team_filter = request.args.get('team', '').strip().lower()
-        u21_filter = request.args.get('u21', '').lower() == 'true'
-        in_forma_filter = request.args.get('in_forma', '').lower() == 'true'
-        limit = int(request.args.get('limit', 50))
+        u21_only = request.args.get('u21', 'false').lower() == 'true'
+        in_forma = request.args.get('in_forma', 'false').lower() == 'true'
+        limit = int(request.args.get('limit', '20'))
 
-        LOG.info(f"[Players API] Filters - Search: '{search_query}', Role: '{role_filter}', Team: '{team_filter}', U21: {u21_filter}, In forma: {in_forma_filter}")
+        # Advanced filters
+        min_price = request.args.get('min_price', type=float)
+        max_price = request.args.get('max_price', type=float) 
+        min_fantamedia = request.args.get('min_fantamedia', type=float)
+        max_fantamedia = request.args.get('max_fantamedia', type=float)
+        min_age = request.args.get('min_age', type=int)
+        max_age = request.args.get('max_age', type=int)
+        sort_by = request.args.get('sort_by', 'fantamedia').lower()  # fantamedia, price, age, name
+        sort_order = request.args.get('sort_order', 'desc').lower()  # asc, desc
+
+        # New season filter
+        season_filter = request.args.get('season', '').strip()
+
+        LOG.info(f"[Players API] Filters - Search: '{search_query}', Role: '{role_filter}', Team: '{team_filter}', U21: {u21_only}, In forma: {in_forma}")
 
         assistant = get_assistant()
         if not assistant:
@@ -1041,59 +1054,94 @@ def api_players():
             LOG.warning("[Players API] Using sample data as roster is not available")
             # Sample data for demonstration
             players = [
-                {"name": "Osimhen", "team": "Napoli", "role": "A", "_fm": 7.2, "_price": 45, "birth_year": 1999},
-                {"name": "Vlahovic", "team": "Juventus", "role": "A", "_fm": 6.8, "_price": 40, "birth_year": 2000},
-                {"name": "Leao", "team": "Milan", "role": "A", "_fm": 6.7, "_price": 38, "birth_year": 1999},
-                {"name": "Kvaratskhelia", "team": "Napoli", "role": "A", "_fm": 7.1, "_price": 42, "birth_year": 2001},
-                {"name": "Barella", "team": "Inter", "role": "C", "_fm": 6.8, "_price": 35, "birth_year": 1997},
-                {"name": "Tonali", "team": "Milan", "role": "C", "_fm": 6.3, "_price": 28, "birth_year": 2000},
-                {"name": "Theo Hernandez", "team": "Milan", "role": "D", "_fm": 6.8, "_price": 32, "birth_year": 1997},
-                {"name": "Bastoni", "team": "Inter", "role": "D", "_fm": 6.2, "_price": 28, "birth_year": 1999},
-                {"name": "Donnarumma", "team": "PSG", "role": "P", "_fm": 6.5, "_price": 25, "birth_year": 1999},
-                {"name": "Maignan", "team": "Milan", "role": "P", "_fm": 6.3, "_price": 22, "birth_year": 1995}
+                {"name": "Osimhen", "team": "Napoli", "role": "A", "_fm": 7.2, "_price": 45, "birth_year": 1999, "season": "2023-24"},
+                {"name": "Vlahovic", "team": "Juventus", "role": "A", "_fm": 6.8, "_price": 40, "birth_year": 2000, "season": "2023-24"},
+                {"name": "Leao", "team": "Milan", "role": "A", "_fm": 6.7, "_price": 38, "birth_year": 1999, "season": "2023-24"},
+                {"name": "Kvaratskhelia", "team": "Napoli", "role": "A", "_fm": 7.1, "_price": 42, "birth_year": 2001, "season": "2023-24"},
+                {"name": "Barella", "team": "Inter", "role": "C", "_fm": 6.8, "_price": 35, "birth_year": 1997, "season": "2023-24"},
+                {"name": "Tonali", "team": "Milan", "role": "C", "_fm": 6.3, "_price": 28, "birth_year": 2000, "season": "2023-24"},
+                {"name": "Theo Hernandez", "team": "Milan", "role": "D", "_fm": 6.8, "_price": 32, "birth_year": 1997, "season": "2023-24"},
+                {"name": "Bastoni", "team": "Inter", "role": "D", "_fm": 6.2, "_price": 28, "birth_year": 1999, "season": "2023-24"},
+                {"name": "Donnarumma", "team": "PSG", "role": "P", "_fm": 6.5, "_price": 25, "birth_year": 1999, "season": "2023-24"},
+                {"name": "Maignan", "team": "Milan", "role": "P", "_fm": 6.3, "_price": 22, "birth_year": 1995, "season": "2023-24"}
             ]
 
         # Apply filters
         filtered_players = []
-        current_year = 2025
 
         for player in players:
-            # Search filter
-            if search_query:
-                player_name = (player.get('name') or '').lower()
-                player_team = (player.get('team') or '').lower()
-                if (search_query.lower() not in player_name and
-                    search_query.lower() not in player_team):
-                    continue
+            # Season filter
+            if season_filter and player.get('season', '') != season_filter:
+                continue
 
             # Role filter
-            if role_filter:
-                player_role = (player.get('role') or '').upper()
-                if player_role != role_filter:
-                    continue
+            if role_filter and player.get('role', '').upper() != role_filter:
+                continue
 
-            # Team filter
-            if team_filter:
-                player_team = (player.get('team') or '').lower()
-                if team_filter not in player_team:
+            # Team filter  
+            if team_filter and team_filter not in player.get('team', '').lower():
+                continue
+
+            # Search filter
+            if search_query:
+                player_name = player.get('name', '').lower()
+                player_team = player.get('team', '').lower()
+                if search_query not in player_name and search_query not in player_team:
                     continue
 
             # U21 filter
-            if u21_filter:
-                birth_year = player.get('birth_year')
-                if not birth_year or (current_year - birth_year) > 21:
-                    continue
+            player_age = assistant._age_from_by(player.get('birth_year'))
+            if u21_only and (player_age is None or player_age > 21):
+                continue
 
             # In forma filter (players with high fantamedia)
-            if in_forma_filter:
-                fm = player.get('_fm') or 0
-                if fm < 6.5:  # Consider players "in forma" if fantamedia >= 6.5
+            if in_forma:
+                player_fm = player.get('_fm') or player.get('fantamedia', 0)
+                if not isinstance(player_fm, (int, float)) or player_fm < 6.5:
+                    continue
+
+            # Price filters
+            player_price = player.get('_price') or player.get('price', 0)
+            if isinstance(player_price, (int, float)):
+                if min_price is not None and player_price < min_price:
+                    continue
+                if max_price is not None and player_price > max_price:
+                    continue
+
+            # Fantamedia filters
+            player_fm = player.get('_fm') or player.get('fantamedia', 0)
+            if isinstance(player_fm, (int, float)):
+                if min_fantamedia is not None and player_fm < min_fantamedia:
+                    continue
+                if max_fantamedia is not None and player_fm > max_fantamedia:
+                    continue
+
+            # Age filters
+            if min_age is not None or max_age is not None:
+                if player_age is None: # Skip if age is unknown and filters are applied
+                    continue
+                if min_age is not None and player_age < min_age:
+                    continue
+                if max_age is not None and player_age > max_age:
                     continue
 
             filtered_players.append(player)
 
-        # Sort by fantamedia descending
-        filtered_players.sort(key=lambda x: x.get('_fm') or 0, reverse=True)
+        # Advanced sorting
+        def get_sort_key(player):
+            if sort_by == 'fantamedia':
+                return player.get('_fm') or player.get('fantamedia', 0)
+            elif sort_by == 'price':
+                return player.get('_price') or player.get('price', 0)
+            elif sort_by == 'age':
+                return assistant._age_from_by(player.get('birth_year')) or 99 # Return large number for unknown age if sorting by age
+            elif sort_by == 'name':
+                return player.get('name', '').lower()
+            else: # Default to fantamedia
+                return player.get('_fm') or player.get('fantamedia', 0)
+
+        reverse_sort = sort_order == 'desc'
+        filtered_players.sort(key=get_sort_key, reverse=reverse_sort)
 
         # Limit results
         filtered_players = filtered_players[:limit]
@@ -1107,8 +1155,17 @@ def api_players():
                 "search": search_query,
                 "role": role_filter,
                 "team": team_filter,
-                "u21": u21_filter,
-                "in_forma": in_forma_filter
+                "u21": u21_only,
+                "in_forma": in_forma,
+                "min_price": min_price,
+                "max_price": max_price,
+                "min_fantamedia": min_fantamedia,
+                "max_fantamedia": max_fantamedia,
+                "min_age": min_age,
+                "max_age": max_age,
+                "sort_by": sort_by,
+                "sort_order": sort_order,
+                "season": season_filter
             }
         }), 200
 
@@ -1171,7 +1228,7 @@ def api_statistics():
 
         for role in roles:
             # Get players for this role
-            players = []
+            players_for_role = []
             role_matches = 0
             team_matches = 0
 
@@ -1224,11 +1281,11 @@ def api_statistics():
                 else:
                     p['display_name'] = name
 
-                players.append(p)
+                players_for_role.append(p)
 
-            LOG.info(f"[Statistics] Role {role}: {role_matches} role matches, {team_matches} team matches, {len(players)} final players")
+            LOG.info(f"[Statistics] Role {role}: {role_matches} role matches, {team_matches} team matches, {len(players_for_role)} final players")
 
-            if not players:
+            if not players_for_role:
                 role_stats[role] = {
                     'count': 0,
                     'avg_fantamedia': 0,
@@ -1241,7 +1298,7 @@ def api_statistics():
             fantamedias = []
             prices = []
 
-            for p in players:
+            for p in players_for_role:
                 fm = p.get('_fm')
                 pr = p.get('_price')
                 if isinstance(fm, (int, float)) and fm > 0:
@@ -1254,7 +1311,7 @@ def api_statistics():
 
             # Get top players - include all players now (since we want to show the full roster)
             valid_players = []
-            for p in players:
+            for p in players_for_role:
                 name = p.get('name', '').strip()
                 team = p.get('team', '').strip()
 
@@ -1540,31 +1597,31 @@ def api_compare_players():
         data = request.get_json()
         if not data or 'players' not in data:
             return jsonify({"error": "Players list required"}), 400
-        
+
         player_names = data.get('players', [])
         if len(player_names) < 2:
             return jsonify({"error": "At least 2 players required for comparison"}), 400
-        
+
         assistant = get_assistant()
         if not assistant:
             return jsonify({"error": "Assistant not available"}), 500
-        
+
         # Ensure data is loaded
         assistant._ensure_data_loaded()
-        
+
         comparison_results = []
-        
+
         for player_name in player_names:
             # Search for player in roster
             found_player = None
             player_name_lower = player_name.lower().strip()
-            
+
             for player in assistant.filtered_roster:
                 roster_name = (player.get('name') or '').lower().strip()
                 if player_name_lower in roster_name or roster_name in player_name_lower:
                     found_player = player
                     break
-            
+
             if found_player:
                 # Format player data for comparison
                 comparison_player = {
@@ -1590,13 +1647,13 @@ def api_compare_players():
                     'birth_year': 'N/D',
                     'age': 'N/D'
                 })
-        
+
         return jsonify({
             'comparison': comparison_results,
             'success': True,
             'count': len(comparison_results)
         })
-        
+
     except Exception as e:
         LOG.error(f"Error in player comparison: {e}")
         return jsonify({"error": str(e)}), 500

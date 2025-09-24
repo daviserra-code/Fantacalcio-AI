@@ -16,6 +16,7 @@ from config import (
 )
 from knowledge_manager import KnowledgeManager
 from static_transfers import get_team_arrivals, is_static_mode_enabled
+from cache_manager import get_cache_manager, cached
 
 LOG = logging.getLogger("fantacalcio_assistant")
 
@@ -812,6 +813,7 @@ class FantacalcioAssistant:
         return pool[:take]
 
     # ---------- XI Builder ----------
+    @cached(category='formations', ttl=1800)
     def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
         """Build formation with budget allocation optimized for 200 credit budget"""
         slots = dict(formation)
