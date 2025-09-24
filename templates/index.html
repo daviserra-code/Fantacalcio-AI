@@ -964,6 +964,19 @@
       }
     }
 
+    /* Fix dark theme for specific elements */
+    [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
+    [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
+    [data-theme="dark"] .quick-action-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        color: white !important;
+        border: 2px solid #667eea !important;
+    }
+    [data-theme="dark"] .quick-action-btn:hover {
+        background: linear-gradient(135deg, #5a67d8, #6b46c1) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
 
     /* Animations */
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -1068,7 +1081,7 @@
         <button onclick="switchLang('it')" class="header-btn {{ 'active' if lang == 'it' else '' }}">IT</button>
         <button onclick="switchLang('en')" class="header-btn {{ 'active' if lang == 'en' else '' }}">EN</button>
         <button onclick="openModal('analyticsModal')" class="header-btn">📊</button>
-        <button onclick="openModal('comparisonModal')" class="header-btn">⚖️</button>
+        <button onclick="openPlayerComparison()" class="header-btn">⚖️</button>
       </div>
     </div>
 
@@ -1541,13 +1554,13 @@
       console.log('comparePlayersModal called');
       const p1=document.getElementById('player1Input').value.trim();
       const p2=document.getElementById('player2Input').value.trim();
-      if(!p1||!p2){ 
-        alert('Inserisci entrambi i giocatori'); 
-        return; 
+      if(!p1||!p2){
+        alert('Inserisci entrambi i giocatori');
+        return;
       }
       const out=document.getElementById('comparisonResults');
       out.innerHTML='🔄 Caricamento...';
-      
+
       fetch('/api/compare',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -1556,9 +1569,9 @@
       .then(r=>r.ok?r.json():r.json().then(e=>Promise.reject(e)))
       .then(d=>{
         console.log('Comparison data:', d);
-        if(!(d.comparison&&d.comparison.length)){ 
-          out.innerHTML='❌ Giocatori non trovati'; 
-          return; 
+        if(!(d.comparison&&d.comparison.length)){
+          out.innerHTML='❌ Giocatori non trovati';
+          return;
         }
         const a=d.comparison[0], b=d.comparison[1]||{};
         out.innerHTML = `
@@ -1933,7 +1946,7 @@
 
         const roleName = {
           'P': 'Portieri',
-          'D': 'Difensori', 
+          'D': 'Difensori',
           'C': 'Centrocampisti',
           'A': 'Attaccanti'
         }[role] || role;
@@ -1990,10 +2003,10 @@
     }
 
     function displaySearchResults(results, total, debugInfo = null) {
-        console.log('displaySearchResults called with:', { 
-            resultsCount: results?.length || 0, 
+        console.log('displaySearchResults called with:', {
+            resultsCount: results?.length || 0,
             totalResults: total,
-            debugInfo 
+            debugInfo
         });
 
         const container = document.getElementById('searchResults');
