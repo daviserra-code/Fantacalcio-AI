@@ -831,6 +831,71 @@ def api_transfers_stats():
         LOG.error(f"Error getting transfer stats: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route("/api/compare", methods=["POST"])
+def api_compare():
+    """Compare two players and return their statistics"""
+    try:
+        data = request.get_json()
+        players = data.get('players', [])
+        
+        if len(players) != 2:
+            return jsonify({"error": "Exactly 2 players required"}), 400
+            
+        LOG.info(f"[Compare API] Comparing {players[0]} vs {players[1]}")
+        
+        # Initialize assistant
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({"error": "Assistant not initialized"}), 500
+            
+        comparison_results = []
+        
+        for player_name in players:
+            # Search for player in roster
+            player_found = None
+            for p in assistant.filtered_roster:
+                # Try both 'Name' and 'name' fields for compatibility
+                name_field = p.get('Name', '') or p.get('name', '')
+                if player_name.lower() in name_field.lower():
+                    player_found = p
+                    break
+            
+            if player_found:
+                comparison_results.append({
+                    "name": player_found.get('Name', '') or player_found.get('name', ''),
+                    "team": player_found.get('Team', '') or player_found.get('team', ''),
+                    "role": player_found.get('Role', '') or player_found.get('role', ''),
+                    "fantamedia": player_found.get('FantaMedia', 0) or player_found.get('fantamedia', 0),
+                    "price": player_found.get('Price', 0) or player_found.get('price', 0),
+                    "appearances": player_found.get('Pres', 0) or player_found.get('appearances', 0),
+                    "age": player_found.get('Age', 0) or player_found.get('age', 0),
+                    "gol": player_found.get('Gol', 0) or player_found.get('gol', 0),
+                    "assist": player_found.get('Assist', 0) or player_found.get('assist', 0)
+                })
+            else:
+                comparison_results.append({
+                    "name": player_name,
+                    "team": "Non trovato",
+                    "role": "-",
+                    "fantamedia": 0,
+                    "price": 0,
+                    "appearances": 0,
+                    "age": 0,
+                    "gol": 0,
+                    "assist": 0
+                })
+        
+        LOG.info(f"[Compare API] Returning comparison for {len(comparison_results)} players")
+        
+        return jsonify({
+            "comparison": comparison_results,
+            "success": True
+        })
+        
+    except Exception as e:
+        LOG.error(f"Error in compare API: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 @app.route('/api/search', methods=['POST'])
 def api_search():
     """Search functionality for statistics"""

@@ -2279,6 +2279,81 @@
     document.getElementById('league-rules-tab')?.addEventListener('shown.bs.tab', function() {
         loadRulesSummary();
     });
+
+    // Modal management functions
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('show');
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+        }
+    }
+
+    // Player comparison functionality
+    async function comparePlayersModal() {
+        const player1Name = document.getElementById('player1Input').value.trim();
+        const player2Name = document.getElementById('player2Input').value.trim();
+        const resultsDiv = document.getElementById('comparisonResults');
+
+        if (!player1Name || !player2Name) {
+            resultsDiv.innerHTML = `
+                <div style="color: #f59e0b; text-align: center; padding: 20px;">
+                    ⚠️ Per favore inserisci entrambi i nomi dei giocatori
+                </div>`;
+            return;
+        }
+
+        resultsDiv.innerHTML = `
+            <div style="color: #72E3A6; text-align: center; padding: 20px;">
+                🔄 Confrontando ${player1Name} vs ${player2Name}...
+            </div>`;
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Confronta ${player1Name} con ${player2Name}. Mostra le statistiche di entrambi: fantamedia, prezzo, squadra, ruolo e consigli su quale scegliere`,
+                    mode: 'classic'
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resultsDiv.innerHTML = `
+                    <div style="background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; color: #e5e7eb;">
+                        <div style="white-space: pre-wrap; line-height: 1.5;">${data.response}</div>
+                    </div>`;
+            } else {
+                throw new Error('Errore nella richiesta');
+            }
+        } catch (error) {
+            console.error('Error comparing players:', error);
+            resultsDiv.innerHTML = `
+                <div style="color: #ef4444; text-align: center; padding: 20px;">
+                    ❌ Errore nel confronto. Riprova più tardi.
+                </div>`;
+        }
+    }
+
+    // Open comparison modal function (for buttons)
+    function openPlayerComparison() {
+        openModal('comparisonModal');
+        // Clear previous inputs and results
+        document.getElementById('player1Input').value = '';
+        document.getElementById('player2Input').value = '';
+        document.getElementById('comparisonResults').innerHTML = '';
+    }
   </script>
 </body>
 </html>
