@@ -1462,6 +1462,74 @@ def get_corrections():
         LOG.error(f"Error getting corrections: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/compare', methods=['POST'])
+def api_compare_players():
+    """Compare multiple players"""
+    try:
+        data = request.get_json()
+        if not data or 'players' not in data:
+            return jsonify({"error": "Players list required"}), 400
+        
+        player_names = data.get('players', [])
+        if len(player_names) < 2:
+            return jsonify({"error": "At least 2 players required for comparison"}), 400
+        
+        assistant = get_assistant()
+        if not assistant:
+            return jsonify({"error": "Assistant not available"}), 500
+        
+        # Ensure data is loaded
+        assistant._ensure_data_loaded()
+        
+        comparison_results = []
+        
+        for player_name in player_names:
+            # Search for player in roster
+            found_player = None
+            player_name_lower = player_name.lower().strip()
+            
+            for player in assistant.filtered_roster:
+                roster_name = (player.get('name') or '').lower().strip()
+                if player_name_lower in roster_name or roster_name in player_name_lower:
+                    found_player = player
+                    break
+            
+            if found_player:
+                # Format player data for comparison
+                comparison_player = {
+                    'name': found_player.get('name', 'N/D'),
+                    'team': found_player.get('team', 'N/D'),
+                    'role': found_player.get('role', 'N/D'),
+                    'fantamedia': found_player.get('_fm') or found_player.get('fantamedia') or 0,
+                    'price': found_player.get('_price') or found_player.get('price') or 0,
+                    'appearances': found_player.get('appearances', 'N/D'),
+                    'birth_year': found_player.get('birth_year', 'N/D'),
+                    'age': assistant._age_from_by(found_player.get('birth_year')) if found_player.get('birth_year') else 'N/D'
+                }
+                comparison_results.append(comparison_player)
+            else:
+                # Player not found, add placeholder
+                comparison_results.append({
+                    'name': player_name,
+                    'team': 'Non trovato',
+                    'role': 'N/D',
+                    'fantamedia': 0,
+                    'price': 0,
+                    'appearances': 'N/D',
+                    'birth_year': 'N/D',
+                    'age': 'N/D'
+                })
+        
+        return jsonify({
+            'comparison': comparison_results,
+            'success': True,
+            'count': len(comparison_results)
+        })
+        
+    except Exception as e:
+        LOG.error(f"Error in player comparison: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # League Rules Management Endpoints
 @app.route("/api/rules", methods=["GET"])
