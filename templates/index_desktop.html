@@ -207,18 +207,23 @@
     [data-theme="light"] .typing-indicator { background: #f1f3f4; color: #222; }
     [data-theme="light"] .player-card { background: #ffffff; border-color: #eee; color: #333; }
 
-    /* Fix dark theme for specific elements */
+    /* Fix theme styling for components */
     [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
     [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
-    [data-theme="dark"] .quick-action-btn { 
+    
+    /* Ensure quick action buttons are always visible */
+    .quick-action-btn { 
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         color: white !important; 
         border: 2px solid #667eea !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
-    [data-theme="dark"] .quick-action-btn:hover { 
+    .quick-action-btn:hover { 
         background: linear-gradient(135deg, #5a67d8, #6b46c1) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
     [data-theme="dark"] .table { color: var(--text-color); }
     [data-theme="dark"] .table th { background-color: var(--table-header-bg); color: var(--table-text); }

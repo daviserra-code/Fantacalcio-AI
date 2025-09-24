@@ -37,6 +37,7 @@
       --dark-page-bg:#0b1220;
       --dark-card-bg:#0f172a;
       --bubble-dark:#1f2937;
+      --quick-actions-bg:#0f172a;
     }
 
     /* Light theme variables */
@@ -52,6 +53,7 @@
       --dark-page-bg:#ffffff;
       --dark-card-bg:#f8f9fa;
       --bubble-dark:#e9ecef;
+      --quick-actions-bg:#f8f9fa;
     }
 
     /* Theme-specific text colors */
@@ -207,17 +209,17 @@
     .btn-secondary{background:#6c757d;color:#fff;font-size:.85rem;padding:8px 14px}
 
     .quick-actions{
-      padding:16px;border-top:1px solid #f0f0f0;background:#e9ecef;
+      padding:16px;border-top:1px solid var(--tab-border);background:var(--quick-actions-bg);
       display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:stretch
     }
     .quick-action-btn{
-      background:linear-gradient(135deg,#00c851,#007e33)!important;border:2px solid #00c851!important;border-radius:14px;
-      padding:10px 14px;font-size:.85rem;color:#fff!important;font-weight:600;box-shadow:0 2px 4px rgba(0,200,81,.2);
+      background:linear-gradient(135deg,#667eea,#764ba2)!important;border:2px solid #667eea!important;border-radius:14px;
+      padding:10px 14px;font-size:.85rem;color:#fff!important;font-weight:600;box-shadow:0 2px 4px rgba(102,126,234,.2);
       text-align:center;display:flex;align-items:center;justify-content:center;min-height:42px;cursor:pointer;
-      transition:transform .15s ease,box-shadow .15s ease
+      transition:transform .15s ease,box-shadow .15s ease;text-decoration:none;
     }
     .quick-action-btn:hover{
-      transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,200,81,.3)
+      transform:translateY(-2px);box-shadow:0 4px 12px rgba(102,126,234,.4);text-decoration:none;
     }
 
     /* Section for Historical Stats */
@@ -964,19 +966,34 @@
       }
     }
 
-    /* Fix dark theme for specific elements */
-    [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
-    [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
-    [data-theme="dark"] .quick-action-btn {
+    /* Theme-specific styling for components */
+    [data-theme="dark"] .quick-actions {
+        background: var(--dark-card-bg) !important;
+        border-top-color: var(--tab-border) !important;
+    }
+    [data-theme="light"] .quick-actions {
+        background: var(--quick-actions-bg) !important;
+        border-top-color: var(--tab-border) !important;
+    }
+    
+    /* Ensure quick action buttons are always visible and properly styled */
+    .quick-action-btn {
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         color: white !important;
         border: 2px solid #667eea !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
-    [data-theme="dark"] .quick-action-btn:hover {
+    .quick-action-btn:hover {
         background: linear-gradient(135deg, #5a67d8, #6b46c1) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
+    
+    /* Fix dark theme for other elements */
+    [data-theme="dark"] .kicker { background: var(--dark-card-bg); border-color: var(--tab-border); color: var(--tab-inactive-fg); }
+    [data-theme="dark"] .kpi { background: var(--dark-card-bg); border-color: var(--tab-border); color: var(--tab-inactive-fg); }
 
     /* Animations */
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
