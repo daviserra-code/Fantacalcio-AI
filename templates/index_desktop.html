@@ -222,18 +222,22 @@
     [data-theme="dark"] .table td { border-bottom-color: var(--input-border); }
     [data-theme="dark"] .help { color: var(--text-color); opacity: 0.7; }
 
-    /* Additional dark theme fixes */
+    /* Enhanced dark theme fixes */
     [data-theme="dark"] .nav a { color: #e5e7eb; }
     [data-theme="dark"] .nav .brand .word { color: #e5e7eb; }
     [data-theme="dark"] .lead { color: #9ca3af; }
     [data-theme="dark"] .section { background-color: var(--bg-color); }
     [data-theme="dark"] .section.alt { background-color: var(--card-bg); }
     [data-theme="dark"] .chat-container { background-color: var(--card-bg); border-color: var(--input-border); }
-    [data-theme="dark"] .chat-header { background-color: var(--header-bg); color: var(--text-color); }
-    [data-theme="dark"] #desktopChatMessages div { background: var(--chat-message-assistant-bg); color: var(--text-color); }
+    [data-theme="dark"] .chat-header { background-color: var(--header-bg); color: var(--text-color); border-color: var(--input-border); }
+    [data-theme="dark"] #desktopChatMessages div { background: var(--chat-message-assistant-bg); color: var(--text-color); border-color: var(--input-border); }
     [data-theme="dark"] #desktopTypingIndicator { background: var(--chat-message-assistant-bg); color: var(--text-color); }
     [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: var(--text-color); }
     [data-theme="dark"] .footer { background-color: var(--header-bg); color: var(--text-color); }
+    [data-theme="dark"] .btn { background-color: var(--secondary-btn-bg); color: var(--secondary-btn-text); border-color: var(--input-border); }
+    [data-theme="dark"] .btn:hover { filter: brightness(1.1); }
+    [data-theme="dark"] .grid-2 .card { border-color: var(--input-border); }
+    [data-theme="dark"] .toolbar { background-color: var(--card-bg); border-color: var(--input-border); }
 
   </style>
 </head>
@@ -273,14 +277,24 @@
         </svg>
       </a>
       <nav class="spacer"></nav>
-      <!-- Login Indicator Placeholder -->
-      <span id="login-indicator" style="display: none; margin-right: 10px; font-weight: 600; color: var(--fcai-primary);"></span>
-      <a class="btn" href="#funzioni">Funzioni</a>
-      <a class="btn" href="/auth/login" style="background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; font-weight: 700; border: 2px solid #ffd700;">
-        <i style="font-size: 14px;">👑</i> Accedi per PRO!
-      </a>
-      <a class="btn btn-primary" href="/auth/login">Accedi</a>
-      <a class="btn btn-primary" href="/app">Apri App</a>
+      <!-- Login Status Display -->
+      <div id="user-status" style="display: flex; align-items: center; gap: 12px;">
+        <!-- Logged out state -->
+        <div id="logged-out-state">
+          <a class="btn" href="#funzioni">Funzioni</a>
+          <a class="btn" href="/auth/login" style="background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; font-weight: 700; border: 2px solid #ffd700;">
+            <i style="font-size: 14px;">👑</i> Accedi per PRO!
+          </a>
+          <a class="btn btn-primary" href="/auth/login">Accedi</a>
+        </div>
+        <!-- Logged in state -->
+        <div id="logged-in-state" style="display: none;">
+          <span id="user-greeting" style="margin-right: 10px; font-weight: 600; color: var(--fcai-primary);"></span>
+          <a class="btn" href="/dashboard">Dashboard</a>
+          <a class="btn btn-primary" href="/auth/logout">Logout</a>
+        </div>
+        <a class="btn btn-primary" href="/app">Apri App</a>
+      </div>
       <!-- Theme Switcher -->
       <button id="theme-toggle" class="btn toggle" style="margin-left: 10px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -458,8 +472,8 @@
   <!-- Quick Actions Section -->
   <section class="section alt">
     <div class="container">
-      <h2 style="text-align: center; margin-bottom: 32px;">⚡ Azioni Rapide</h2>
-      <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto;">
+      <h2 style="text-align: left; margin-bottom: 24px; margin-top: 0;">⚡ Azioni Rapide</h2>
+      <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0;"
         <button onclick="askDesktopQuestion('Migliori attaccanti per budget 150 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🎯 Top Attaccanti Budget</button>
         <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Top Centrocampisti</button>
         <button onclick="askDesktopQuestion('Top difensori (budget 100)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🛡️ Top Difensori</button>
@@ -541,32 +555,48 @@
     // Apply theme on load
     checkAndApplyTheme();
 
-    // --- Login Indicator (Placeholder) ---
-    // In a real app, this would be populated based on user session/token.
-    // For demonstration, we'll add a simple way to show it via JS.
-    function setLoginStatus(isLoggedIn) {
-      const loginIndicator = document.getElementById('login-indicator');
-      if (loginIndicator) {
-        if (isLoggedIn) {
-          loginIndicator.textContent = 'Sei loggato'; // Example text
-          loginIndicator.style.display = 'inline';
-          // Hide actual login buttons if logged in
-          const loginBtn = document.querySelector('a[href="/auth/login"]');
-          if (loginBtn) loginBtn.style.display = 'none';
-          const proLoginBtn = document.querySelector('a[href="/auth/login"][style*="background: linear-gradient"]');
-          if (proLoginBtn) proLoginBtn.style.display = 'none';
+    // --- Enhanced User Session Management ---
+    async function checkUserSession() {
+      try {
+        const response = await fetch('/api/user/status');
+        if (response.ok) {
+          const userData = await response.json();
+          updateLoginStatus(userData.logged_in, userData.user);
         } else {
-          loginIndicator.style.display = 'none';
-          // Show actual login buttons if not logged in
-          const loginBtn = document.querySelector('a[href="/auth/login"]');
-          if (loginBtn) loginBtn.style.display = '';
-          const proLoginBtn = document.querySelector('a[href="/auth/login"][style*="background: linear-gradient"]');
-          if (proLoginBtn) proLoginBtn.style.display = '';
+          updateLoginStatus(false);
         }
+      } catch (error) {
+        console.log('User session check failed:', error);
+        updateLoginStatus(false);
       }
     }
-    // Example: Simulate login status (replace with actual logic)
-    // setLoginStatus(true); // Uncomment to simulate logged in state
+
+    function updateLoginStatus(isLoggedIn, user = null) {
+      const loggedOutState = document.getElementById('logged-out-state');
+      const loggedInState = document.getElementById('logged-in-state');
+      const userGreeting = document.getElementById('user-greeting');
+
+      if (isLoggedIn && user) {
+        loggedOutState.style.display = 'none';
+        loggedInState.style.display = 'flex';
+        
+        const displayName = user.first_name || user.username || 'Utente';
+        const isPro = user.pro_expires_at && new Date(user.pro_expires_at) > new Date();
+        
+        userGreeting.innerHTML = `
+          <span style="color: var(--fcai-primary);">Ciao, ${displayName}</span>
+          ${isPro ? '<span class="badge" style="background: linear-gradient(135deg, #ffd700, #ffed4e); color: #333; margin-left: 8px;">PRO</span>' : ''}
+        `;
+      } else {
+        loggedOutState.style.display = 'flex';
+        loggedInState.style.display = 'none';
+      }
+    }
+
+    // Check session on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      checkUserSession();
+    });
 
 
     // Desktop Chat Functionality

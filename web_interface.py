@@ -1291,6 +1291,36 @@ def data_quality_report():
         LOG.error(f"Error generating data quality report: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+@app.route("/api/user/status", methods=["GET"])
+def api_user_status():
+    """Get current user login status and basic info"""
+    try:
+        if current_user.is_authenticated:
+            return jsonify({
+                "logged_in": True,
+                "user": {
+                    "id": current_user.id,
+                    "username": current_user.username,
+                    "email": current_user.email,
+                    "first_name": current_user.first_name,
+                    "last_name": current_user.last_name,
+                    "pro_expires_at": current_user.pro_expires_at.isoformat() if current_user.pro_expires_at else None,
+                    "profile_image_url": current_user.profile_image_url
+                }
+            })
+        else:
+            return jsonify({
+                "logged_in": False,
+                "user": None
+            })
+    except Exception as e:
+        LOG.error(f"Error in user status API: {e}")
+        return jsonify({
+            "logged_in": False,
+            "user": None,
+            "error": str(e)
+        }), 500
+
 @app.route("/api/test", methods=["GET"])
 def api_test():
     try:
