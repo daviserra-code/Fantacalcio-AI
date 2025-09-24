@@ -920,16 +920,201 @@
         }
       }
 
-    /* Added styles for League Rules Management Tab's layout */
-    @media (min-width: 768px) { /* Apply these styles for medium screens and up */
-      .col-md-6 {
-        flex: 0 0 50%;
-        max-width: 50%;
-      }
-      .row > [class*="col-md-"] {
-        padding-left: 15px;
-        padding-right: 15px;
-      }
+    /* Added styles for new elements */
+    .leagues-page {
+      padding: 16px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .leagues-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .leagues-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--tab-active-fg);
+      margin: 0;
+    }
+
+    .leagues-count {
+      font-size: 0.875rem;
+      color: var(--tab-inactive-fg);
+      background: var(--tab-inactive-bg);
+      padding: 5px 10px;
+      border-radius: 8px;
+    }
+
+    .create-league-btn {
+      background: linear-gradient(135deg, var(--tab-active-fg), #0ea5e9);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .create-league-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(10, 165, 233, 0.4);
+    }
+
+    .league-card {
+      background: var(--dark-card-bg);
+      border: 1px solid var(--tab-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .league-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .league-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .league-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--tab-active-fg);
+      margin: 0;
+    }
+
+    .league-badge {
+      background: var(--tab-active-fg);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .league-info {
+      margin-bottom: 12px;
+    }
+
+    .league-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--tab-inactive-fg);
+    }
+
+    .league-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .league-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: auto; /* Pushes stats to the bottom if card height varies */
+      padding-top: 10px;
+      border-top: 1px solid var(--tab-border);
+    }
+
+    .league-stat {
+      text-align: center;
+    }
+
+    .league-stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--tab-active-fg);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .league-stat-label {
+      font-size: 0.8rem;
+      color: var(--tab-inactive-fg);
+    }
+
+    .leagues-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      flex-grow: 1; /* Allows the grid to take available space */
+    }
+
+    .leagues-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--tab-inactive-fg);
+      flex-grow: 1; /* Centers the content vertically */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .leagues-empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+      color: var(--tab-active-fg);
+    }
+
+    .leagues-empty-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .leagues-empty-text {
+      margin: 8px 0 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Toast notification styles */
+    .toast-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      opacity: 0; /* Initially hidden */
+    }
+
+    .toast-notification.show {
+      opacity: 1;
+      transform: translateX(0);
     }
 
     /* Adjusted container for wide screens to accommodate two columns */
@@ -975,7 +1160,7 @@
         background: var(--quick-actions-bg) !important;
         border-top-color: var(--tab-border) !important;
     }
-    
+
     /* Ensure quick action buttons are always visible and properly styled */
     .quick-action-btn {
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
@@ -990,7 +1175,7 @@
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
-    
+
     /* Fix dark theme for other elements */
     [data-theme="dark"] .kicker { background: var(--dark-card-bg); border-color: var(--tab-border); color: var(--tab-inactive-fg); }
     [data-theme="dark"] .kpi { background: var(--dark-card-bg); border-color: var(--tab-border); color: var(--tab-inactive-fg); }
@@ -1073,7 +1258,7 @@
               <span style="background:#ffd700;color:#333;padding:2px 6px;border-radius:8px;font-size:.7rem;margin-left:4px;">PRO</span>
             {% endif %}
           </div>
-          <a href="#" onclick="switchTab('league-rules', null); return false;" class="header-btn">
+          <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn">
             <i class="fas fa-cog"></i> Leghe
           </a>
           {% if not user.is_pro %}
@@ -1366,196 +1551,64 @@
     </div>
 
     <!-- League Rules Management Tab -->
-    <div class="tab-content" id="league-rules">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="d-flex align-items-center mb-3">
-                    <button class="btn btn-outline-secondary me-3" onclick="switchTab('classic', document.querySelector('.tab-btn[data-tab=classic]'))" style="padding: 4px 8px; font-size: 0.75rem; min-height: auto; height: auto;">
-                        <i class="fas fa-arrow-left" style="font-size: 0.7rem;"></i> Indietro
-                    </button>
-                    <div>
-                        <h4 class="mb-1"><i class="fas fa-gavel"></i> League Rules Management</h4>
-                        <p class="text-muted mb-0">Manage and customize your Fantasy Football league rules</p>
-                    </div>
-                </div>
-
-                <!-- Rules Summary Card -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5><i class="fas fa-info-circle"></i> Rules Summary</h5>
-                    </div>
-                    <div class="card-body" id="rules-summary">
-                        <div class="d-flex justify-content-center">
-                            <div class="spinner-border" role="status">
-                                <span class="sr-only">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {% if user and user.is_authenticated %}
-                    {% if user.is_pro %}
-                    <!-- Pro Users: Full Rules Management Interface -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-edit"></i> Edit Rules Sections</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="rules-section-select" class="form-label">Select Section:</label>
-                                        <select class="form-select" id="rules-section-select" onchange="loadRulesSection()">
-                                            <option value="">Choose a section...</option>
-                                            <option value="league_info">League Information</option>
-                                            <option value="roster_composition">Roster Composition</option>
-                                            <option value="budget_rules">Budget Rules</option>
-                                            <option value="auction_rules">Auction Rules</option>
-                                            <option value="formation_rules">Formation Rules</option>
-                                            <option value="scoring_system">Scoring System</option>
-                                            <option value="transfer_rules">Transfer Rules</option>
-                                            <option value="playoff_rules">Playoff Rules</option>
-                                            <option value="special_rules">Special Rules</option>
-                                            <option value="penalties">Penalties</option>
-                                        </select>
-                                    </div>
-
-                                    <div id="rules-editor" style="display: none;">
-                                        <div class="mb-3">
-                                            <label for="rules-json-editor" class="form-label">Edit Rules (JSON):</label>
-                                            <textarea class="form-control" id="rules-json-editor" rows="10" style="font-family: monospace;"></textarea>
-                                        </div>
-                                        <button class="btn btn-primary" onclick="saveRulesSection()">
-                                            <i class="fas fa-save"></i> Save Section
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="card mb-3">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-upload"></i> Import from Document</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="text-muted">Import rules from your uploaded DOCX or TXT file</p>
-                                    <div class="mb-3">
-                                        <label for="document-file-select" class="form-label">Select Document:</label>
-                                        <select class="form-select" id="document-file-select">
-                                            <option value="">Choose a file...</option>
-                                            <option value="Regolamento LEGA FANTATSS_202508210948339773_1755783342170.docx">League Rules DOCX</option>
-                                        </select>
-                                    </div>
-                                    <button class="btn btn-primary" onclick="importRulesDocument()">
-                                        <i class="fas fa-upload"></i> Import Rules
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="card mb-3">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-plus"></i> Add Custom Rule</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label for="custom-rule-type" class="form-label">Rule Type:</label>
-                                        <select class="form-select" id="custom-rule-type">
-                                            <option value="house_rules">House Rules</option>
-                                            <option value="modifications">Modifications</option>
-                                            <option value="notes">Notes</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="custom-rule-description" class="form-label">Rule Description:</label>
-                                        <textarea class="form-control" id="custom-rule-description" rows="3" placeholder="Enter your custom rule description..."></textarea>
-                                    </div>
-                                    <button class="btn btn-success" onclick="addCustomRule()">
-                                        <i class="fas fa-plus"></i> Add Rule
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-download"></i> Export Rules</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p class="text-muted">Download your league rules in different formats</p>
-                                    <button class="btn btn-outline-primary me-2" onclick="exportRules('txt')">
-                                        <i class="fas fa-file-alt"></i> Export as Text
-                                    </button>
-                                    <button class="btn btn-outline-secondary" onclick="exportRules('json')">
-                                        <i class="fas fa-code"></i> Export as JSON
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <!-- Logged Users without Pro: Upgrade Prompt -->
-                    <div class="card text-center" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; border: none;">
-                        <div class="card-body">
-                            <i class="fas fa-crown fa-3x mb-3" style="opacity: 0.8;"></i>
-                            <h4>Funzionalità Pro Richiesta</h4>
-                            <p class="mb-4">Ciao {{ user.first_name or user.email }}! Accedi a tutte le funzionalità avanzate di gestione leghe con l'abbonamento Pro.</p>
-                            <a href="/upgrade" class="btn btn-light btn-lg">
-                                <i class="fas fa-arrow-up me-2"></i>Diventa Pro - €9.99/mese
-                            </a>
-                            <div class="mt-3">
-                                <small style="opacity: 0.9;">
-                                    ✨ Leghe illimitate • 📄 Importa regolamenti • ⚙️ Regole personalizzate • 📤 Esportazione dati
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% else %}
-                <!-- Not Logged Users: Login Required -->
-                <div class="card text-center" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
-                    <div class="card-body">
-                        <i class="fas fa-sign-in-alt fa-3x mb-3" style="opacity: 0.8;"></i>
-                        <h4>Accesso Richiesto</h4>
-                        <p class="mb-4">Effettua l'accesso per gestire le tue leghe e accedere alle funzionalità premium.</p>
-                        <a href="/login?next=/league-rules" class="btn btn-light btn-lg me-3">
-                            <i class="fas fa-sign-in-alt me-2"></i>Accedi
-                        </a>
-                        <div class="mt-3">
-                            <small style="opacity: 0.9;">
-                                Dopo l'accesso potrai creare leghe personalizzate e molto altro!
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Quick Actions -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-bolt"></i> Quick Tools</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>Formation Validator</h6>
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="formation-input" placeholder="e.g., 3-5-2">
-                                    <button class="btn btn-outline-secondary" onclick="validateFormation()">Validate</button>
-                                </div>
-                                <div id="formation-result"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Transfer Window Status</h6>
-                                <button class="btn btn-outline-info" onclick="checkTransferWindow()">
-                                    <i class="fas fa-calendar"></i> Check Current Status
-                                </button>
-                                <div id="transfer-window-result" class="mt-2"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="league-rules" class="tab-content">
+      <div class="leagues-page">
+        <!-- Page header -->
+        <div class="leagues-header">
+          <h3 class="leagues-title">🏆 Le tue Leghe</h3>
+          <div class="leagues-count" id="leaguesCount">0 leghe</div>
         </div>
+
+        <!-- Create league button -->
+        <button class="create-league-btn" onclick="toggleCreateLeagueForm()">
+          <i class="fas fa-plus"></i>
+          Crea Nuova Lega
+        </button>
+
+        <!-- League creation form (initially hidden) -->
+        <div id="createLeagueForm" class="league-card" style="display: none; margin-bottom: 20px;">
+          <div class="league-card-header">
+            <h4 class="league-title">✨ Nuova Lega</h4>
+            <button onclick="toggleCreateLeagueForm()" style="background: none; border: none; color: var(--tab-inactive-fg); cursor: pointer; padding: 4px;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--tab-inactive-fg); font-weight: 600;">Nome Lega</label>
+            <input type="text" id="leagueName" placeholder="Es: Lega Amici 2025" style="width: 100%; padding: 12px; border: 1px solid var(--tab-border); border-radius: 8px; background: var(--tabbar-bg); color: var(--tab-active-fg); font-size: 14px;">
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; margin-bottom: 6px; font-size: 13px; color: var(--tab-inactive-fg); font-weight: 600;">Tipo di Lega</label>
+            <select id="leagueType" style="width: 100%; padding: 12px; border: 1px solid var(--tab-border); border-radius: 8px; background: var(--tabbar-bg); color: var(--tab-active-fg); font-size: 14px;">
+              <option value="classic">Classica (8 partecipanti)</option>
+              <option value="mantra">Mantra (10 partecipanti)</option>
+              <option value="custom">Personalizzata</option>
+            </select>
+          </div>
+
+          <button onclick="createLeague()" style="background: linear-gradient(135deg, var(--tab-active-fg), #0ea5e9); color: white; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 14px;">
+            <i class="fas fa-check" style="margin-right: 8px;"></i>Crea Lega
+          </button>
+        </div>
+
+        <!-- Leagues grid -->
+        <div class="leagues-grid" id="leaguesGrid">
+          <!-- Leagues will be populated here -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="leaguesEmpty" class="leagues-empty">
+          <div class="leagues-empty-icon">
+            <i class="fas fa-trophy"></i>
+          </div>
+          <h4 class="leagues-empty-title">Nessuna lega ancora creata</h4>
+          <p class="leagues-empty-text">
+            Crea la tua prima lega per gestire regolamenti, aste e molto altro!
+          </p>
+        </div>
+      </div>
     </div>
 
 
@@ -1633,6 +1686,7 @@
       // Load rules summary when switching to league-rules tab
       if(name === 'league-rules') {
         loadRulesSummary();
+        initializeLeaguesPage(); // Initialize leagues UI when tab is shown
       }
 
       // scroll al tab su mobile
@@ -1807,35 +1861,35 @@
 
     // Statistics functions
     async function updateStatistics() {
-        const container = document.getElementById('statisticsResults');
-        if (!container) return;
+      const container = document.getElementById('statisticsResults');
+      if (!container) return;
 
-        try {
-            const teamFilter = document.getElementById('teamFilter');
-            const roleFilter = document.getElementById('roleFilterStats'); // Corrected ID
+      try {
+          const teamFilter = document.getElementById('teamFilter');
+          const roleFilter = document.getElementById('roleFilterStats'); // Corrected ID
 
-            if (!teamFilter || !roleFilter) {
-                console.error('Filter elements not found in statistics tab');
-                return;
-            }
+          if (!teamFilter || !roleFilter) {
+              console.error('Filter elements not found in statistics tab');
+              return;
+          }
 
-            const team = teamFilter.value.trim();
-            const role = roleFilter.value;
+          const team = teamFilter.value.trim();
+          const role = roleFilter.value;
 
-            container.innerHTML = '<div class="loading">Caricamento statistiche...</div>';
+          container.innerHTML = '<div class="loading">Caricamento statistiche...</div>';
 
-            const url = new URL('/api/statistics', window.location.origin);
-            if (team) url.searchParams.set('team', team);
-            if (role) url.searchParams.set('role', role); // Removed check for 'all' as '' is handled by backend
+          const url = new URL('/api/statistics', window.location.origin);
+          if (team) url.searchParams.set('team', team);
+          if (role) url.searchParams.set('role', role); // Removed check for 'all' as '' is handled by backend
 
-            const response = await fetch(url);
-            const data = await response.json();
+          const response = await fetch(url);
+          const data = await response.json();
 
-            displayStatistics(data);
-        } catch (error) {
-            console.error('Error updating statistics:', error);
-            container.innerHTML = '<div class="error">Errore nel caricamento delle statistiche</div>';
-        }
+          displayStatistics(data);
+      } catch (error) {
+          console.error('Error updating statistics:', error);
+          container.innerHTML = '<div class="error">Errore nel caricamento delle statistiche</div>';
+      }
     }
 
     // Global filter state
@@ -2072,7 +2126,7 @@
         container.innerHTML += `<h4>Risultati (${results.length}/${total})</h4>${resultsHtml}`;
     }
 
-    // Placeholder functions for league rules
+    // Placeholder functions for league rules management
     function loadRulesSummary() {
         console.log("Loading rules summary...");
         // Simulate fetching rules summary
@@ -2306,8 +2360,184 @@
         // loadDataQuality();
     });
 
-    document.getElementById('league-rules-tab')?.addEventListener('shown.bs.tab', function() {
-        loadRulesSummary();
+    // Leagues Management Functions
+    function toggleCreateLeagueForm() {
+      const form = document.getElementById('createLeagueForm');
+      const isVisible = form.style.display !== 'none';
+      form.style.display = isVisible ? 'none' : 'block';
+
+      if (!isVisible) {
+        document.getElementById('leagueName').focus();
+      }
+    }
+
+    function createLeague() {
+      const name = document.getElementById('leagueName').value.trim();
+      const type = document.getElementById('leagueType').value;
+
+      if (!name) {
+        alert('Inserisci un nome per la lega');
+        return;
+      }
+
+      // Get type configuration
+      const typeConfig = {
+        classic: { participants: 8, budget: 500, name: 'Classica' },
+        mantra: { participants: 10, budget: 500, name: 'Mantra' },
+        custom: { participants: 8, budget: 500, name: 'Personalizzata' }
+      };
+
+      const config = typeConfig[type];
+
+      // Create league card
+      const leaguesGrid = document.getElementById('leaguesGrid');
+      const leagueCard = document.createElement('div');
+      leagueCard.className = 'league-card';
+
+      const createdDate = new Date().toLocaleDateString('it-IT');
+      const leagueId = Date.now();
+
+      leagueCard.innerHTML = `
+        <div class="league-card-header">
+          <h4 class="league-title">${name}</h4>
+          <div class="league-badge">${config.name}</div>
+        </div>
+
+        <div class="league-info">
+          <div class="league-meta">
+            <div class="league-meta-item">
+              <i class="fas fa-calendar"></i>
+              <span>Creata il ${createdDate}</span>
+            </div>
+          </div>
+          <div class="league-meta">
+            <div class="league-meta-item">
+              <i class="fas fa-cog"></i>
+              <span>Regole ${config.name.toLowerCase()}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="league-stats">
+          <div class="league-stat">
+            <div class="league-stat-value">${config.participants}</div>
+            <div class="league-stat-label">Partecipanti</div>
+          </div>
+          <div class="league-stat">
+            <div class="league-stat-value">€${config.budget}</div>
+            <div class="league-stat-label">Budget</div>
+          </div>
+        </div>
+      `;
+
+      leagueCard.addEventListener('click', () => {
+        alert(`Apertura lega: ${name}\n\nFunzionalità in sviluppo...`);
+      });
+
+      // Hide empty state and show grid
+      document.getElementById('leaguesEmpty').style.display = 'none';
+      leaguesGrid.style.display = 'grid';
+      leaguesGrid.appendChild(leagueCard);
+
+      // Update leagues count
+      updateLeaguesCount();
+
+      // Clear form and hide it
+      document.getElementById('leagueName').value = '';
+      document.getElementById('leagueType').value = 'classic';
+      toggleCreateLeagueForm();
+
+      // Show success feedback
+      showToast('✅ Lega creata con successo!');
+    }
+
+    function updateLeaguesCount() {
+      const leaguesGrid = document.getElementById('leaguesGrid');
+      const count = leaguesGrid.children.length;
+      const countElement = document.getElementById('leaguesCount');
+      countElement.textContent = `${count} ${count === 1 ? 'lega' : 'leghe'}`;
+    }
+
+    function showToast(message) {
+      // Remove existing toast
+      const existingToast = document.querySelector('.toast-notification');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-notification';
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        opacity: 0; /* Initially hidden */
+      `;
+
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      // Animate in
+      setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+        toast.style.opacity = '1';
+      }, 100);
+
+      // Remove after delay
+      setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Initialize leagues page state
+    function initializeLeaguesPage() {
+      updateLeaguesCount();
+
+      // Check if there are any leagues to show the correct empty/populated state
+      const leaguesGrid = document.getElementById('leaguesGrid');
+      const leaguesEmpty = document.getElementById('leaguesEmpty');
+
+      if (leaguesGrid.children.length === 0) {
+        leaguesGrid.style.display = 'none';
+        leaguesEmpty.style.display = 'flex'; // Use flex to center content
+      } else {
+        leaguesGrid.style.display = 'grid';
+        leaguesEmpty.style.display = 'none';
+      }
+    }
+
+    // Call initialize when leagues tab is shown or on initial load if it's the active tab
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if the leagues tab is the initially active one
+      const leaguesTabButton = document.querySelector('.tab[onclick="switchTab(\'league-rules\', this)"]');
+      if (leaguesTabButton && leaguesTabButton.classList.contains('active')) {
+        initializeLeaguesPage();
+      }
+
+      // Add event listener for when the leagues tab is clicked/shown
+      const leagueTabLink = document.querySelector('button.tab[onclick="switchTab(\'league-rules\', this)"]');
+      if (leagueTabLink) {
+        leagueTabLink.addEventListener('click', function() {
+          // Use a small timeout to ensure the tab content is ready
+          setTimeout(initializeLeaguesPage, 50);
+        });
+      }
     });
 
     // Modal management functions
@@ -2315,7 +2545,7 @@
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('show');
-            modal.style.display = 'flex';
+            modal.style.display = 'flex'; // Use flex for centering
         }
     }
 
