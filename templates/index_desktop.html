@@ -647,11 +647,87 @@
         sendDesktopMessage(message);
     }
 
-    // Function for quick action buttons
-    function askDesktopQuestion(question) {
+    // Function for quick action buttons - show results in modal
+    async function askDesktopQuestion(question) {
         console.log('askDesktopQuestion called with:', question);
-        sendDesktopMessage(question);
+        
+        // Show loading modal
+        showQuickActionModal('⏳ Caricamento...', 'Sto elaborando la tua richiesta...');
+        
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: question, mode: 'classic' })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Show result in modal
+            const title = question.includes('attaccanti') ? '🎯 Top Attaccanti' :
+                         question.includes('centrocampisti') ? '⚽ Top Centrocampisti' :
+                         question.includes('difensori') ? '🛡️ Top Difensori' :
+                         question.includes('portieri') ? '🥅 Top Portieri' :
+                         question.includes('Formazione') ? '⚽ Strategia Formazione' :
+                         question.includes('Under') ? '👶 Giovani Talenti' :
+                         question.includes('acquisti') ? '📈 Ultimi Acquisti' :
+                         '🤖 FantacalcioAI';
+                         
+            showQuickActionModal(title, data.response || 'Risposta non disponibile');
+            
+        } catch (error) {
+            console.error('Quick action error:', error);
+            showQuickActionModal('❌ Errore', 'Errore nella richiesta. Riprova più tardi.');
+        }
     }
+
+    // Show quick action results in modal
+    function showQuickActionModal(title, content) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('quickActionModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'quickActionModal';
+            modal.style.cssText = `
+                display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+                background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 id="quickActionTitle" style="margin: 0; color: #1f2937;"></h2>
+                        <button onclick="closeQuickActionModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+                    </div>
+                    <div id="quickActionContent" style="line-height: 1.6; color: #374151;"></div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Update content and show
+        document.getElementById('quickActionTitle').textContent = title;
+        document.getElementById('quickActionContent').innerHTML = content;
+        modal.style.display = 'flex';
+    }
+
+    function closeQuickActionModal() {
+        const modal = document.getElementById('quickActionModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('quickActionModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 
     // Desktop Chat Functionality
     let isDesktopProcessing = false;
@@ -722,15 +798,21 @@
 
             const data = await response.json();
             console.log('Response data:', data);
+            console.log('Container found:', !!container);
+            console.log('Container children before:', container.children.length);
 
             // Add assistant response
             const assistantMsg = document.createElement('div');
             assistantMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
                 background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+                border: 2px solid #28a745; font-weight: bold;
             `;
             assistantMsg.innerHTML = data.response || 'Risposta non disponibile';
             container.appendChild(assistantMsg);
+            
+            console.log('Container children after:', container.children.length);
+            console.log('Message added:', assistantMsg.innerHTML.substring(0, 50));
 
             container.scrollTop = container.scrollHeight;
 
