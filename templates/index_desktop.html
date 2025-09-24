@@ -647,6 +647,12 @@
         sendDesktopMessage(message);
     }
 
+    // Function for quick action buttons
+    function askDesktopQuestion(question) {
+        console.log('askDesktopQuestion called with:', question);
+        sendDesktopMessage(question);
+    }
+
     // Desktop Chat Functionality
     let isDesktopProcessing = false;
     
