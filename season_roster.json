@@ -1892,6 +1892,19 @@
     "name_prev": "Sabiri"
   },
   {
+    "name": "Rolando Mandragora",
+    "role": "C",
+    "team": "Fiorentina",
+    "birth_year": 1997,
+    "price": 16,
+    "fantamedia": 40.0,
+    "appearances": 0,
+    "season": "2025-26",
+    "source": "sky_listone+wikipedia_name_enrichment+birth_enriched_wikipedia",
+    "source_date": "2025-09-18",
+    "name_prev": ""
+  },
+  {
     "name": "Beltran L.",
     "role": "A",
     "team": "Fiorentina",
