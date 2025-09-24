@@ -59,7 +59,7 @@
     [data-theme="light"] body { color: #333; }
     [data-theme="dark"] .container { color: #e5e7eb; }
     [data-theme="light"] .container { color: #333; }
-    
+
     /* Update message colors for light theme */
     [data-theme="light"] .assistant-message { background: #f1f3f4; color: #222; }
     [data-theme="light"] .typing-indicator { background: #f1f3f4; color: #222; }
@@ -2138,7 +2138,7 @@
       const body = document.body;
       const themeToggle = document.getElementById('themeToggle');
       const currentTheme = body.getAttribute('data-theme') || 'dark';
-      
+
       if (currentTheme === 'dark') {
         body.setAttribute('data-theme', 'light');
         themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
@@ -2154,7 +2154,7 @@
       const savedTheme = localStorage.getItem('theme') || 'dark';
       const themeToggle = document.getElementById('themeToggle');
       document.body.setAttribute('data-theme', savedTheme);
-      
+
       if (savedTheme === 'light') {
         themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
       } else {
