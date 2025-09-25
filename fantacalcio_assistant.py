@@ -1386,6 +1386,37 @@ class FantacalcioAssistant:
 
 Cosa ti interessa di più?"""
 
+        # Check for constraint violation corrections (age, budget, etc.)
+        constraint_correction_patterns = [
+            (r"ti ho chiesto.*(?:under\s*(\d+)|u(\d+)).*(?:soltanto|solo|solamente)", "age_constraint"),
+            (r"(?:non sono|non è).*under\s*(\d+)", "age_violation"),
+            (r"(?:troppo|più)\s+(?:vecchi|anziani|grandi)", "age_violation_general"),
+            (r"rispetta.*(?:vincol|limit|criteri)", "constraint_reminder"),
+            (r"hai sbagliato.*(?:età|anni)", "age_error"),
+        ]
+
+        for pattern, correction_type in constraint_correction_patterns:
+            match = re.search(pattern, user_lower)
+            if match:
+                LOG.info(f"[Conversational] Constraint correction detected: {correction_type}")
+                
+                if correction_type in ["age_constraint", "age_violation"]:
+                    # Extract age limit from the correction
+                    age_limit = None
+                    for group in match.groups():
+                        if group and group.isdigit():
+                            age_limit = int(group)
+                            break
+                    
+                    if age_limit:
+                        return f"Hai ragione, mi scuso per l'errore! 🙏 Hai chiesto SOLO giocatori under {age_limit}. Ora ti fornisco una risposta corretta rispettando rigorosamente questo vincolo di età."
+                    
+                elif correction_type == "age_violation_general":
+                    return "Hai ragione, mi scuso per l'errore! 🙏 Hai specificato un vincolo di età che non ho rispettato. Dimmi qual è l'età massima che vuoi e ti darò una risposta corretta."
+                
+                elif correction_type in ["constraint_reminder", "age_error"]:
+                    return "Hai perfettamente ragione, mi scuso per non aver rispettato i tuoi vincoli! 🙏 Ora ti fornisco una risposta corretta che rispetta esattamente i criteri che hai specificato."
+
         # Context from previous interactions
         if any(word in user_lower for word in ["e poi", "inoltre", "anche", "pure"]):
             return "Dimmi pure, sono qui per aiutarti! Che altro ti serve per la tua strategia fantacalcio?"
