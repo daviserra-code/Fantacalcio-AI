@@ -43,10 +43,13 @@ def load_user(user_id):
     from models import User
     try:
         # Try to convert to int first (for regular users)
-        return User.query.get(int(user_id))
+        user_id_int = int(user_id)
+        return User.query.get(user_id_int)
     except ValueError:
-        # If it's not an integer (like 'pro_test_user_456'), query by string ID
-        return User.query.filter_by(id=user_id).first()
+        # If it's not an integer (like 'pro_test_user_456'), it's invalid session data
+        # Return None to force logout and clear invalid session
+        logging.warning(f"Invalid user_id in session: {user_id}. Clearing session.")
+        return None
 
 # Register blueprints
 from site_blueprint import site_bp
