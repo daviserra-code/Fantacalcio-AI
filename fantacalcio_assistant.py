@@ -1718,14 +1718,29 @@ Cosa ti interessa di più?"""
             intent.update({"type":"asta"})
             return intent
 
+        # Player comparisons - catch before LLM fallback
+        if any(word in lt for word in ["vs", "contro", "meglio", "confronto", "compara"]) and len(lt.split()) > 2:
+            intent.update({"type": "comparison", "original_text": text})
+            return intent
+            
+        # General advice requests - structured response instead of LLM
+        if any(word in lt for word in ["consiglio", "consigli", "strategia", "tattica", "suggerimento"]) and not any(word in lt for word in ["asta"]):
+            intent.update({"type": "advice", "original_text": text})
+            return intent
+            
+        # Season/league questions - structured response
+        if any(word in lt for word in ["stagione", "campionato", "serie a", "giornata"]):
+            intent.update({"type": "season_info", "original_text": text})
+            return intent
+
         # followup secco
         if lt in self._FOLLOWUP_TOKENS:
             intent.update({"type":"followup"})
             return intent
 
-
-        # fallback generico: LLM
-        intent.update({"type": "generic"})
+        # Enhanced fallback with stricter validation
+        LOG.warning(f"[Intent Parse] No specific pattern matched for: '{lt}' - falling back to LLM")
+        intent.update({"type": "generic", "needs_validation": True})
         return intent
 
     # ---------- respond ----------
@@ -1765,9 +1780,19 @@ Cosa ti interessa di più?"""
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
         elif intent["type"] == "complex_budget":
             reply = self._handle_complex_budget_request(intent)
+        elif intent["type"] == "comparison":
+            reply = self._handle_comparison_request(intent.get("original_text", user_text))
+        elif intent["type"] == "advice":
+            reply = self._handle_advice_request(intent.get("original_text", user_text))
+        elif intent["type"] == "season_info":
+            reply = self._handle_season_info_request(intent.get("original_text", user_text))
         elif intent["type"] == "generic":
-             reply = self._llm_complete(user_text, context_messages=[], state=st)
-             if not reply or "non disponibile" in reply.lower() or reply.strip() == "":
+            # More strict validation before using LLM
+            if intent.get("needs_validation"):
+                reply = self._validated_llm_complete(user_text, context_messages=[], state=st)
+            else:
+                reply = self._llm_complete(user_text, context_messages=[], state=st)
+            if not reply or "non disponibile" in reply.lower() or reply.strip() == "":
                 reply = "Dimmi: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
         else:
             reply = "Non ho capito la richiesta. Prova con: *formazione 5-3-2 500*, *top attaccanti budget 150*, *2 difensori under 21*, oppure *strategia asta*."
@@ -2544,6 +2569,99 @@ Cosa ti interessa di più?"""
         return report
 
     # ---------------------------
+    # Structured handlers to reduce LLM fallback
+    # ------------------------------------------
+    def _handle_comparison_request(self, user_text: str) -> str:
+        """Handle player comparison requests without LLM"""
+        words = user_text.lower().split()
+        # Extract potential player names (simple heuristic)
+        potential_names = [w for w in words if len(w) > 3 and w not in ["meglio", "contro", "confronto", "compara"]]
+        
+        if len(potential_names) < 2:
+            return "📊 Per confrontare giocatori, specifica i nomi: *'Lautaro vs Lukaku'* o *'confronto Theo Hernandez e Dimarco'*"
+        
+        return f"📊 **Confronto Giocatori**\n\nPer un confronto dettagliato tra {' e '.join(potential_names[:2])}, usa:\n• *formazione [budget]* per vedere come si integrano\n• *top attaccanti budget [X]* per alternative simili\n\n💡 *Tip: Controlla fantamedia, prezzo e ruolo tattici nel roster attuale*"
+    
+    def _handle_advice_request(self, user_text: str) -> str:
+        """Handle general advice requests with structured responses"""
+        lt = user_text.lower()
+        
+        if any(word in lt for word in ["difesa", "difensori"]):
+            return """🛡️ **Consigli Difesa**
+1. **Esterni titolari** con bonus da assist (Dimarco, Dumfries, Gosens)
+2. **Centrali under 23** per vincoli età (controlla roster)
+3. **Budget 60-80 crediti** per 3 difensori competitivi
+4. **Evita** squadre con difese fragili inizio stagione
+
+💡 Usa: *3 difensori under 21* o *formazione 5-3-2 [budget]*"""
+        
+        elif any(word in lt for word in ["attacco", "attaccanti", "punte"]):
+            return """⚽ **Consigli Attacco**
+1. **1-2 big** con alta fantamedia (Lautaro, Lukaku, Kean)
+2. **Value picks** da squadre in crescita
+3. **Budget 80-120 crediti** per coppia competitiva
+4. **Rotazione** per gestire infortuni
+
+💡 Usa: *top attaccanti budget [X]* o *3 attaccanti under 21*"""
+        
+        elif any(word in lt for word in ["centrocampo", "centrocampisti"]):
+            return """⚽ **Consigli Centrocampo**
+1. **Trequartisti** con bonus assist/gol (Orsolini, Pulisic)
+2. **Jolly multi-ruolo** per flessibilità tattica
+3. **Budget 100-140 crediti** per 4 centrocampisti
+4. **Mix** titolari/riserve per rotazione
+
+💡 Usa: *4 centrocampisti under 21* o *formazione 4-4-2 [budget]*"""
+        
+        return """🎯 **Consigli Generali Fantacalcio**
+1. **Bilancia** big e value picks
+2. **Rispetta** vincoli età se presenti
+3. **Considera** calendario e infortuni
+4. **Mantieni** budget per mercato di riparazione
+
+💡 **Comandi utili:**
+• *formazione 5-3-2 500* - Costruisci squadra
+• *top attaccanti budget 150* - Migliori attaccanti
+• *3 difensori under 21* - Giovani talenti"""
+    
+    def _handle_season_info_request(self, user_text: str) -> str:
+        """Handle season/league information requests"""
+        return f"""📅 **Stagione 2025-26 Serie A**
+
+🏆 **Info Generale:**
+• **20 squadre** in Serie A
+• **{len(self.filtered_roster)} giocatori** nel roster corrente
+• **Stagione:** Settembre 2025 - Maggio 2026
+
+📊 **Dati Roster Attuali:**
+• **Portieri:** {len([p for p in self.filtered_roster if self._role_bucket(p.get('role', '')) == 'P'])}
+• **Difensori:** {len([p for p in self.filtered_roster if self._role_bucket(p.get('role', '')) == 'D'])}
+• **Centrocampisti:** {len([p for p in self.filtered_roster if self._role_bucket(p.get('role', '')) == 'C'])}
+• **Attaccanti:** {len([p for p in self.filtered_roster if self._role_bucket(p.get('role', '')) == 'A'])}
+
+💡 **Per analisi dettagliate usa:** *formazione [modulo] [budget]* o *top attaccanti budget [X]*"""
+
+    # LLM with enhanced validation
+    # -----------------------------
+    def _validated_llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None, state: Dict[str, Any] = None) -> str:
+        """LLM completion with extra validation and constraints"""
+        # Pre-validation: If the query seems like it should have been caught by structured handlers, redirect
+        lt = user_text.lower()
+        
+        # Check for queries that should avoid LLM entirely
+        if any(word in lt for word in ["formazione", "budget", "under", "difensor", "attaccan", "centrocamp", "portier"]):
+            return "🤖 Per richieste specifiche sui giocatori, usa comandi strutturati: *formazione 5-3-2 500*, *top attaccanti budget 150*, o *3 difensori under 21*"
+        
+        # If we proceed to LLM, use stricter constraints
+        result = self._llm_complete(user_text, context_messages, state)
+        
+        # Post-validation: Check if LLM mentioned specific players
+        if result and any(name in result for name in ["Lautaro", "Lukaku", "Dimarco", "Theo", "Barella"]):
+            # If LLM mentioned specific players, warn about data accuracy
+            result += "\n\n⚠️ *Verifica sempre i dati nel roster attuale con comandi specifici*"
+        
+        return result
+
     # LLM (fallback generico)
     # ---------------------------
     def _llm_complete(self, user_text: str, context_messages: List[Dict[str, str]] = None, state: Dict[str, Any] = None) -> str:
@@ -2670,11 +2788,13 @@ PERSONALITÀ:
 DATI ROSTER CORRENTE:
 {roster_context}
 
-REGOLE FONDAMENTALI:
-- BASATI SOLO sui giocatori nel roster sopra
-- NON menzionare giocatori non disponibili (Osimhen, Kvaratskhelia, ecc.)
-- Se i dati sono insufficienti, dillo chiaramente ma suggerisci alternative
-- Prioritizza fantamedia e prezzo dai dati del roster
+🚨 REGOLE ANTI-ALLUCINAZIONE (CRITICHE):
+1. **DIVIETO ASSOLUTO** di inventare dati di giocatori
+2. **SOLO** roster corrente fornito sopra - mai dati esterni
+3. **NESSUNA** formazione con giocatori non verificati nel roster
+4. **SE INCERTO** → "Per dati certi, usa: *formazione [modulo] [budget]*"
+5. **MAI** prezzi/età/squadre non dal roster corrente
+6. **VALIDAZIONE OBBLIGATORIA** prima di menzionare qualsiasi giocatore
 
 GESTIONE RIGOROSA DEI VINCOLI UTENTE:
 - RISPETTA SEMPRE i vincoli specificati dall'utente (es. "solo under 23", "budget 150", ecc.)
@@ -2700,13 +2820,12 @@ ESEMPI DI TONO:
 ❌ "I dati mostrano che Vlahović ha FM 7.18"
 ✅ "Vlahović è una bella scelta! ⚽ Con FM 7.18 è uno dei top, costa sui 20 crediti. Hai considerato anche Krstović del Lecce? Solo 10 crediti ma FM quasi 7!"
 
-⚠️ DIVIETO ASSOLUTO DI INVENZIONE DATI:
-- NON inventare MAI dati di giocatori (età, squadre, prezzi, fantamedia)
-- USA SOLO i dati del roster corrente fornito sopra
-- Se non hai un dato certo dal roster, dì "dato non disponibile" 
-- VERIFICA sempre che i giocatori menzionati esistano nel roster corrente
-- Se menzioni età di un giocatore, CONTROLLA che sia coerente con vincoli richiesti
-- NON creare formazioni false con giocatori inesistenti o dati inventati
+⚠️ GESTIONE RICHIESTE COMPLESSE - REDIRECTION OBBLIGATORIA:
+- Se richiesta formazione → "Usa: *formazione 5-3-2 [budget]*"
+- Se richiesta giocatori specifici → "Usa: *top attaccanti budget [X]*"  
+- Se confronti → "Usa comandi strutturati per dati certi"
+- Se età/under → "Usa: *3 difensori under 21*"
+- **NESSUN tentativo di analisi complessa** - sempre redirecta ai comandi
 
 RICONOSCIMENTO CORREZIONI UTENTE:
 Se l'utente dice "non gioca più in quella squadra", "non è under 23", "hai sbagliato":
