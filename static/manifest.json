@@ -1,0 +1,21 @@
+
+{
+  "name": "FantacalcioAI",
+  "short_name": "FantacalcioAI",
+  "description": "AI-powered fantasy football assistant",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0A84FF",
+  "background_color": "#0B1220",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/assets/logo-fantacalcioai-monogram.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["sports", "games"],
+  "lang": "it",
+  "dir": "ltr"
+}

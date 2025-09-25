@@ -1021,7 +1021,7 @@ def api_players():
 
         # Advanced filters
         min_price = request.args.get('min_price', type=float)
-        max_price = request.args.get('max_price', type=float) 
+        max_price = request.args.get('max_price', type=float)
         min_fantamedia = request.args.get('min_fantamedia', type=float)
         max_fantamedia = request.args.get('max_fantamedia', type=float)
         min_age = request.args.get('min_age', type=int)
@@ -1036,7 +1036,6 @@ def api_players():
 
         assistant = get_assistant()
         if not assistant:
-            LOG.error("[Players API] Assistant not available")
             return jsonify({
                 "players": [],
                 "total": 0,
@@ -1078,7 +1077,7 @@ def api_players():
             if role_filter and player.get('role', '').upper() != role_filter:
                 continue
 
-            # Team filter  
+            # Team filter
             if team_filter and team_filter not in player.get('team', '').lower():
                 continue
 
@@ -1178,7 +1177,7 @@ def api_players():
         }), 500
 
 @app.route('/api/statistics')
-def api_statistics():
+def get_statistics():
     """Get player statistics by role"""
     try:
         LOG.info(f"[Statistics API] Request received - Method: {request.method}")
@@ -1261,7 +1260,7 @@ def api_statistics():
                 # Apply team filter if specified
                 team_match = True
                 if team_filter:
-                    player_team = p.get('team', '').strip().lower()
+                    player_team = p.get('team', '').lower()
                     # More flexible team matching
                     team_match = (team_filter in player_team or
                                 player_team in team_filter or
@@ -1769,6 +1768,46 @@ def api_import_rules_document():
         return jsonify({"message": "Rules imported successfully!", "success": True})
     else:
         return jsonify({"error": "Failed to import rules document"}), 500
+
+
+# Social Features Endpoints
+@app.route('/api/social/leaderboard')
+def get_global_leaderboard():
+    """Get global user leaderboard"""
+    try:
+        # Mock implementation - replace with actual database queries
+        leaderboard = [
+            {'username': 'FantaExpert', 'points': 1250, 'rank': 1, 'badge': 'champion'},
+            {'username': 'CalcioMaster', 'points': 1180, 'rank': 2, 'badge': 'expert'},
+            {'username': 'TacticalGenius', 'points': 1150, 'rank': 3, 'badge': 'expert'}
+        ]
+
+        return jsonify({
+            'success': True,
+            'leaderboard': leaderboard,
+            'user_rank': request.args.get('user_rank', 'N/A')
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/social/share_lineup', methods=['POST'])
+def share_lineup():
+    """Share team lineup with community"""
+    try:
+        data = request.get_json()
+        lineup = data.get('lineup', [])
+        comment = data.get('comment', '')
+
+        # In a real app, save to database and notify followers
+        share_id = f"share_{int(time.time())}"
+
+        return jsonify({
+            'success': True,
+            'share_id': share_id,
+            'message': 'Lineup condiviso con successo!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 
 if __name__ == "__main__":
