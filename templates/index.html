@@ -825,31 +825,49 @@
       }
 
       .statistics-results .role-stats {
-                margin: 10px 0;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
+                margin: 12px 0;
+                padding: 16px;
+                background: var(--dark-card-bg, #1a202c);
+                border: 1px solid var(--tab-border, #2d3748);
+                border-radius: 8px;
+                border-left: 3px solid #22d3ee;
+            }
+            
+            .statistics-results .role-stats h5 {
+                color: #22d3ee;
+                margin: 0 0 12px 0;
+                font-size: 16px;
+                font-weight: 600;
             }
 
             .statistics-results .top-players {
-                margin-top: 5px;
+                margin-top: 8px;
             }
 
             .statistics-results .player-tag {
                 display: inline-block;
-                background: #f0f0f0;
-                padding: 2px 6px;
-                margin: 2px;
-                border-radius: 3px;
-                font-size: 0.9em;
+                background: var(--tab-bg, #2d3748);
+                color: var(--text-color, #e2e8f0);
+                padding: 6px 10px;
+                margin: 3px;
+                border-radius: 6px;
+                font-size: 12px;
+                border: 1px solid var(--tab-border, #4a5568);
             }
 
             .advanced-filters {
-                background: #f9f9f9;
-                padding: 15px;
-                margin: 10px 0;
-                border-radius: 5px;
-                border: 1px solid #ddd;
+                background: var(--dark-card-bg, #1a202c);
+                color: var(--text-color, #e2e8f0);
+                padding: 16px;
+                margin: 12px 0;
+                border-radius: 8px;
+                border: 1px solid var(--tab-border, #2d3748);
+            }
+            
+            .advanced-filters h4 {
+                color: #22d3ee;
+                margin: 0 0 16px 0;
+                font-size: 16px;
             }
 
             .filter-row {
@@ -2705,14 +2723,7 @@
       }
     });
 
-    // Modal management functions
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('show');
-            modal.style.display = 'flex'; // Use flex for centering
-        }
-    }
+    // Modal management functions (removed duplicate - using the one with analytics support)
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
