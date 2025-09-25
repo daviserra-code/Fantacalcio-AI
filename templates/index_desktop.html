@@ -231,11 +231,23 @@
     [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
     [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
     
-    /* Ensure quick action buttons are always visible */
+    /* Standardized quick action buttons */
     .quick-action-btn { 
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         color: white !important; 
-        border: 2px solid #667eea !important;
+        border: none !important;
+        padding: 14px 18px !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        min-height: 55px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -577,28 +589,57 @@
   <section class="section alt">
     <div class="container">
       <h2 style="text-align: left; margin-bottom: 24px; margin-top: 0;">⚡ Azioni Rapide</h2>
-      <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0;"
-        <button onclick="askDesktopQuestion('Migliori attaccanti per budget 150 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🎯 Top Attaccanti Budget</button>
-        <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Top Centrocampisti</button>
-        <button onclick="askDesktopQuestion('Top difensori (budget 100)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🛡️ Top Difensori</button>
-        <button onclick="askDesktopQuestion('Migliori portieri budget 40')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🥅 Top Portieri</button>
-        <button onclick="askDesktopQuestion('Formazione 3-5-2 con budget 500 crediti?')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Formazione 3-5-2</button>
-        <button onclick="askDesktopQuestion('Formazione 4-3-3 (600 crediti)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Formazione 4-3-3</button>
-        <button onclick="askDesktopQuestion('Formazione 4-5-1 (450 crediti)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Formazione 4-5-1</button>
-        <button onclick="askDesktopQuestion('Formazione 3-4-3 (550 crediti)')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">⚽ Formazione 3-4-3</button>
-        <button onclick="askDesktopQuestion('2-3 difensori Under 21')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">👶 U21 Difensori</button>
-        <button onclick="askDesktopQuestion('3 centrocampisti Under 21')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">👶 U21 Centrocampisti</button>
-        <button onclick="askDesktopQuestion('2 attaccanti Under 21')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">👶 U21 Attaccanti</button>
-        <button onclick="askDesktopQuestion('Giovani Under 23 tutti i ruoli')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">👶 U23 Tutti i Ruoli</button>
-        <button onclick="askDesktopQuestion('Strategia per l\'asta')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">🏆 Strategia Asta</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Inter')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Inter</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Milan')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Milan</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Juventus')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Juventus</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Napoli')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Napoli</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Roma')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Roma</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Lazio')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Lazio</button>
-        <button onclick="askDesktopQuestion('Ultimi acquisti Atalanta')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📈 Acquisti Atalanta</button>
-        <button onclick="openModal('analyticsModal')" style="background: linear-gradient(135deg, #667eea, #764ba2) !important; color: white !important; border: none !important; padding: 14px 18px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 600 !important; cursor: pointer !important; min-height: 55px !important; display: flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4) !important; transition: all 0.3s ease !important;">📊 Statistiche</button>
+      <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0;">
+        <button onclick="askDesktopQuestion('Migliori attaccanti per budget 150 crediti?')" class="quick-action-btn">🎯 Top Attaccanti Budget</button>
+        <button onclick="askDesktopQuestion('Top centrocampisti (budget 120)')" class="quick-action-btn">⚽ Top Centrocampisti</button>
+        <button onclick="askDesktopQuestion('Top difensori (budget 100)')" class="quick-action-btn">🛡️ Top Difensori</button>
+        <button onclick="askDesktopQuestion('Migliori portieri budget 40')" class="quick-action-btn">🥅 Top Portieri</button>
+        <button onclick="askDesktopQuestion('Formazione 3-5-2 con budget 500 crediti?')" class="quick-action-btn">⚽ Formazione 3-5-2</button>
+        <button onclick="askDesktopQuestion('Formazione 4-3-3 (600 crediti)')" class="quick-action-btn">⚽ Formazione 4-3-3</button>
+        <button onclick="askDesktopQuestion('Formazione 4-5-1 (450 crediti)')" class="quick-action-btn">⚽ Formazione 4-5-1</button>
+        <button onclick="askDesktopQuestion('Formazione 3-4-3 (550 crediti)')" class="quick-action-btn">⚽ Formazione 3-4-3</button>
+        <button onclick="askDesktopQuestion('2-3 difensori Under 21')" class="quick-action-btn">👶 U21 Difensori</button>
+        <button onclick="askDesktopQuestion('3 centrocampisti Under 21')" class="quick-action-btn">👶 U21 Centrocampisti</button>
+        <button onclick="askDesktopQuestion('2 attaccanti Under 21')" class="quick-action-btn">👶 U21 Attaccanti</button>
+        <button onclick="askDesktopQuestion('Giovani Under 23 tutti i ruoli')" class="quick-action-btn">👶 U23 Tutti i Ruoli</button>
+        <button onclick="askDesktopQuestion('Strategia per l\'asta')" class="quick-action-btn">🏆 Strategia Asta</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Inter')" class="quick-action-btn">📈 Acquisti Inter</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Milan')" class="quick-action-btn">📈 Acquisti Milan</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Juventus')" class="quick-action-btn">📈 Acquisti Juventus</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Napoli')" class="quick-action-btn">📈 Acquisti Napoli</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Roma')" class="quick-action-btn">📈 Acquisti Roma</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Lazio')" class="quick-action-btn">📈 Acquisti Lazio</button>
+        <button onclick="askDesktopQuestion('Ultimi acquisti Atalanta')" class="quick-action-btn">📈 Acquisti Atalanta</button>
+        <button onclick="openModal('analyticsModal')" class="quick-action-btn">📊 Statistiche</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Features Showcase Section -->
+  <section class="section alt">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 32px;">🚀 Nuove Funzionalità</h2>
+      <div class="grid-3" style="gap: 24px;">
+        <div class="card pad" style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+          <h3 style="color: #667eea;">Real-time Updates</h3>
+          <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">Aggiornamenti in tempo reale visibili durante i giorni di partita per seguire le performance dei tuoi giocatori.</p>
+          <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border-left: 4px solid #22d3ee;">
+            <small style="color: #555;">📈 Disponibile durante le giornate di campionato</small>
+          </div>
+        </div>
+        <div class="card pad" style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+          <h3 style="color: #667eea;">AI Insights</h3>
+          <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">Consigli avanzati dell'intelligenza artificiale disponibili in tutte le modalità chat per analisi personalizzate.</p>
+          <button onclick="scrollToChat()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">💬 Prova ora nella Chat</button>
+        </div>
+        <div class="card pad" style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+          <h3 style="color: #667eea;">Social Features</h3>
+          <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">Gestione leghe personalizzate, configurazioni avanzate e funzionalità sociali esclusive per utenti Pro.</p>
+          <a href="/dashboard" style="background: linear-gradient(135deg, #ffd700, #ffb347); color: #333; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 14px;">⭐ Accedi alle Leghe</a>
+        </div>
       </div>
     </div>
   </section>
@@ -748,6 +789,22 @@
     function askFormationAdvice(formation) {
         const message = `Consiglia una formazione ${formation} ottimizzata per budget 500 crediti`;
         sendDesktopMessage(message);
+    }
+
+    // Function to scroll to chat for AI Insights
+    function scrollToChat() {
+        const chatSection = document.querySelector('.hero, #hero');
+        if (chatSection) {
+            chatSection.scrollIntoView({ behavior: 'smooth' });
+            // Focus on the chat input
+            setTimeout(() => {
+                const chatInput = document.querySelector('#desktopChatInput, input[placeholder*="domanda"], input[placeholder*="strategia"]');
+                if (chatInput) {
+                    chatInput.focus();
+                    chatInput.placeholder = "Chiedi consigli AI personalizzati...";
+                }
+            }, 500);
+        }
     }
 
     // Function for quick action buttons - show results in modal
