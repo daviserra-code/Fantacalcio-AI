@@ -793,8 +793,14 @@
 
     // Function to scroll to chat for AI Insights
     function scrollToChat() {
+        console.log('scrollToChat function called');
         const chatSection = document.querySelector('.hero');
-        const chatInput = document.querySelector('#desktopChatInput');
+        // Desktop redirects to mobile app for chat, so we redirect there
+        window.location.href = '/app';
+        return;
+        
+        console.log('chatSection found:', !!chatSection);
+        console.log('chatInput found:', !!chatInput);
         
         if (chatSection && chatInput) {
             chatSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -802,7 +808,17 @@
             setTimeout(() => {
                 chatInput.focus();
                 chatInput.placeholder = "Chiedi consigli AI personalizzati per la tua lega...";
+                console.log('Chat input focused and placeholder set');
             }, 800);
+        } else {
+            console.error('Could not find chat section or input');
+            // Try alternative selectors
+            const alternativeChat = document.querySelector('input[placeholder*="domanda"], input[placeholder*="strategia"], #chatInput');
+            if (alternativeChat) {
+                alternativeChat.scrollIntoView({ behavior: 'smooth' });
+                alternativeChat.focus();
+                console.log('Used alternative chat input');
+            }
         }
     }
 

@@ -846,9 +846,11 @@
             @media (max-width: 768px) {
                 .statistics-results {
                     padding: 0 !important;
-                    margin: 0 -10px !important;
-                    width: calc(100% + 20px) !important;
+                    margin: 0 -16px !important;
+                    width: calc(100% + 32px) !important;
                     max-width: none !important;
+                    overflow-x: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
                 }
                 
                 .statistics-results .role-stats {
@@ -868,7 +870,11 @@
                 }
                 
                 .search-container {
-                    padding: 0 10px;
+                    padding: 0 16px;
+                }
+                
+                .tab-content {
+                    padding: 16px;
                 }
                 
                 #searchResults {
@@ -1546,6 +1552,8 @@
         <button class="quick-action-btn" onclick="askQuickQuestionDraft('Ordine di scelta per ruoli nel draft?')">📋 Ordine Ruoli</button>
         <button class="quick-action-btn" onclick="askQuickQuestionDraft('Migliori scelte primi turni draft?')">🥇 Prime Scelte</button>
         <button class="quick-action-btn" onclick="askQuickQuestionDraft('Sleeper picks per draft?')">💎 Sleeper Picks</button>
+        <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
+        <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
       </div>
     </div>
 
