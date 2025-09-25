@@ -11,51 +11,63 @@
   <link rel="stylesheet" href="/static/styles/fantacalcioai.css">
   <meta name="theme-color" content="#0A84FF">
   <style>
-    /* Basic Dark Theme Styles */
+    /* Light and Dark Theme Variables */
     :root {
       --bg-color: #ffffff;
-      --text-color: #333333;
+      --text-color: #1f2937;
       --header-bg: #f8f9fa;
       --card-bg: #ffffff;
       --primary-btn-bg: linear-gradient(135deg, #667eea, #764ba2);
       --primary-btn-text: white;
-      --secondary-btn-bg: #e9ecef;
-      --secondary-btn-text: #333;
-      --input-border: #ced4da;
-      --table-header-bg: #e9ecef;
-      --table-text: #333;
+      --secondary-btn-bg: #f3f4f6;
+      --secondary-btn-text: #374151;
+      --input-border: #d1d5db;
+      --table-header-bg: #f9fafb;
+      --table-text: #374151;
       --chat-message-user-bg: #667eea;
-      --chat-message-assistant-bg: #f1f3f4;
-      --error-bg: #ffebee;
-      --error-text: #c62828;
-      --table-row-bg: #f8fafc;
-      --table-alt-bg: #f1f5f9;
-      --comparison-header-bg: #f1f5f9;
-      --comparison-player1-color: #1e40af;
+      --chat-message-assistant-bg: #f9fafb;
+      --error-bg: #fef2f2;
+      --error-text: #dc2626;
+      --table-row-bg: #f9fafb;
+      --table-alt-bg: #f3f4f6;
+      --comparison-header-bg: #f3f4f6;
+      --comparison-player1-color: #2563eb;
       --comparison-player2-color: #dc2626;
+      --fcai-primary: #667eea;
+      --fcai-text: #1f2937;
+      --fcai-text-dim: #6b7280;
+      --fcai-border: #e5e7eb;
+      --fcai-surface: #ffffff;
+      --fcai-elev: #f9fafb;
     }
 
     .dark-theme {
-      --bg-color: #1a1a1a;
-      --text-color: #e0e0e0;
-      --header-bg: #2c2c2c;
-      --card-bg: #222222;
+      --bg-color: #0f172a;
+      --text-color: #f1f5f9;
+      --header-bg: #1e293b;
+      --card-bg: #1e293b;
       --primary-btn-bg: linear-gradient(135deg, #8a8aff, #a074c4);
       --primary-btn-text: white;
-      --secondary-btn-bg: #444444;
-      --secondary-btn-text: #e0e0e0;
-      --input-border: #555555;
-      --table-header-bg: #333333;
-      --table-text: #e0e0e0;
+      --secondary-btn-bg: #374151;
+      --secondary-btn-text: #f3f4f6;
+      --input-border: #4b5563;
+      --table-header-bg: #374151;
+      --table-text: #f3f4f6;
       --chat-message-user-bg: #8a8aff;
-      --chat-message-assistant-bg: #333333;
-      --error-bg: #2c1810;
-      --error-text: #ff6b6b;
-      --table-row-bg: #2a2a2a;
-      --table-alt-bg: #252525;
-      --comparison-header-bg: #2a2a2a;
-      --comparison-player1-color: #6cb2eb;
+      --chat-message-assistant-bg: #374151;
+      --error-bg: #1f2937;
+      --error-text: #fca5a5;
+      --table-row-bg: #1e293b;
+      --table-alt-bg: #334155;
+      --comparison-header-bg: #334155;
+      --comparison-player1-color: #60a5fa;
       --comparison-player2-color: #f87171;
+      --fcai-primary: #8a8aff;
+      --fcai-text: #f1f5f9;
+      --fcai-text-dim: #cbd5e1;
+      --fcai-border: #475569;
+      --fcai-surface: #1e293b;
+      --fcai-elev: #334155;
     }
 
     body {
@@ -216,25 +228,51 @@
         }
     }
 
-    /* Dark Theme Specific Adjustments */
-    [data-theme="dark"] body { color: #e5e7eb; }
-    [data-theme="light"] body { color: #333; }
-    [data-theme="dark"] .container { color: #e5e7eb; }
-    [data-theme="light"] .container { color: #333; }
+    /* Light Theme Specific Adjustments */
+    body { 
+        color: var(--text-color); 
+        background-color: var(--bg-color);
+    }
+    
+    .container { 
+        color: var(--text-color); 
+    }
 
-    /* Update message colors for light theme */
-    [data-theme="light"] .assistant-message { background: #f1f3f4; color: #222; }
-    [data-theme="light"] .typing-indicator { background: #f1f3f4; color: #222; }
-    [data-theme="light"] .player-card { background: #ffffff; border-color: #eee; color: #333; }
+    /* Chat messages styling for both themes */
+    .assistant-message { 
+        background: var(--chat-message-assistant-bg); 
+        color: var(--text-color); 
+        border: 1px solid var(--input-border);
+    }
+    
+    .typing-indicator { 
+        background: var(--chat-message-assistant-bg); 
+        color: var(--text-color); 
+    }
+    
+    .player-card { 
+        background: var(--card-bg); 
+        border-color: var(--input-border); 
+        color: var(--text-color); 
+    }
 
-    /* Fix theme styling for components */
-    [data-theme="dark"] .kicker { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
-    [data-theme="dark"] .kpi { background: var(--card-bg); border-color: var(--input-border); color: var(--text-color); }
+    /* Component styling for both themes */
+    .kicker { 
+        background: var(--fcai-elev); 
+        border-color: var(--input-border); 
+        color: var(--text-color); 
+    }
+    
+    .kpi { 
+        background: var(--card-bg); 
+        border-color: var(--input-border); 
+        color: var(--text-color); 
+    }
     
     /* Standardized quick action buttons */
     .quick-action-btn { 
-        background: linear-gradient(135deg, #667eea, #764ba2) !important;
-        color: white !important; 
+        background: var(--primary-btn-bg) !important;
+        color: var(--primary-btn-text) !important; 
         border: none !important;
         padding: 14px 18px !important;
         border-radius: 12px !important;
@@ -257,27 +295,114 @@
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
-    [data-theme="dark"] .table { color: var(--text-color); }
-    [data-theme="dark"] .table th { background-color: var(--table-header-bg); color: var(--table-text); }
-    [data-theme="dark"] .table td { border-bottom-color: var(--input-border); }
-    [data-theme="dark"] .help { color: var(--text-color); opacity: 0.7; }
+    
+    /* Table styling */
+    .table { 
+        color: var(--text-color); 
+        background-color: var(--card-bg);
+    }
+    .table th { 
+        background-color: var(--table-header-bg); 
+        color: var(--table-text); 
+    }
+    .table td { 
+        border-bottom-color: var(--input-border); 
+        color: var(--text-color);
+    }
+    .help { 
+        color: var(--fcai-text-dim); 
+    }
 
-    /* Enhanced dark theme fixes */
-    [data-theme="dark"] .nav a { color: #e5e7eb; }
-    [data-theme="dark"] .nav .brand .word { color: #e5e7eb; }
-    [data-theme="dark"] .lead { color: #9ca3af; }
-    [data-theme="dark"] .section { background-color: var(--bg-color); }
-    [data-theme="dark"] .section.alt { background-color: var(--card-bg); }
-    [data-theme="dark"] .chat-container { background-color: var(--card-bg); border-color: var(--input-border); }
-    [data-theme="dark"] .chat-header { background-color: var(--header-bg); color: var(--text-color); border-color: var(--input-border); }
-    [data-theme="dark"] #desktopChatMessages div { background: var(--chat-message-assistant-bg); color: var(--text-color); border-color: var(--input-border); }
-    [data-theme="dark"] #desktopTypingIndicator { background: var(--chat-message-assistant-bg); color: var(--text-color); }
-    [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: var(--text-color); }
-    [data-theme="dark"] .footer { background-color: var(--header-bg); color: var(--text-color); }
-    [data-theme="dark"] .btn { background-color: var(--secondary-btn-bg); color: var(--secondary-btn-text); border-color: var(--input-border); }
-    [data-theme="dark"] .btn:hover { filter: brightness(1.1); }
-    [data-theme="dark"] .grid-2 .card { border-color: var(--input-border); }
-    [data-theme="dark"] .toolbar { background-color: var(--card-bg); border-color: var(--input-border); }
+    /* Navigation and layout */
+    .nav a { 
+        color: var(--text-color); 
+    }
+    .nav .brand .word { 
+        color: var(--fcai-text); 
+    }
+    .lead { 
+        color: var(--fcai-text-dim); 
+    }
+    .section { 
+        background-color: var(--bg-color); 
+        color: var(--text-color);
+    }
+    .section.alt { 
+        background-color: var(--fcai-elev); 
+    }
+    
+    /* Chat container */
+    .chat-container { 
+        background-color: var(--card-bg); 
+        border-color: var(--input-border); 
+        color: var(--text-color);
+    }
+    .chat-header { 
+        background-color: var(--header-bg); 
+        color: var(--text-color); 
+        border-color: var(--input-border); 
+    }
+    #desktopChatMessages div { 
+        background: var(--chat-message-assistant-bg); 
+        color: var(--text-color); 
+        border-color: var(--input-border); 
+    }
+    #desktopTypingIndicator { 
+        background: var(--chat-message-assistant-bg); 
+        color: var(--text-color); 
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 { 
+        color: var(--text-color); 
+    }
+    
+    /* Footer */
+    .footer { 
+        background-color: var(--header-bg); 
+        color: var(--fcai-text-dim); 
+    }
+    
+    /* Buttons */
+    .btn { 
+        background-color: var(--secondary-btn-bg); 
+        color: var(--secondary-btn-text); 
+        border-color: var(--input-border); 
+    }
+    .btn:hover { 
+        filter: brightness(0.95); 
+    }
+    .btn.primary { 
+        background: var(--primary-btn-bg); 
+        color: var(--primary-btn-text); 
+        border-color: transparent; 
+    }
+    .btn.ghost { 
+        background: transparent; 
+        color: var(--text-color); 
+        border-color: var(--input-border); 
+    }
+    
+    /* Cards and containers */
+    .grid-2 .card { 
+        border-color: var(--input-border); 
+        background-color: var(--card-bg);
+        color: var(--text-color);
+    }
+    .toolbar { 
+        background-color: var(--card-bg); 
+        border-color: var(--input-border); 
+    }
+    
+    /* Form elements */
+    input, select, textarea { 
+        background-color: var(--card-bg); 
+        color: var(--text-color); 
+        border-color: var(--input-border); 
+    }
+    input:focus, select:focus, textarea:focus { 
+        border-color: var(--fcai-primary); 
+    }
 
   </style>
 </head>
