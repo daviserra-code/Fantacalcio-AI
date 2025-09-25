@@ -1447,6 +1447,8 @@
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Juventus')">📈 Acquisti Juventus</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Napoli')">📈 Acquisti Napoli</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
+        <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
+        <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
       </div>
     </div>
 
@@ -1509,6 +1511,8 @@
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Como')">📈 Acquisti Como</button>
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Venezia')">📈 Acquisti Venezia</button>
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
+        <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
+        <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
       </div>
     </div>
 
@@ -1600,6 +1604,8 @@
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Como')">📈 Acquisti Como</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Venezia')">📈 Acquisti Venezia</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
+        <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
+        <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
       </div>
     </div>
 
@@ -1962,6 +1968,65 @@
     function askQuickQuestionMantra(q){ const i=document.getElementById('messageInputMantra'); i.value=q; sendMessage('mantra'); }
     function askQuickQuestionDraft(q){ const i=document.getElementById('messageInputDraft'); i.value=q; sendMessage('draft'); }
     function askQuickQuestionSuper(q){ const i=document.getElementById('messageInputSuper'); i.value=q; sendMessage('superscudetto'); }
+
+    // Functions for new mobile features
+    function showMobileAIInsights() {
+        const currentTab = document.querySelector('.tab.active').textContent.toLowerCase();
+        let textareaId = 'messageInput';
+        if (currentTab === 'mantra') textareaId = 'messageInputMantra';
+        else if (currentTab === 'draft') textareaId = 'messageInputDraft';
+        else if (currentTab === 'superscudetto') textareaId = 'messageInputSuper';
+        
+        const textarea = document.getElementById(textareaId);
+        if (textarea) {
+            textarea.focus();
+            textarea.placeholder = "Chiedi consigli AI personalizzati qui...";
+            textarea.value = "Dammi consigli AI avanzati per la mia lega: ";
+        }
+        
+        // Show info modal
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+            <div class="modal-content" style="background: var(--dark-card-bg); border-radius: 16px; padding: 24px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🤖</div>
+                <h3 style="color: var(--accent); margin-bottom: 16px;">AI Insights Attivato</h3>
+                <p style="line-height: 1.6; color: var(--text-color); margin-bottom: 20px;">
+                    L'intelligenza artificiale è ora pronta a fornirti consigli avanzati e analisi personalizzate. 
+                    Scrivi la tua domanda nella chat per ricevere insights dettagliati!
+                </p>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Inizia a chattare
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        setTimeout(() => modal.remove(), 4000);
+    }
+    
+    function showRealTimeInfo() {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+            <div class="modal-content" style="background: var(--dark-card-bg); border-radius: 16px; padding: 24px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+                <h3 style="color: var(--accent); margin-bottom: 16px;">Real-time Updates</h3>
+                <p style="line-height: 1.6; color: var(--text-color); margin-bottom: 16px;">
+                    Aggiornamenti in tempo reale dei giocatori e delle performance durante le giornate di campionato.
+                </p>
+                <div style="background: #1a202c; padding: 12px; border-radius: 8px; border-left: 4px solid var(--accent); margin: 16px 0;">
+                    <small style="color: #22d3ee;">📈 Attivo durante le partite di Serie A</small>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    OK, capito!
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        setTimeout(() => modal.remove(), 5000);
+    }
 
     // Statistics functions
     async function updateStatistics() {
