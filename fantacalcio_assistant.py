@@ -1599,8 +1599,39 @@ Cosa ti interessa di più?"""
         lt = (text or "").lower().strip()
         intent={"type":"generic","mode":mode,"raw":lt}
 
-        # Check for goalkeeper requests FIRST, as they might contain budget numbers
-        if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]):
+        # Complex budget allocation requests - CHECK FIRST before simple keyword matches
+        budget_match = re.search(r"budget.*?(\d{2,4})", lt)
+        player_counts = []
+        if re.search(r"(\d+)\s*portier", lt):
+            player_counts.append(("P", int(re.search(r"(\d+)\s*portier", lt).group(1))))
+        if re.search(r"(\d+)\s*difens", lt):
+            player_counts.append(("D", int(re.search(r"(\d+)\s*difens", lt).group(1))))
+        if re.search(r"(\d+)\s*centrocamp", lt):
+            player_counts.append(("C", int(re.search(r"(\d+)\s*centrocamp", lt).group(1))))
+        if re.search(r"(\d+)\s*attaccan", lt):
+            player_counts.append(("A", int(re.search(r"(\d+)\s*attaccan", lt).group(1))))
+            
+        # Check for age constraints in complex requests
+        under_constraint = None
+        if "under 21" in lt or "u21" in lt:
+            under_constraint = 21
+        elif "under 23" in lt or "u23" in lt:
+            under_constraint = 23
+            
+        if budget_match and player_counts:
+            budget = int(budget_match.group(1))
+            LOG.info(f"[Complex Budget Intent] Detected: budget={budget}, counts={player_counts}, under={under_constraint}")
+            intent.update({
+                "type": "complex_budget",
+                "budget": budget,
+                "player_counts": player_counts,
+                "under_constraint": under_constraint,
+                "original_text": text
+            })
+            return intent
+
+        # Check for goalkeeper requests (only simple ones, complex ones handled above)
+        if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]) and not player_counts:
             intent.update({"type": "goalkeeper", "original_text": text})
             return intent
 
@@ -1692,35 +1723,6 @@ Cosa ti interessa di più?"""
             intent.update({"type":"followup"})
             return intent
 
-        # Complex budget allocation requests
-        budget_match = re.search(r"budget.*?(\d{2,4})", lt)
-        player_counts = []
-        if re.search(r"(\d+)\s*portier", lt):
-            player_counts.append(("P", int(re.search(r"(\d+)\s*portier", lt).group(1))))
-        if re.search(r"(\d+)\s*difens", lt):
-            player_counts.append(("D", int(re.search(r"(\d+)\s*difens", lt).group(1))))
-        if re.search(r"(\d+)\s*centrocamp", lt):
-            player_counts.append(("C", int(re.search(r"(\d+)\s*centrocamp", lt).group(1))))
-        if re.search(r"(\d+)\s*attaccan", lt):
-            player_counts.append(("A", int(re.search(r"(\d+)\s*attaccan", lt).group(1))))
-            
-        # Check for age constraints in complex requests
-        under_constraint = None
-        if "under 21" in lt or "u21" in lt:
-            under_constraint = 21
-        elif "under 23" in lt or "u23" in lt:
-            under_constraint = 23
-            
-        if budget_match and player_counts:
-            budget = int(budget_match.group(1))
-            intent.update({
-                "type": "complex_budget",
-                "budget": budget,
-                "player_counts": player_counts,
-                "under_constraint": under_constraint,
-                "original_text": text
-            })
-            return intent
 
         # fallback generico: LLM
         intent.update({"type": "generic"})
