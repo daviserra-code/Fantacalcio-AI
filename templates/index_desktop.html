@@ -26,6 +26,13 @@
       --table-text: #333;
       --chat-message-user-bg: #667eea;
       --chat-message-assistant-bg: #f1f3f4;
+      --error-bg: #ffebee;
+      --error-text: #c62828;
+      --table-row-bg: #f8fafc;
+      --table-alt-bg: #f1f5f9;
+      --comparison-header-bg: #f1f5f9;
+      --comparison-player1-color: #1e40af;
+      --comparison-player2-color: #dc2626;
     }
 
     .dark-theme {
@@ -42,6 +49,13 @@
       --table-text: #e0e0e0;
       --chat-message-user-bg: #8a8aff;
       --chat-message-assistant-bg: #333333;
+      --error-bg: #2c1810;
+      --error-text: #ff6b6b;
+      --table-row-bg: #2a2a2a;
+      --table-alt-bg: #252525;
+      --comparison-header-bg: #2a2a2a;
+      --comparison-player1-color: #6cb2eb;
+      --comparison-player2-color: #f87171;
     }
 
     body {
@@ -481,7 +495,7 @@
     <div class="container">
       <h2 style="text-align: center; margin-bottom: 32px;">🤖 Assistente AI Conversazionale</h2>
       <div class="card pad" style="max-width: 800px; margin: 0 auto;">
-        <div class="chat-container" style="min-height: 400px; border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: #f8f9fa;">
+        <div class="chat-container" style="min-height: 400px; border: 1px solid var(--input-border); border-radius: 12px; padding: 20px; background: var(--card-bg);">
           <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #e9ecef; margin-bottom: 16px;">
             <div style="display: flex; align-items: center; gap: 8px; color: #666;">
               <div style="width: 10px; height: 10px; border-radius: 50%; background: #28a745; animation: pulse 2s infinite;"></div>
@@ -493,12 +507,12 @@
           </div>
 
           <div id="desktopChatMessages" style="min-height: 250px; max-height: 400px; overflow-y: auto; margin-bottom: 16px; scroll-behavior: smooth;">
-            <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
+            <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: var(--chat-message-assistant-bg); color: var(--text-color); border-bottom-left-radius: 6px; max-width: 85%;">
               👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
             </div>
           </div>
 
-          <div id="desktopTypingIndicator" style="display: none; align-items: center; gap: 8px; padding: 10px 16px; background: #f1f3f4; border-radius: 16px; max-width: 200px; margin-bottom: 12px;">
+          <div id="desktopTypingIndicator" style="display: none; align-items: center; gap: 8px; padding: 10px 16px; background: var(--chat-message-assistant-bg); border-radius: 16px; max-width: 200px; margin-bottom: 12px;">
             <div style="display: flex; gap: 4px;">
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite;"></span>
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: typing 1.4s infinite; animation-delay: 0.15s;"></span>
@@ -897,7 +911,7 @@
             const assistantMsg = document.createElement('div');
             assistantMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: #f1f3f4; color: #222; border-bottom-left-radius: 6px;
+                background: var(--chat-message-assistant-bg); color: var(--text-color); border-bottom-left-radius: 6px;
                 border: 2px solid #28a745; font-weight: bold;
             `;
             assistantMsg.innerHTML = data.response || 'Risposta non disponibile';
@@ -919,7 +933,7 @@
             const errorMsg = document.createElement('div');
             errorMsg.style.cssText = `
                 margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; max-width: 85%;
-                background: #ffebee; color: #c62828; border-bottom-left-radius: 6px;
+                background: var(--error-bg, #ffebee); color: var(--error-text, #c62828); border-bottom-left-radius: 6px;
             `;
             errorMsg.innerHTML = '❌ Errore di connessione: ' + error.message;
             container.appendChild(errorMsg);
@@ -935,7 +949,7 @@
         const container = document.getElementById('desktopChatMessages');
         if (container) {
             container.innerHTML = `
-                <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: #f1f3f4; color: #222; border-bottom-left-radius: 6px; max-width: 85%;">
+                <div style="margin-bottom: 12px; padding: 12px 16px; border-radius: 16px; background: var(--chat-message-assistant-bg); color: var(--text-color); border-bottom-left-radius: 6px; max-width: 85%;">
                     👋 Ciao! Sono il tuo assistente FantacalcioAI. Dimmi di cosa hai bisogno per la tua lega!
                 </div>
             `;
@@ -1419,14 +1433,14 @@
 
         if (!player1Name || !player2Name) {
             resultsDiv.innerHTML = `
-                <div style="color: #f59e0b; text-align: center; padding: 20px;">
+                <div style="color: var(--error-text); text-align: center; padding: 20px;">
                     ⚠️ Per favore inserisci entrambi i nomi dei giocatori
                 </div>`;
             return;
         }
 
         resultsDiv.innerHTML = `
-            <div style="color: #72E3A6; text-align: center; padding: 20px;">
+            <div style="color: var(--text-color); text-align: center; padding: 20px;">
                 🔄 Confrontando ${player1Name} vs ${player2Name}...
             </div>`;
 
@@ -1454,41 +1468,41 @@
                 const player2 = data.comparison[1] || {};
                 
                 resultsDiv.innerHTML = `
-                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 8px; overflow: hidden; color: var(--text-color);">
                         <thead>
-                            <tr style="background: #f1f5f9;">
-                                <th style="padding: 12px; text-align: left; font-weight: 600; color: #475569;">Statistica</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #1e40af;">${player1.name || '-'}</th>
-                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #dc2626;">${player2.name || '-'}</th>
+                            <tr style="background: var(--comparison-header-bg);">
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-color);">Statistica</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--comparison-player1-color);">${player1.name || '-'}</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--comparison-player2-color);">${player2.name || '-'}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <tr style="border-bottom: 1px solid var(--input-border);">
                                 <td style="padding: 10px; font-weight: 500;">Squadra</td>
                                 <td style="padding: 10px; text-align: center;">${player1.team || '-'}</td>
                                 <td style="padding: 10px; text-align: center;">${player2.team || '-'}</td>
                             </tr>
-                            <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                            <tr style="border-bottom: 1px solid var(--input-border); background: var(--table-row-bg);">
                                 <td style="padding: 10px; font-weight: 500;">Fantamedia</td>
-                                <td style="padding: 10px; text-align: center; font-weight: bold; color: #1e40af;">${player1.fantamedia ?? '-'}</td>
-                                <td style="padding: 10px; text-align: center; font-weight: bold; color: #dc2626;">${player2.fantamedia ?? '-'}</td>
+                                <td style="padding: 10px; text-align: center; font-weight: bold; color: var(--comparison-player1-color);">${player1.fantamedia ?? '-'}</td>
+                                <td style="padding: 10px; text-align: center; font-weight: bold; color: var(--comparison-player2-color);">${player2.fantamedia ?? '-'}</td>
                             </tr>
-                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <tr style="border-bottom: 1px solid var(--input-border);">
                                 <td style="padding: 10px; font-weight: 500;">Prezzo</td>
                                 <td style="padding: 10px; text-align: center;">€${player1.price ?? '-'}</td>
                                 <td style="padding: 10px; text-align: center;">€${player2.price ?? '-'}</td>
                             </tr>
-                            <tr style="border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                            <tr style="border-bottom: 1px solid var(--input-border); background: var(--table-row-bg);">
                                 <td style="padding: 10px; font-weight: 500;">Presenze</td>
                                 <td style="padding: 10px; text-align: center;">${player1.appearances ?? '-'}</td>
                                 <td style="padding: 10px; text-align: center;">${player2.appearances ?? '-'}</td>
                             </tr>
-                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <tr style="border-bottom: 1px solid var(--input-border);">
                                 <td style="padding: 10px; font-weight: 500;">Età</td>
                                 <td style="padding: 10px; text-align: center;">${player1.age ?? '-'}</td>
                                 <td style="padding: 10px; text-align: center;">${player2.age ?? '-'}</td>
                             </tr>
-                            <tr style="background: #f8fafc;">
+                            <tr style="background: var(--table-row-bg);">
                                 <td style="padding: 10px; font-weight: 500;">Goal</td>
                                 <td style="padding: 10px; text-align: center;">${player1.gol ?? '-'}</td>
                                 <td style="padding: 10px; text-align: center;">${player2.gol ?? '-'}</td>
@@ -1501,9 +1515,130 @@
         } catch (error) {
             console.error('Error comparing players:', error);
             resultsDiv.innerHTML = `
-                <div style="color: #ef4444; text-align: center; padding: 20px;">
+                <div style="color: var(--error-text); text-align: center; padding: 20px;">
                     ❌ Errore nel confronto. Riprova più tardi.
                 </div>`;
+        }
+    }
+
+    // Load Analytics Function (Missing function causing hanging)
+    async function loadAnalytics() {
+        const loading = document.getElementById('analyticsLoading');
+        const data = document.getElementById('analyticsData');
+        
+        if (loading) loading.style.display = 'block';
+        if (data) data.style.display = 'none';
+        
+        try {
+            // Load statistics data
+            const statsResponse = await fetch('/api/statistics');
+            const statsData = await statsResponse.json();
+            
+            // Build analytics HTML with theme-aware styling
+            let analyticsHtml = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    
+                    <!-- Data Quality Overview -->
+                    <div class="analytics-card" style="background: var(--card-bg); border: 1px solid var(--input-border); border-radius: 12px; padding: 20px;">
+                        <h3 style="color: var(--text-color); margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                            📈 <span>Data Quality</span>
+                        </h3>
+                        <div style="display: grid; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-color); opacity: 0.8;">Total Players:</span>
+                                <span style="color: #22d3ee; font-weight: bold;">${statsData.total_players || 0}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--text-color); opacity: 0.8;">Active Filters:</span>
+                                <span style="color: #22d3ee; font-weight: bold;">${statsData.active_filters || 'None'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Role Distribution -->
+                    <div class="analytics-card" style="background: var(--card-bg); border: 1px solid var(--input-border); border-radius: 12px; padding: 20px;">
+                        <h3 style="color: var(--text-color); margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                            ⚽ <span>Role Distribution</span>
+                        </h3>
+                        <div style="display: grid; gap: 8px;">
+            `;
+            
+            // Add role statistics
+            const roleNames = { 'P': 'Portieri', 'D': 'Difensori', 'C': 'Centrocampisti', 'A': 'Attaccanti' };
+            Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
+                analyticsHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-color);">${roleNames[role] || role}:</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span style="color: #22d3ee; font-weight: bold;">${stats.count || 0}</span>
+                            <span style="color: var(--text-color); opacity: 0.6; font-size: 12px;">avg €${stats.avg_price || 0}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            analyticsHtml += `
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Players Section -->
+                <div style="margin-top: 20px; background: var(--card-bg); border: 1px solid var(--input-border); border-radius: 12px; padding: 20px;">
+                    <h3 style="color: var(--text-color); margin: 0 0 15px 0;">🏆 Top Players by Role</h3>
+                    <div style="display: grid; gap: 15px;">
+            `;
+            
+            // Add top players for each role
+            Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
+                if (stats.top_players && stats.top_players.length > 0) {
+                    analyticsHtml += `
+                        <div>
+                            <h4 style="color: var(--text-color); margin: 0 0 8px 0; font-size: 14px;">${roleNames[role] || role}</h4>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    `;
+                    
+                    stats.top_players.slice(0, 3).forEach(player => {
+                        analyticsHtml += `
+                            <span style="background: var(--secondary-btn-bg); color: var(--text-color); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                                ${player.name} (FM: ${player.fantamedia}, €${player.price})
+                            </span>
+                        `;
+                    });
+                    
+                    analyticsHtml += `
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            analyticsHtml += `
+                    </div>
+                </div>
+            `;
+            
+            // Display the analytics
+            if (data) {
+                data.innerHTML = analyticsHtml;
+                data.style.display = 'block';
+            }
+            if (loading) loading.style.display = 'none';
+            
+        } catch (error) {
+            console.error('Analytics loading error:', error);
+            if (data) {
+                data.innerHTML = `
+                    <div style="color: var(--error-text); text-align: center; padding: 20px; background: var(--error-bg); border-radius: 8px; margin: 20px;">
+                        ❌ Errore nel caricamento delle statistiche: ${error.message}
+                        <br><br>
+                        <button onclick="loadAnalytics()" style="background: #22d3ee; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+                            🔄 Riprova
+                        </button>
+                    </div>
+                `;
+                data.style.display = 'block';
+            }
+            if (loading) loading.style.display = 'none';
         }
     }
 
