@@ -1347,6 +1347,82 @@ class FantacalcioAssistant:
         out.append("")
         out.append(f"📝 *Criterio: Tutti i giocatori sono UNDER {max_age} anni*")
         return "\n".join(out)
+    
+    def _handle_complex_budget_request(self, intent: Dict[str, Any]) -> str:
+        """Handle complex budget allocation requests with specific player counts"""
+        budget = intent.get("budget", 200)
+        player_counts = intent.get("player_counts", [])
+        under_constraint = intent.get("under_constraint")
+        
+        LOG.info(f"[Complex Budget] Handling request: budget={budget}, counts={player_counts}, under={under_constraint}")
+        
+        if not player_counts:
+            return "Non ho capito quanti giocatori per ruolo servono. Specifica: es. '2 portieri, 3 difensori, 4 centrocampisti, 3 attaccanti'"
+        
+        results = []
+        total_budget = budget
+        remaining_budget = budget
+        
+        results.append(f"💰 **Consigli per Budget {budget} Fantacrediti**")
+        if under_constraint:
+            results.append(f"🎯 **Con vincolo: almeno alcuni giocatori UNDER {under_constraint}**")
+        results.append("")
+        
+        # Calculate budget per role based on typical allocations
+        role_weights = {"P": 0.15, "D": 0.30, "C": 0.35, "A": 0.20}
+        
+        for role, count in player_counts:
+            role_name = {"P": "Portieri", "D": "Difensori", "C": "Centrocampisti", "A": "Attaccanti"}[role]
+            role_budget = int(budget * role_weights.get(role, 0.25))
+            
+            # Get players for this role with age constraint if specified
+            if under_constraint and role in ["A", "C", "D"]:  # Apply constraint to outfield players
+                pool = self._pool_by_role(role, max_age=under_constraint)
+            else:
+                pool = self._pool_by_role(role)
+            
+            # Sort by value ratio (FM/price)
+            valid_pool = []
+            for p in pool:
+                fm = p.get("_fm") or 0
+                price = p.get("_price") or 1
+                if fm > 0 and price > 0:
+                    p["_value_ratio"] = fm / price
+                    valid_pool.append(p)
+            
+            valid_pool.sort(key=lambda x: -x.get("_value_ratio", 0))
+            
+            results.append(f"🔹 **{role_name} (budget ~{role_budget} crediti)**")
+            
+            shown = 0
+            for p in valid_pool:
+                if shown >= count + 2:  # Show a few extra options
+                    break
+                    
+                name = p.get("name", "N/D")
+                team = p.get("team", "N/D")
+                fm = p.get("_fm", 0)
+                price = p.get("_price", 0)
+                
+                age_info = ""
+                if under_constraint and p.get("birth_year"):
+                    age = 2025 - p["birth_year"]
+                    age_info = f" ({age} anni)"
+                
+                results.append(f"  • **{name}** ({team}){age_info} - FM {fm:.1f} • €{int(price)}")
+                shown += 1
+            
+            if not valid_pool:
+                results.append("  • Nessun giocatore trovato per questo ruolo")
+            
+            results.append("")
+        
+        if under_constraint:
+            results.append(f"📝 *I giocatori indicati rispettano il vincolo UNDER {under_constraint} dove specificato*")
+        else:
+            results.append("📝 *Consigli basati su rapporto qualità/prezzo del roster attuale*")
+        
+        return "\n".join(results)
 
     # ---------- parsers ----------
     def _parse_first_int(self, text: str) -> Optional[int]:
@@ -1616,6 +1692,36 @@ Cosa ti interessa di più?"""
             intent.update({"type":"followup"})
             return intent
 
+        # Complex budget allocation requests
+        budget_match = re.search(r"budget.*?(\d{2,4})", lt)
+        player_counts = []
+        if re.search(r"(\d+)\s*portier", lt):
+            player_counts.append(("P", int(re.search(r"(\d+)\s*portier", lt).group(1))))
+        if re.search(r"(\d+)\s*difens", lt):
+            player_counts.append(("D", int(re.search(r"(\d+)\s*difens", lt).group(1))))
+        if re.search(r"(\d+)\s*centrocamp", lt):
+            player_counts.append(("C", int(re.search(r"(\d+)\s*centrocamp", lt).group(1))))
+        if re.search(r"(\d+)\s*attaccan", lt):
+            player_counts.append(("A", int(re.search(r"(\d+)\s*attaccan", lt).group(1))))
+            
+        # Check for age constraints in complex requests
+        under_constraint = None
+        if "under 21" in lt or "u21" in lt:
+            under_constraint = 21
+        elif "under 23" in lt or "u23" in lt:
+            under_constraint = 23
+            
+        if budget_match and player_counts:
+            budget = int(budget_match.group(1))
+            intent.update({
+                "type": "complex_budget",
+                "budget": budget,
+                "player_counts": player_counts,
+                "under_constraint": under_constraint,
+                "original_text": text
+            })
+            return intent
+
         # fallback generico: LLM
         intent.update({"type": "generic"})
         return intent
@@ -1655,6 +1761,8 @@ Cosa ti interessa di più?"""
                      "1) Tenere liquidità per gli slot premium in A.\n"
                      "2) Difesa a valore: esterni titolari con FM stabile.\n"
                      "3) Centrocampo profondo (rotazioni riducono i buchi).")
+        elif intent["type"] == "complex_budget":
+            reply = self._handle_complex_budget_request(intent)
         elif intent["type"] == "generic":
              reply = self._llm_complete(user_text, context_messages=[], state=st)
              if not reply or "non disponibile" in reply.lower() or reply.strip() == "":
@@ -2589,6 +2697,20 @@ STILE CONVERSAZIONALE:
 ESEMPI DI TONO:
 ❌ "I dati mostrano che Vlahović ha FM 7.18"
 ✅ "Vlahović è una bella scelta! ⚽ Con FM 7.18 è uno dei top, costa sui 20 crediti. Hai considerato anche Krstović del Lecce? Solo 10 crediti ma FM quasi 7!"
+
+⚠️ DIVIETO ASSOLUTO DI INVENZIONE DATI:
+- NON inventare MAI dati di giocatori (età, squadre, prezzi, fantamedia)
+- USA SOLO i dati del roster corrente fornito sopra
+- Se non hai un dato certo dal roster, dì "dato non disponibile" 
+- VERIFICA sempre che i giocatori menzionati esistano nel roster corrente
+- Se menzioni età di un giocatore, CONTROLLA che sia coerente con vincoli richiesti
+- NON creare formazioni false con giocatori inesistenti o dati inventati
+
+RICONOSCIMENTO CORREZIONI UTENTE:
+Se l'utente dice "non gioca più in quella squadra", "non è under 23", "hai sbagliato":
+- RICONOSCI l'errore immediatamente: "Hai ragione, mi scuso per l'errore!"
+- NON inventare nuovi dati per correggere
+- Chiedi conferma dei dati corretti invece di indovinare
 
 GESTIONE CONTESTO E CORREZIONI:
 - Ricorda le richieste precedenti e i vincoli attivi
