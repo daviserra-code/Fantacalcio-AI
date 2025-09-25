@@ -1231,76 +1231,70 @@
   <div class="container">
     <div class="header">
       <div class="content">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-          <svg width="140" height="34" viewBox="0 0 280 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mobile-title mobile-desc" style="flex-shrink: 0;">
-            <title id="mobile-title">FantacalcioAI - Logo</title>
-            <desc id="mobile-desc">Wordmark con monogramma a scudo, pallone e nodi AI orbitanti</desc>
-            <g transform="translate(4,4)">
-              <path d="M20 0 L38 6 C38 20 31 31 20 40 C9 31 2 20 2 6 L20 0Z" fill="#0A84FF"/>
-              <circle cx="20" cy="18" r="9" fill="white"/>
-              <polygon points="20,11 24,14 23,19 17,19 16,14" fill="#0A84FF"/>
-              <circle cx="15.5" cy="16.5" r="2" fill="#0A84FF"/>
-              <circle cx="24.5" cy="16.5" r="2" fill="#0A84FF"/>
-              <circle cx="20" cy="21.5" r="2" fill="#0A84FF"/>
-              <path d="M9,12 C20,3 31,10 30,19" stroke="#72E3A6" stroke-width="1.5" fill="none"/>
-              <circle cx="9" cy="12" r="2" fill="#72E3A6"/>
-              <circle cx="30" cy="19" r="2" fill="#72E3A6"/>
-            </g>
-            <g transform="translate(52,12)">
-              <text x="0" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-                    font-size="22" font-weight="700" fill="#ffffff" letter-spacing="0.2">
-                Fantacalcio
-              </text>
-              <rect x="118" y="2" width="4" height="22" rx="2" fill="#0A84FF"/>
-              <text x="128" y="16" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-                    font-size="18" font-weight="800" fill="#0A84FF" letter-spacing="0.4">
-                AI
-              </text>
-              <text x="0" y="32" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
-                    font-size="10.5" fill="#94a3b8" letter-spacing="0.3">
-                insights • aste • consigli in tempo reale
-              </text>
-            </g>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+            <path d="M20 0 L38 6 C38 20 31 31 20 40 C9 31 2 20 2 6 L20 0Z" fill="#0A84FF"/>
+            <circle cx="20" cy="18" r="9" fill="white"/>
+            <polygon points="20,11 24,14 23,19 17,19 16,14" fill="#0A84FF"/>
+            <circle cx="15.5" cy="16.5" r="2" fill="#0A84FF"/>
+            <circle cx="24.5" cy="16.5" r="2" fill="#0A84FF"/>
+            <circle cx="20" cy="21.5" r="2" fill="#0A84FF"/>
           </svg>
-          <h1 style="margin: 0;">🏆 {{ t.title }}</h1>
+          <h1 style="margin: 0; font-size: 18px; font-weight: 700;">FantacalcioAI</h1>
         </div>
-        <p>{{ t.subtitle }}</p>
+        <p style="margin: 4px 0 0 0; font-size: 13px; opacity: 0.8;">{{ t.subtitle }}</p>
       </div>
-      <div class="actions">
+      <div class="actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
         {% if user and user.is_authenticated %}
-          <div class="user-info">
-            <i class="fas fa-user-circle"></i>
-            <span>{{ user.first_name or user.username or 'Utente' }}</span>
+          <!-- User Section -->
+          <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+            <i class="fas fa-user-circle" style="font-size: 14px;"></i>
+            <span style="font-size: 12px;">{{ user.first_name or user.username or 'Utente' }}</span>
             {% if user.is_pro %}
-              <span style="background:#ffd700;color:#333;padding:2px 6px;border-radius:8px;font-size:.7rem;margin-left:4px;">PRO</span>
+              <span style="background:#ffd700;color:#333;padding:1px 4px;border-radius:6px;font-size:10px;">PRO</span>
             {% endif %}
           </div>
-          <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn">
-            <i class="fas fa-cog"></i> Leghe
-          </a>
-          {% if not user.is_pro %}
-            <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
-              <i class="fas fa-crown"></i> Diventa PRO!
+          
+          <!-- Main Actions -->
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
+              <i class="fas fa-cog"></i> Leghe
             </a>
-          {% endif %}
-          <a href="{{ url_for('auth.logout') }}" class="header-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </a>
+            {% if not user.is_pro %}
+              <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;padding:6px 10px;font-size:12px;">
+                <i class="fas fa-crown"></i> PRO
+              </a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
+              <i class="fas fa-sign-out-alt"></i>
+            </a>
+          </div>
         {% else %}
-          <a href="/auth/login" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;box-shadow:0 2px 8px rgba(255,215,0,0.3);">
-            <i class="fas fa-crown"></i> Accedi per PRO
-          </a>
-          <a href="/auth/login" class="header-btn">
-            <i class="fas fa-sign-in-alt"></i> Accedi
-          </a>
+          <!-- Login Actions -->
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <a href="/auth/login" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;padding:6px 10px;font-size:12px;">
+              <i class="fas fa-crown"></i> PRO
+            </a>
+            <a href="/auth/login" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
+              <i class="fas fa-sign-in-alt"></i> Accedi
+            </a>
+          </div>
         {% endif %}
-        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
-        <button onclick="switchLang('it')" class="header-btn {{ 'active' if lang == 'it' else '' }}">IT</button>
-        <button onclick="switchLang('en')" class="header-btn {{ 'active' if lang == 'en' else '' }}">EN</button>
-        <button onclick="openModal('analyticsModal')" class="header-btn">📊</button>
-        <button onclick="openPlayerComparison()" class="header-btn">⚖️</button>
+        
+        <!-- Tools Section -->
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <button onclick="openPlayerComparison()" class="header-btn" style="padding: 6px 8px; font-size: 14px;" title="Confronta Giocatori">⚖️</button>
+          <button onclick="openModal('analyticsModal')" class="header-btn" style="padding: 6px 8px; font-size: 14px;" title="Statistiche">📊</button>
+          <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" style="padding: 6px 8px;" title="Cambia Tema">
+            <i class="fas fa-moon" style="font-size: 14px;"></i>
+          </button>
+        </div>
+        
+        <!-- Language Section -->
+        <div style="display: flex; align-items: center; gap: 2px;">
+          <button onclick="switchLang('it')" class="header-btn {{ 'active' if lang == 'it' else '' }}" style="padding: 4px 6px; font-size: 11px; min-width: 28px;">IT</button>
+          <button onclick="switchLang('en')" class="header-btn {{ 'active' if lang == 'en' else '' }}" style="padding: 4px 6px; font-size: 11px; min-width: 28px;">EN</button>
+        </div>
       </div>
     </div>
 
