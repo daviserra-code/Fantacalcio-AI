@@ -2106,162 +2106,107 @@
         const statsResponse = await fetch('/api/statistics');
         const statsData = await statsResponse.json();
         
-        // Load age coverage data
-        const ageResponse = await fetch('/api/age-coverage');
-        const ageData = await ageResponse.json();
-        
-        // Load rate limit status
-        const rateLimitResponse = await fetch('/api/rate-limit-status');
-        const rateLimitData = await rateLimitResponse.json();
-        
-        // Build analytics HTML
+        // Build analytics HTML with theme-aware styling (same as desktop)
         let analyticsHtml = `
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            
-            <!-- Data Quality Overview -->
-            <div class="analytics-card" style="background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 20px;">
-              <h3 style="color: #22d3ee; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
-                📈 <span>Data Quality</span>
-              </h3>
-              <div style="display: grid; gap: 10px;">
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">Total Players:</span>
-                  <span style="color: #22d3ee; font-weight: bold;">${statsData.total_players || 0}</span>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                
+                <!-- Data Quality Overview -->
+                <div class="analytics-card" style="background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
+                    <h3 style="color: #22d3ee; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px; font-size: 16px;">
+                        📈 <span>Data Quality</span>
+                    </h3>
+                    <div style="display: grid; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #d1d5db; font-size: 14px;">Total Players:</span>
+                            <span style="color: #22d3ee; font-weight: bold;">${Object.values(statsData.role_statistics || {}).reduce((sum, stats) => sum + (stats.count || 0), 0)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #d1d5db; font-size: 14px;">Data Source:</span>
+                            <span style="color: #22d3ee; font-weight: bold;">JSON</span>
+                        </div>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">Age Coverage:</span>
-                  <span style="color: #22d3ee; font-weight: bold;">${ageData.coverage_percent || 0}%</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">Data Source:</span>
-                  <span style="color: #22d3ee; font-weight: bold;">${statsData.debug_info?.source_file || 'N/A'}</span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Role Distribution -->
-            <div class="analytics-card" style="background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 20px;">
-              <h3 style="color: #22d3ee; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
-                ⚽ <span>Role Distribution</span>
-              </h3>
-              <div style="display: grid; gap: 10px;">`;
+                
+                <!-- Role Distribution -->
+                <div class="analytics-card" style="background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
+                    <h3 style="color: #22d3ee; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px; font-size: 16px;">
+                        ⚽ <span>Role Distribution</span>
+                    </h3>
+                    <div style="display: grid; gap: 8px;">
+        `;
         
         // Add role statistics
-        const roleLabels = { 'P': 'Portieri', 'D': 'Difensori', 'C': 'Centrocampisti', 'A': 'Attaccanti' };
-        const roleIcons = { 'P': '🥅', 'D': '🛡️', 'C': '⚽', 'A': '🎯' };
-        
+        const roleNames = { 'P': 'Portieri', 'D': 'Difensori', 'C': 'Centrocampisti', 'A': 'Attaccanti' };
         Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
-          const percentage = statsData.total_players > 0 ? ((stats.count / statsData.total_players) * 100).toFixed(1) : 0;
-          analyticsHtml += `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #d1d5db; display: flex; align-items: center; gap: 6px;">
-                ${roleIcons[role]} ${roleLabels[role]}
-              </span>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="color: #22d3ee; font-weight: bold;">${stats.count}</span>
-                <span style="color: #9ca3af; font-size: 0.8em;">(${percentage}%)</span>
-              </div>
-            </div>`;
-        });
-        
-        analyticsHtml += `
-              </div>
-            </div>
-            
-            <!-- Performance Metrics -->
-            <div class="analytics-card" style="background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 20px;">
-              <h3 style="color: #22d3ee; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
-                🚀 <span>Performance</span>
-              </h3>
-              <div style="display: grid; gap: 10px;">
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">Rate Limit Used:</span>
-                  <span style="color: #22d3ee; font-weight: bold;">${rateLimitData.requests_used || 0}/${rateLimitData.max_requests || 10}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">Cache Status:</span>
-                  <span style="color: #10b981; font-weight: bold;">Active</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                  <span style="color: #d1d5db;">JSON Processing:</span>
-                  <span style="color: ${statsData.debug_info?.json_processed ? '#10b981' : '#ef4444'}; font-weight: bold;">
-                    ${statsData.debug_info?.json_processed ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Top Performers by Role -->
-            <div class="analytics-card" style="background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; grid-column: 1 / -1;">
-              <h3 style="color: #22d3ee; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
-                🏆 <span>Top Performers</span>
-              </h3>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">`;
-        
-        // Add top performers for each role
-        Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
-          const topPlayer = stats.top_players?.[0];
-          if (topPlayer) {
             analyticsHtml += `
-              <div style="background: #1f2937; border-radius: 8px; padding: 15px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                  <span style="font-size: 1.2em;">${roleIcons[role]}</span>
-                  <span style="color: #22d3ee; font-weight: bold;">${roleLabels[role]}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #d1d5db; font-size: 14px;">${roleNames[role] || role}:</span>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="color: #22d3ee; font-weight: bold;">${stats.count || 0}</span>
+                        <span style="color: #9ca3af; font-size: 12px;">avg €${stats.avg_price || 0}</span>
+                    </div>
                 </div>
-                <div style="color: #e5e7eb; font-weight: bold; margin-bottom: 5px;">${topPlayer.name}</div>
-                <div style="color: #9ca3af; font-size: 0.9em; margin-bottom: 8px;">${topPlayer.team}</div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8em;">
-                  <span style="color: #d1d5db;">FM: <span style="color: #22d3ee;">${topPlayer.fantamedia}</span></span>
-                  <span style="color: #d1d5db;">€<span style="color: #10b981;">${topPlayer.price}</span></span>
-                </div>
-              </div>`;
-          }
+            `;
         });
         
         analyticsHtml += `
-              </div>
+                    </div>
+                </div>
             </div>
             
-            <!-- Market Insights -->
-            <div class="analytics-card" style="background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 20px; grid-column: 1 / -1;">
-              <h3 style="color: #22d3ee; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
-                💰 <span>Market Analysis</span>
-              </h3>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">`;
+            <!-- Top Players Section -->
+            <div style="margin-top: 16px; background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
+                <h3 style="color: #22d3ee; margin: 0 0 12px 0; font-size: 16px;">🏆 Top Players by Role</h3>
+                <div style="display: grid; gap: 12px;">
+        `;
         
-        // Add market analysis for each role
+        // Add top players for each role
         Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
-          analyticsHtml += `
-            <div style="text-align: center; padding: 15px; background: #1f2937; border-radius: 8px;">
-              <div style="font-size: 1.5em; margin-bottom: 8px;">${roleIcons[role]}</div>
-              <div style="color: #22d3ee; font-weight: bold; margin-bottom: 5px;">${roleLabels[role]}</div>
-              <div style="color: #9ca3af; font-size: 0.8em; margin-bottom: 5px;">Avg FM: ${stats.avg_fantamedia}</div>
-              <div style="color: #9ca3af; font-size: 0.8em;">Avg Price: €${stats.avg_price}</div>
-            </div>`;
+            if (stats.top_players && stats.top_players.length > 0) {
+                analyticsHtml += `
+                    <div>
+                        <h4 style="color: #d1d5db; margin: 0 0 6px 0; font-size: 14px; font-weight: 600;">${roleNames[role] || role}</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                `;
+                
+                stats.top_players.slice(0, 3).forEach(player => {
+                    analyticsHtml += `
+                        <span style="background: #1f2937; color: #e5e7eb; padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                            ${player.name} (FM: ${player.fantamedia}, €${player.price})
+                        </span>
+                    `;
+                });
+                
+                analyticsHtml += `
+                        </div>
+                    </div>
+                `;
+            }
         });
         
         analyticsHtml += `
-              </div>
+                </div>
             </div>
-            
-          </div>`;
+        `;
         
+        // Display the analytics
         data.innerHTML = analyticsHtml;
-        loading.style.display = 'none';
         data.style.display = 'block';
+        loading.style.display = 'none';
         
       } catch (error) {
-        console.error('Error loading analytics:', error);
+        console.error('Analytics loading error:', error);
         data.innerHTML = `
-          <div style="text-align: center; padding: 20px; color: #ef4444;">
-            <h3>❌ Errore nel caricamento</h3>
-            <p>Impossibile caricare le statistiche. Riprova più tardi.</p>
-            <button onclick="loadAnalytics()" style="background: #22d3ee; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">
-              🔄 Riprova
-            </button>
-          </div>`;
-        loading.style.display = 'none';
+            <div style="color: #ef4444; text-align: center; padding: 20px; background: var(--dark-card-bg, #0f172a); border-radius: 8px; margin: 16px;">
+                ❌ Errore nel caricamento delle statistiche: ${error.message}
+                <br><br>
+                <button onclick="loadAnalytics()" style="background: #22d3ee; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+                    🔄 Riprova
+                </button>
+            </div>
+        `;
         data.style.display = 'block';
+        loading.style.display = 'none';
       }
     }
 
