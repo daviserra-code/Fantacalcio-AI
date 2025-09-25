@@ -831,6 +831,8 @@
                 border: 1px solid var(--tab-border, #2d3748);
                 border-radius: 8px;
                 border-left: 3px solid #22d3ee;
+                cursor: default;
+                user-select: text;
             }
             
             .statistics-results .role-stats h5 {
@@ -838,6 +840,25 @@
                 margin: 0 0 12px 0;
                 font-size: 16px;
                 font-weight: 600;
+            }
+            
+            /* Mobile responsive adjustments */
+            @media (max-width: 768px) {
+                .statistics-results {
+                    padding: 0 !important;
+                }
+                
+                .statistics-results .role-stats {
+                    margin: 10px 0;
+                    padding: 12px;
+                    font-size: 14px;
+                }
+                
+                .statistics-results .player-tag {
+                    padding: 4px 8px;
+                    margin: 2px;
+                    font-size: 11px;
+                }
             }
 
             .statistics-results .top-players {
@@ -853,6 +874,8 @@
                 border-radius: 6px;
                 font-size: 12px;
                 border: 1px solid var(--tab-border, #4a5568);
+                cursor: default;
+                user-select: text;
             }
 
             .advanced-filters {
@@ -1603,12 +1626,10 @@
             <button onclick="updateStatistics()" class="apply-filters-btn">Applica Filtri</button>
         </div>
 
-        <div style="display: flex; gap: 20px; align-items: flex-start;">
-          <div id="searchResults" class="search-results" style="flex: 1;">
-            <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
-          </div>
-          <div id="statisticsResults" class="statistics-results" style="flex: 1; position: sticky; top: 20px;"></div>
+        <div id="searchResults" class="search-results" style="margin-bottom: 20px;">
+          <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
         </div>
+        <div id="statisticsResults" class="statistics-results" style="width: 100%; overflow-x: auto;"></div>
       </div>
     </div>
 
