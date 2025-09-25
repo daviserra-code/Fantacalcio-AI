@@ -793,17 +793,16 @@
 
     // Function to scroll to chat for AI Insights
     function scrollToChat() {
-        const chatSection = document.querySelector('.hero, #hero');
-        if (chatSection) {
-            chatSection.scrollIntoView({ behavior: 'smooth' });
+        const chatSection = document.querySelector('.hero');
+        const chatInput = document.querySelector('#desktopChatInput');
+        
+        if (chatSection && chatInput) {
+            chatSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
             // Focus on the chat input
             setTimeout(() => {
-                const chatInput = document.querySelector('#desktopChatInput, input[placeholder*="domanda"], input[placeholder*="strategia"]');
-                if (chatInput) {
-                    chatInput.focus();
-                    chatInput.placeholder = "Chiedi consigli AI personalizzati...";
-                }
-            }, 500);
+                chatInput.focus();
+                chatInput.placeholder = "Chiedi consigli AI personalizzati per la tua lega...";
+            }, 800);
         }
     }
 
