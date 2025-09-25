@@ -814,7 +814,7 @@ class FantacalcioAssistant:
 
     # ---------- XI Builder ----------
     @cached(category='formations', ttl=1800)
-    def _build_formation(self, formation: Dict[str,int], budget: int) -> Dict[str,Any]:
+    def _build_formation(self, formation: Dict[str,int], budget: int, max_age: Optional[int] = None) -> Dict[str,Any]:
         """Build formation with budget allocation optimized for 200 credit budget"""
         slots = dict(formation)
         picks = {"P":[], "D":[], "C":[], "A":[]}
@@ -1452,11 +1452,24 @@ Cosa ti interessa di più?"""
             intent.update({"type": "transfers", "team": team, "original_text": text})
             return intent
 
-        # formazione
+        # formazione - CHECK FOR AGE CONSTRAINTS TOO
         if "formazione" in lt and re.search(r"\b[0-5]\s*-\s*[0-5]\s*-\s*[0-5]\b", lt):
             fm = re.search(r"\b([0-5])\s*-\s*([0-5])\s*-\s*([0-5])\b", lt).group(0)
             budget = self._parse_first_int(lt) or 200
-            intent.update({"type":"formation","formation_text":fm, "budget":budget})
+            
+            # Check for age constraints in the same text
+            max_age = None
+            if any(k in lt for k in ["under 21","under-21","under21","u21"]):
+                max_age = 21
+            elif any(k in lt for k in ["under 23","under-23","under23","u23"]):
+                max_age = 23
+            elif any(k in lt for k in ["solo.*under","soltanto.*under","solamente.*under"]):
+                # Extract age from "solo di under 23" type patterns
+                age_match = re.search(r"under\s*(\d+)", lt)
+                if age_match:
+                    max_age = int(age_match.group(1))
+                    
+            intent.update({"type":"formation","formation_text":fm, "budget":budget, "max_age":max_age})
             return intent
 
         # under - CHECK THIS FIRST before budget detection
@@ -1511,7 +1524,11 @@ Cosa ti interessa di più?"""
         elif intent["type"] == "formation":
             fm_text = intent["formation_text"]
             budget = intent.get("budget", 200)
-            reply = self._answer_build_xi(f"{fm_text} {budget}")
+            max_age = intent.get("max_age")
+            if max_age:
+                reply = self._answer_build_xi_with_age_filter(fm_text, budget, max_age)
+            else:
+                reply = self._answer_build_xi(f"{fm_text} {budget}")
         elif intent["type"] == "goalkeeper":
             reply = self._handle_goalkeeper_request(intent.get("original_text", user_text))
         elif intent["type"] == "transfers":
