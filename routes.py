@@ -198,7 +198,7 @@ def demo_login():
     from datetime import datetime, timedelta
 
     # Use a fixed demo user ID to avoid database issues
-    demo_user_id = "pro_test_user_456"
+    demo_user_id = 999999
     demo_email = "protest@fantacalcio.ai"
 
     # Try to get existing demo user or create one
@@ -209,11 +209,12 @@ def demo_login():
 
         if not user:
             user = User(
-                id=demo_user_id,  # Set explicit ID
                 email=demo_email,
+                username="pro_tester",
                 first_name="Pro",
                 last_name="Tester"
             )
+            user.set_password("demo123")  # Set a password for the demo user
             db.session.add(user)
             db.session.commit()
 

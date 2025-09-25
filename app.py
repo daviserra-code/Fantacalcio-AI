@@ -41,7 +41,12 @@ login_manager.login_message_category = 'info'
 @login_manager.user_loader
 def load_user(user_id):
     from models import User
-    return User.query.get(int(user_id))
+    try:
+        # Try to convert to int first (for regular users)
+        return User.query.get(int(user_id))
+    except ValueError:
+        # If it's not an integer (like 'pro_test_user_456'), query by string ID
+        return User.query.filter_by(id=user_id).first()
 
 # Register blueprints
 from site_blueprint import site_bp
