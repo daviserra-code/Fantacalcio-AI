@@ -574,7 +574,7 @@ class FantacalcioAssistant:
             self._make_filtered_roster()  # ricrea pool con età
 
     # ---------- utility ----------
-    def _pool_by_role(self, r: str) -> List[Dict[str,Any]]:
+    def _pool_by_role(self, r: str, max_age: Optional[int] = None) -> List[Dict[str,Any]]:
         # Get excluded players from corrections manager
         excluded_players = []
         if self.corrections_manager:
@@ -613,9 +613,24 @@ class FantacalcioAssistant:
                     if any(part in player_parts for part in excluded_parts if len(part) > 2):
                         should_skip = True
                         break
+                # Apply age filter if specified
+                if max_age is not None and not should_skip:
+                    birth_year = player_copy.get("birth_year")
+                    if birth_year:
+                        age = REF_YEAR - birth_year
+                        if age > max_age:
+                            LOG.debug(f"[Pool Age Filter] Excluding {player_copy.get('name', 'Unknown')} (age {age} > {max_age})")
+                            should_skip = True
+                    else:
+                        # If no birth year available, be conservative and exclude
+                        LOG.debug(f"[Pool Age Filter] Excluding {player_copy.get('name', 'Unknown')} (no age data)")
+                        should_skip = True
+                        
                 if not should_skip:
                     filtered_pool.append(player_copy)
 
+        if max_age is not None:
+            LOG.info(f"[Pool Age Filter] Role {r}: {len(filtered_pool)} players under {max_age} years old")
         return filtered_pool
 
     def _age_from_by(self, by: Optional[int]) -> Optional[int]:
@@ -741,7 +756,7 @@ class FantacalcioAssistant:
 
         return pool[:take]
 
-    def _select_top_by_budget(self, r: str, budget: int, take: int = 8
+    def _select_top_by_budget(self, r: str, budget: int, take: int = 8, max_age: Optional[int] = None
                               ) -> Tuple[List[Dict[str,Any]], List[Dict[str,Any]]]:
         within=[]; fm_only=[]
 
@@ -754,7 +769,7 @@ class FantacalcioAssistant:
                 LOG.error(f"Error getting excluded players: {e}")
 
         tmp=[]
-        for p in self._pool_by_role(r):
+        for p in self._pool_by_role(r, max_age):
             # Skip excluded players - use fuzzy matching
             player_name = (p.get("name") or "").lower()
             should_skip = False
@@ -783,7 +798,7 @@ class FantacalcioAssistant:
 
         if len(within) < take:
             tmp2=[]
-            for p in self._pool_by_role(r):
+            for p in self._pool_by_role(r, max_age):
                 # Skip excluded players
                 player_name = (p.get("name") or "").lower()
                 if player_name in excluded_players:
@@ -795,9 +810,9 @@ class FantacalcioAssistant:
             fm_only = tmp2[:max(0, take-len(within))]
         return within, fm_only
 
-    def _select_top_role_any(self, r: str, take: int = 400) -> List[Dict[str,Any]]:
+    def _select_top_role_any(self, r: str, take: int = 400, max_age: Optional[int] = None) -> List[Dict[str,Any]]:
         pool=[]
-        for p in self._pool_by_role(r):
+        for p in self._pool_by_role(r, max_age):
             fm = p.get("_fm"); pr = p.get("_price")
 
             # Skip players without essential data for budget formations
@@ -834,7 +849,7 @@ class FantacalcioAssistant:
 
         # Strategy: Pick players to actually utilize the budget effectively
         def pick_budget_conscious_role(role: str, needed_count: int, role_budget: int):
-            pool = self._select_top_role_any(role, take=500)
+            pool = self._select_top_role_any(role, take=500, max_age=max_age)
 
             # Apply team corrections
             if self.corrections_manager:
@@ -1251,6 +1266,87 @@ class FantacalcioAssistant:
         out.append("")
         out.append("📝 *Criterio: Mix bilanciato di giocatori top/medi/economici per massimo valore.*")
         return "\n".join(out)
+    
+    def _answer_build_xi_with_age_filter(self, formation_text: str, budget: int, max_age: int) -> str:
+        """Build formation with age constraint applied"""
+        formation = _formation_from_text(formation_text)
+        if not formation:
+            return "Specificami una formazione tipo 5-3-2 o 4-3-3."
+        
+        LOG.info(f"[Formation Age Filter] Building formation with max_age={max_age}")
+        res = self._build_formation(formation, budget, max_age)
+        picks=res["picks"]; rb=res["budget_roles"]; leftover=res["leftover"]
+
+        def fmt(r,label):
+            if not picks[r] or len(picks[r]) == 0: 
+                LOG.warning(f"[Formation Display] No players for role {r} ({label})")
+                return f"🔹 **{label}:** — (nessun giocatore selezionato)"
+            
+            rows=[]
+            LOG.info(f"[Formation Display] Formatting {len(picks[r])} players for role {r}")
+            
+            for i, p in enumerate(picks[r], 1):
+                player_name = p.get('name', 'N/D')
+                team_display = p.get('team', '—')
+
+                fm=p.get("_fm"); pr=p.get("_price"); bits=[]
+                if isinstance(fm,(int,float)): 
+                    bits.append(f"FM {fm:.2f}")
+                else:
+                    bits.append("FM N/D")
+                    
+                if isinstance(pr,(int,float)): 
+                    bits.append(f"€{int(round(pr))}")
+                else:
+                    bits.append("€N/D")
+
+                # Add age info if available
+                age_info = ""
+                if p.get('birth_year'):
+                    age = 2025 - p['birth_year']
+                    age_info = f" ({age} anni)"
+                elif p.get('age'):
+                    age_info = f" ({p['age']} anni)"
+                    
+                # Clean up names for display
+                try:
+                    player_name_clean = player_name.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
+                    player_name_clean = player_name_clean.replace('Ã±', 'ñ').replace('Ã©', 'é').replace('Ã¨', 'è')
+                    team_display_clean = team_display.replace('Ã§', 'ç').replace('Ã¡', 'á').replace('Ã¼', 'ü')
+
+                    rows.append(f"  {i}. **{player_name_clean}** ({team_display_clean}){age_info}")
+                    rows.append(f"     {' • '.join(bits)}")
+                except Exception:
+                    rows.append(f"  {i}. **{player_name}** ({team_display}){age_info}")
+                    rows.append(f"     {' • '.join(bits)}")
+            
+            return f"🔹 **{label}:**\n" + "\n".join(rows)
+
+        tot=0.0
+        for r in picks:
+            for p in picks[r]:
+                pr=p.get("_price")
+                if isinstance(pr,(int,float)): tot+=pr
+
+        out=[]
+        out.append(f"📋 **Formazione {formation['D']}-{formation['C']}-{formation['A']} UNDER {max_age}** (Budget: 200 crediti)")
+        out.append("")
+        out.append(f"💰 **Distribuzione Budget:** P≈{rb['P']} • D≈{rb['D']} • C≈{rb['C']} • A≈{rb['A']}")
+        out.append("")
+        out.append(fmt("P","Portiere"))
+        out.append("")
+        out.append(fmt("D","Difensori"))
+        out.append("")
+        out.append(fmt("C","Centrocampisti"))
+        out.append("")
+        out.append(fmt("A","Attaccanti"))
+        out.append("")
+        out.append("─" * 50)
+        out.append(f"💵 **Totale Speso:** {int(round(tot))} crediti")
+        out.append(f"💰 **Rimanente:** {int(round(leftover))} crediti")
+        out.append("")
+        out.append(f"📝 *Criterio: Tutti i giocatori sono UNDER {max_age} anni*")
+        return "\n".join(out)
 
     # ---------- parsers ----------
     def _parse_first_int(self, text: str) -> Optional[int]:
@@ -1459,15 +1555,34 @@ Cosa ti interessa di più?"""
             
             # Check for age constraints in the same text
             max_age = None
+            
+            # Pattern 1: Explicit under age mentions
             if any(k in lt for k in ["under 21","under-21","under21","u21"]):
                 max_age = 21
             elif any(k in lt for k in ["under 23","under-23","under23","u23"]):
                 max_age = 23
-            elif any(k in lt for k in ["solo.*under","soltanto.*under","solamente.*under"]):
-                # Extract age from "solo di under 23" type patterns
-                age_match = re.search(r"under\s*(\d+)", lt)
+            
+            # Pattern 2: Italian phrases with "solo/soltanto/solamente + under + age"
+            solo_under_patterns = [
+                r"sol[oa]\s+(?:di\s+)?under\s*(\d+)",  # solo under 23, solo di under 23
+                r"soltanto\s+(?:di\s+)?under\s*(\d+)",  # soltanto under 23, soltanto di under 23
+                r"solamente\s+(?:di\s+)?under\s*(\d+)", # solamente under 23, solamente di under 23
+                r"(?:solo|soltanto|solamente)\s+.*?under\s*(\d+)", # flexible matching
+            ]
+            
+            for pattern in solo_under_patterns:
+                age_match = re.search(pattern, lt, re.IGNORECASE)
                 if age_match:
                     max_age = int(age_match.group(1))
+                    LOG.info(f"[Intent Parse] Found age constraint: max_age={max_age} from '{age_match.group(0)}'")
+                    break
+                    
+            # Pattern 3: Generic under + number patterns as fallback  
+            if max_age is None:
+                generic_under = re.search(r"under\s*(\d+)", lt, re.IGNORECASE)
+                if generic_under:
+                    max_age = int(generic_under.group(1))
+                    LOG.info(f"[Intent Parse] Found generic age constraint: max_age={max_age}")
                     
             intent.update({"type":"formation","formation_text":fm, "budget":budget, "max_age":max_age})
             return intent
