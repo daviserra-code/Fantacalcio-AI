@@ -794,10 +794,10 @@
     // Function to scroll to chat for AI Insights
     function scrollToChat() {
         console.log('scrollToChat function called');
-        const chatSection = document.querySelector('.hero');
-        // Desktop redirects to mobile app for chat, so we redirect there
-        window.location.href = '/app';
-        return;
+        
+        // Find the desktop chat input
+        const chatInput = document.getElementById('desktopMessageInput');
+        const chatSection = document.querySelector('.chat-container');
         
         console.log('chatSection found:', !!chatSection);
         console.log('chatInput found:', !!chatInput);
@@ -808,16 +808,20 @@
             setTimeout(() => {
                 chatInput.focus();
                 chatInput.placeholder = "Chiedi consigli AI personalizzati per la tua lega...";
-                console.log('Chat input focused and placeholder set');
+                console.log('Desktop chat input focused and placeholder set');
             }, 800);
         } else {
-            console.error('Could not find chat section or input');
-            // Try alternative selectors
-            const alternativeChat = document.querySelector('input[placeholder*="domanda"], input[placeholder*="strategia"], #chatInput');
+            console.error('Could not find desktop chat section or input');
+            // Try alternative selectors for the chat area
+            const alternativeChat = document.querySelector('#desktopChatMessages, .chat-messages, textarea[placeholder*="domanda"]');
             if (alternativeChat) {
                 alternativeChat.scrollIntoView({ behavior: 'smooth' });
-                alternativeChat.focus();
-                console.log('Used alternative chat input');
+                // Try to find and focus any available text input
+                const anyInput = document.querySelector('#desktopMessageInput, textarea');
+                if (anyInput) {
+                    anyInput.focus();
+                }
+                console.log('Used alternative chat selector');
             }
         }
     }
