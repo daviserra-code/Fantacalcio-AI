@@ -52,9 +52,9 @@ TEAM_ALIASES = {
     "bologna fc":"bologna","fiorentina ac":"fiorentina","ssc napoli":"napoli","s.s.c. napoli":"napoli",
 }
 SERIE_A_WHITELIST = {
-    "atalanta","bologna","cagliari","como","cremonese","empoli","fiorentina","genoa","inter",
-    "juventus","lazio","lecce","milan","monza","napoli","parma","pisa","roma","sassuolo",
-    "udinese","venezia","verona",
+    "atalanta","bologna","cagliari","como","cremonese","fiorentina","genoa","inter",
+    "juventus","lazio","lecce","milan","napoli","parma","pisa","roma","sassuolo",
+    "torino","udinese","verona",
 }
 ROLE_SYNONYMS = {
     "P":{"P","POR","GK","GKP","PORTIERE"},
@@ -368,12 +368,12 @@ class FantacalcioAssistant:
             return False
         team_norm = team.strip().lower()
 
-        # Current Serie A 2025-26 teams (updated for current season)
+        # Current Serie A 2025-26 teams (20 teams total)
         serie_a_teams = {
-            "atalanta", "bologna", "cagliari", "como", "cremonese", "empoli", "fiorentina",
+            "atalanta", "bologna", "cagliari", "como", "cremonese", "fiorentina",
             "genoa", "inter", "juventus", "lazio", "lecce", "milan",
-            "monza", "napoli", "parma", "pisa", "roma", "sassuolo", "torino", "udinese",
-            "venezia", "verona", "hellas verona"
+            "napoli", "parma", "pisa", "roma", "sassuolo", "torino", "udinese",
+            "verona", "hellas verona"
         }
 
         # Handle common variations
