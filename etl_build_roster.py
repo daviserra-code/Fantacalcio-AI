@@ -41,12 +41,15 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
 def fetch_players_from_kb(km: KnowledgeManager, seasons: List[str], limit: int = 5000) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     
-    # Serie A teams that must be included
+    # Serie A teams that must be included (2025-26 season)
     required_teams = {
-        "Atalanta", "Bologna", "Cagliari", "Como", "Cremonese", "Empoli", 
+        "Atalanta", "Bologna", "Cagliari", "Como", "Cremonese", 
         "Fiorentina", "Genoa", "Inter", "Juventus", "Lazio", "Lecce", 
-        "Milan", "Monza", "Napoli", "Parma", "Roma", "Torino", 
-        "Udinese", "Venezia", "Verona"
+        "Milan", "Napoli", "Parma", "Roma", "Torino", 
+        "Udinese", "Verona",
+        # NEW 2025-26: Promoted from Serie B
+        "Sassuolo", "Pisa"
+        # REMOVED 2025-26: Relegated to Serie B (Empoli, Venezia, Monza)
     }
     
     for season in seasons:
