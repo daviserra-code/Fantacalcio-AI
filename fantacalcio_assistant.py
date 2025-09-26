@@ -476,7 +476,7 @@ class FantacalcioAssistant:
         for p in corrected_roster:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
-
+            
             # Check if player has verified age in overrides with multiple key formats
             possible_keys = [
                 f"{name}@@{team}",
@@ -505,12 +505,17 @@ class FantacalcioAssistant:
             by = _valid_birth_year(p.get("birth_year"))
             is_young = by is not None and (REF_YEAR - by) <= 25
 
+            # FIXED: Make season filtering more lenient - accept 2025-26 and current season
+            player_season = (p.get("season") or "").strip()
             if self.season_filter and not is_young:
-                if (p.get("season") or "").strip() != self.season_filter:
+                # Accept both the configured season filter and 2025-26 (current season)
+                valid_seasons = {self.season_filter, "2025-26"}
+                if player_season not in valid_seasons:
                     continue
 
             if by is not None and (REF_YEAR - by) > 36:  # taglio hard vecchissimi
                 continue
+                
             out.append(p)
 
         self.filtered_roster = out
@@ -1132,6 +1137,50 @@ class FantacalcioAssistant:
         self._youth_enhanced = True
 
 
+    def _handle_top_players_request(self, role: str, budget: int) -> str:
+        """Handle top players requests for any role"""
+        LOG.info(f"[Top Players] Request for role {role} with budget {budget}")
+        
+        # Ensure data is loaded
+        self._ensure_data_loaded()
+        
+        if not self.filtered_roster:
+            return "⚠️ Dati roster non disponibili al momento. Riprova tra poco."
+        
+        role_names = {
+            "A": "attaccanti",
+            "C": "centrocampisti", 
+            "D": "difensori",
+            "P": "portieri"
+        }
+        
+        role_name = role_names.get(role, "giocatori")
+        
+        # Filter players by role
+        players = [p for p in self.filtered_roster if self._role_bucket(p.get("role") or "") == role]
+        
+        # Filter by budget and sort by fantamedia - require valid price
+        filtered_players = [p for p in players if p.get("_price") is not None and p.get("_price") <= budget]
+        filtered_players.sort(key=lambda x: (-(x.get("_fm") or 0.0), (x.get("_price") or 9999.0)))
+        
+        if not filtered_players:
+            return f"Non ho trovato {role_name} di Serie A con budget {budget} crediti."
+        
+        lines = [f"📈 **Migliori {role_name.title()} (budget {budget} crediti, Serie A):**"]
+        
+        for i, p in enumerate(filtered_players[:8], 1):
+            name = p.get("name", "N/A")
+            team = p.get("team", "N/A")
+            fm = p.get("_fm", 0.0)
+            price = p.get("_price", 0)
+            
+            fm_str = f"FM {fm:.1f}" if isinstance(fm, (int, float)) else "FM N/D"
+            price_str = f"€{int(price)}" if isinstance(price, (int, float)) else "€N/D"
+            
+            lines.append(f"{i}. **{name}** ({team}) — {price_str} • {fm_str}")
+        
+        return "\n".join(lines)
+
     def _answer_top_attackers_by_budget(self, budget: int) -> str:
         strict, fm_only = self._select_top_by_budget("A", budget, take=8)
         sections=[]
@@ -1381,12 +1430,14 @@ class FantacalcioAssistant:
             else:
                 pool = self._pool_by_role(role)
             
-            # Sort by value ratio (FM/price)
+            # Filter by role budget and sort by value ratio (FM/price)
             valid_pool = []
             for p in pool:
                 fm = p.get("_fm") or 0
-                price = p.get("_price") or 1
-                if fm > 0 and price > 0:
+                price = p.get("_price")
+                
+                # CRITICAL FIX: Only include players with valid price and within budget
+                if fm > 0 and price is not None and price > 0 and price <= role_budget:
                     p["_value_ratio"] = fm / price
                     valid_pool.append(p)
             
@@ -1630,8 +1681,10 @@ Cosa ti interessa di più?"""
             })
             return intent
 
-        # Check for goalkeeper requests (only simple ones, complex ones handled above)
-        if any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]) and not player_counts:
+        # Check for goalkeeper requests (only simple ones, not top/migliori queries)
+        simple_goalkeeper_query = any(x in lt for x in ["portieri", "portiere", "goalkeeper", "gk"]) and not player_counts
+        is_top_goalkeeper = any(word in lt for word in ["top", "migliori", "miglior"]) and "portier" in lt
+        if simple_goalkeeper_query and not is_top_goalkeeper:
             intent.update({"type": "goalkeeper", "original_text": text})
             return intent
 
@@ -1707,7 +1760,30 @@ Cosa ti interessa di più?"""
             intent.update({"type":"under","role":role,"max_age":max_age,"take":take})
             return intent
 
-        # top attaccanti con budget
+        # top players by role with budget (expanded to handle more cases)
+        role_keywords = {
+            "A": ["attacc", "punta", "attaccanti"],
+            "C": ["centrocamp", "mediano", "mezzala", "centrocampisti"],
+            "D": ["difensor", "difensori", "terzin", "centrale"],
+            "P": ["portier", "portieri", "goalkeeper"]
+        }
+        
+        # Check for "top" or "migliori" patterns
+        is_top_query = any(word in lt for word in ["top", "migliori", "miglior"])
+        
+        role_found = None
+        for role_code, keywords in role_keywords.items():
+            if any(keyword in lt for keyword in keywords):
+                role_found = role_code
+                break
+        
+        # Handle top queries with or without explicit budget
+        if is_top_query and role_found:
+            budget = self._parse_first_int(lt) or 150
+            intent.update({"type":"top_players","role":role_found,"budget":budget})
+            return intent
+        
+        # Legacy support for attackers with budget (keep for compatibility)
         if ("attacc" in lt or "top attaccanti" in lt or "punta" in lt) and ("budget" in lt or self._parse_first_int(lt)):
             budget = self._parse_first_int(lt) or 150
             intent.update({"type":"budget_attackers","budget":budget})
@@ -1759,6 +1835,8 @@ Cosa ti interessa di più?"""
             reply = self._answer_under21(intent["role"], intent.get("max_age",21), intent.get("take",3))
         elif intent["type"] == "budget_attackers":
             reply = self._answer_top_attackers_by_budget(intent.get("budget",150))
+        elif intent["type"] == "top_players":
+            reply = self._handle_top_players_request(intent.get("role"), intent.get("budget",150))
         elif intent["type"] == "formation":
             fm_text = intent["formation_text"]
             budget = intent.get("budget", 200)
