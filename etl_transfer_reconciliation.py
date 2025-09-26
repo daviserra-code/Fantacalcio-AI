@@ -15,11 +15,14 @@ import os
 
 LOG = logging.getLogger(__name__)
 
-# Serie A teams whitelist - players not in these teams are marked as transferred_out
+# Serie A teams whitelist 2025-26 season - players not in these teams are marked as transferred_out
 SERIE_A_TEAMS = {
-    'Atalanta', 'Bologna', 'Cagliari', 'Como', 'Empoli', 'Fiorentina', 
-    'Genoa', 'Inter', 'Juventus', 'Lazio', 'Lecce', 'Milan', 'Monza', 
-    'Napoli', 'Parma', 'Roma', 'Torino', 'Udinese', 'Venezia', 'Verona'
+    'Atalanta', 'Bologna', 'Cagliari', 'Como', 'Fiorentina', 
+    'Genoa', 'Inter', 'Juventus', 'Lazio', 'Lecce', 'Milan', 
+    'Napoli', 'Parma', 'Roma', 'Torino', 'Udinese', 'Verona',
+    # NEW 2025-26: Promoted from Serie B
+    'Sassuolo', 'Pisa', 'Cremonese'
+    # REMOVED 2025-26: Relegated to Serie B (Empoli, Venezia, Monza)
 }
 
 def normalize_name(name: str) -> str:
@@ -44,12 +47,14 @@ def normalize_team(team: str) -> str:
         'genoa cfc': 'genoa',
         'udinese calcio': 'udinese',
         'us lecce': 'lecce',
-        'ac monza': 'monza',
-        'empoli fc': 'empoli',
         'parma calcio': 'parma',
         'cagliari calcio': 'cagliari',
-        'venezia fc': 'venezia',
-        'como 1907': 'como'
+        'como 1907': 'como',
+        # NEW 2025-26 promoted teams
+        'sassuolo calcio': 'sassuolo',
+        'pisa sc': 'pisa',
+        'us cremonese': 'cremonese',
+        'cremonese': 'cremonese'
     }
     normalized = team.lower().strip()
     return team_mappings.get(normalized, normalized)
