@@ -51,14 +51,30 @@ def load_user(user_id):
         logging.warning(f"Invalid user_id in session: {user_id}. Clearing session.")
         return None
 
-# Register blueprints
-from site_blueprint import site_bp
-from auth import auth_bp
+# Import and register blueprints
+try:
+    from site_blueprint import site_bp
+    app.register_blueprint(site_bp)
+    logger.info("Site blueprint registered")
+except Exception as e:
+    logger.error(f"Failed to register site blueprint: {e}")
 
-app.register_blueprint(site_bp)
-app.register_blueprint(auth_bp, url_prefix='/auth')
-logging.info("Site blueprint registered")
-logging.info("Auth blueprint registered")
+try:
+    from auth import auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    logger.info("Auth blueprint registered")
+except Exception as e:
+    logger.error(f"Failed to register auth blueprint: {e}")
+    # Create a minimal auth blueprint as fallback
+    from flask import Blueprint
+    fallback_auth_bp = Blueprint('auth', __name__)
+
+    @fallback_auth_bp.route('/login')
+    def login():
+        return "Authentication system temporarily unavailable"
+
+    app.register_blueprint(fallback_auth_bp, url_prefix='/auth')
+    logger.info("Fallback auth blueprint registered")
 
 # Add readiness check endpoint for deployment monitoring
 @app.route('/ready')
@@ -95,7 +111,7 @@ with app.app_context():
             # Check if password_hash column has correct size
             password_hash_col = next((col for col in columns_info if col['name'] == 'password_hash'), None)
             schema_needs_update = False
-            
+
             if password_hash_col:
                 # Check if the column size is too small for modern password hashes
                 col_type_str = str(password_hash_col['type'])
@@ -106,13 +122,13 @@ with app.app_context():
 
             required_columns = ['id', 'username', 'email', 'password_hash']
             missing_columns = [col for col in required_columns if col not in columns]
-            
+
             if missing_columns or schema_needs_update:
                 if missing_columns:
                     logger.error(f"Missing required columns in users table: {missing_columns}")
                 if schema_needs_update:
                     logger.info("Schema update needed for password_hash column size")
-                    
+
                 logger.info("Recreating tables due to schema issues...")
                 db.drop_all()
                 db.create_all()

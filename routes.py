@@ -26,7 +26,7 @@ def get_canonical_base_url(request):
     """
     # Get host from request
     host = request.headers.get('Host', request.environ.get('HTTP_HOST', ''))
-    
+
     # If no host, try environment variables
     if not host:
         if os.environ.get('REPLIT_DEPLOYMENT') == '1':
@@ -35,11 +35,11 @@ def get_canonical_base_url(request):
             domains = os.environ.get('REPLIT_DOMAINS')
             if domains:
                 host = domains.split(',')[0]
-    
+
     # ALWAYS use HTTPS for any replit domain
     if host and ('replit' in host or host.endswith('.repl.co')):
         return f"https://{host}", True
-    
+
     # Fallback
     return f"https://{host or 'localhost:5000'}", True
 
@@ -52,25 +52,26 @@ def make_session_permanent():
 
 @app.route('/')
 def home():
-    """Home route - serve appropriate interface based on device and auth status"""
-    # Import device detection
-    from device_detector import DeviceDetector
-    
-    # Check if mobile device
-    if DeviceDetector.is_mobile_device():
-        # Mobile users get the app interface (logged in or not)
-        return _render_mobile_app_interface()
-    else:
-        # Desktop users - check authentication for dashboard vs landing
-        if current_user.is_authenticated:
-            return redirect('/dashboard')
-        else:
-            return render_template("index_desktop.html")
+    """Home route - redirect to appropriate interface"""
+    try:
+        # Attempt to redirect to the blueprint's home route
+        return redirect(url_for('site_bp.home'))
+    except:
+        # Fallback if site_bp or its home route is not available
+        # This could happen if blueprints are not loaded or named differently
+        # Render a generic index.html as a last resort
+        return render_template('index.html')
+
+@app.route('/index')
+def index():
+    """Alternative index route"""
+    return render_template('index.html')
+
 
 def _render_mobile_app_interface():
     """Render mobile app interface with authentication context"""
     from flask import request
-    
+
     # Centralized translations
     T = {
         "it": {
@@ -89,7 +90,7 @@ def _render_mobile_app_interface():
             "forward": "Attaccante",
         }
     }
-    
+
     lang = request.args.get("lang", "it")
     return render_template("index.html", 
                          lang=lang, 
@@ -241,12 +242,12 @@ def demo_login():
 
     # Log in the demo user with explicit session configuration
     login_user(user, remember=True, duration=timedelta(hours=24))
-    
+
     # Ensure session is properly saved
     session.permanent = True
     session['user_id'] = user.id
     session['demo_login'] = True
-    
+
     print(f"✅ Demo login successful for {user.email} - Session ID: {session.get('_id', 'N/A')}")
 
     # Redirect to dashboard to see league features
@@ -260,7 +261,7 @@ def upgrade_to_pro():
     if current_user.is_pro:
         flash('You already have an active Pro subscription!', 'info')
         return redirect('/dashboard')
-    
+
     return render_template('upgrade.html', user=current_user)
 
 @app.route('/create-checkout-session', methods=['POST'])
@@ -589,7 +590,7 @@ def create_league():
     """Create a new league (Pro users only)"""
     if not current_user.is_pro:
         return jsonify({'error': 'Pro subscription required'}), 403
-        
+
     data = request.get_json()
     league_name = data.get('name', '').strip()
 

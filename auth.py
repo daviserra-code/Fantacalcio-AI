@@ -29,7 +29,13 @@ def login():
             (User.username == username) | (User.email == username)
         ).first()
         
-        if user is None or not user.check_password(password):
+        if user is None:
+            print(f"Login failed: User '{username}' not found")
+            flash('Invalid username/email or password', 'error')
+            return render_template('auth/login.html')
+        
+        if not user.check_password(password):
+            print(f"Login failed: Invalid password for user '{username}'")
             flash('Invalid username/email or password', 'error')
             return render_template('auth/login.html')
         
@@ -41,14 +47,15 @@ def login():
         login_user(user, remember=remember_me)
         flash(f'Welcome back, {user.first_name or user.username}!', 'success')
         
-        # Redirect to next page or home (device-aware)
+        # Redirect to next page or home
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
-            # Check if mobile device and redirect to appropriate home
-            if DeviceDetector.is_mobile_device():
-                next_page = url_for('site_bp.home')  # Mobile app interface
-            else:
-                next_page = url_for('site_bp.home')  # Desktop homepage
+            try:
+                # Try to redirect to home page
+                next_page = url_for('home')
+            except:
+                # Fallback to root
+                next_page = '/'
         return redirect(next_page)
     
     return render_template('auth/login.html')
@@ -110,11 +117,8 @@ def register():
             print(f"✅ User registered successfully: {username} ({email})")
             flash('Registration successful! You can now log in.', 'success')
             
-            # Device-aware redirect to login
-            if DeviceDetector.is_mobile_device():
-                return redirect(url_for('auth.login'))  # Mobile login
-            else:
-                return redirect(url_for('auth.login'))  # Desktop login
+            # Redirect to login page
+            return redirect(url_for('auth.login'))
         except Exception as e:
             db.session.rollback()
             print(f"❌ Registration failed for {username}: {str(e)}")
@@ -142,7 +146,10 @@ def logout():
     """Logout user"""
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('home'))
+    try:
+        return redirect(url_for('home'))
+    except:
+        return redirect('/')
 
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @login_required

@@ -20,7 +20,6 @@ from static_transfers import get_team_arrivals, is_static_mode_enabled, get_tran
 
 # Import authentication components
 from app import app, db
-from replit_auth import require_login, require_pro, make_replit_blueprint, init_login_manager
 from models import User, UserLeague
 
 logging.basicConfig(
@@ -29,28 +28,8 @@ logging.basicConfig(
 )
 LOG = logging.getLogger("web_interface")
 
-# Initialize Flask-Login if not already initialized
-try:
-    # Check if login_manager is already initialized
-    if not hasattr(app, 'login_manager'):
-        LOG.info("Initializing Flask-Login in web_interface.py")
-        init_login_manager(app)
-    else:
-        LOG.info("Flask-Login already initialized")
-except Exception as e:
-    LOG.error(f"Error initializing Flask-Login: {e}")
-
-# Register authentication blueprint if not already registered
-try:
-    # Check if auth blueprint is already registered
-    auth_blueprint_exists = any(bp.name == 'replit_auth' for bp in app.blueprints.values())
-    if not auth_blueprint_exists:
-        LOG.info("Registering authentication blueprint in web_interface.py")
-        app.register_blueprint(make_replit_blueprint(), url_prefix="/auth")
-    else:
-        LOG.info("Authentication blueprint already registered")
-except Exception as e:
-    LOG.error(f"Error registering authentication blueprint: {e}")
+# Authentication is handled by app.py and routes.py - no need to initialize here
+LOG.info("Web interface loaded - authentication handled by main app")
 
 # Import routes to ensure all routes are registered
 try:

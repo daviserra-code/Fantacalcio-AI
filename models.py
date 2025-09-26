@@ -37,7 +37,13 @@ class User(UserMixin, db.Model):
     
     def check_password(self, password):
         """Check if provided password matches hash"""
-        return check_password_hash(self.password_hash, password)
+        try:
+            result = check_password_hash(self.password_hash, password)
+            print(f"Password check for user {self.username}: {'SUCCESS' if result else 'FAILED'}")
+            return result
+        except Exception as e:
+            print(f"Password check error for user {self.username}: {e}")
+            return False
     
     @property
     def is_pro(self):
