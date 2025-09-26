@@ -1,22 +1,25 @@
-[
-  "Inter",
-  "Milan",
-  "Juventus",
-  "Napoli",
-  "Roma",
-  "Lazio",
-  "Atalanta",
-  "Fiorentina",
-  "Bologna",
-  "Torino",
-  "Genoa",
-  "Monza",
-  "Udinese",
-  "Lecce",
-  "Empoli",
-  "Cagliari",
-  "Hellas Verona",
-  "Parma",
-  "Como",
-  "Venezia"
-]
+{
+  "serie_a_2025_26": [
+    "Atalanta",
+    "Bologna", 
+    "Cagliari",
+    "Como",
+    "Cremonese",
+    "Empoli",
+    "Fiorentina",
+    "Genoa",
+    "Inter",
+    "Juventus",
+    "Lazio",
+    "Lecce",
+    "Milan",
+    "Monza",
+    "Napoli",
+    "Parma",
+    "Roma",
+    "Torino",
+    "Udinese",
+    "Venezia",
+    "Verona"
+  ]
+}

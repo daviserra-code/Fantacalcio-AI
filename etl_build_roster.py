@@ -40,6 +40,15 @@ def normalize_player(m: Dict[str, Any]) -> Dict[str, Any]:
 
 def fetch_players_from_kb(km: KnowledgeManager, seasons: List[str], limit: int = 5000) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
+    
+    # Serie A teams that must be included
+    required_teams = {
+        "Atalanta", "Bologna", "Cagliari", "Como", "Cremonese", "Empoli", 
+        "Fiorentina", "Genoa", "Inter", "Juventus", "Lazio", "Lecce", 
+        "Milan", "Monza", "Napoli", "Parma", "Roma", "Torino", 
+        "Udinese", "Venezia", "Verona"
+    }
+    
     for season in seasons:
         where = {"$and": [
             {"type": {"$in": ["player_info", "current_player"]}},
@@ -50,6 +59,19 @@ def fetch_players_from_kb(km: KnowledgeManager, seasons: List[str], limit: int =
         for m in metas:
             if isinstance(m, dict):
                 out.append(normalize_player(m))
+    
+    # Check coverage and log missing teams
+    teams_found = set()
+    for player in out:
+        team = player.get("team", "").strip()
+        if team:
+            teams_found.add(team)
+    
+    missing_teams = required_teams - teams_found
+    if missing_teams:
+        LOG.warning(f"[ETL] Missing teams in KB data: {missing_teams}")
+        LOG.info(f"[ETL] Consider running: python fix_missing_teams.py")
+    
     return out
 
 def main():
