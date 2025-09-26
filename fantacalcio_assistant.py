@@ -368,11 +368,11 @@ class FantacalcioAssistant:
             return False
         team_norm = team.strip().lower()
 
-        # Current Serie A 2024-25 teams (including Cremonese)
+        # Current Serie A 2025-26 teams (updated for current season)
         serie_a_teams = {
             "atalanta", "bologna", "cagliari", "como", "cremonese", "empoli", "fiorentina",
             "genoa", "inter", "juventus", "lazio", "lecce", "milan",
-            "monza", "napoli", "parma", "roma", "torino", "udinese",
+            "monza", "napoli", "parma", "pisa", "roma", "sassuolo", "torino", "udinese",
             "venezia", "verona", "hellas verona"
         }
 
