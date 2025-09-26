@@ -8996,29 +8996,5 @@
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
     "name_prev": null
-  },
-  {
-    "name": "Yunus Musah",
-    "role": "C",
-    "team": "Atalanta",
-    "birth_year": null,
-    "price": 6,
-    "fantamedia": 9.0,
-    "appearances": 0,
-    "source": "manual_transfer_fix_2025-09-26",
-    "source_date": "2025-09-26",
-    "name_prev": null
-  },
-  {
-    "name": "Nicola Zalewski",
-    "role": "D",
-    "team": "Atalanta",
-    "birth_year": null,
-    "price": 8,
-    "fantamedia": 15.0,
-    "appearances": 0,
-    "source": "manual_transfer_fix_2025-09-26",
-    "source_date": "2025-09-26",
-    "name_prev": null
   }
 ]
