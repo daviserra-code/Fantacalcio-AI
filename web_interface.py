@@ -961,7 +961,7 @@ def api_search():
         results.sort(key=lambda x: -(x.get('fantamedia') or 0))
 
         # Limit results
-        results = results[:20]
+        results = results[:50]
 
         LOG.info(f"[Search API] Query '{query}' returned {len(results)} results")
         LOG.info(f"[Search API] Sample results: {results[:3] if results else 'No results'}")
@@ -1006,7 +1006,7 @@ def api_players():
         team_filter = request.args.get('team', '').strip().lower()
         u21_only = request.args.get('u21', 'false').lower() == 'true'
         in_forma = request.args.get('in_forma', 'false').lower() == 'true'
-        limit = int(request.args.get('limit', '20'))
+        limit = int(request.args.get('limit', '50'))
 
         # Advanced filters
         min_price = request.args.get('min_price', type=float)

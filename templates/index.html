@@ -760,7 +760,7 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
       }
-      
+
       .spinner-border {
         display: inline-block;
         width: 2rem;
@@ -771,7 +771,7 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
-      
+
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -834,14 +834,14 @@
                 cursor: default;
                 user-select: text;
             }
-            
+
             .statistics-results .role-stats h5 {
                 color: #22d3ee;
                 margin: 0 0 12px 0;
                 font-size: 16px;
                 font-weight: 600;
             }
-            
+
             /* Mobile responsive adjustments */
             @media (max-width: 768px) {
                 .statistics-results {
@@ -852,7 +852,7 @@
                     overflow-x: auto !important;
                     -webkit-overflow-scrolling: touch !important;
                 }
-                
+
                 .statistics-results .role-stats {
                     margin: 10px 10px;
                     padding: 12px;
@@ -860,7 +860,7 @@
                     word-wrap: break-word;
                     overflow-wrap: break-word;
                 }
-                
+
                 .statistics-results .player-tag {
                     padding: 4px 8px;
                     margin: 2px;
@@ -868,15 +868,15 @@
                     display: inline-block;
                     word-break: break-word;
                 }
-                
+
                 .search-container {
                     padding: 0 16px;
                 }
-                
+
                 .tab-content {
                     padding: 16px;
                 }
-                
+
                 #searchResults {
                     margin: 0 !important;
                     padding: 0 !important;
@@ -908,7 +908,7 @@
                 border-radius: 8px;
                 border: 1px solid var(--tab-border, #2d3748);
             }
-            
+
             .advanced-filters h4 {
                 color: #22d3ee;
                 margin: 0 0 16px 0;
@@ -1350,7 +1350,7 @@
               <span style="background:#ffd700;color:#333;padding:1px 4px;border-radius:6px;font-size:10px;">PRO</span>
             {% endif %}
           </div>
-          
+
           <!-- Main Actions -->
           <div style="display: flex; align-items: center; gap: 4px;">
             <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
@@ -1376,7 +1376,7 @@
             </a>
           </div>
         {% endif %}
-        
+
         <!-- Tools Section -->
         <div style="display: flex; align-items: center; gap: 2px;">
           <button onclick="openPlayerComparison()" class="header-btn" style="padding: 6px 8px; font-size: 14px;" title="Confronta Giocatori">⚖️</button>
@@ -1385,7 +1385,7 @@
             <i class="fas fa-moon" style="font-size: 14px;"></i>
           </button>
         </div>
-        
+
         <!-- Language Section -->
         <div style="display: flex; align-items: center; gap: 2px;">
           <button onclick="switchLang('it')" class="header-btn {{ 'active' if lang == 'it' else '' }}" style="padding: 4px 6px; font-size: 11px; min-width: 28px;">IT</button>
@@ -1984,14 +1984,14 @@
         if (currentTab === 'mantra') textareaId = 'messageInputMantra';
         else if (currentTab === 'draft') textareaId = 'messageInputDraft';
         else if (currentTab === 'superscudetto') textareaId = 'messageInputSuper';
-        
+
         const textarea = document.getElementById(textareaId);
         if (textarea) {
             textarea.focus();
             textarea.placeholder = "Chiedi consigli AI personalizzati qui...";
             textarea.value = "Dammi consigli AI avanzati per la mia lega: ";
         }
-        
+
         // Show info modal
         const modal = document.createElement('div');
         modal.className = 'modal show';
@@ -2009,10 +2009,10 @@
             </div>
         `;
         document.body.appendChild(modal);
-        
+
         setTimeout(() => modal.remove(), 4000);
     }
-    
+
     function showRealTimeInfo() {
         const modal = document.createElement('div');
         modal.className = 'modal show';
@@ -2032,7 +2032,7 @@
             </div>
         `;
         document.body.appendChild(modal);
-        
+
         setTimeout(() => modal.remove(), 5000);
     }
 
@@ -2110,7 +2110,7 @@
       const role = roleFilter.value === 'all' ? '' : roleFilter.value;
 
       // Build API URL with filters
-      let url = '/api/players?limit=50';
+      let url = '/api/players?limit=50'; // Increased general player search limit to 50
       if (q) url += `&search=${encodeURIComponent(q)}`;
       if (role) url += `&role=${encodeURIComponent(role)}`;
       if (currentFilters.u21) url += '&u21=true';
@@ -2202,7 +2202,7 @@
         roleDiv.innerHTML = `
           <h5>${roleName} (${stats.count || 0} giocatori)</h5>
           <div class="role-summary">
-            <span>Media FM: ${stats.avg_fantamedia || 'N/D'}</span>
+            <span>Media FM: ${stats.fantamedia || 'N/D'}</span>
             <span>Prezzo medio: €${stats.avg_price || 'N/D'}</span>
           </div>
           <div class="role-top">
@@ -2225,19 +2225,19 @@
     async function loadAnalytics() {
       const loading = document.getElementById('analyticsLoading');
       const data = document.getElementById('analyticsData');
-      
+
       loading.style.display = 'block';
       data.style.display = 'none';
-      
+
       try {
         // Load statistics data
         const statsResponse = await fetch('/api/statistics');
         const statsData = await statsResponse.json();
-        
+
         // Build analytics HTML with theme-aware styling (same as desktop)
         let analyticsHtml = `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-                
+
                 <!-- Data Quality Overview -->
                 <div class="analytics-card" style="background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
                     <h3 style="color: #22d3ee; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px; font-size: 16px;">
@@ -2254,7 +2254,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Role Distribution -->
                 <div class="analytics-card" style="background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
                     <h3 style="color: #22d3ee; margin: 0 0 12px 0; display: flex; align-items: center; gap: 6px; font-size: 16px;">
@@ -2262,7 +2262,7 @@
                     </h3>
                     <div style="display: grid; gap: 8px;">
         `;
-        
+
         // Add role statistics
         const roleNames = { 'P': 'Portieri', 'D': 'Difensori', 'C': 'Centrocampisti', 'A': 'Attaccanti' };
         Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
@@ -2276,18 +2276,18 @@
                 </div>
             `;
         });
-        
+
         analyticsHtml += `
                     </div>
                 </div>
             </div>
-            
+
             <!-- Top Players Section -->
             <div style="margin-top: 16px; background: var(--dark-card-bg, #0f172a); border: 1px solid var(--tab-border, #1f2937); border-radius: 12px; padding: 16px;">
                 <h3 style="color: #22d3ee; margin: 0 0 12px 0; font-size: 16px;">🏆 Top Players by Role</h3>
                 <div style="display: grid; gap: 12px;">
         `;
-        
+
         // Add top players for each role
         Object.entries(statsData.role_statistics || {}).forEach(([role, stats]) => {
             if (stats.top_players && stats.top_players.length > 0) {
@@ -2296,7 +2296,7 @@
                         <h4 style="color: #d1d5db; margin: 0 0 6px 0; font-size: 14px; font-weight: 600;">${roleNames[role] || role}</h4>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                 `;
-                
+
                 stats.top_players.slice(0, 3).forEach(player => {
                     analyticsHtml += `
                         <span style="background: #1f2937; color: #e5e7eb; padding: 4px 8px; border-radius: 6px; font-size: 12px;">
@@ -2304,24 +2304,24 @@
                         </span>
                     `;
                 });
-                
+
                 analyticsHtml += `
                         </div>
                     </div>
                 `;
             }
         });
-        
+
         analyticsHtml += `
                 </div>
             </div>
         `;
-        
+
         // Display the analytics
         data.innerHTML = analyticsHtml;
         data.style.display = 'block';
         loading.style.display = 'none';
-        
+
       } catch (error) {
         console.error('Analytics loading error:', error);
         data.innerHTML = `
