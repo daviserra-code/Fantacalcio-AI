@@ -503,6 +503,16 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15a7.5 7.5 0 0 1 0 15z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             <input id="searchInput" type="text" placeholder="Cerca giocatori, squadra, ruolo…">
           </div>
+          <select id="sortBy" class="btn" style="padding: 8px 12px; border-radius: 8px; margin-right: 8px;">
+            <option value="fantamedia">Fantamedia</option>
+            <option value="price">Prezzo</option>
+            <option value="age">Età</option>
+            <option value="name">Nome</option>
+          </select>
+          <select id="sortOrder" class="btn" style="padding: 8px 12px; border-radius: 8px; margin-right: 8px;">
+            <option value="desc">↓ Alto</option>
+            <option value="asc">↑ Basso</option>
+          </select>
           <button class="btn toggle" id="u21Toggle">U21</button>
           <button class="btn toggle active" id="formToggle">In forma</button>
           <button class="btn" id="advancedFiltersToggle">🔧 Filtri</button>
@@ -1243,19 +1253,37 @@
             });
         }
 
-        // Add event listeners for sort dropdowns
+        // Add event listeners for sort dropdowns (both in toolbar and advanced filters)
         const sortBy = document.getElementById('sortBy');
         const sortOrder = document.getElementById('sortOrder');
+        const advancedSortBy = document.getElementById('advancedSortBy'); // In advanced filters
+        const advancedSortOrder = document.getElementById('advancedSortOrder'); // In advanced filters
         
         if (sortBy) {
             sortBy.addEventListener('change', function() {
+                // Sync with advanced filters if they exist
+                if (advancedSortBy) advancedSortBy.value = this.value;
                 filterAndDisplayPlayers();
             });
         }
         
         if (sortOrder) {
             sortOrder.addEventListener('change', function() {
+                // Sync with advanced filters if they exist
+                if (advancedSortOrder) advancedSortOrder.value = this.value;
                 filterAndDisplayPlayers();
+            });
+        }
+
+        // Advanced filters toggle
+        const advancedFiltersToggle = document.getElementById('advancedFiltersToggle');
+        const advancedFiltersPanel = document.getElementById('advancedFiltersPanel');
+        
+        if (advancedFiltersToggle && advancedFiltersPanel) {
+            advancedFiltersToggle.addEventListener('click', function() {
+                const isVisible = advancedFiltersPanel.style.display !== 'none';
+                advancedFiltersPanel.style.display = isVisible ? 'none' : 'block';
+                this.textContent = isVisible ? '🔧 Filtri' : '🔧 Nascondi';
             });
         }
     }
