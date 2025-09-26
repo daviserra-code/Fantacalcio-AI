@@ -122,8 +122,17 @@ T = {
     }
 }
 
-# Route moved to site_blueprint.py for device detection
-# @app.route("/", methods=["GET"])
+@app.route("/", methods=["GET"])
+def index_route():
+    """Main route handler"""
+    try:
+        # Try the site blueprint first
+        from site_blueprint import handle_index
+        return handle_index()
+    except ImportError:
+        # Fallback to legacy handler
+        return index_legacy()
+
 def index_legacy():
     try:
         lang = request.args.get("lang", "it")

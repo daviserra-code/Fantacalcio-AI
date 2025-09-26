@@ -54,12 +54,32 @@ def make_session_permanent():
 def home():
     """Home route - redirect to appropriate interface"""
     try:
-        # Attempt to redirect to the blueprint's home route
-        return redirect(url_for('site_bp.home'))
-    except:
-        # Fallback if site_bp or its home route is not available
-        # This could happen if blueprints are not loaded or named differently
-        # Render a generic index.html as a last resort
+        # Check if user is authenticated and redirect accordingly
+        if current_user.is_authenticated:
+            return redirect('/dashboard')
+        else:
+            # Show the main Fantasy Football AI interface
+            lang = request.args.get("lang", "it")
+            T = {
+                "it": {
+                    "title": "Fantasy Football Assistant",
+                    "subtitle": "Consigli per asta, formazioni e strategie",
+                    "participants": "Partecipanti",
+                    "budget": "Budget",
+                    "reset_chat": "Reset Chat",
+                    "welcome": "Ciao! Sono qui per aiutarti con il fantacalcio.",
+                    "send": "Invia",
+                    "search_placeholder": "Cerca giocatori/club/metriche",
+                    "all_roles": "Tutti",
+                    "goalkeeper": "Portiere",
+                    "defender": "Difensore",
+                    "midfielder": "Centrocampista",
+                    "forward": "Attaccante",
+                }
+            }
+            return render_template('index.html', lang=lang, t=T.get(lang, T["it"]), user=None)
+    except Exception as e:
+        # Fallback to basic response
         return render_template('index.html')
 
 @app.route('/index')
