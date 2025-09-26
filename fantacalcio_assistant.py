@@ -528,8 +528,13 @@ class FantacalcioAssistant:
                 if player_season not in valid_seasons:
                     continue
 
-            if by is not None and (REF_YEAR - by) > 36:  # taglio hard vecchissimi
-                continue
+            # Age filtering - more lenient for goalkeepers who play longer
+            if by is not None:
+                age = REF_YEAR - by
+                # Goalkeepers can play until 40, field players until 36
+                max_age = 40 if p.get("role") == "P" else 36
+                if age > max_age:
+                    continue
                 
             out.append(p)
 
