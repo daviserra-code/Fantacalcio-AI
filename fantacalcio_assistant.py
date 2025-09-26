@@ -477,6 +477,21 @@ class FantacalcioAssistant:
             name = p.get("name", "").strip()
             team = p.get("team", "").strip()
             
+            # Create canonical key for dynamic data lookup
+            canonical_key = f"{name.lower().strip()}@@{team.lower().strip()}"
+            
+            # EXCLUDE players who transferred out of Serie A using dynamic database
+            try:
+                import sqlite3
+                with sqlite3.connect("fantacalcio.db") as conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT status FROM player_status WHERE canonical_key = ?", (canonical_key,))
+                    result = cursor.fetchone()
+                    if result and result[0] == 'transferred_out':
+                        continue  # Skip players who transferred out
+            except Exception as e:
+                pass  # Continue with normal filtering if database unavailable
+            
             # Check if player has verified age in overrides with multiple key formats
             possible_keys = [
                 f"{name}@@{team}",
