@@ -21,6 +21,7 @@ from static_transfers import get_team_arrivals, is_static_mode_enabled, get_tran
 # Import authentication components
 from app import app, db
 from models import User, UserLeague
+from replit_auth import require_login, require_pro
 
 logging.basicConfig(
     level=LOG_LEVEL,
