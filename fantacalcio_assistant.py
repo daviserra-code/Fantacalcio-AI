@@ -52,8 +52,8 @@ TEAM_ALIASES = {
     "bologna fc":"bologna","fiorentina ac":"fiorentina","ssc napoli":"napoli","s.s.c. napoli":"napoli",
 }
 SERIE_A_WHITELIST = {
-    "atalanta","bologna","cagliari","como","empoli","fiorentina","genoa","inter",
-    "juventus","lazio","lecce","milan","monza","napoli","parma","roma","torino",
+    "atalanta","bologna","cagliari","como","cremonese","empoli","fiorentina","genoa","inter",
+    "juventus","lazio","lecce","milan","monza","napoli","parma","pisa","roma","sassuolo",
     "udinese","venezia","verona",
 }
 ROLE_SYNONYMS = {
