@@ -804,7 +804,7 @@
     "name": "Moreno Alb.",
     "role": "D",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 3,
     "fantamedia": 7.0,
     "appearances": 0,
@@ -2437,7 +2437,7 @@
     "name": "Alessio Furlanetto",
     "role": "P",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 1,
     "fantamedia": 1.0,
     "appearances": 0,
@@ -2746,7 +2746,7 @@
     "name": "Jasper Lauri Petteri Samooja",
     "role": "P",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 1,
     "fantamedia": 1.0,
     "appearances": 0,
@@ -5346,8 +5346,7 @@
     "fantamedia": 5.5,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Player 2",
@@ -5358,8 +5357,7 @@
     "fantamedia": 5.2,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Player 3",
@@ -5370,8 +5368,7 @@
     "fantamedia": 5.2,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Player 4",
@@ -5382,8 +5379,7 @@
     "fantamedia": 5.8,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Player 5",
@@ -5394,8 +5390,7 @@
     "fantamedia": 5.5,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Player 6",
@@ -5406,8 +5401,7 @@
     "fantamedia": 6.2,
     "appearances": 0,
     "source": "data_quality_fix",
-    "source_date": "2025-09-26",
-    "birth_year": 1995
+    "source_date": "2025-09-26"
   },
   {
     "name": "Additional Player 1",
@@ -5416,7 +5410,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5428,7 +5422,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5440,7 +5434,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5452,7 +5446,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5464,7 +5458,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5476,7 +5470,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5488,7 +5482,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5500,7 +5494,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5512,7 +5506,7 @@
     "season": "2025-26",
     "price": 3,
     "fantamedia": 5.0,
-    "birth_year": 1995,
+    "birth_year": null,
     "appearances": 0,
     "source": "coverage_enhancement",
     "source_date": "2025-09-26"
@@ -5521,3797 +5515,3505 @@
     "name": "Kamaldeen Sulemana",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "El Bilal Touré",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mitchel Bakker",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ben Godfrey",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Juan Musso",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Giovanni Bonfanti",
     "role": "C",
     "team": "Atalanta",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jonathan Rowe",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Torbjørn Heggem",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ibrahim Sulemana",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Thomas Gillier",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Massimo Pessina",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Kacper Urbanski",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antonio Raimondo",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mihajlo Ilić",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Niklas Pyyhtiä",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tommaso Corazza",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Joaquín Sosa",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Kevin Bonifazi",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gianmarco Cangiano",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Orji Okwonkwo",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Riccardo Stivanello",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gennaro Anatriello",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Manuel Rosetti",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia Motolese",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Francesco Raffaelli",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Davide Franzini",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Andrea Mazia",
     "role": "C",
     "team": "Bologna",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Juan Rodríguez",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Zé Pedro",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Semih Kılıçsoy",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Andrea Belotti",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Sebastiano Esposito",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicola Pintus",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Velizar-Iliya Iliev",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Pantelis Hatzidiakos",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mateusz Wieteska",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nik Prelec",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Riyad Idrissi",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Davide Veroli",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Alessandro Di Pardo",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marko Rog",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicolò Cavuoti",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luigi Palomba",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Etienne Catena",
     "role": "C",
     "team": "Cagliari",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ferdi Er",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Daniele Attorre",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Viktor Ribeiro",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nico Crisigiovanni",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Argjend Shalaj",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luca Keck",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Michael Geywitz",
     "role": "C",
     "team": "Como",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Albert Gudmundsson",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tariq Lamptey",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Hans Nicolussi Caviglia",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eman Kospo",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Riccardo Braschi",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eddy Kouadio",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nico González",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Michael Kayode",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Sofyan Amrabat",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Niccolò Fortini",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jonathan Ikoné",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "M'Bala Nzola",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Riccardo Sottil",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christian Kouamé",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lorenzo Amatucci",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Josip Brekalo",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antonín Barák",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gino Infantino",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Oliver Christensen",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lorenzo Lucchesi",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Filippo Distefano",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Costantino Favasuli",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Edoardo Pierozzi",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eljon Toci",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Davide Gentile",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Niccolò Nardi",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eduard Duțu",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Dimo Krastev",
     "role": "C",
     "team": "Fiorentina",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jean Onana",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Valentín Carboni",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Leo Østigård",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Maxwel Cornet",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ernestas Lysionok",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Emil Bohinen",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Seydou Fini",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Güven Yalçın",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia Aramu",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "David Ankeye",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christos Papadopoulos",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Alessandro Debenedetti",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gabriele Calvani",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Manolo Portanova",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lennart Czyborra",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Federico Accornero",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Andrea Favilli",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Elia Petrelli",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Simone Calvani",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tommaso Pittino",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gabriele Pessolani",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Federico Valietti",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lorenzo Gagliardi",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Daniel Fossati",
     "role": "C",
     "team": "Genoa",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Andy Diouf",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Petar Sučić",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Aleksandar Stanković",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Manuel Akanji",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Pio Esposito",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tajon Buchanan",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Filip Stanković",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Martín Satriano",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tomás Palacios",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Zinho Vanheusden",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eddie Salcedo",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Franco Carboni",
     "role": "C",
     "team": "Inter",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lloyd Kelly",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Edon Zhegrova",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "João Mário",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Loïs Openda",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jonathan David",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tiago Djaló",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Arthur Melo",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luca Pellegrini",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Facundo González",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia De Sciglio",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Stefano Gori",
     "role": "C",
     "team": "Juventus",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nuno Tavares",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Diego González",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gaetano Castrovilli",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Romano Floriani Mussolini",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Fabio Andrea Ruggeri",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Saná Fernandes",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mohamed Fares",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jean-Daniel Akpa Akpro",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Dimitrije Kamenovic",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gabriele Artistico",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Valerio Crespi",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marco Bertini",
     "role": "C",
     "team": "Lazio",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Márk Kosznovszky",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Josh Knight",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Franco Umeh-Chibueze",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "John Swift",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Josef Bursik",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luke Le Roux",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Adrian Segecic",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Makenzie Kirk",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Conor Chaplin",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Min-hyeok Yang",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Florian Bianchini",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Harry Clout",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tom McIntyre",
     "role": "C",
     "team": "Lecce",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christopher Nkunku",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ardon Jashari",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Samuele Ricci",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Koni De Winter",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Zachary Athekame",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Adrien Rabiot",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "David Odogu",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Álvaro Morata",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Pietro Terracciano",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christian Comotto",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ismaël Bennacer",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Yacine Adli",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Davide Calabria",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marco Pellegrino",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Devis Vásquez",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marko Lazetić",
     "role": "C",
     "team": "Milan",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Miguel Gutiérrez",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Vanja Milinković-Savić",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Rasmus Højlund",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Eljif Elmas",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Kevin De Bruyne",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Emanuele Rao",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Victor Osimhen",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jesper Lindstrøm",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jens Cajuste",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Natan",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Walid Cheddira",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Giuseppe Ambrosino",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antonio Vergara",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nosa Edward Obaretin",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lorenzo Sgarbi",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antonio Cioffi",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gennaro Iaccarino",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Coli Saco",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Giuseppe D'Agostino",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Francesco Mezzoni",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luigi D'Avino",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gianluca Vigliotti",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Alessandro Spavone",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Francesco Gioielli",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Matteo Marchisano",
     "role": "C",
     "team": "Napoli",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Matija Frigan",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christian Ordóñez",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Oliver Sørensen",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mariano Troilo",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Abdoulaye Ndiaye",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Sascha Britschgi",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gaetano Oristanio",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Benja Cremaschi",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicolas Trabucchi",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gianluca Astaldi",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Elia Plicco",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Rachid Kouda",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antoine Joujou",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tjas Begic",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Anthony Partipilo",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Dario Sits",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Filippo Rinaldi",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Peter Amoran",
     "role": "C",
     "team": "Parma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Wesley",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Neil El Aynaoui",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jan Ziolkowski",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Leon Bailey",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Evan Ferguson",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Radoslaw Zelezny",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Konstantinos Tsimikas",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia Mannini",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Enzo Le Fée",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tammy Abraham",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Samuel Dahl",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Edoardo Bove",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Riccardo Pagano",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ola Solbakken",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luigi Cherubini",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ebrima Darboe",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Matteo Plaia",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Pietro Boer",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Davide Mastrantonio",
     "role": "C",
     "team": "Roma",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marcus Pedersen",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Niels Nkounkou",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Saba Sazonov",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Demba Seck",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Aaron Ciammaglichella",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jonathan Silva",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Brian Bayeye",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Ange N'Guessan",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Cristian Padula",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Tommaso Di Marco",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Kevin Haveri",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Côme Bianay Balcot",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Francesco Dell'Aquila",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jacopo Antolini",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Pietro Passador",
     "role": "C",
     "team": "Torino",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Lennon Miller",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Adam Buksa",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Luca Kjerrumgaard",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Saba Goglichidze",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicolò Zaniolo",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicolò Bertola",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Leonardo Buta",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Abdoulaye Camara",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Idrissa Gueye",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nehuén Pérez",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Vakoun Bayo",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Brenner",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Vivaldo Semedo",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gonçalo Esteves",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Marco Ballarini",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Sekou Diawara",
     "role": "C",
     "team": "Udinese",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Amin Sarr",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Moatasem Al-Musrati",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Antoine Bernede",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Rafik Belghali",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Grigoris Kastanos",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Domagoj Bradarić",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Victor Nelsson",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Gift Orban",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Armel Bella-Kotchap",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Giovane",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Fallou Cham",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Unai Núñez",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Stefan Mitrović",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Elayis Tavsan",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Thomas Henry",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Kevin Lasagna",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Koray Günter",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mateusz Praszelik",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Christian Corradi",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Jayden Braaf",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Charlys",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Yayah Kallon",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicolò Calabrese",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Elia Boseggia",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Juan Manuel Cruz",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Denis Cazzadori",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Edoardo Bernardi",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia Rigo",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Mattia Florio",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Giacomo Toniolo",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Nicola Patanè",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Aiman Rihai",
     "role": "C",
     "team": "Verona",
-    "birth_year": 1995,
+    "birth_year": null,
     "price": 8,
     "fantamedia": 15.0,
     "appearances": 0,
     "source": "apify_transfers_2025-09-23",
     "source_date": "2025-09-23",
-    "name_prev": null,
-    "season": "2025-26"
+    "name_prev": null
   },
   {
     "name": "Yunus Musah",
