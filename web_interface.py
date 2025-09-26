@@ -1125,10 +1125,19 @@ def api_players():
                 return assistant._age_from_by(player.get('birth_year')) or 99 # Return large number for unknown age if sorting by age
             elif sort_by == 'name':
                 return player.get('name', '').lower()
+            elif sort_by == 'role':
+                # Fixed order: P, D, C, A
+                role = player.get('role', '').upper()
+                role_order = {'P': 1, 'D': 2, 'C': 3, 'A': 4}
+                return role_order.get(role, 5)  # Unknown roles go last
             else: # Default to fantamedia
                 return player.get('_fm') or player.get('fantamedia', 0)
 
-        reverse_sort = sort_order == 'desc'
+        # Role sorting should always be ascending (P,D,C,A), ignore sort_order for role
+        if sort_by == 'role':
+            reverse_sort = False
+        else:
+            reverse_sort = sort_order == 'desc'
         filtered_players.sort(key=get_sort_key, reverse=reverse_sort)
 
         # Limit results
