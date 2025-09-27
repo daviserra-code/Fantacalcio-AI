@@ -29,8 +29,8 @@ if not is_production() and 'SESSION_SECRET' not in os.environ:
     logger.warning("Using development SESSION_SECRET. Set SESSION_SECRET environment variable for production.")
 
 try:
-    # Import the Flask app
-    from app import app
+    # Import the Flask app with SocketIO
+    from app import app, socketio
     
     # Fix HTTPS detection for production - critical for Replit Auth
     try:
@@ -83,12 +83,11 @@ if is_production():
     if 'SESSION_SECRET' not in os.environ:
         raise ValueError("SESSION_SECRET environment variable must be set for production deployment")
 
-# WSGI application object
-application = app
+# WSGI application object - use SocketIO for real-time support
+application = socketio
 
 def main():
-    """Main entry point for production server"""
-    from waitress import serve
+    """Main entry point for production server with SocketIO support"""
     
     # Get port configuration - ensure it's properly set
     port = int(os.getenv("PORT", 5000))
@@ -99,25 +98,21 @@ def main():
         logger.error(f"Invalid port configuration: {port}")
         port = 5000
     
-    logger.info(f"Starting Waitress server on {host}:{port}")
+    logger.info(f"Starting SocketIO server on {host}:{port}")
     logger.info(f"Production mode: {is_production()}")
     logger.info(f"Environment PORT: {os.getenv('PORT', 'not set')}")
     logger.info("Health check available at /health")
     logger.info("Readiness check available at /ready")
+    logger.info("Real-time WebSocket support enabled")
     
-    # Serve with Waitress - production WSGI server
-    # Optimized for fast startup and reliable deployment
-    serve(
-        application,
+    # Use SocketIO run method for WebSocket support
+    socketio.run(
+        app,
         host=host,
         port=port,
-        threads=2,  # Reduced for faster startup
-        cleanup_interval=60,  # Increased for better resource management
-        connection_limit=50,  # Reduced for faster startup
-        channel_timeout=60,  # Reduced timeout for faster response
-        max_request_body_size=5242880,  # 5MB max request size
-        asyncore_use_poll=True,  # Better for production
-        ident="FantasyFootballAI/1.0",  # Server identification
+        debug=False,
+        use_reloader=False,
+        allow_unsafe_werkzeug=True  # Required for production
     )
 
 if __name__ == "__main__":

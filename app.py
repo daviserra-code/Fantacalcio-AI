@@ -2,6 +2,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_socketio import SocketIO
 from sqlalchemy.orm import DeclarativeBase
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -30,6 +31,17 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
 
 # No need to call db.init_app(app) here, it's already done in the constructor.
 db = SQLAlchemy(app, model_class=Base)
+
+# Initialize SocketIO for real-time functionality
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+
+# Initialize LiveMatchTracker for real-time statistics
+from live_match_tracker import LiveMatchTracker
+live_tracker = LiveMatchTracker(socketio)
+
+# Register WebSocket handlers
+from websocket_handlers import register_websocket_handlers
+register_websocket_handlers(socketio)
 
 # Initialize Flask-Login
 login_manager = LoginManager()

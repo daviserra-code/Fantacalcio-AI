@@ -26,6 +26,10 @@ flask-sqlalchemy = "^3.1.1"
 stripe = "^12.5.1"
 sqlalchemy = "^2.0.43"
 psycopg2-binary = "^2.9.10"
+flask-socketio = "^5.5.1"
+pandas = "^2.3.2"
+schedule = "^1.2.2"
+scikit-learn = "^1.7.2"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"
