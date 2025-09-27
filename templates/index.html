@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ t.title }}</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <!-- SocketIO Client for Real-Time Updates -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
   <style>
     :root{
       --tabbar-bg:#0b1220;        /* barra tab sempre scura */
@@ -752,6 +754,26 @@
           color: #d1d5db;
       }
 
+      /* Real-time status styles */
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .live-dot.connected {
+        background: #22c55e !important;
+      }
+      .live-dot.connecting {
+        background: #f59e0b !important;
+      }
+      .live-dot.disconnected {
+        background: #ef4444 !important;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0.5; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
       /* Analytics styles */
       .analytics-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -1659,6 +1681,16 @@
         <div id="searchResults" class="search-results" style="margin-bottom: 20px;">
           <div class="no-results"><p>Utilizza la ricerca per trovare statistiche di giocatori, squadre e campionati</p></div>
         </div>
+        
+        <!-- Real-Time Status Indicator -->
+        <div id="realTimeStatus" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: var(--dark-card-bg, #0f172a); border-radius: 8px; border-left: 4px solid #22d3ee;">
+          <div id="liveIndicator" class="live-dot" style="width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></div>
+          <span style="color: #d1d5db; font-size: 14px;">
+            <strong>🔴 LIVE:</strong> <span id="statusText">Connessione in corso...</span>
+          </span>
+          <span id="lastUpdate" style="color: #9ca3af; font-size: 12px; margin-left: auto;"></span>
+        </div>
+        
         <div id="statisticsResults" class="statistics-results" style="width: 100%; overflow-x: auto;"></div>
       </div>
     </div>
@@ -1727,6 +1759,8 @@
 
   <script>
     let currentTab='classic';
+    let socket = null;
+    let isConnected = false;
 
     function openModal(id){
       document.getElementById(id).classList.add('show');
@@ -2140,6 +2174,73 @@
       }
     }
 
+
+    // Real-time WebSocket functions
+    function initializeWebSocket() {
+      if (!socket) {
+        socket = io();
+        setupSocketHandlers();
+      }
+    }
+
+    function setupSocketHandlers() {
+      socket.on('connect', function() {
+        isConnected = true;
+        updateStatus('connected', '🟢 LIVE: Statistiche in tempo reale attive');
+        socket.emit('join_statistics');
+      });
+
+      socket.on('disconnect', function() {
+        isConnected = false;
+        updateStatus('disconnected', '🔴 LIVE: Connessione interrotta');
+      });
+
+      socket.on('status', function(data) {
+        console.log('WebSocket status:', data.msg);
+      });
+
+      socket.on('joined', function(data) {
+        console.log('Joined room:', data.room);
+      });
+
+      socket.on('live_stats_update', function(data) {
+        console.log('Live stats update received:', data);
+        if (data.data && data.data.success) {
+          displayStatistics(data.data);
+          updateStatus('connected', '🟢 LIVE: Aggiornato ora', new Date().toLocaleTimeString());
+          
+          // Visual feedback for live update
+          const container = document.getElementById('statisticsResults');
+          if (container) {
+            container.style.animation = 'fadeIn 0.5s ease-in';
+            setTimeout(() => {
+              container.style.animation = '';
+            }, 500);
+          }
+        }
+      });
+
+      socket.on('error', function(data) {
+        console.error('WebSocket error:', data.msg);
+        updateStatus('disconnected', '🔴 LIVE: Errore di connessione');
+      });
+    }
+
+    function updateStatus(state, message, timestamp) {
+      const indicator = document.getElementById('liveIndicator');
+      const statusText = document.getElementById('statusText');
+      const lastUpdate = document.getElementById('lastUpdate');
+
+      if (indicator) {
+        indicator.className = `live-dot ${state}`;
+      }
+      if (statusText) {
+        statusText.textContent = message;
+      }
+      if (lastUpdate && timestamp) {
+        lastUpdate.textContent = `Ultimo aggiornamento: ${timestamp}`;
+      }
+    }
 
     function displayStatistics(data) {
       console.log('displayStatistics called with:', data);
@@ -2817,6 +2918,9 @@
 
     // Call initialize when leagues tab is shown or on initial load if it's the active tab
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize WebSocket connection for real-time updates
+      initializeWebSocket();
+      
       // Check if the leagues tab is the initially active one
       const leaguesTabButton = document.querySelector('.tab[onclick="switchTab(\'league-rules\', this)"]');
       if (leaguesTabButton && leaguesTabButton.classList.contains('active')) {
