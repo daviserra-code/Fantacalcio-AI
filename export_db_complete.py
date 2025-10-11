@@ -1,15 +1,16 @@
 
 #!/usr/bin/env python3
 """
-Complete PostgreSQL database export including schema and data
+Complete PostgreSQL database export including schema and data using Python
 """
 import os
-import subprocess
 import sys
 from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 def export_complete_database():
-    """Export PostgreSQL database with full schema and data using pg_dump"""
+    """Export PostgreSQL database with full schema and data using psycopg2"""
     database_url = os.environ.get("DATABASE_URL")
     
     if not database_url:
@@ -23,38 +24,147 @@ def export_complete_database():
     print(f"Output file: {sql_file}")
     print("-" * 50)
     
-    # Use pg_dump to export complete database
-    # This includes: schema (CREATE TABLE, ALTER TABLE, etc.) and all data (INSERT statements)
     try:
-        result = subprocess.run(
-            ['pg_dump', database_url],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        if result.returncode != 0:
-            print(f"❌ pg_dump failed with error:")
-            print(result.stderr)
-            return False
-        
-        # Write the complete SQL dump to file
         with open(sql_file, 'w', encoding='utf-8') as f:
-            f.write(result.stdout)
+            # Export schema and data
+            f.write("-- PostgreSQL Database Export\n")
+            f.write(f"-- Generated: {datetime.now().isoformat()}\n")
+            f.write("-- Database: Neon PostgreSQL 16.9\n\n")
+            
+            # Get all tables
+            cur.execute("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_type = 'BASE TABLE'
+                ORDER BY table_name
+            """)
+            tables = [row['table_name'] for row in cur.fetchall()]
+            
+            print(f"Found {len(tables)} tables: {', '.join(tables)}\n")
+            
+            table_count = 0
+            insert_count = 0
+            
+            for table in tables:
+                # Get table schema
+                cur.execute(f"""
+                    SELECT 
+                        column_name,
+                        data_type,
+                        character_maximum_length,
+                        is_nullable,
+                        column_default
+                    FROM information_schema.columns
+                    WHERE table_name = %s
+                    ORDER BY ordinal_position
+                """, (table,))
+                columns = cur.fetchall()
+                
+                # Write CREATE TABLE statement
+                f.write(f"\n-- Table: {table}\n")
+                f.write(f"DROP TABLE IF EXISTS {table} CASCADE;\n")
+                f.write(f"CREATE TABLE {table} (\n")
+                
+                col_defs = []
+                for col in columns:
+                    col_def = f"  {col['column_name']} {col['data_type']}"
+                    if col['character_maximum_length']:
+                        col_def += f"({col['character_maximum_length']})"
+                    if col['is_nullable'] == 'NO':
+                        col_def += " NOT NULL"
+                    if col['column_default']:
+                        col_def += f" DEFAULT {col['column_default']}"
+                    col_defs.append(col_def)
+                
+                f.write(",\n".join(col_defs))
+                f.write("\n);\n\n")
+                
+                # Get primary key
+                cur.execute(f"""
+                    SELECT a.attname
+                    FROM pg_index i
+                    JOIN pg_attribute a ON a.attrelid = i.indrelid
+                        AND a.attnum = ANY(i.indkey)
+                    WHERE i.indrelid = %s::regclass
+                        AND i.indisprimary
+                """, (table,))
+                pk_cols = [row['attname'] for row in cur.fetchall()]
+                
+                if pk_cols:
+                    f.write(f"ALTER TABLE {table} ADD PRIMARY KEY ({', '.join(pk_cols)});\n\n")
+                
+                # Export data
+                cur.execute(f"SELECT * FROM {table}")
+                rows = cur.fetchall()
+                
+                if rows:
+                    f.write(f"-- Data for {table}\n")
+                    for row in rows:
+                        row_dict = dict(row)
+                        cols = ', '.join(row_dict.keys())
+                        
+                        # Format values properly
+                        values = []
+                        for val in row_dict.values():
+                            if val is None:
+                                values.append('NULL')
+                            elif isinstance(val, str):
+                                # Escape single quotes
+                                escaped = val.replace("'", "''")
+                                values.append(f"'{escaped}'")
+                            elif hasattr(val, 'isoformat'):
+                                values.append(f"'{val.isoformat()}'")
+                            else:
+                                values.append(str(val))
+                        
+                        vals = ', '.join(values)
+                        f.write(f"INSERT INTO {table} ({cols}) VALUES ({vals});\n")
+                        insert_count += 1
+                    
+                    f.write("\n")
+                    print(f"✅ Exported {len(rows)} records from '{table}'")
+                else:
+                    print(f"   Empty table: '{table}'")
+                
+                table_count += 1
+            
+            # Get foreign keys
+            cur.execute("""
+                SELECT
+                    tc.table_name,
+                    kcu.column_name,
+                    ccu.table_name AS foreign_table_name,
+                    ccu.column_name AS foreign_column_name,
+                    tc.constraint_name
+                FROM information_schema.table_constraints AS tc
+                JOIN information_schema.key_column_usage AS kcu
+                    ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage AS ccu
+                    ON ccu.constraint_name = tc.constraint_name
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+            """)
+            fks = cur.fetchall()
+            
+            if fks:
+                f.write("\n-- Foreign Keys\n")
+                for fk in fks:
+                    f.write(f"ALTER TABLE {fk['table_name']} ADD CONSTRAINT {fk['constraint_name']} ")
+                    f.write(f"FOREIGN KEY ({fk['column_name']}) ")
+                    f.write(f"REFERENCES {fk['foreign_table_name']}({fk['foreign_column_name']});\n")
         
-        # Count what was exported
-        sql_content = result.stdout
-        create_table_count = sql_content.count('CREATE TABLE')
-        insert_count = sql_content.count('INSERT INTO')
-        constraint_count = sql_content.count('ALTER TABLE')
+        file_size = os.path.getsize(sql_file)
         
-        print(f"✅ Complete database export successful!")
+        print(f"\n✅ Complete database export successful!")
         print(f"\nExported contents:")
-        print(f"  - {create_table_count} tables with full schema")
+        print(f"  - {table_count} tables with full schema")
         print(f"  - {insert_count} data INSERT statements")
-        print(f"  - {constraint_count} constraints/alterations")
+        print(f"  - {len(fks)} foreign key constraints")
         print(f"\nFile: {sql_file}")
-        print(f"Size: {os.path.getsize(sql_file):,} bytes")
+        print(f"Size: {file_size:,} bytes")
         
         print("\n" + "=" * 50)
         print("RESTORE INSTRUCTIONS:")
@@ -65,15 +175,11 @@ def export_complete_database():
         print(f"  psql $DATABASE_URL < {sql_file}")
         print("=" * 50)
         
+        cur.close()
+        conn.close()
+        
         return True
         
-    except subprocess.TimeoutExpired:
-        print("❌ Export timed out after 60 seconds")
-        return False
-    except FileNotFoundError:
-        print("❌ pg_dump command not found. PostgreSQL client tools may not be installed.")
-        print("The Nix package should install automatically. Try reloading the Repl.")
-        return False
     except Exception as e:
         print(f"❌ Export failed: {e}")
         import traceback
