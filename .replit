@@ -5,7 +5,7 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-23_05"
-packages = ["gdb", "jq", "mailutils", "sqlite", "postgresql"]
+packages = ["gdb", "jq", "mailutils", "sqlite", "postgresql_16"]
 
 [unitTest]
 language = "python3"
