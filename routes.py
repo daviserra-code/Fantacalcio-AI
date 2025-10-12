@@ -87,7 +87,134 @@ def index():
     """Alternative index route"""
     return render_template('index.html')
 
+@app.route('/debug-auth')
+def debug_auth():
+    """Debug route to check authentication status"""
+    info = {
+        'is_authenticated': current_user.is_authenticated,
+        'is_anonymous': current_user.is_anonymous,
+    }
+    
+    if current_user.is_authenticated:
+        info['user_id'] = current_user.id
+        info['username'] = current_user.username
+        info['email'] = current_user.email
+        info['is_admin'] = getattr(current_user, 'is_admin', 'ATTRIBUTE NOT FOUND')
+        info['has_is_admin_attr'] = hasattr(current_user, 'is_admin')
+        info['is_admin_value'] = current_user.is_admin if hasattr(current_user, 'is_admin') else None
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Auth Debug</title>
+        <style>
+            body {{ font-family: monospace; padding: 20px; background: #f5f5f5; }}
+            .info {{ background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }}
+            pre {{ background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }}
+            h1 {{ color: #333; }}
+            h2 {{ color: #666; }}
+            a {{ color: #0066cc; text-decoration: none; padding: 8px 12px; background: #e7f3ff; border-radius: 4px; display: inline-block; margin: 5px; }}
+            a:hover {{ background: #cce5ff; }}
+            .status {{ font-size: 24px; margin: 10px 0; }}
+            .success {{ color: green; }}
+            .error {{ color: red; }}
+        </style>
+    </head>
+    <body>
+        <div class="info">
+            <h1>🔍 Authentication Debug Info</h1>
+            <div class="status">
+                Status: <span class="{'success' if current_user.is_authenticated else 'error'}">
+                    {'✅ LOGGED IN' if current_user.is_authenticated else '❌ NOT LOGGED IN'}
+                </span>
+            </div>
+            <pre>{json.dumps(info, indent=2)}</pre>
+        </div>
+        
+        <div class="info">
+            <h2>🔧 Actions:</h2>
+            <a href="/auth/login">🔑 Login</a>
+            <a href="/auth/logout">🚪 Logout</a>
+            <a href="/admin">🛡️ Try Admin Page</a>
+            <a href="/dashboard">📊 Dashboard</a>
+            <a href="/">🏠 Home</a>
+        </div>
+        
+        <div class="info">
+            <h2>📝 Instructions:</h2>
+            <ol>
+                <li>If you're NOT logged in, click "Login" first</li>
+                <li>After logging in, refresh this page to see your user info</li>
+                <li>If is_admin is TRUE, click "Try Admin Page"</li>
+                <li>If is_admin is FALSE or NULL, run set_admin.py script</li>
+            </ol>
+        </div>
+    </body>
+    </html>
+    """
+    return html
 
+@app.route('/debug-routes')
+def debug_routes():
+    """List all registered routes"""
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append({
+            'endpoint': rule.endpoint,
+            'methods': ','.join(rule.methods),
+            'path': str(rule)
+        })
+    
+    # Sort by path
+    routes.sort(key=lambda x: x['path'])
+    
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Routes Debug</title>
+        <style>
+            body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+            table { background: white; width: 100%; border-collapse: collapse; }
+            th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+            th { background: #333; color: white; }
+            tr:hover { background: #f0f0f0; }
+            .admin { background: #ffe6e6; }
+        </style>
+    </head>
+    <body>
+        <h1>📋 Registered Routes</h1>
+        <table>
+            <tr>
+                <th>Path</th>
+                <th>Endpoint</th>
+                <th>Methods</th>
+            </tr>
+    """
+    
+    for route in routes:
+        row_class = 'admin' if 'admin' in route['path'].lower() else ''
+        html += f"""
+            <tr class="{row_class}">
+                <td><a href="{route['path']}">{route['path']}</a></td>
+                <td>{route['endpoint']}</td>
+                <td>{route['methods']}</td>
+            </tr>
+        """
+    
+    html += """
+        </table>
+        <p style="margin-top: 20px;"><a href="/debug-auth">← Back to Auth Debug</a></p>
+    </body>
+    </html>
+    """
+    return html
+
+@app.route('/simple-admin-test')
+def simple_admin_test():
+    """Simple test page with direct links"""
+    return render_template('admin_test.html')
 def _render_mobile_app_interface():
     """Render mobile app interface with authentication context"""
     from flask import request

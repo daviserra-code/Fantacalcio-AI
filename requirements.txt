@@ -6,5 +6,11 @@ requests
 chromadb==0.5.5
 rank-bm25==0.2.2
 sentence-transformers==2.7.0
-torch==2.3.0
+torch==2.7.0
 huggingface_hub>=0.24.0
+flask_sqlalchemy
+flask_login
+flask_socketio
+flask_dance
+PyJWT
+stripe

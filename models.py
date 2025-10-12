@@ -24,6 +24,9 @@ class User(UserMixin, db.Model):
     pro_expires_at = db.Column(db.DateTime, nullable=True)
     stripe_customer_id = db.Column(db.String(100), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
+    
+    # Admin flag
+    is_admin = db.Column(db.Boolean, default=False)
 
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)

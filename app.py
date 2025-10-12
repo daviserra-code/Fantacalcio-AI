@@ -22,7 +22,7 @@ app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # needed for url_for to generate with https
 
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL") or "sqlite:///fantacalcio.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
@@ -89,6 +89,17 @@ except Exception as e:
     logger.info("Fallback auth blueprint registered")
 
 # Add readiness check endpoint for deployment monitoring
+
+# Import routes to register all @app.route endpoints
+import routes
+
+# Register admin dashboard blueprint
+try:
+    from admin import admin_bp
+    app.register_blueprint(admin_bp)
+    logger.info("Admin blueprint registered")
+except Exception as e:
+    logger.error(f"Failed to register admin blueprint: {e}")
 @app.route('/ready')
 def readiness_check():
     """Readiness check endpoint for deployment monitoring"""

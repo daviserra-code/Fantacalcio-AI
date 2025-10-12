@@ -1378,6 +1378,11 @@
             <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
               <i class="fas fa-cog"></i> Leghe
             </a>
+            {% if user.is_admin %}
+              <a href="/admin" class="header-btn" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24);color:#fff;border-color:#ff6b6b;font-weight:600;padding:6px 10px;font-size:12px;">
+                <i class="fas fa-shield-alt"></i> Admin
+              </a>
+            {% endif %}
             {% if not user.is_pro %}
               <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;padding:6px 10px;font-size:12px;">
                 <i class="fas fa-crown"></i> PRO

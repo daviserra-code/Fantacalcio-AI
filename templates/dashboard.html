@@ -37,6 +37,11 @@
                 <a class="nav-link" href="/">
                     <i class="fas fa-home me-2"></i>Home
                 </a>
+                {% if user.is_admin %}
+                <a class="nav-link" href="/admin">
+                    <i class="fas fa-shield-alt me-2"></i>Admin
+                </a>
+                {% endif %}
                 <div class="dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                         {% if user.profile_image_url %}
@@ -51,6 +56,9 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Profilo</a></li>
+                        {% if user.is_admin %}
+                            <li><a class="dropdown-item text-danger" href="/admin"><i class="fas fa-shield-alt me-2"></i>Admin Dashboard</a></li>
+                        {% endif %}
                         {% if not is_pro %}
                             <li><a class="dropdown-item text-warning" href="/upgrade"><i class="fas fa-crown me-2"></i>Upgrade a Pro</a></li>
                         {% endif %}
