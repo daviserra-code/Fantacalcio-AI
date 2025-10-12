@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Player Search - FantaCalcio AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .quick-filter-btn {
+            margin: 5px;
+        }
+        .role-badge-P { background-color: #0d6efd; }
+        .role-badge-D { background-color: #198754; }
+        .role-badge-C { background-color: #0dcaf0; color: #000; }
+        .role-badge-A { background-color: #dc3545; }
+        .efficiency-high { color: #198754; font-weight: bold; }
+        .efficiency-medium { color: #fd7e14; }
+        .efficiency-low { color: #dc3545; }
+        .player-row:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-futbol me-2"></i>FantaCalcio AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/players/search">
+                            <i class="fas fa-search me-1"></i>Player Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">
+                            <i class="fas fa-user me-1"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-search me-2"></i>Advanced Player Search</h2>
+                <p class="text-muted">Find the perfect players for your fantasy team using advanced filters</p>
+            </div>
+        </div>
+        
+        <!-- Quick Filters -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Filters
+                </h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-sm btn-outline-success quick-filter-btn" onclick="applyQuickFilter('best_value_defenders')">
+                    <i class="fas fa-shield-alt"></i> Best Value Defenders
+                </button>
+                <button class="btn btn-sm btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('under21_forwards')">
+                    <i class="fas fa-running"></i> Under 21 Forwards
+                </button>
+                <button class="btn btn-sm btn-outline-info quick-filter-btn" onclick="applyQuickFilter('budget_midfielders')">
+                    <i class="fas fa-coins"></i> Budget Midfielders (&lt;€15)
+                </button>
+                <button class="btn btn-sm btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('premium_players')">
+                    <i class="fas fa-star"></i> Premium Players
+                </button>
+                <button class="btn btn-sm btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('top_goalkeepers')">
+                    <i class="fas fa-hand-paper"></i> Top Goalkeepers
+                </button>
+                <button class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('bargain_hunters')">
+                    <i class="fas fa-tag"></i> Bargain Hunters (&lt;€10)
+                </button>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Advanced Filters
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Search by name -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Search by Name/Team:</label>
+                        <input type="text" id="searchText" class="form-control" placeholder="Enter player or team name...">
+                    </div>
+                    
+                    <!-- Role selection -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Role:</label>
+                        <div>
+                            <input type="checkbox" class="btn-check" id="role_all" checked>
+                            <label class="btn btn-sm btn-outline-secondary" for="role_all">All</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_P" value="P">
+                            <label class="btn btn-sm btn-outline-primary" for="role_P">P (Portieri)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_D" value="D">
+                            <label class="btn btn-sm btn-outline-success" for="role_D">D (Difensori)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_C" value="C">
+                            <label class="btn btn-sm btn-outline-info" for="role_C">C (Centrocampisti)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_A" value="A">
+                            <label class="btn btn-sm btn-outline-danger" for="role_A">A (Attaccanti)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Team selection -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Teams (Hold Ctrl to select multiple):</label>
+                        <select id="teamSelect" class="form-select" multiple size="6">
+                            <option value="Atalanta">Atalanta</option>
+                            <option value="Bologna">Bologna</option>
+                            <option value="Cagliari">Cagliari</option>
+                            <option value="Como">Como</option>
+                            <option value="Empoli">Empoli</option>
+                            <option value="Fiorentina">Fiorentina</option>
+                            <option value="Genoa">Genoa</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Juventus">Juventus</option>
+                            <option value="Lazio">Lazio</option>
+                            <option value="Lecce">Lecce</option>
+                            <option value="Milan">Milan</option>
+                            <option value="Monza">Monza</option>
+                            <option value="Napoli">Napoli</option>
+                            <option value="Parma">Parma</option>
+                            <option value="Roma">Roma</option>
+                            <option value="Torino">Torino</option>
+                            <option value="Udinese">Udinese</option>
+                            <option value="Venezia">Venezia</option>
+                            <option value="Verona">Verona</option>
+                        </select>
+                        <small class="text-muted">Leave empty to include all teams</small>
+                    </div>
+                    
+                    <!-- Ranges -->
+                    <div class="col-md-6">
+                        <!-- Price range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Price Range: <span id="priceRangeLabel" class="text-primary">€0 - €100</span></label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label small">Min: €<span id="priceMinLabel">0</span></label>
+                                    <input type="range" class="form-range" id="priceMin" min="0" max="100" value="0">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Max: €<span id="priceMaxLabel">100</span></label>
+                                    <input type="range" class="form-range" id="priceMax" min="0" max="100" value="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fantamedia range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Min Fantamedia: <span id="fantamediaLabel" class="text-success">0</span></label>
+                            <input type="range" class="form-range" id="fantamediaMin" min="0" max="35" value="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="under21Check">
+                            <label class="form-check-label" for="under21Check">
+                                <strong>Only Under 21 players</strong> <span class="badge bg-info">U21</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-check-inline ms-3">
+                            <label class="form-check-label" for="appearancesMin">
+                                <strong>Min Appearances:</strong>
+                            </label>
+                            <input type="number" class="form-control form-control-sm d-inline-block ms-2" id="appearancesMin" 
+                                   min="0" max="38" value="0" style="width: 70px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary" onclick="searchPlayers()">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                        <i class="fas fa-redo me-2"></i>Reset All Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div id="results" class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Results 
+                    <span id="resultCount" class="badge bg-primary">0</span>
+                    <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="playersList">
+                    <p class="text-muted text-center">Use the filters above to search for players</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update range labels
+        document.getElementById('priceMin').addEventListener('input', updatePriceLabels);
+        document.getElementById('priceMax').addEventListener('input', updatePriceLabels);
+        document.getElementById('fantamediaMin').addEventListener('input', updateFantamediaLabel);
+        
+        // Handle "All" role checkbox
+        document.getElementById('role_all').addEventListener('change', function() {
+            if (this.checked) {
+                document.querySelectorAll('.role-filter').forEach(cb => cb.checked = false);
+            }
+        });
+        
+        document.querySelectorAll('.role-filter').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('role_all').checked = false;
+                }
+            });
+        });
+        
+        function updatePriceLabels() {
+            const min = document.getElementById('priceMin').value;
+            const max = document.getElementById('priceMax').value;
+            document.getElementById('priceMinLabel').textContent = min;
+            document.getElementById('priceMaxLabel').textContent = max;
+            document.getElementById('priceRangeLabel').textContent = `€${min} - €${max}`;
+        }
+        
+        function updateFantamediaLabel() {
+            const val = document.getElementById('fantamediaMin').value;
+            document.getElementById('fantamediaLabel').textContent = val;
+        }
+        
+        function searchPlayers() {
+            // Show loading spinner
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            
+            // Gather selected roles
+            const selectedRoles = Array.from(document.querySelectorAll('.role-filter:checked')).map(cb => cb.value);
+            
+            // Gather filters
+            const filters = {
+                search: document.getElementById('searchText').value,
+                roles: selectedRoles,
+                teams: Array.from(document.getElementById('teamSelect').selectedOptions).map(opt => opt.value),
+                price_min: parseInt(document.getElementById('priceMin').value),
+                price_max: parseInt(document.getElementById('priceMax').value),
+                fantamedia_min: parseInt(document.getElementById('fantamediaMin').value),
+                under21: document.getElementById('under21Check').checked,
+                appearances_min: parseInt(document.getElementById('appearancesMin').value) || 0
+            };
+            
+            // Make API call
+            fetch('/api/players/search/advanced', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(filters)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                displayResults(data);
+            })
+            .catch(err => {
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                console.error('Search error:', err);
+                alert('Error performing search. Please try again.');
+            });
+        }
+        
+        function displayResults(data) {
+            const list = document.getElementById('playersList');
+            const countBadge = document.getElementById('resultCount');
+            
+            if (!data.success) {
+                list.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+                countBadge.textContent = '0';
+                return;
+            }
+            
+            countBadge.textContent = data.count;
+            
+            if (data.count === 0) {
+                list.innerHTML = '<p class="text-muted text-center"><i class="fas fa-search me-2"></i>No players found matching your criteria. Try adjusting the filters.</p>';
+                return;
+            }
+            
+            let html = `<p class="text-muted small">Showing ${data.showing} of ${data.count} results</p>`;
+            html += '<div class="table-responsive"><table class="table table-hover table-striped"><thead class="table-dark"><tr>';
+            html += '<th>Name</th><th>Role</th><th>Team</th><th>Price</th><th>Fantamedia</th><th>Efficiency</th><th>Appearances</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.players.forEach(player => {
+                const efficiencyClass = player.efficiency > 60 ? 'efficiency-high' : player.efficiency > 40 ? 'efficiency-medium' : 'efficiency-low';
+                const roleBadgeClass = `role-badge-${player.role}`;
+                
+                html += `<tr class="player-row">
+                    <td><strong>${player.name}</strong></td>
+                    <td><span class="badge ${roleBadgeClass}">${player.role}</span></td>
+                    <td>${player.team || 'N/A'}</td>
+                    <td>€${player.price || 0}</td>
+                    <td><strong>${player.fantamedia || 0}</strong></td>
+                    <td class="${efficiencyClass}">${player.efficiency}</td>
+                    <td>${player.appearances || 0}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            list.innerHTML = html;
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchText').value = '';
+            document.querySelectorAll('.role-filter').forEach(cb => cb.checked = false);
+            document.getElementById('role_all').checked = true;
+            document.getElementById('teamSelect').selectedIndex = -1;
+            document.getElementById('priceMin').value = 0;
+            document.getElementById('priceMax').value = 100;
+            document.getElementById('fantamediaMin').value = 0;
+            document.getElementById('under21Check').checked = false;
+            document.getElementById('appearancesMin').value = 0;
+            updatePriceLabels();
+            updateFantamediaLabel();
+            
+            // Clear results
+            document.getElementById('playersList').innerHTML = '<p class="text-muted text-center">Use the filters above to search for players</p>';
+            document.getElementById('resultCount').textContent = '0';
+        }
+        
+        function applyQuickFilter(filterName) {
+            // Show loading
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            
+            fetch(`/api/players/quick-filters/${filterName}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    displayResults(data);
+                })
+                .catch(err => {
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    console.error('Quick filter error:', err);
+                    alert('Error applying quick filter. Please try again.');
+                });
+        }
+        
+        // Initialize labels
+        updatePriceLabels();
+        updateFantamediaLabel();
+    </script>
+</body>
+</html>

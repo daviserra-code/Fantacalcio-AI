@@ -960,3 +960,254 @@ def import_league_rules(league_id):
                 os.unlink(temp_file.name)
             except:
                 pass
+
+
+# ============================================================================
+# PHASE 2A: ENHANCED PLAYER FILTERING & SEARCH
+# ============================================================================
+
+@app.route('/api/players/search/advanced', methods=['POST'])
+@login_required
+def search_players_advanced():
+    """Advanced player search with multiple criteria"""
+    from fantacalcio_assistant import FantacalcioAssistant
+    import json
+    
+    try:
+        filters = request.get_json() or {}
+        
+        # Extract filters with defaults
+        roles = filters.get('roles', [])  # ['D', 'C']
+        teams = filters.get('teams', [])  # ['Juventus', 'Inter']
+        price_min = filters.get('price_min', 0)
+        price_max = filters.get('price_max', 999)
+        fantamedia_min = filters.get('fantamedia_min', 0)
+        fantamedia_max = filters.get('fantamedia_max', 999)
+        under21 = filters.get('under21', False)
+        appearances_min = filters.get('appearances_min', 0)
+        search_text = filters.get('search', '').strip().lower()
+        
+        # Load roster from FantacalcioAssistant
+        assistant = FantacalcioAssistant()
+        assistant._ensure_data_loaded()
+        players = assistant.roster
+        
+        # Apply filters
+        filtered = []
+        current_year = 2025
+        
+        for player in players:
+            # Role filter
+            if roles and player.get('role') not in roles:
+                continue
+            
+            # Team filter
+            if teams and player.get('team') not in teams:
+                continue
+            
+            # Price filter
+            price = player.get('price', 0) or 0
+            if price < price_min or price > price_max:
+                continue
+            
+            # Fantamedia filter
+            fm = player.get('fantamedia', 0) or 0
+            if fm < fantamedia_min or fm > fantamedia_max:
+                continue
+            
+            # Under 21 filter
+            if under21:
+                birth_year = player.get('birth_year')
+                if not birth_year or (current_year - birth_year) > 21:
+                    continue
+            
+            # Appearances filter
+            appearances = player.get('appearances', 0) or 0
+            if appearances < appearances_min:
+                continue
+            
+            # Text search (fuzzy name matching)
+            if search_text:
+                name = (player.get('name') or '').lower()
+                team = (player.get('team') or '').lower()
+                if search_text not in name and search_text not in team:
+                    continue
+            
+            # Calculate efficiency metric
+            efficiency = round(fm / price * 100, 2) if price > 0 else 0
+            
+            # Add to filtered results with calculated fields
+            player_result = {
+                'name': player.get('name'),
+                'role': player.get('role'),
+                'team': player.get('team'),
+                'price': price,
+                'fantamedia': fm,
+                'appearances': appearances,
+                'birth_year': player.get('birth_year'),
+                'efficiency': efficiency,
+                'season': player.get('season', '2025-26')
+            }
+            
+            filtered.append(player_result)
+        
+        # Sort by fantamedia descending (best players first)
+        filtered.sort(key=lambda x: x.get('fantamedia', 0), reverse=True)
+        
+        # Limit results to prevent huge responses
+        max_results = filters.get('limit', 100)
+        limited_results = filtered[:max_results]
+        
+        return jsonify({
+            'success': True,
+            'count': len(filtered),
+            'total_available': len(players),
+            'showing': len(limited_results),
+            'players': limited_results,
+            'filters_applied': {
+                'roles': roles,
+                'teams': teams,
+                'price_range': [price_min, price_max],
+                'fantamedia_min': fantamedia_min,
+                'under21': under21,
+                'search_text': search_text
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"Error in advanced search: {e}")
+        print(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'count': 0,
+            'players': []
+        }), 500
+
+
+@app.route('/api/players/quick-filters/<filter_name>')
+@login_required
+def quick_filter(filter_name):
+    """Predefined quick filters for common searches"""
+    
+    # Define quick filter presets
+    QUICK_FILTERS = {
+        'best_value_defenders': {
+            'roles': ['D'],
+            'price_max': 30,
+            'fantamedia_min': 20,
+            'limit': 20
+        },
+        'under21_forwards': {
+            'roles': ['A'],
+            'under21': True,
+            'appearances_min': 5,
+            'limit': 20
+        },
+        'budget_midfielders': {
+            'roles': ['C'],
+            'price_max': 15,
+            'fantamedia_min': 15,
+            'limit': 20
+        },
+        'premium_players': {
+            'price_min': 40,
+            'fantamedia_min': 25,
+            'limit': 20
+        },
+        'top_goalkeepers': {
+            'roles': ['P'],
+            'fantamedia_min': 20,
+            'limit': 10
+        },
+        'bargain_hunters': {
+            'price_max': 10,
+            'fantamedia_min': 10,
+            'limit': 30
+        }
+    }
+    
+    filter_config = QUICK_FILTERS.get(filter_name)
+    if not filter_config:
+        return jsonify({
+            'success': False,
+            'error': f'Filter "{filter_name}" not found',
+            'available_filters': list(QUICK_FILTERS.keys())
+        }), 404
+    
+    # Apply filter directly
+    try:
+        from fantacalcio_assistant import FantacalcioAssistant
+        assistant = FantacalcioAssistant()
+        # Ensure data is loaded
+        assistant._ensure_data_loaded()
+        all_players = assistant.roster
+        
+        # Apply filters
+        filtered = all_players
+        
+        # Role filter
+        if 'roles' in filter_config:
+            filtered = [p for p in filtered if p.get('role') in filter_config['roles']]
+        
+        # Price filters
+        if 'price_min' in filter_config:
+            filtered = [p for p in filtered if (p.get('price') or 0) >= filter_config['price_min']]
+        if 'price_max' in filter_config:
+            filtered = [p for p in filtered if (p.get('price') or 0) <= filter_config['price_max']]
+        
+        # Fantamedia filter
+        if 'fantamedia_min' in filter_config:
+            filtered = [p for p in filtered if (p.get('fantamedia') or 0) >= filter_config['fantamedia_min']]
+        
+        # Under 21 filter
+        if filter_config.get('under21'):
+            filtered = [p for p in filtered if (p.get('age') or 99) < 21]
+        
+        # Appearances filter
+        if 'appearances_min' in filter_config:
+            filtered = [p for p in filtered if (p.get('appearances') or 0) >= filter_config['appearances_min']]
+        
+        # Calculate efficiency and sort
+        for p in filtered:
+            price = p.get('price') or 1
+            fm = p.get('fantamedia') or 0
+            p['efficiency'] = round(fm / price * 100, 2) if price > 0 else 0
+        
+        # Sort by efficiency descending
+        filtered.sort(key=lambda x: x.get('efficiency', 0), reverse=True)
+        
+        # Limit results
+        limit = filter_config.get('limit', 100)
+        result_players = filtered[:limit]
+        
+        return jsonify({
+            'success': True,
+            'count': len(filtered),
+            'total_available': len(all_players),
+            'showing': len(result_players),
+            'players': [{
+                'name': p.get('name'),
+                'role': p.get('role'),
+                'team': p.get('team'),
+                'price': p.get('price'),
+                'fantamedia': p.get('fantamedia'),
+                'efficiency': p.get('efficiency'),
+                'age': p.get('age'),
+                'appearances': p.get('appearances')
+            } for p in result_players],
+            'filter_name': filter_name
+        })
+    except Exception as e:
+        print(f"Error in quick filter {filter_name}: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/players/search')
+@login_required
+def players_search_page():
+    """Player search page with advanced filtering"""
+    return render_template('players_search.html', user=current_user)
