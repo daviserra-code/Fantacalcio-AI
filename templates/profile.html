@@ -1,120 +1,180 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - FantaCalcio AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-custom {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-futbol me-2"></i>FantaCalcio AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('profile') }}">
+                            <i class="fas fa-user me-1"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-{% block title %}Profile - FantaCalcio AI{% endblock %}
+    <div class="container mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 mx-auto">
-            <!-- Profile Header -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
-                                {{ (user.first_name or user.username)[0]|upper }}
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Profile Header -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle text-white d-flex align-items-center justify-content-center profile-avatar">
+                                    {{ (user.first_name or user.username)[0]|upper }}
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h2 class="mb-0">{{ user.first_name or user.username }} {{ user.last_name or '' }}</h2>
-                            <p class="text-muted mb-0">
-                                <i class="fas fa-user me-2"></i>@{{ user.username }}
-                            </p>
-                            {% if user.is_admin %}
-                            <span class="badge bg-danger mt-2">
-                                <i class="fas fa-shield-alt me-1"></i>Administrator
-                            </span>
-                            {% endif %}
-                            {% if user.is_pro %}
-                            <span class="badge bg-warning text-dark mt-2">
-                                <i class="fas fa-star me-1"></i>PRO
-                            </span>
-                            {% endif %}
+                            <div class="flex-grow-1 ms-3">
+                                <h2 class="mb-0">{{ user.first_name or user.username }} {{ user.last_name or '' }}</h2>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-user me-2"></i>@{{ user.username }}
+                                </p>
+                                {% if user.is_admin %}
+                                <span class="badge bg-danger mt-2">
+                                    <i class="fas fa-shield-alt me-1"></i>Administrator
+                                </span>
+                                {% endif %}
+                                {% if user.is_pro %}
+                                <span class="badge bg-warning text-dark mt-2">
+                                    <i class="fas fa-star me-1"></i>PRO
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Profile Information -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-id-card me-2"></i>Profile Information
-                    </h5>
+                <!-- Profile Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-id-card me-2"></i>Profile Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('update_profile') }}">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name or '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name or '' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email or '' }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled>
+                                <div class="form-text">Username cannot be changed</div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ url_for('update_profile') }}">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name or '' }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name or '' }}">
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email or '' }}">
-                        </div>
 
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled>
-                            <div class="form-text">Username cannot be changed</div>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Save Changes
-                            </button>
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Cancel
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Account Stats -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>Account Stats
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <div class="p-3">
-                                <h3 class="text-primary mb-0">{{ user.leagues|length if user.leagues else 0 }}</h3>
-                                <p class="text-muted mb-0">Leagues</p>
+                <!-- Account Stats -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Account Stats
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <h3 class="text-primary mb-0">0</h3>
+                                    <p class="text-muted mb-0">Leagues</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 border-start border-end">
-                            <div class="p-3">
-                                <h3 class="text-success mb-0">
-                                    {% if user.created_at %}
-                                        {{ ((now() - user.created_at).days) if (now() - user.created_at).days else 1 }}
-                                    {% else %}
-                                        0
-                                    {% endif %}
-                                </h3>
-                                <p class="text-muted mb-0">Days Active</p>
+                            <div class="col-md-4 border-start border-end">
+                                <div class="p-3">
+                                    <h3 class="text-success mb-0">
+                                        {% if user.created_at %}
+                                            {{ ((user.created_at - user.created_at).days) + 1 }}
+                                        {% else %}
+                                            1
+                                        {% endif %}
+                                    </h3>
+                                    <p class="text-muted mb-0">Days Active</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="p-3">
-                                <h3 class="text-info mb-0">
-                                    {% if user.is_pro %}
-                                        <i class="fas fa-check-circle"></i>
-                                    {% else %}
-                                        <i class="fas fa-times-circle"></i>
-                                    {% endif %}
-                                </h3>
-                                <p class="text-muted mb-0">PRO Status</p>
+                            <div class="col-md-4">
+                                <div class="p-3">
+                                    <h3 class="text-info mb-0">
+                                        {% if user.is_pro %}
+                                            <i class="fas fa-check-circle"></i>
+                                        {% else %}
+                                            <i class="fas fa-times-circle"></i>
+                                        {% endif %}
+                                    </h3>
+                                    <p class="text-muted mb-0">PRO Status</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -122,5 +182,7 @@
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
