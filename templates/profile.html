@@ -22,7 +22,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+            <a class="navbar-brand" href="/dashboard">
                 <i class="fas fa-futbol me-2"></i>FantaCalcio AI
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -31,17 +31,17 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                        <a class="nav-link" href="/dashboard">
                             <i class="fas fa-home me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('profile') }}">
+                        <a class="nav-link active" href="/profile">
                             <i class="fas fa-user me-1"></i>Profile
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">
+                        <a class="nav-link" href="/auth/logout">
                             <i class="fas fa-sign-out-alt me-1"></i>Logout
                         </a>
                     </li>
@@ -102,7 +102,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ url_for('update_profile') }}">
+                        <form method="POST" action="/profile/update">
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="first_name" class="form-label">First Name</label>
@@ -129,7 +129,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-2"></i>Save Changes
                                 </button>
-                                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <a href="/dashboard" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-2"></i>Cancel
                                 </a>
                             </div>
