@@ -1,17 +1,33 @@
 # app.py - Main Flask application with custom authentication
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from flask_migrate import Migrate
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from sqlalchemy.orm import DeclarativeBase
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+# Validate required environment variables
+required_env_vars = ["SESSION_SECRET", "DATABASE_URL"]
+missing_vars = [var for var in required_env_vars if not os.environ.get(var)]
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 class Base(DeclarativeBase):
     pass
@@ -22,15 +38,25 @@ app.secret_key = os.environ.get("SESSION_SECRET")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) # needed for url_for to generate with https
 
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL") or "sqlite:///fantacalcio.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     'pool_pre_ping': True,
     "pool_recycle": 300,
 }
 
-# No need to call db.init_app(app) here, it's already done in the constructor.
+# Initialize database and migrations
 db = SQLAlchemy(app, model_class=Base)
+migrate = Migrate(app, db)
+
+# Initialize rate limiter
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",
+    strategy="fixed-window"
+)
 
 # Initialize SocketIO for real-time functionality
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
@@ -110,6 +136,21 @@ def readiness_check():
         return {"status": "ready", "timestamp": str(datetime.now())}, 200
     except Exception as e:
         return {"status": "not ready", "error": str(e), "timestamp": str(datetime.now())}, 503
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('errors/404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    logger.error(f"Internal error: {error}")
+    return render_template('errors/500.html'), 500
+
+@app.errorhandler(429)
+def rate_limit_error(error):
+    return render_template('errors/429.html'), 429
 
 # Create tables
 # Need to put this in module-level to make it work with Gunicorn.

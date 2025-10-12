@@ -254,6 +254,37 @@ def dashboard():
                          leagues=user_leagues,
                          is_pro=current_user.is_pro if current_user.is_authenticated else False)
 
+@app.route('/profile')
+@login_required
+def profile():
+    """User profile page"""
+    return render_template('profile.html', user=current_user)
+
+@app.route('/profile/update', methods=['POST'])
+@login_required
+def update_profile():
+    """Update user profile information"""
+    try:
+        current_user.first_name = request.form.get('first_name', '').strip()
+        current_user.last_name = request.form.get('last_name', '').strip()
+        
+        # Update email only if changed and not already in use
+        new_email = request.form.get('email', '').strip()
+        if new_email and new_email != current_user.email:
+            existing_user = User.query.filter_by(email=new_email).first()
+            if existing_user:
+                flash('Email already in use by another account', 'error')
+                return redirect(url_for('profile'))
+            current_user.email = new_email
+        
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating profile: {str(e)}', 'error')
+    
+    return redirect(url_for('profile'))
+
 @app.route('/landing')
 def landing():
     """Landing page for new users"""
