@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confronto Giocatori - FantaCalcio AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #adb5bd;
+            --border-color: #dee2e6;
+            --navbar-bg: linear-gradient(45deg, #667eea, #764ba2);
+            --hover-bg: #f8f9fa;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #252930;
+            --bg-card: #2d3139;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --text-muted: #6c757d;
+            --border-color: #495057;
+            --navbar-bg: linear-gradient(45deg, #4a5568, #5b4a78);
+            --hover-bg: #353a45;
+        }
+        
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .navbar-custom {
+            background: var(--navbar-bg);
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card-header {
+            background-color: var(--bg-secondary) !important;
+            border-color: var(--border-color);
+            color: var(--text-primary) !important;
+        }
+        
+        .form-control, .form-select {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-secondary);
+            border-color: #667eea;
+            color: var(--text-primary);
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        .player-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        
+        .player-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .role-badge-P { background-color: #0d6efd; color: white; }
+        .role-badge-D { background-color: #198754; color: white; }
+        .role-badge-C { background-color: #0dcaf0; color: #000; }
+        .role-badge-A { background-color: #dc3545; color: white; }
+        
+        .stat-row {
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 0;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .best-value {
+            background-color: rgba(25, 135, 84, 0.1);
+            border-left: 3px solid #198754;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .theme-toggle i {
+            font-size: 24px;
+            color: white;
+        }
+        
+        .percentile-bar {
+            height: 8px;
+            background-color: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .percentile-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        
+        .percentile-low { background-color: #dc3545; }
+        .percentile-medium { background-color: #fd7e14; }
+        .percentile-high { background-color: #198754; }
+        
+        @media (max-width: 768px) {
+            .player-card {
+                margin-bottom: 20px;
+            }
+            
+            .theme-toggle {
+                bottom: 15px;
+                right: 15px;
+                width: 48px;
+                height: 48px;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-futbol me-2"></i>FantaCalcio AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/players/search">
+                            <i class="fas fa-search me-1"></i>Ricerca Giocatori
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/players/compare">
+                            <i class="fas fa-balance-scale me-1"></i>Confronta
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">
+                            <i class="fas fa-user me-1"></i>Profilo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Esci
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-balance-scale me-2"></i>Confronto Giocatori</h2>
+                <p class="text-muted">Confronta fino a 4 giocatori fianco a fianco</p>
+            </div>
+        </div>
+
+        <!-- Player Selection -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>Seleziona Giocatori
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input type="text" id="playerInput" class="form-control" 
+                               placeholder="Inserisci nome giocatore e premi Invio..." 
+                               autocomplete="off">
+                        <small class="text-muted">Aggiungi da 2 a 4 giocatori</small>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="compareSelectedPlayers()">
+                            <i class="fas fa-balance-scale me-2"></i>Confronta
+                        </button>
+                    </div>
+                </div>
+                <div id="selectedPlayers" class="mt-3">
+                    <!-- Selected players will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Results -->
+        <div id="comparisonResults" class="d-none">
+            <!-- Radar Chart -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-radar me-2"></i>Confronto Statistiche
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="radarChart" height="80"></canvas>
+                </div>
+            </div>
+
+            <!-- Player Cards -->
+            <div id="playerCards" class="row">
+                <!-- Player comparison cards will be inserted here -->
+            </div>
+
+            <!-- Averages -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>Medie di Confronto
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="averagesDisplay" class="row text-center">
+                        <!-- Averages will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5">
+            <i class="fas fa-balance-scale fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Nessun confronto attivo</h4>
+            <p class="text-muted">Inserisci i nomi dei giocatori sopra per iniziare il confronto</p>
+        </div>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambia tema">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedPlayers = [];
+        let radarChart = null;
+        
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('themeIcon');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            // Update chart if exists
+            if (radarChart) {
+                updateChartTheme(newTheme);
+            }
+        }
+        
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('themeIcon');
+            icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            // Load initial players from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const players = urlParams.getAll('players');
+            if (players.length > 0) {
+                selectedPlayers = players;
+                updateSelectedPlayersDisplay();
+                compareSelectedPlayers();
+            }
+        });
+        
+        // Player input handling
+        document.getElementById('playerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const playerName = this.value.trim();
+                if (playerName && selectedPlayers.length < 4) {
+                    if (!selectedPlayers.includes(playerName)) {
+                        selectedPlayers.push(playerName);
+                        updateSelectedPlayersDisplay();
+                        this.value = '';
+                    } else {
+                        alert('Giocatore già aggiunto!');
+                    }
+                } else if (selectedPlayers.length >= 4) {
+                    alert('Puoi confrontare massimo 4 giocatori!');
+                }
+            }
+        });
+        
+        function updateSelectedPlayersDisplay() {
+            const container = document.getElementById('selectedPlayers');
+            if (selectedPlayers.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '<div class="d-flex flex-wrap gap-2">';
+            selectedPlayers.forEach((player, index) => {
+                html += `
+                    <span class="badge bg-primary" style="font-size: 1rem; padding: 8px 12px;">
+                        ${player}
+                        <i class="fas fa-times ms-2" style="cursor: pointer;" onclick="removePlayer(${index})"></i>
+                    </span>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function removePlayer(index) {
+            selectedPlayers.splice(index, 1);
+            updateSelectedPlayersDisplay();
+        }
+        
+        function compareSelectedPlayers() {
+            if (selectedPlayers.length < 2) {
+                alert('Seleziona almeno 2 giocatori per confrontare!');
+                return;
+            }
+            
+            fetch('/api/players/compare', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({players: selectedPlayers})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    displayComparison(data);
+                } else {
+                    alert('Errore: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error('Errore confronto:', err);
+                alert('Errore durante il confronto. Riprova.');
+            });
+        }
+        
+        function displayComparison(data) {
+            document.getElementById('emptyState').classList.add('d-none');
+            document.getElementById('comparisonResults').classList.remove('d-none');
+            
+            // Display player cards
+            const cardsContainer = document.getElementById('playerCards');
+            let cardsHtml = '';
+            
+            // Find best values for highlighting
+            const maxFm = Math.max(...data.players.map(p => p.fantamedia));
+            const maxEff = Math.max(...data.players.map(p => p.efficiency));
+            const minPrice = Math.min(...data.players.map(p => p.price || 999));
+            
+            data.players.forEach(player => {
+                const isBestFm = player.fantamedia === maxFm;
+                const isBestEff = player.efficiency === maxEff;
+                const isBestPrice = player.price === minPrice;
+                
+                cardsHtml += `
+                    <div class="col-md-${12 / data.count} mb-4">
+                        <div class="card player-card ${isBestEff ? 'best-value' : ''}">
+                            <div class="card-header text-center">
+                                <h5>${player.name}</h5>
+                                <span class="badge role-badge-${player.role}">${player.role}</span>
+                                <span class="badge bg-secondary">${player.team}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-tag me-2"></i>Prezzo:</span>
+                                    <strong>€${player.price || 0} ${isBestPrice ? '🏆' : ''}</strong>
+                                </div>
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-star me-2"></i>Fantamedia:</span>
+                                    <strong>${player.fantamedia || 0} ${isBestFm ? '🏆' : ''}</strong>
+                                </div>
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-chart-line me-2"></i>Efficienza:</span>
+                                    <strong class="text-success">${player.efficiency} ${isBestEff ? '🏆' : ''}</strong>
+                                </div>
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-birthday-cake me-2"></i>Età:</span>
+                                    <strong>${player.age || 'N/A'}</strong>
+                                </div>
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-running me-2"></i>Presenze:</span>
+                                    <strong>${player.appearances || 0}</strong>
+                                </div>
+                                ${player.goals > 0 ? `
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-futbol me-2"></i>Goal:</span>
+                                    <strong>${player.goals}</strong>
+                                </div>` : ''}
+                                ${player.assists > 0 ? `
+                                <div class="stat-row d-flex justify-content-between">
+                                    <span><i class="fas fa-hands-helping me-2"></i>Assist:</span>
+                                    <strong>${player.assists}</strong>
+                                </div>` : ''}
+                                
+                                <hr>
+                                <h6 class="text-muted mb-2">Percentili:</h6>
+                                <div class="mb-2">
+                                    <small>Fantamedia</small>
+                                    <div class="percentile-bar">
+                                        <div class="percentile-fill ${getPercentileClass(player.percentiles.fantamedia)}" 
+                                             style="width: ${player.percentiles.fantamedia}%"></div>
+                                    </div>
+                                    <small class="text-muted">${player.percentiles.fantamedia}%</small>
+                                </div>
+                                <div class="mb-2">
+                                    <small>Presenze</small>
+                                    <div class="percentile-bar">
+                                        <div class="percentile-fill ${getPercentileClass(player.percentiles.appearances)}" 
+                                             style="width: ${player.percentiles.appearances}%"></div>
+                                    </div>
+                                    <small class="text-muted">${player.percentiles.appearances}%</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cardsContainer.innerHTML = cardsHtml;
+            
+            // Display averages
+            displayAverages(data.averages);
+            
+            // Create radar chart
+            createRadarChart(data.players);
+        }
+        
+        function getPercentileClass(percentile) {
+            if (percentile >= 75) return 'percentile-high';
+            if (percentile >= 50) return 'percentile-medium';
+            return 'percentile-low';
+        }
+        
+        function displayAverages(averages) {
+            const container = document.getElementById('averagesDisplay');
+            container.innerHTML = `
+                <div class="col-md-3">
+                    <h3 class="text-primary">€${averages.price}</h3>
+                    <p class="text-muted mb-0">Prezzo Medio</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-warning">${averages.fantamedia}</h3>
+                    <p class="text-muted mb-0">Fantamedia Media</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-success">${averages.efficiency}</h3>
+                    <p class="text-muted mb-0">Efficienza Media</p>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="text-info">${averages.appearances}</h3>
+                    <p class="text-muted mb-0">Presenze Medie</p>
+                </div>
+            `;
+        }
+        
+        function createRadarChart(players) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Destroy previous chart if exists
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const textColor = theme === 'dark' ? '#e9ecef' : '#212529';
+            const gridColor = theme === 'dark' ? '#495057' : '#dee2e6';
+            
+            const datasets = players.map((player, index) => {
+                const colors = [
+                    'rgba(102, 126, 234, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(253, 126, 20, 0.7)'
+                ];
+                
+                return {
+                    label: player.name,
+                    data: [
+                        player.fantamedia || 0,
+                        player.efficiency || 0,
+                        player.appearances || 0,
+                        player.goals || 0,
+                        player.assists || 0
+                    ],
+                    backgroundColor: colors[index].replace('0.7', '0.2'),
+                    borderColor: colors[index],
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[index]
+                };
+            });
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Fantamedia', 'Efficienza', 'Presenze', 'Goal', 'Assist'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: gridColor
+                            },
+                            pointLabels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateChartTheme(theme) {
+            if (!radarChart) return;
+            
+            const textColor = theme === 'dark' ? '#e9ecef' : '#212529';
+            const gridColor = theme === 'dark' ? '#495057' : '#dee2e6';
+            
+            radarChart.options.plugins.legend.labels.color = textColor;
+            radarChart.options.scales.r.ticks.color = textColor;
+            radarChart.options.scales.r.grid.color = gridColor;
+            radarChart.options.scales.r.pointLabels.color = textColor;
+            radarChart.update();
+        }
+    </script>
+</body>
+</html>

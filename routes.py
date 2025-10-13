@@ -1211,3 +1211,121 @@ def quick_filter(filter_name):
 def players_search_page():
     """Player search page with advanced filtering"""
     return render_template('players_search.html', user=current_user)
+
+
+@app.route('/api/players/compare', methods=['POST'])
+@login_required
+def compare_players():
+    """Compare multiple players side by side with detailed statistics"""
+    try:
+        from fantacalcio_assistant import FantacalcioAssistant
+        
+        data = request.get_json() or {}
+        player_names = data.get('players', [])
+        
+        if not player_names or len(player_names) < 2:
+            return jsonify({
+                'success': False,
+                'error': 'Seleziona almeno 2 giocatori da confrontare'
+            }), 400
+        
+        if len(player_names) > 4:
+            return jsonify({
+                'success': False,
+                'error': 'Puoi confrontare massimo 4 giocatori alla volta'
+            }), 400
+        
+        # Load data
+        assistant = FantacalcioAssistant()
+        assistant._ensure_data_loaded()
+        all_players = assistant.roster
+        
+        # Find players by name (case-insensitive)
+        comparison_data = []
+        not_found = []
+        
+        for name in player_names:
+            player = next((p for p in all_players if p.get('name', '').lower() == name.lower()), None)
+            if player:
+                # Calculate additional metrics
+                price = player.get('price') or 1
+                fm = player.get('fantamedia') or 0
+                efficiency = round(fm / price * 100, 2) if price > 0 else 0
+                
+                # Calculate percentile rankings
+                all_prices = [p.get('price') or 0 for p in all_players if p.get('price')]
+                all_fms = [p.get('fantamedia') or 0 for p in all_players if p.get('fantamedia')]
+                all_appearances = [p.get('appearances') or 0 for p in all_players if p.get('appearances')]
+                
+                price_percentile = calculate_percentile(player.get('price') or 0, all_prices)
+                fm_percentile = calculate_percentile(fm, all_fms)
+                appearances_percentile = calculate_percentile(player.get('appearances') or 0, all_appearances)
+                
+                comparison_data.append({
+                    'name': player.get('name'),
+                    'role': player.get('role'),
+                    'team': player.get('team'),
+                    'price': player.get('price'),
+                    'fantamedia': fm,
+                    'efficiency': efficiency,
+                    'age': player.get('age'),
+                    'appearances': player.get('appearances'),
+                    'goals': player.get('goals', 0),
+                    'assists': player.get('assists', 0),
+                    'yellow_cards': player.get('yellow_cards', 0),
+                    'red_cards': player.get('red_cards', 0),
+                    'percentiles': {
+                        'price': price_percentile,
+                        'fantamedia': fm_percentile,
+                        'appearances': appearances_percentile
+                    }
+                })
+            else:
+                not_found.append(name)
+        
+        if not comparison_data:
+            return jsonify({
+                'success': False,
+                'error': f'Nessun giocatore trovato: {", ".join(not_found)}'
+            }), 404
+        
+        # Calculate comparative metrics
+        response = {
+            'success': True,
+            'count': len(comparison_data),
+            'players': comparison_data,
+            'not_found': not_found,
+            'averages': {
+                'price': round(sum(p['price'] or 0 for p in comparison_data) / len(comparison_data), 1),
+                'fantamedia': round(sum(p['fantamedia'] for p in comparison_data) / len(comparison_data), 1),
+                'efficiency': round(sum(p['efficiency'] for p in comparison_data) / len(comparison_data), 1),
+                'age': round(sum(p['age'] or 0 for p in comparison_data) / len(comparison_data), 1) if all(p.get('age') for p in comparison_data) else None,
+                'appearances': round(sum(p['appearances'] or 0 for p in comparison_data) / len(comparison_data), 1)
+            }
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        print(f"Error in player comparison: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def calculate_percentile(value, all_values):
+    """Calculate percentile rank of a value in a list"""
+    if not all_values or value is None:
+        return 0
+    sorted_values = sorted(all_values)
+    rank = sum(1 for v in sorted_values if v <= value)
+    return round((rank / len(sorted_values)) * 100, 1)
+
+
+@app.route('/players/compare')
+@login_required
+def players_compare_page():
+    """Player comparison page"""
+    # Get player names from query params
+    players = request.args.getlist('players')
+    return render_template('players_compare.html', user=current_user, initial_players=players)

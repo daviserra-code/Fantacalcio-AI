@@ -173,6 +173,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="/players/compare">
+                            <i class="fas fa-balance-scale me-1"></i>Confronta
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/profile">
                             <i class="fas fa-user me-1"></i>Profilo
                         </a>
@@ -349,11 +354,16 @@
         <!-- Results -->
         <div id="results" class="card">
             <div class="card-header bg-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>Risultati 
-                    <span id="resultCount" class="badge bg-primary">0</span>
-                    <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
-                </h5>
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Risultati 
+                        <span id="resultCount" class="badge bg-primary">0</span>
+                        <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                    </h5>
+                    <button id="compareBtn" class="btn btn-success btn-sm" onclick="compareSelected()" disabled>
+                        <i class="fas fa-balance-scale me-2"></i>Confronta Selezionati (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div id="playersList">
@@ -479,9 +489,9 @@
                 return;
             }
             
-            let html = `<p class="text-muted small">Visualizzati ${data.showing} di ${data.count} risultati</p>`;
+            let html = `<p class="text-muted small">Visualizzati ${data.showing} di ${data.count} risultati <span class="text-info">(Seleziona fino a 4 giocatori per confrontarli)</span></p>`;
             html += '<div class="table-responsive"><table class="table table-hover table-striped"><thead class="table-dark"><tr>';
-            html += '<th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Prezzo</th><th>Fantamedia</th><th>Efficienza</th><th>Presenze</th>';
+            html += '<th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Prezzo</th><th>Fantamedia</th><th>Efficienza</th><th>Presenze</th>';
             html += '</tr></thead><tbody>';
             
             data.players.forEach(player => {
@@ -489,6 +499,7 @@
                 const roleBadgeClass = `role-badge-${player.role}`;
                 
                 html += `<tr class="player-row">
+                    <td><input type="checkbox" class="player-checkbox" value="${player.name}" onchange="updateCompareButton()"></td>
                     <td><strong>${player.name}</strong></td>
                     <td><span class="badge ${roleBadgeClass}">${player.role}</span></td>
                     <td>${player.team || 'N/A'}</td>
@@ -536,6 +547,63 @@
                     console.error('Errore filtro rapido:', err);
                     alert('Errore nell\'applicazione del filtro. Riprova.');
                 });
+        }
+        
+        // Player comparison functions
+        function updateCompareButton() {
+            const checkboxes = document.querySelectorAll('.player-checkbox:checked');
+            const count = checkboxes.length;
+            const btn = document.getElementById('compareBtn');
+            const countSpan = document.getElementById('selectedCount');
+            
+            countSpan.textContent = count;
+            btn.disabled = count < 2 || count > 4;
+            
+            // Disable unchecked if max reached
+            if (count >= 4) {
+                document.querySelectorAll('.player-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                });
+            } else {
+                document.querySelectorAll('.player-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        }
+        
+        function toggleSelectAll(checkbox) {
+            const playerCheckboxes = document.querySelectorAll('.player-checkbox');
+            const count = playerCheckboxes.length;
+            
+            if (checkbox.checked && count > 4) {
+                alert('Puoi confrontare massimo 4 giocatori!');
+                checkbox.checked = false;
+                return;
+            }
+            
+            playerCheckboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            updateCompareButton();
+        }
+        
+        function compareSelected() {
+            const checkboxes = document.querySelectorAll('.player-checkbox:checked');
+            const players = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (players.length < 2) {
+                alert('Seleziona almeno 2 giocatori!');
+                return;
+            }
+            
+            if (players.length > 4) {
+                alert('Puoi confrontare massimo 4 giocatori!');
+                return;
+            }
+            
+            // Build URL with query params
+            const params = players.map(p => `players=${encodeURIComponent(p)}`).join('&');
+            window.location.href = `/players/compare?${params}`;
         }
         
         // Initialize labels
