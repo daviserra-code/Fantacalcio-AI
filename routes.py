@@ -2,6 +2,7 @@
 from datetime import datetime
 import json
 import os
+import logging
 import stripe
 from flask import session, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user, login_user
@@ -10,6 +11,9 @@ from flask_login import login_required, current_user
 from models import User, UserLeague, Subscription
 from league_rules_manager import LeagueRulesManager
 from replit_auth import require_login, require_pro
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
@@ -1370,3 +1374,618 @@ def players_compare_page():
     # Get player names from query params
     players = request.args.getlist('players')
     return render_template('players_compare.html', user=current_user, initial_players=players)
+
+
+# ==================== PHASE 2C: LEAGUE MANAGEMENT API ====================
+
+@app.route('/api/leagues', methods=['GET'])
+@login_required
+def get_user_leagues():
+    """Get all leagues where user is owner or participant"""
+    try:
+        from models import League, LeagueParticipant
+        
+        # Leagues owned by user
+        owned_leagues = League.query.filter_by(owner_id=current_user.id, is_active=True).all()
+        
+        # Leagues where user is a participant
+        participations = LeagueParticipant.query.filter_by(user_id=current_user.id).all()
+        participant_league_ids = [p.league_id for p in participations]
+        participant_leagues = League.query.filter(
+            League.id.in_(participant_league_ids),
+            League.is_active == True
+        ).all() if participant_league_ids else []
+        
+        # Combine and deduplicate
+        all_leagues = {league.id: league for league in owned_leagues + participant_leagues}
+        
+        leagues_data = []
+        for league in all_leagues.values():
+            participant_count = LeagueParticipant.query.filter_by(league_id=league.id).count()
+            is_owner = league.owner_id == current_user.id
+            
+            leagues_data.append({
+                'id': league.id,
+                'name': league.name,
+                'code': league.code if is_owner else None,  # Only owner sees code
+                'budget': league.budget,
+                'max_players': league.max_players,
+                'scoring_type': league.scoring_type,
+                'participant_count': participant_count,
+                'is_owner': is_owner,
+                'created_at': league.created_at.isoformat()
+            })
+        
+        return jsonify({'leagues': leagues_data}), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting user leagues: {e}")
+        return jsonify({'error': 'Failed to retrieve leagues'}), 500
+
+
+@app.route('/api/leagues/create', methods=['POST'])
+@login_required
+def create_league():
+    """Create a new league"""
+    try:
+        from models import League, LeagueParticipant
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        if not data or not data.get('name'):
+            return jsonify({'error': 'League name is required'}), 400
+        
+        name = data['name'].strip()
+        if len(name) < 3 or len(name) > 100:
+            return jsonify({'error': 'League name must be between 3 and 100 characters'}), 400
+        
+        # Get optional settings
+        budget = data.get('budget', 500)
+        max_players = data.get('max_players', 25)
+        scoring_type = data.get('scoring_type', 'classic')
+        
+        # Validate settings
+        if not (100 <= budget <= 1000):
+            return jsonify({'error': 'Budget must be between 100 and 1000'}), 400
+        
+        if not (11 <= max_players <= 30):
+            return jsonify({'error': 'Max players must be between 11 and 30'}), 400
+        
+        if scoring_type not in ['classic', 'mantra']:
+            return jsonify({'error': 'Invalid scoring type'}), 400
+        
+        # Generate unique code
+        code = League.generate_unique_code()
+        
+        # Create league
+        league = League(
+            name=name,
+            owner_id=current_user.id,
+            code=code,
+            budget=budget,
+            max_players=max_players,
+            scoring_type=scoring_type
+        )
+        
+        db.session.add(league)
+        db.session.flush()  # Get league.id
+        
+        # Automatically add owner as first participant
+        team_name = data.get('team_name', f"{current_user.username}'s Team")
+        participant = LeagueParticipant(
+            league_id=league.id,
+            user_id=current_user.id,
+            team_name=team_name
+        )
+        
+        db.session.add(participant)
+        db.session.commit()
+        
+        logger.info(f"League created: {league.name} ({league.code}) by user {current_user.username}")
+        
+        return jsonify({
+            'message': 'League created successfully',
+            'league': {
+                'id': league.id,
+                'name': league.name,
+                'code': league.code,
+                'budget': league.budget,
+                'max_players': league.max_players,
+                'scoring_type': league.scoring_type,
+                'created_at': league.created_at.isoformat()
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating league: {e}")
+        return jsonify({'error': 'Failed to create league'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>', methods=['GET'])
+@login_required
+def get_league(league_id):
+    """Get league details"""
+    try:
+        from models import League, LeagueParticipant
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Check if user has access (owner or participant)
+        is_owner = league.owner_id == current_user.id
+        is_participant = LeagueParticipant.query.filter_by(
+            league_id=league_id,
+            user_id=current_user.id
+        ).first() is not None
+        
+        if not (is_owner or is_participant):
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Get participants
+        participants = LeagueParticipant.query.filter_by(league_id=league_id).all()
+        participants_data = []
+        for p in participants:
+            participants_data.append({
+                'id': p.id,
+                'user_id': p.user_id,
+                'username': p.user.username,
+                'team_name': p.team_name,
+                'budget_used': p.budget_used,
+                'joined_at': p.joined_at.isoformat()
+            })
+        
+        return jsonify({
+            'league': {
+                'id': league.id,
+                'name': league.name,
+                'code': league.code if is_owner else None,
+                'budget': league.budget,
+                'max_players': league.max_players,
+                'scoring_type': league.scoring_type,
+                'is_owner': is_owner,
+                'created_at': league.created_at.isoformat(),
+                'participants': participants_data
+            }
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting league {league_id}: {e}")
+        return jsonify({'error': 'Failed to retrieve league'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>', methods=['PUT'])
+@login_required
+def update_league(league_id):
+    """Update league settings (owner only)"""
+    try:
+        from models import League
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Only owner can update
+        if league.owner_id != current_user.id:
+            return jsonify({'error': 'Only league owner can update settings'}), 403
+        
+        data = request.get_json()
+        
+        # Update allowed fields
+        if 'name' in data:
+            name = data['name'].strip()
+            if len(name) < 3 or len(name) > 100:
+                return jsonify({'error': 'League name must be between 3 and 100 characters'}), 400
+            league.name = name
+        
+        if 'budget' in data:
+            if not (100 <= data['budget'] <= 1000):
+                return jsonify({'error': 'Budget must be between 100 and 1000'}), 400
+            league.budget = data['budget']
+        
+        if 'max_players' in data:
+            if not (11 <= data['max_players'] <= 30):
+                return jsonify({'error': 'Max players must be between 11 and 30'}), 400
+            league.max_players = data['max_players']
+        
+        if 'scoring_type' in data:
+            if data['scoring_type'] not in ['classic', 'mantra']:
+                return jsonify({'error': 'Invalid scoring type'}), 400
+            league.scoring_type = data['scoring_type']
+        
+        league.updated_at = datetime.now()
+        db.session.commit()
+        
+        logger.info(f"League updated: {league.name} by user {current_user.username}")
+        
+        return jsonify({
+            'message': 'League updated successfully',
+            'league': {
+                'id': league.id,
+                'name': league.name,
+                'budget': league.budget,
+                'max_players': league.max_players,
+                'scoring_type': league.scoring_type
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error updating league {league_id}: {e}")
+        return jsonify({'error': 'Failed to update league'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>', methods=['DELETE'])
+@login_required
+def delete_league(league_id):
+    """Delete league (owner only) - soft delete"""
+    try:
+        from models import League
+        
+        league = League.query.get(league_id)
+        if not league:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Only owner can delete
+        if league.owner_id != current_user.id:
+            return jsonify({'error': 'Only league owner can delete the league'}), 403
+        
+        # Soft delete
+        league.is_active = False
+        league.updated_at = datetime.now()
+        db.session.commit()
+        
+        logger.info(f"League deleted: {league.name} by user {current_user.username}")
+        
+        return jsonify({'message': 'League deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error deleting league {league_id}: {e}")
+        return jsonify({'error': 'Failed to delete league'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>/join', methods=['POST'])
+@login_required
+def join_league(league_id):
+    """Join a league with code validation"""
+    try:
+        from models import League, LeagueParticipant
+        
+        data = request.get_json()
+        
+        if not data or not data.get('code'):
+            return jsonify({'error': 'Join code is required'}), 400
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Validate code
+        if league.code != data['code'].strip().upper():
+            return jsonify({'error': 'Invalid join code'}), 400
+        
+        # Check if already a participant
+        existing = LeagueParticipant.query.filter_by(
+            league_id=league_id,
+            user_id=current_user.id
+        ).first()
+        
+        if existing:
+            return jsonify({'error': 'You are already in this league'}), 400
+        
+        # Get team name
+        team_name = data.get('team_name', f"{current_user.username}'s Team")
+        if len(team_name) < 3 or len(team_name) > 50:
+            return jsonify({'error': 'Team name must be between 3 and 50 characters'}), 400
+        
+        # Add participant
+        participant = LeagueParticipant(
+            league_id=league_id,
+            user_id=current_user.id,
+            team_name=team_name
+        )
+        
+        db.session.add(participant)
+        db.session.commit()
+        
+        logger.info(f"User {current_user.username} joined league {league.name}")
+        
+        return jsonify({
+            'message': 'Successfully joined league',
+            'league': {
+                'id': league.id,
+                'name': league.name
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error joining league {league_id}: {e}")
+        return jsonify({'error': 'Failed to join league'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>/leave', methods=['POST'])
+@login_required
+def leave_league(league_id):
+    """Leave a league"""
+    try:
+        from models import League, LeagueParticipant
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Can't leave if you're the owner
+        if league.owner_id == current_user.id:
+            return jsonify({'error': 'League owner cannot leave. Delete the league instead.'}), 400
+        
+        # Find participation
+        participant = LeagueParticipant.query.filter_by(
+            league_id=league_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not participant:
+            return jsonify({'error': 'You are not a member of this league'}), 404
+        
+        db.session.delete(participant)
+        db.session.commit()
+        
+        logger.info(f"User {current_user.username} left league {league.name}")
+        
+        return jsonify({'message': 'Successfully left league'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error leaving league {league_id}: {e}")
+        return jsonify({'error': 'Failed to leave league'}), 500
+
+
+# ==================== MATCHDAY MANAGEMENT ====================
+
+@app.route('/api/leagues/<int:league_id>/matchdays', methods=['GET'])
+@login_required
+def get_league_matchdays(league_id):
+    """Get all matchdays for a league"""
+    try:
+        from models import League, LeagueParticipant, Matchday
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Check access
+        is_owner = league.owner_id == current_user.id
+        is_participant = LeagueParticipant.query.filter_by(
+            league_id=league_id,
+            user_id=current_user.id
+        ).first() is not None
+        
+        if not (is_owner or is_participant):
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Get matchdays
+        matchdays = Matchday.query.filter_by(league_id=league_id).order_by(Matchday.matchday_number).all()
+        
+        matchdays_data = []
+        for m in matchdays:
+            matchdays_data.append({
+                'id': m.id,
+                'matchday_number': m.matchday_number,
+                'scheduled_date': m.scheduled_date.isoformat() if m.scheduled_date else None,
+                'is_completed': m.is_completed,
+                'created_at': m.created_at.isoformat()
+            })
+        
+        return jsonify({'matchdays': matchdays_data}), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting matchdays for league {league_id}: {e}")
+        return jsonify({'error': 'Failed to retrieve matchdays'}), 500
+
+
+@app.route('/api/leagues/<int:league_id>/matchdays', methods=['POST'])
+@login_required
+def create_league_matchdays(league_id):
+    """Create matchdays schedule for a league (owner only)"""
+    try:
+        from models import League, Matchday
+        from datetime import timedelta, date
+        
+        league = League.query.get(league_id)
+        if not league or not league.is_active:
+            return jsonify({'error': 'League not found'}), 404
+        
+        # Only owner can create matchdays
+        if league.owner_id != current_user.id:
+            return jsonify({'error': 'Only league owner can create matchdays'}), 403
+        
+        # Check if matchdays already exist
+        existing = Matchday.query.filter_by(league_id=league_id).first()
+        if existing:
+            return jsonify({'error': 'Matchdays already created for this league'}), 400
+        
+        data = request.get_json()
+        start_date_str = data.get('start_date')  # Format: YYYY-MM-DD
+        
+        if not start_date_str:
+            # Default to next Saturday
+            today = date.today()
+            days_ahead = 5 - today.weekday()  # Saturday is 5
+            if days_ahead <= 0:
+                days_ahead += 7
+            start_date = today + timedelta(days=days_ahead)
+        else:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        
+        # Create 38 matchdays (Serie A season)
+        matchdays = []
+        for i in range(1, 39):
+            matchday = Matchday(
+                league_id=league_id,
+                matchday_number=i,
+                scheduled_date=start_date + timedelta(weeks=i-1)
+            )
+            matchdays.append(matchday)
+        
+        db.session.add_all(matchdays)
+        db.session.commit()
+        
+        logger.info(f"Created 38 matchdays for league {league.name} starting {start_date}")
+        
+        return jsonify({
+            'message': 'Matchdays created successfully',
+            'count': 38,
+            'start_date': start_date.isoformat()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error creating matchdays for league {league_id}: {e}")
+        return jsonify({'error': 'Failed to create matchdays'}), 500
+
+
+@app.route('/api/matchdays/<int:matchday_id>/scores', methods=['GET'])
+@login_required
+def get_matchday_scores(matchday_id):
+    """Get scores for a specific matchday"""
+    try:
+        from models import Matchday, MatchdayScore, LeagueParticipant
+        
+        matchday = Matchday.query.get(matchday_id)
+        if not matchday:
+            return jsonify({'error': 'Matchday not found'}), 404
+        
+        # Check access
+        league = matchday.league
+        is_owner = league.owner_id == current_user.id
+        is_participant = LeagueParticipant.query.filter_by(
+            league_id=league.id,
+            user_id=current_user.id
+        ).first() is not None
+        
+        if not (is_owner or is_participant):
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Get scores
+        scores = MatchdayScore.query.filter_by(matchday_id=matchday_id).all()
+        
+        scores_data = []
+        for s in scores:
+            participant = s.participant
+            scores_data.append({
+                'id': s.id,
+                'participant_id': s.participant_id,
+                'team_name': participant.team_name,
+                'username': participant.user.username,
+                'total_score': float(s.total_score) if s.total_score else None,
+                'bonus_points': float(s.bonus_points) if s.bonus_points else 0,
+                'calculated_at': s.calculated_at.isoformat() if s.calculated_at else None
+            })
+        
+        # Sort by total_score descending
+        scores_data.sort(key=lambda x: x['total_score'] or 0, reverse=True)
+        
+        return jsonify({
+            'matchday': {
+                'id': matchday.id,
+                'matchday_number': matchday.matchday_number,
+                'scheduled_date': matchday.scheduled_date.isoformat() if matchday.scheduled_date else None,
+                'is_completed': matchday.is_completed
+            },
+            'scores': scores_data
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error getting scores for matchday {matchday_id}: {e}")
+        return jsonify({'error': 'Failed to retrieve scores'}), 500
+
+
+@app.route('/api/matchdays/<int:matchday_id>/calculate', methods=['POST'])
+@login_required
+def calculate_matchday_scores(matchday_id):
+    """Calculate scores for a matchday (owner/admin only)"""
+    try:
+        from models import Matchday, MatchdayScore, LeagueParticipant
+        
+        matchday = Matchday.query.get(matchday_id)
+        if not matchday:
+            return jsonify({'error': 'Matchday not found'}), 404
+        
+        league = matchday.league
+        
+        # Only owner or admin can calculate
+        if league.owner_id != current_user.id and not current_user.is_admin:
+            return jsonify({'error': 'Only league owner or admin can calculate scores'}), 403
+        
+        # Get all participants
+        participants = LeagueParticipant.query.filter_by(league_id=league.id).all()
+        
+        if not participants:
+            return jsonify({'error': 'No participants in league'}), 400
+        
+        # TODO: Implement actual score calculation logic
+        # For now, create placeholder scores
+        scores_created = 0
+        for participant in participants:
+            # Check if score already exists
+            existing_score = MatchdayScore.query.filter_by(
+                matchday_id=matchday_id,
+                participant_id=participant.id
+            ).first()
+            
+            if not existing_score:
+                # Create placeholder score (would be calculated from player performances)
+                score = MatchdayScore(
+                    matchday_id=matchday_id,
+                    participant_id=participant.id,
+                    total_score=0,  # TODO: Calculate from roster
+                    bonus_points=0,
+                    calculated_at=datetime.now()
+                )
+                db.session.add(score)
+                scores_created += 1
+        
+        # Mark matchday as completed
+        matchday.is_completed = True
+        db.session.commit()
+        
+        logger.info(f"Calculated scores for matchday {matchday.matchday_number} in league {league.name}")
+        
+        return jsonify({
+            'message': 'Scores calculated successfully',
+            'scores_created': scores_created,
+            'matchday_number': matchday.matchday_number
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Error calculating scores for matchday {matchday_id}: {e}")
+        return jsonify({'error': 'Failed to calculate scores'}), 500
+
+
+# ==================== FRONTEND PAGES ====================
+
+@app.route('/leagues')
+@login_required
+def leagues_list():
+    """League list page"""
+    return render_template('leagues.html', user=current_user)
+
+
+@app.route('/leagues/<int:league_id>')
+@login_required
+def league_detail(league_id):
+    """League detail page"""
+    return render_template('league_detail.html', user=current_user, league_id=league_id)
+
+
+@app.route('/leagues/<int:league_id>/matchdays/<int:matchday_number>')
+@login_required
+def matchday_scores_page(league_id, matchday_number):
+    """Matchday scores page"""
+    return render_template('matchday_scores.html', user=current_user, league_id=league_id, matchday_number=matchday_number)
+
