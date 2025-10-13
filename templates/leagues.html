@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Mie Leghe - FantaCalcio AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Dark Mode CSS Variables */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --hover-bg: #f8f9fa;
+            --success-bg: #d1e7dd;
+            --success-text: #0f5132;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #2d3139;
+            --bg-card: #25282f;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --border-color: #3d4047;
+            --hover-bg: #2d3139;
+            --success-bg: #1e3a2a;
+            --success-text: #7fda9d;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background-color: var(--bg-card) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .league-card {
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .league-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .league-card.owner::before {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .badge-owner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .badge-participant {
+            background-color: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .btn-create-league {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-create-league:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+        }
+
+        .btn-join-league {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-join-league:hover {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: white;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-secondary);
+            border-color: #667eea;
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* Theme Toggle Button */
+        #themeToggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        #themeToggle:hover {
+            transform: scale(1.1);
+        }
+
+        .code-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.2em;
+            padding: 1rem;
+            background-color: var(--bg-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-futbol"></i> FantaCalcio AI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a class="nav-link active" href="/leagues">
+                    <i class="fas fa-trophy"></i> Leghe
+                </a>
+                <a class="nav-link" href="/players/search">
+                    <i class="fas fa-search"></i> Ricerca
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1><i class="fas fa-trophy text-warning"></i> Le Mie Leghe</h1>
+                <p class="text-muted">Gestisci le tue leghe fantacalcio</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-create-league me-2" data-bs-toggle="modal" data-bs-target="#createLeagueModal">
+                    <i class="fas fa-plus"></i> Crea Lega
+                </button>
+                <button class="btn btn-join-league" data-bs-toggle="modal" data-bs-target="#joinLeagueModal">
+                    <i class="fas fa-sign-in-alt"></i> Unisciti
+                </button>
+            </div>
+        </div>
+
+        <!-- Leagues Grid -->
+        <div id="leaguesContainer" class="row">
+            <!-- Leagues will be loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display:none;">
+            <i class="fas fa-trophy"></i>
+            <h3>Nessuna Lega</h3>
+            <p class="text-muted">Crea una nuova lega o unisciti ad una esistente per iniziare!</p>
+            <button class="btn btn-create-league" data-bs-toggle="modal" data-bs-target="#createLeagueModal">
+                <i class="fas fa-plus"></i> Crea la Tua Prima Lega
+            </button>
+        </div>
+    </div>
+
+    <!-- Create League Modal -->
+    <div class="modal fade" id="createLeagueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Crea Nuova Lega</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createLeagueForm">
+                        <div class="mb-3">
+                            <label for="leagueName" class="form-label">Nome Lega *</label>
+                            <input type="text" class="form-control" id="leagueName" required minlength="3" maxlength="100">
+                            <div class="form-text">Tra 3 e 100 caratteri</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="teamName" class="form-label">Nome Squadra *</label>
+                            <input type="text" class="form-control" id="teamName" required minlength="3" maxlength="50">
+                            <div class="form-text">Il nome della tua squadra</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="budget" class="form-label">Budget Iniziale</label>
+                                <input type="number" class="form-control" id="budget" value="500" min="100" max="1000">
+                                <div class="form-text">100-1000 crediti</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="maxPlayers" class="form-label">Max Giocatori</label>
+                                <input type="number" class="form-control" id="maxPlayers" value="25" min="11" max="30">
+                                <div class="form-text">11-30 giocatori</div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="scoringType" class="form-label">Tipo Punteggio</label>
+                            <select class="form-select" id="scoringType">
+                                <option value="classic" selected>Classico</option>
+                                <option value="mantra">Mantra</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-create-league" id="createLeagueBtn">
+                        <i class="fas fa-check"></i> Crea Lega
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join League Modal -->
+    <div class="modal fade" id="joinLeagueModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-sign-in-alt"></i> Unisciti ad una Lega</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="joinLeagueForm">
+                        <div class="mb-3">
+                            <label for="joinCode" class="form-label">Codice Lega *</label>
+                            <input type="text" class="form-control text-center" id="joinCode" required maxlength="6" 
+                                   style="font-size:1.2rem; font-weight:bold; letter-spacing:0.2em; text-transform:uppercase;">
+                            <div class="form-text">Inserisci il codice di 6 caratteri</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="joinTeamName" class="form-label">Nome Squadra *</label>
+                            <input type="text" class="form-control" id="joinTeamName" required minlength="3" maxlength="50">
+                            <div class="form-text">Il nome della tua squadra</div>
+                        </div>
+                        <div id="joinLeagueInfo" class="alert alert-info" style="display:none;">
+                            <h6 id="joinLeagueName"></h6>
+                            <p class="mb-0 small" id="joinLeagueDetails"></p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-join-league" id="joinLeagueBtn">
+                        <i class="fas fa-check"></i> Unisciti
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle"></i> Lega Creata!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>La tua lega è stata creata con successo!</p>
+                    <p class="mb-2">Condividi questo codice con gli amici:</p>
+                    <div class="code-display" id="leagueCodeDisplay">XXXXXX</div>
+                    <button class="btn btn-sm btn-outline-secondary mt-3" onclick="copyCode()">
+                        <i class="fas fa-copy"></i> Copia Codice
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="location.reload()">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeToggle i');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+        // Load Leagues
+        async function loadLeagues() {
+            try {
+                const response = await fetch('/api/leagues');
+                const data = await response.json();
+                
+                if (data.leagues && data.leagues.length > 0) {
+                    displayLeagues(data.leagues);
+                    document.getElementById('emptyState').style.display = 'none';
+                } else {
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading leagues:', error);
+                showAlert('Errore nel caricamento delle leghe', 'danger');
+            }
+        }
+
+        function displayLeagues(leagues) {
+            const container = document.getElementById('leaguesContainer');
+            container.innerHTML = '';
+            
+            leagues.forEach(league => {
+                const isOwner = league.is_owner;
+                const card = `
+                    <div class="col-md-4 mb-4">
+                        <div class="card league-card ${isOwner ? 'owner' : ''}" onclick="window.location.href='/leagues/${league.id}'">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-trophy text-warning"></i> ${league.name}
+                                    </h5>
+                                    <span class="badge ${isOwner ? 'badge-owner' : 'badge-participant'}">
+                                        ${isOwner ? '<i class="fas fa-crown"></i> Owner' : '<i class="fas fa-user"></i> Partecipante'}
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-users text-primary"></i> 
+                                    <strong>${league.participant_count}</strong> partecipanti
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-coins text-success"></i> 
+                                    Budget: <strong>${league.budget}</strong> crediti
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-users-cog text-info"></i> 
+                                    Max: <strong>${league.max_players}</strong> giocatori
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-calendar"></i> ${new Date(league.created_at).toLocaleDateString('it-IT')}
+                                </div>
+                                ${isOwner && league.code ? `
+                                    <div class="mt-3 pt-3 border-top">
+                                        <small class="text-muted">Codice Lega:</small>
+                                        <div class="fw-bold" style="font-family: monospace; letter-spacing: 0.1em;">
+                                            ${league.code}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Create League
+        document.getElementById('createLeagueBtn').addEventListener('click', async () => {
+            const form = document.getElementById('createLeagueForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const leagueData = {
+                name: document.getElementById('leagueName').value.trim(),
+                team_name: document.getElementById('teamName').value.trim(),
+                budget: parseInt(document.getElementById('budget').value),
+                max_players: parseInt(document.getElementById('maxPlayers').value),
+                scoring_type: document.getElementById('scoringType').value
+            };
+
+            try {
+                const response = await fetch('/api/leagues/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leagueData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Close create modal
+                    bootstrap.Modal.getInstance(document.getElementById('createLeagueModal')).hide();
+                    
+                    // Show success modal with code
+                    document.getElementById('leagueCodeDisplay').textContent = data.league.code;
+                    new bootstrap.Modal(document.getElementById('successModal')).show();
+                    
+                    // Reset form
+                    form.reset();
+                } else {
+                    showAlert(data.error || 'Errore nella creazione della lega', 'danger');
+                }
+            } catch (error) {
+                console.error('Error creating league:', error);
+                showAlert('Errore nella creazione della lega', 'danger');
+            }
+        });
+
+        // Join League - Find by Code
+        let selectedLeagueId = null;
+        document.getElementById('joinCode').addEventListener('input', async (e) => {
+            const code = e.target.value.trim().toUpperCase();
+            if (code.length === 6) {
+                // TODO: Add API to find league by code
+                // For now, just enable the join button
+                selectedLeagueId = null; // Will be set when we have the API
+            }
+        });
+
+        document.getElementById('joinLeagueBtn').addEventListener('click', async () => {
+            const code = document.getElementById('joinCode').value.trim().toUpperCase();
+            const teamName = document.getElementById('joinTeamName').value.trim();
+
+            if (!code || code.length !== 6) {
+                showAlert('Inserisci un codice valido di 6 caratteri', 'warning');
+                return;
+            }
+
+            if (!teamName || teamName.length < 3) {
+                showAlert('Inserisci un nome squadra valido', 'warning');
+                return;
+            }
+
+            // First, we need to find the league by code
+            // TODO: Add API endpoint to search league by code
+            // For now, we'll need to implement this
+
+            showAlert('Funzione in fase di implementazione', 'info');
+        });
+
+        function copyCode() {
+            const code = document.getElementById('leagueCodeDisplay').textContent;
+            navigator.clipboard.writeText(code);
+            showAlert('Codice copiato!', 'success');
+        }
+
+        function showAlert(message, type) {
+            // Simple alert for now - can be enhanced with toast notifications
+            alert(message);
+        }
+
+        // Initialize
+        initTheme();
+        loadLeagues();
+    </script>
+</body>
+</html>
