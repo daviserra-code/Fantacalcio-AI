@@ -123,6 +123,23 @@
             color: white;
         }
         
+        #suggestions {
+            margin-top: 2px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        #suggestions .list-group-item {
+            cursor: pointer;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        #suggestions .list-group-item:hover {
+            background-color: var(--hover-bg);
+        }
+        
         .percentile-bar {
             height: 8px;
             background-color: var(--bg-secondary);
@@ -217,14 +234,19 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <input type="text" id="playerInput" class="form-control" 
-                               placeholder="Inserisci nome giocatore e premi Invio..." 
-                               autocomplete="off">
-                        <small class="text-muted">Aggiungi da 2 a 4 giocatori</small>
+                        <div class="position-relative">
+                            <input type="text" id="playerInput" class="form-control" 
+                                   placeholder="Inserisci nome giocatore e premi Invio..." 
+                                   autocomplete="off">
+                            <div id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 300px; overflow-y: auto; display: none;">
+                                <!-- Autocomplete suggestions will appear here -->
+                            </div>
+                        </div>
+                        <small class="text-muted">Aggiungi da 2 a 4 giocatori - <span id="playerCount" class="fw-bold">0</span> selezionati</small>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn btn-primary w-100" onclick="compareSelectedPlayers()">
-                            <i class="fas fa-balance-scale me-2"></i>Confronta
+                        <button id="compareButton" class="btn btn-primary w-100" onclick="compareSelectedPlayers()" disabled>
+                            <i class="fas fa-balance-scale me-2"></i>Confronta (<span id="btnCount">0</span>)
                         </button>
                     </div>
                 </div>
@@ -317,18 +339,90 @@
             if (players.length > 0) {
                 selectedPlayers = players;
                 updateSelectedPlayersDisplay();
+                updateCompareButtonState();
                 compareSelectedPlayers();
+            }
+        });
+        
+        // Autocomplete functionality
+        let suggestionTimeout;
+        const playerInput = document.getElementById('playerInput');
+        const suggestionsDiv = document.getElementById('suggestions');
+        
+        playerInput.addEventListener('input', function() {
+            clearTimeout(suggestionTimeout);
+            const query = this.value.trim();
+            
+            if (query.length < 2) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            suggestionTimeout = setTimeout(() => {
+                fetch(`/api/players/suggestions?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.suggestions && data.suggestions.length > 0) {
+                            showSuggestions(data.suggestions);
+                        } else {
+                            suggestionsDiv.style.display = 'none';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching suggestions:', err);
+                        suggestionsDiv.style.display = 'none';
+                    });
+            }, 300);
+        });
+        
+        function showSuggestions(suggestions) {
+            let html = '';
+            suggestions.forEach(player => {
+                const roleBadgeClass = `role-badge-${player.role}`;
+                html += `
+                    <div class="list-group-item" onclick="selectSuggestion('${player.name.replace(/'/g, "\\'")}')">
+                        <strong>${player.name}</strong>
+                        <span class="badge ${roleBadgeClass} ms-2">${player.role}</span>
+                        <span class="badge bg-secondary ms-1">${player.team}</span>
+                    </div>
+                `;
+            });
+            suggestionsDiv.innerHTML = html;
+            suggestionsDiv.style.display = 'block';
+        }
+        
+        function selectSuggestion(playerName) {
+            if (selectedPlayers.length < 4 && !selectedPlayers.includes(playerName)) {
+                selectedPlayers.push(playerName);
+                updateSelectedPlayersDisplay();
+                updateCompareButtonState();
+                playerInput.value = '';
+                suggestionsDiv.style.display = 'none';
+            } else if (selectedPlayers.includes(playerName)) {
+                alert('Giocatore già aggiunto!');
+            } else {
+                alert('Puoi confrontare massimo 4 giocatori!');
+            }
+        }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!playerInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
             }
         });
         
         // Player input handling
         document.getElementById('playerInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                e.preventDefault();
+                suggestionsDiv.style.display = 'none';
                 const playerName = this.value.trim();
                 if (playerName && selectedPlayers.length < 4) {
                     if (!selectedPlayers.includes(playerName)) {
                         selectedPlayers.push(playerName);
                         updateSelectedPlayersDisplay();
+                        updateCompareButtonState();
                         this.value = '';
                     } else {
                         alert('Giocatore già aggiunto!');
@@ -338,6 +432,25 @@
                 }
             }
         });
+        
+        function updateCompareButtonState() {
+            const count = selectedPlayers.length;
+            const button = document.getElementById('compareButton');
+            const btnCount = document.getElementById('btnCount');
+            const playerCount = document.getElementById('playerCount');
+            
+            btnCount.textContent = count;
+            playerCount.textContent = count;
+            button.disabled = count < 2;
+            
+            if (count < 2) {
+                button.classList.remove('btn-success');
+                button.classList.add('btn-primary');
+            } else {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-success');
+            }
+        }
         
         function updateSelectedPlayersDisplay() {
             const container = document.getElementById('selectedPlayers');
@@ -362,6 +475,7 @@
         function removePlayer(index) {
             selectedPlayers.splice(index, 1);
             updateSelectedPlayersDisplay();
+            updateCompareButtonState();
         }
         
         function compareSelectedPlayers() {

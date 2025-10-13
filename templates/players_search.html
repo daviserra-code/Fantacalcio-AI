@@ -98,9 +98,25 @@
             background-color: var(--table-stripe);
         }
         
+        .table {
+            --bs-table-bg: var(--bg-card);
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-color);
+        }
+        
+        .table-hover tbody tr:hover {
+            --bs-table-hover-bg: var(--hover-bg);
+            --bs-table-hover-color: var(--text-primary);
+        }
+        
         .table-dark {
             --bs-table-bg: var(--bg-secondary);
             --bs-table-color: var(--text-primary);
+        }
+        
+        .player-row {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
         }
         
         .theme-toggle {
@@ -490,7 +506,7 @@
             }
             
             let html = `<p class="text-muted small">Visualizzati ${data.showing} di ${data.count} risultati <span class="text-info">(Seleziona fino a 4 giocatori per confrontarli)</span></p>`;
-            html += '<div class="table-responsive"><table class="table table-hover table-striped"><thead class="table-dark"><tr>';
+            html += '<div class="table-responsive"><table class="table table-hover"><thead class="table-dark"><tr>';
             html += '<th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Prezzo</th><th>Fantamedia</th><th>Efficienza</th><th>Presenze</th>';
             html += '</tr></thead><tbody>';
             

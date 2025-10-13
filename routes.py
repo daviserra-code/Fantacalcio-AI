@@ -1213,6 +1213,37 @@ def players_search_page():
     return render_template('players_search.html', user=current_user)
 
 
+@app.route('/api/players/suggestions')
+@login_required
+def player_suggestions():
+    """Get player name suggestions for autocomplete"""
+    try:
+        query = request.args.get('q', '').lower().strip()
+        if not query or len(query) < 2:
+            return jsonify({'suggestions': []})
+        
+        from fantacalcio_assistant import FantacalcioAssistant
+        assistant = FantacalcioAssistant()
+        assistant._ensure_data_loaded()
+        
+        # Find matching players
+        matches = []
+        for player in assistant.roster:
+            name = player.get('name', '')
+            if query in name.lower():
+                matches.append({
+                    'name': name,
+                    'role': player.get('role', ''),
+                    'team': player.get('team', '')
+                })
+                if len(matches) >= 10:  # Limit to 10 suggestions
+                    break
+        
+        return jsonify({'suggestions': matches})
+    except Exception as e:
+        return jsonify({'suggestions': [], 'error': str(e)})
+
+
 @app.route('/api/players/compare', methods=['POST'])
 @login_required
 def compare_players():
@@ -1240,12 +1271,22 @@ def compare_players():
         assistant._ensure_data_loaded()
         all_players = assistant.roster
         
-        # Find players by name (case-insensitive)
+        # Find players by name (flexible matching: exact, contains, or partial)
         comparison_data = []
         not_found = []
         
         for name in player_names:
-            player = next((p for p in all_players if p.get('name', '').lower() == name.lower()), None)
+            name_lower = name.lower().strip()
+            
+            # Try exact match first
+            player = next((p for p in all_players if p.get('name', '').lower() == name_lower), None)
+            
+            # If not found, try partial match (name contains search term or vice versa)
+            if not player:
+                player = next((p for p in all_players 
+                             if name_lower in p.get('name', '').lower() 
+                             or any(part in p.get('name', '').lower() for part in name_lower.split())), None)
+            
             if player:
                 # Calculate additional metrics
                 price = player.get('price') or 1
