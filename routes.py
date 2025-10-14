@@ -1378,9 +1378,9 @@ def players_compare_page():
 
 # ==================== PHASE 2C: LEAGUE MANAGEMENT API ====================
 
-@app.route('/api/leagues', methods=['GET'])
+@app.route('/api/league-system/leagues', methods=['GET'])
 @login_required
-def get_user_leagues():
+def get_user_leagues_v2():
     """Get all leagues where user is owner or participant"""
     try:
         from models import League, LeagueParticipant
@@ -1423,9 +1423,9 @@ def get_user_leagues():
         return jsonify({'error': 'Failed to retrieve leagues'}), 500
 
 
-@app.route('/api/leagues/create', methods=['POST'])
+@app.route('/api/league-system/leagues/create', methods=['POST'])
 @login_required
-def create_league():
+def create_league_v2():
     """Create a new league"""
     try:
         from models import League, LeagueParticipant
@@ -1503,9 +1503,9 @@ def create_league():
         return jsonify({'error': 'Failed to create league'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>', methods=['GET'])
+@app.route('/api/league-system/leagues/<int:league_id>', methods=['GET'])
 @login_required
-def get_league(league_id):
+def get_league_v2(league_id):
     """Get league details"""
     try:
         from models import League, LeagueParticipant
@@ -1556,9 +1556,9 @@ def get_league(league_id):
         return jsonify({'error': 'Failed to retrieve league'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>', methods=['PUT'])
+@app.route('/api/league-system/leagues/<int:league_id>', methods=['PUT'])
 @login_required
-def update_league(league_id):
+def update_league_v2(league_id):
     """Update league settings (owner only)"""
     try:
         from models import League
@@ -1617,9 +1617,9 @@ def update_league(league_id):
         return jsonify({'error': 'Failed to update league'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>', methods=['DELETE'])
+@app.route('/api/league-system/leagues/<int:league_id>', methods=['DELETE'])
 @login_required
-def delete_league(league_id):
+def delete_league_v2(league_id):
     """Delete league (owner only) - soft delete"""
     try:
         from models import League
@@ -1647,9 +1647,9 @@ def delete_league(league_id):
         return jsonify({'error': 'Failed to delete league'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>/join', methods=['POST'])
+@app.route('/api/league-system/leagues/<int:league_id>/join', methods=['POST'])
 @login_required
-def join_league(league_id):
+def join_league_v2(league_id):
     """Join a league with code validation"""
     try:
         from models import League, LeagueParticipant
@@ -1707,9 +1707,9 @@ def join_league(league_id):
         return jsonify({'error': 'Failed to join league'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>/leave', methods=['POST'])
+@app.route('/api/league-system/leagues/<int:league_id>/leave', methods=['POST'])
 @login_required
-def leave_league(league_id):
+def leave_league_v2(league_id):
     """Leave a league"""
     try:
         from models import League, LeagueParticipant
@@ -1746,9 +1746,9 @@ def leave_league(league_id):
 
 # ==================== MATCHDAY MANAGEMENT ====================
 
-@app.route('/api/leagues/<int:league_id>/matchdays', methods=['GET'])
+@app.route('/api/league-system/leagues/<int:league_id>/matchdays', methods=['GET'])
 @login_required
-def get_league_matchdays(league_id):
+def get_league_matchdays_v2(league_id):
     """Get all matchdays for a league"""
     try:
         from models import League, LeagueParticipant, Matchday
@@ -1787,9 +1787,9 @@ def get_league_matchdays(league_id):
         return jsonify({'error': 'Failed to retrieve matchdays'}), 500
 
 
-@app.route('/api/leagues/<int:league_id>/matchdays', methods=['POST'])
+@app.route('/api/league-system/leagues/<int:league_id>/matchdays', methods=['POST'])
 @login_required
-def create_league_matchdays(league_id):
+def create_league_matchdays_v2(league_id):
     """Create matchdays schedule for a league (owner only)"""
     try:
         from models import League, Matchday
@@ -1848,9 +1848,9 @@ def create_league_matchdays(league_id):
         return jsonify({'error': 'Failed to create matchdays'}), 500
 
 
-@app.route('/api/matchdays/<int:matchday_id>/scores', methods=['GET'])
+@app.route('/api/league-system/matchdays/<int:matchday_id>/scores', methods=['GET'])
 @login_required
-def get_matchday_scores(matchday_id):
+def get_matchday_scores_v2(matchday_id):
     """Get scores for a specific matchday"""
     try:
         from models import Matchday, MatchdayScore, LeagueParticipant
@@ -1904,9 +1904,9 @@ def get_matchday_scores(matchday_id):
         return jsonify({'error': 'Failed to retrieve scores'}), 500
 
 
-@app.route('/api/matchdays/<int:matchday_id>/calculate', methods=['POST'])
+@app.route('/api/league-system/matchdays/<int:matchday_id>/calculate', methods=['POST'])
 @login_required
-def calculate_matchday_scores(matchday_id):
+def calculate_matchday_scores_v2(matchday_id):
     """Calculate scores for a matchday (owner/admin only)"""
     try:
         from models import Matchday, MatchdayScore, LeagueParticipant
@@ -1969,21 +1969,21 @@ def calculate_matchday_scores(matchday_id):
 
 # ==================== FRONTEND PAGES ====================
 
-@app.route('/leagues')
+@app.route('/league-system')
 @login_required
 def leagues_list():
     """League list page"""
     return render_template('leagues.html', user=current_user)
 
 
-@app.route('/leagues/<int:league_id>')
+@app.route('/league-system/<int:league_id>')
 @login_required
-def league_detail(league_id):
+def league_detail_v2(league_id):
     """League detail page"""
     return render_template('league_detail.html', user=current_user, league_id=league_id)
 
 
-@app.route('/leagues/<int:league_id>/matchdays/<int:matchday_number>')
+@app.route('/league-system/<int:league_id>/matchdays/<int:matchday_number>')
 @login_required
 def matchday_scores_page(league_id, matchday_number):
     """Matchday scores page"""
