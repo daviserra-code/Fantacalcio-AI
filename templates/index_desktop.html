@@ -1968,6 +1968,128 @@
             modal.style.display = 'none';
         }
     }
+
+    // Live Matches Functions
+    function openMatchTracker() {
+        showToast('⚡ Caricamento partite live...', 'info');
+        
+        fetch('/api/match-tracker/active')
+        .then(response => response.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                displayActiveMatches(data.matches);
+            } else {
+                // Show informative message with demo option
+                let message = data.message || 'Nessuna partita live al momento';
+                let infoHtml = `
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; margin: 20px; color: white; text-align: center;">
+                        <h3 style="margin-bottom: 15px;">📅 ${message}</h3>
+                        <p style="opacity: 0.9; margin: 10px 0;">Le partite di Serie A si giocano principalmente nei weekend:</p>
+                        <ul style="text-align: left; display: inline-block; margin: 10px 0;">
+                            <li>Venerdì: 20:45</li>
+                            <li>Sabato: 12:30, 15:00, 18:00, 20:45</li>
+                            <li>Domenica: 12:30, 15:00, 18:00, 20:45</li>
+                        </ul>
+                        <p style="margin: 15px 0;">Per testare la funzionalità:</p>
+                        <button onclick="loadDemoMatches()" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                            🎮 Carica Partite Demo
+                        </button>
+                    </div>
+                `;
+                showMessage(infoHtml, 'html');
+            }
+        })
+        .catch(error => {
+            showToast('❌ Errore nel caricamento delle partite', 'error');
+            console.error('Match tracker error:', error);
+        });
+    }
+    
+    function loadDemoMatches() {
+        showToast('🎮 Caricamento partite demo...', 'info');
+        
+        fetch('/api/match-tracker/demo')
+        .then(response => response.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                displayActiveMatches(data.matches, true);
+            } else {
+                showToast('❌ Errore nel caricamento demo', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('❌ Errore nel caricamento demo', 'error');
+            console.error('Demo matches error:', error);
+        });
+    }
+    
+    function displayActiveMatches(matches, isDemo = false) {
+        let html = `<div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; border-radius: 12px; margin: 20px 0; color: white;">`;
+        html += `<h3 style="margin-bottom: 15px;">⚡ Partite Live (${matches.length})`;
+        if (isDemo) {
+            html += ` <span style="background: rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 4px; font-size: 12px;">DEMO</span>`;
+        }
+        html += `</h3>`;
+        
+        matches.forEach(match => {
+            html += `<div style="background: rgba(255,255,255,0.2); padding: 12px; margin: 10px 0; border-radius: 8px;">`;
+            html += `<strong>${match.home_team} vs ${match.away_team}</strong><br>`;
+            
+            if (match.minute) {
+                html += `⏱️ Minuto: ${match.minute}' | `;
+            }
+            html += `Status: ${match.status}`;
+            if (match.score) {
+                html += `<br>⚽ Punteggio: ${match.score.home} - ${match.score.away}`;
+            }
+            
+            // Show top performers if available
+            if (match.top_performers && match.top_performers.length > 0) {
+                html += `<br><small style="opacity: 0.9;">🌟 Top: `;
+                html += match.top_performers.slice(0, 3).map(p => 
+                    `${p.name} (${p.points}pts)`
+                ).join(', ');
+                html += `</small>`;
+            }
+            html += `</div>`;
+        });
+        
+        html += `</div>`;
+        
+        // Display in a modal or main content area
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+        modal.innerHTML = `
+            <div style="background: var(--card-bg); color: var(--text-color); border-radius: 12px; padding: 20px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto; position: relative;">
+                <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">&times;</button>
+                ${html}
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Helper function for showing messages
+    function showMessage(html, type) {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+        modal.innerHTML = `
+            <div style="background: var(--card-bg); color: var(--text-color); border-radius: 12px; padding: 20px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto; position: relative;">
+                <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">&times;</button>
+                ${html}
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Toast notification function (if not already defined)
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColor = type === 'error' ? '#dc2626' : type === 'success' ? '#10b981' : '#3b82f6';
+        toast.style.cssText = `position: fixed; top: 20px; right: 20px; background: ${bgColor}; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10001; font-weight: 500;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
   </script>
 
   <!-- Analytics Modal for Desktop -->
