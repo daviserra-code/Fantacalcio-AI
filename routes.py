@@ -2,6 +2,7 @@
 from datetime import datetime
 import json
 import os
+import logging
 import stripe
 from flask import session, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import current_user, login_user
@@ -10,6 +11,9 @@ from flask_login import login_required, current_user
 from models import User, UserLeague, Subscription
 from league_rules_manager import LeagueRulesManager
 from replit_auth import require_login, require_pro
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
@@ -802,3 +806,221 @@ def import_league_rules(league_id):
                 os.unlink(temp_file.name)
             except:
                 pass
+
+# ============ NEW ENHANCED API ROUTES ============
+
+@app.route('/api/cache/stats')
+def api_cache_stats():
+    """Get Redis cache statistics"""
+    from cache_redis import get_redis_cache
+    cache = get_redis_cache()
+    return jsonify(cache.get_stats())
+
+@app.route('/api/cache/clear', methods=['POST'])
+@require_login
+def api_cache_clear():
+    """Clear cache (authenticated users only)"""
+    from cache_redis import get_redis_cache
+    cache = get_redis_cache()
+    cleared = cache.clear_pattern("*")
+    return jsonify({'cleared': cleared, 'message': 'Cache cleared successfully'})
+
+@app.route('/api/team-builder', methods=['POST'])
+@require_login
+def api_team_builder():
+    """AI-powered team builder with genetic algorithm"""
+    try:
+        from subscription_tiers import require_feature, track_feature_usage, has_feature
+        from ai_team_builder import AITeamBuilder, Player
+        import json
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        logger.info("Team builder endpoint called")
+        
+        # Check if user has access to this feature
+        if not has_feature('formation_suggestions'):
+            logger.warning(f"User {current_user.id} tried to access team builder without permission")
+            return jsonify({
+                'error': 'feature_not_available',
+                'message': 'Questa funzione richiede un abbonamento Pro o superiore.',
+                'upgrade_url': '/upgrade'
+            }), 403
+        
+        track_feature_usage('team_builder')
+        
+        data = request.json or {}
+        budget = data.get('budget', 500)
+        formation_str = data.get('formation', '3-5-2')
+        objectives = data.get('objectives', {'performance': 0.5, 'value': 0.3, 'reliability': 0.2})
+        
+        logger.info(f"Raw request data: budget={budget}, formation={formation_str}, objectives={objectives}")
+        logger.info(f"Types: formation type={type(formation_str)}, objectives type={type(objectives)}")
+        
+        logger.info(f"Building team: budget={budget}, formation={formation_str}")
+        
+        # Parse formation string to dict (e.g., "3-5-2" -> {P:1, D:3, C:5, A:2})
+        formation_dict = {'P': 1}
+        if isinstance(formation_str, str):
+            parts = formation_str.split('-')
+            if len(parts) == 3:
+                formation_dict['D'] = int(parts[0])
+                formation_dict['C'] = int(parts[1])
+                formation_dict['A'] = int(parts[2])
+        else:
+            formation_dict = formation_str
+        
+        logger.info(f"Formation parsed: {formation_dict}")
+        
+        # Load roster from JSON file
+        roster_path = 'season_roster.json'
+        if not os.path.exists(roster_path):
+            logger.error(f"Roster file not found: {roster_path}")
+            return jsonify({'error': 'Roster non disponibile'}), 500
+        
+        with open(roster_path, 'r', encoding='utf-8') as f:
+            roster_data = json.load(f)
+        
+        logger.info(f"Loaded {len(roster_data)} players from roster")
+        
+        # Convert to Player objects
+        players = []
+        for p in roster_data:
+            try:
+                players.append(Player(
+                    name=p.get('name', 'Unknown'),
+                    role=p.get('role', 'C'),
+                    team=p.get('team', ''),
+                    price=float(p.get('price', 1)),
+                    fantamedia=float(p.get('fantamedia', 6.0)),
+                    appearances=int(p.get('appearances', 0)),
+                    goals=int(p.get('goals', 0)),
+                    assists=int(p.get('assists', 0))
+                ))
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Skipping invalid player: {p.get('name', 'unknown')} - {str(e)}")
+                continue
+        
+        if not players:
+            logger.error("No valid players found after conversion")
+            return jsonify({'error': 'Nessun giocatore disponibile'}), 500
+        
+        logger.info(f"Converted {len(players)} players successfully")
+        
+        builder = AITeamBuilder(players, budget)
+        result = builder.build_optimal_team(formation_dict, objectives)
+        
+        logger.info(f"Team building successful: {len(result.get('team', []))} players selected")
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        logger = logging.getLogger(__name__)
+        logger.error(f"TEAM BUILDER ERROR: {str(e)}")
+        logger.error(f"Traceback:\n{error_trace}")
+        return jsonify({
+            'error': f'Errore durante la creazione del team: {str(e)}',
+            'details': error_trace if app.debug else None
+        }), 500
+
+@app.route('/api/predictions', methods=['POST'])
+@require_login
+def api_predictions():
+    """ML-powered performance predictions for a single player"""
+    from subscription_tiers import has_feature, track_feature_usage, get_user_tier
+    from ml_predictor import get_ml_predictor
+    
+    # Debug logging
+    tier = get_user_tier()
+    logger.info(f"ML Predictions called by: {current_user.email if current_user.is_authenticated else 'Anonymous'}")
+    logger.info(f"User tier: {tier['name']}")
+    logger.info(f"User is_pro: {current_user.is_pro if current_user.is_authenticated else 'N/A'}")
+    logger.info(f"User pro_expires_at: {current_user.pro_expires_at if current_user.is_authenticated else 'N/A'}")
+    logger.info(f"Has ml_predictions feature: {has_feature('ml_predictions')}")
+    
+    if not has_feature('ml_predictions'):
+        return jsonify({
+            'error': 'feature_not_available',
+            'message': 'Le predizioni ML richiedono un abbonamento Elite.',
+            'upgrade_url': '/upgrade'
+        }), 403
+    
+    track_feature_usage('ml_predictions')
+    
+    data = request.json or {}
+    player_features = data.get('player_features', {})
+    
+    try:
+        predictor = get_ml_predictor()
+        logger.info(f"Predictor loaded: {predictor is not None}, model: {predictor.model is not None if predictor else None}")
+        logger.info(f"Player features: {player_features}")
+        
+        prediction = predictor.predict(player_features)
+        logger.info(f"Prediction result: {prediction}")
+        
+        return jsonify(prediction)
+    except Exception as e:
+        logger.error(f"ML Prediction error: {e}", exc_info=True)
+        return jsonify({'error': str(e), 'message': f'Errore ML: {str(e)}'}), 500
+
+@app.route('/api/predictions/batch', methods=['POST'])
+@require_login
+def api_predictions_batch():
+    """Batch predictions for multiple players"""
+    from subscription_tiers import has_feature, track_feature_usage
+    from ml_predictor import get_ml_predictor
+    
+    if not has_feature('ml_predictions'):
+        return jsonify({
+            'error': 'feature_not_available',
+            'message': 'Le predizioni ML richiedono un abbonamento Elite.',
+            'upgrade_url': '/upgrade'
+        }), 403
+    
+    track_feature_usage('ml_predictions_batch')
+    
+    data = request.json or {}
+    players_data = data.get('players', [])
+    
+    try:
+        predictor = get_ml_predictor()
+        predictions = predictor.predict_batch(players_data)
+        return jsonify({'predictions': predictions})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/match-tracker/active')
+def api_active_matches():
+    """Get currently active matches"""
+    from match_tracker_enhanced import get_match_tracker
+    tracker = get_match_tracker()
+    matches = tracker.get_active_matches()
+    return jsonify({'matches': matches})
+
+@app.route('/api/match-tracker/<match_id>')
+def api_match_summary(match_id):
+    """Get match summary and current stats"""
+    from match_tracker_enhanced import get_match_tracker
+    tracker = get_match_tracker()
+    summary = tracker.get_match_summary(match_id)
+    return jsonify(summary or {'error': 'Match not found'}), 200 if summary else 404
+
+@app.route('/api/subscription/tier')
+@require_login
+def api_subscription_tier():
+    """Get current user's subscription tier and features"""
+    from subscription_tiers import get_user_tier, get_tier_comparison
+    
+    tier = get_user_tier()
+    comparison = get_tier_comparison()
+    
+    return jsonify({
+        'current_tier': tier,
+        'all_tiers': comparison,
+        'user': {
+            'username': current_user.username,
+            'is_pro': current_user.is_pro
+        }
+    })

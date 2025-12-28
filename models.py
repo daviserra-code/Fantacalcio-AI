@@ -49,6 +49,12 @@ class User(UserMixin, db.Model):
     def is_pro(self):
         """Check if user has an active pro subscription"""
         from datetime import datetime
+        
+        # Check pro_expires_at field (for direct assignments like admin)
+        if self.pro_expires_at and self.pro_expires_at > datetime.utcnow():
+            return True
+        
+        # Check subscriptions table (for Stripe subscriptions)
         if hasattr(self, 'subscriptions') and self.subscriptions:
             for subscription in self.subscriptions:
                 if (subscription.status == 'active' and 

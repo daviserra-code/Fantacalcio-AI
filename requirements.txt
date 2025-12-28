@@ -1,10 +1,41 @@
-flask
-openai
-requests
-numpy
-requests
-chromadb==0.5.5
-rank-bm25==0.2.2
-sentence-transformers==2.7.0
-torch==2.3.0
+# Core Flask
+flask>=3.1.1
+flask-sqlalchemy>=3.1.1
+flask-login>=0.6.3
+flask-socketio>=5.5.1
+werkzeug>=3.1.3
+
+# Database & Caching
+sqlalchemy>=2.0.43
+psycopg2-binary>=2.9.10
+redis>=5.2.0
+
+# AI & ML
+openai>=1.3
+sentence-transformers>=2.7.0
+torch>=2.3.0
+chromadb>=0.5.5
 huggingface_hub>=0.24.0
+rank-bm25>=0.2.2
+
+# Web & Data
+requests>=2.31.0
+httpx>=0.27.2
+beautifulsoup4>=4.12.0
+trafilatura>=2.0.0
+pandas>=2.3.2
+
+# Utilities
+numpy>=2.3.2
+scikit-learn>=1.7.2
+joblib>=1.4.0
+schedule>=1.2.2
+
+# Auth & Payments
+flask-dance>=7.1.0
+pyjwt>=2.10.1
+oauthlib>=3.3.1
+stripe>=12.5.1
+
+# Server
+waitress>=3.0.2

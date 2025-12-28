@@ -48,6 +48,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 login_manager.login_message = 'Please log in to access this page.'
+
+# Add cache busting context processor
+@app.context_processor
+def inject_cache_version():
+    return {'cache_version': datetime.now().strftime('%Y%m%d%H%M%S')}
 login_manager.login_message_category = 'info'
 
 @login_manager.user_loader

@@ -18,6 +18,14 @@ from league_rules_manager import LeagueRulesManager
 from rate_limiter import RateLimiter
 from static_transfers import get_team_arrivals, is_static_mode_enabled, get_transfer_stats
 
+# New enhancements
+from cache_redis import cached_redis, get_redis_cache
+from subscription_tiers import require_feature, get_user_tier, check_rate_limit, track_feature_usage
+from ai_team_builder import AITeamBuilder, Player
+from ml_predictor import get_ml_predictor
+from match_tracker_enhanced import get_match_tracker
+import league_chat  # Auto-registers SocketIO handlers
+
 # Import authentication components
 from app import app, db
 from models import User, UserLeague
@@ -159,6 +167,7 @@ def index_legacy():
         """, 500
 
 @app.route("/api/chat", methods=["POST"])
+@cached_redis(ttl=0, key_prefix="")  # No caching for chat (real-time)
 def api_chat():
     try:
         # Log client info for debugging
@@ -993,6 +1002,7 @@ def api_search():
             }
         }), 500
 
+@cached_redis(ttl=120, key_prefix="players")
 @app.route('/api/players')
 def api_players():
     """Get filtered players with advanced filtering options"""
@@ -1174,6 +1184,7 @@ def api_players():
             "error": str(e)
         }), 500
 
+@cached_redis(ttl=300, key_prefix="statistics")
 @app.route('/api/statistics')
 def get_statistics():
     """Get player statistics by role"""

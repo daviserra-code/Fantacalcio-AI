@@ -1,0 +1,141 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.docker
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# Database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+corrections.db
+fantacalcio.db
+
+# Backups and exports
+*.sql
+*.bak
+*.backup
+database_*.sql
+database_*.json
+*backup*.json
+*.corrupted.*
+season_roster_backup_*.json
+
+# ChromaDB backups (keep main chroma_db folder but ignore backups)
+chroma_db_backup_*
+chroma/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Cache directories
+cache/
+.cache/
+__pycache__/
+
+# Data files (keep structure but not large data)
+data/*.json
+!data/.gitkeep
+repo_snapshot.*.json
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Replit specific
+.replit
+.breakpoints
+replit.nix
+.local/
+.upm/
+
+# Node modules (if any frontend tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Poetry
+poetry.lock
+
+# Docker (optional, depends on your workflow)
+# Uncomment if you want to ignore these
+# docker-compose.override.yml
+
+# Secrets and credentials
+secrets/
+*.pem
+*.key
+*.cert
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Documentation build
+docs/_build/
+site/

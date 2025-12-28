@@ -93,6 +93,28 @@
                 <div class="row" id="leaguesContainer">
                     <!-- Leagues will be loaded here via JavaScript -->
                 </div>
+                
+                <!-- League Chat Section -->
+                <div class="card mt-4" id="league-chat-container" style="display:none;">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Chat Lega</h5>
+                        <span class="badge bg-light text-dark" id="chat-active-count">0 online</span>
+                    </div>
+                    <div class="card-body" style="height: 400px; overflow-y: auto;" id="chat-messages">
+                        <!-- Messages will appear here -->
+                    </div>
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <input type="text" id="chat-input" class="form-control" placeholder="Scrivi un messaggio..." maxlength="500">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted" id="typing-indicator" style="display:none;">
+                            <i class="fas fa-ellipsis-h"></i> Qualcuno sta scrivendo...
+                        </small>
+                    </div>
+                </div>
 
                 {% if leagues|length == 0 %}
                 <div class="text-center py-5">
@@ -254,6 +276,124 @@
                 alert('Errore nella creazione della lega');
             }
         }
+        
+        // ========== League Chat with SocketIO ==========
+        let socket;
+        let currentLeagueId = null;
+        
+        function initializeChat() {
+            socket = io();
+            
+            socket.on('connect', () => {
+                console.log('Connected to chat server');
+            });
+            
+            socket.on('new_message', (data) => {
+                displayMessage(data);
+            });
+            
+            socket.on('user_joined', (data) => {
+                updateActiveCount(data.active_users);
+                displaySystemMessage(`${data.username} si è unito alla chat`);
+            });
+            
+            socket.on('user_left', (data) => {
+                updateActiveCount(data.active_users);
+                displaySystemMessage(`${data.username} ha lasciato la chat`);
+            });
+            
+            socket.on('typing_indicator', (data) => {
+                showTypingIndicator(data.username);
+            });
+        }
+        
+        function joinLeagueChat(leagueId) {
+            currentLeagueId = leagueId;
+            socket.emit('join_league_chat', { league_id: leagueId });
+            document.getElementById('league-chat-container').style.display = 'block';
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message && currentLeagueId) {
+                socket.emit('send_message', {
+                    league_id: currentLeagueId,
+                    message: message
+                });
+                input.value = '';
+            }
+        }
+        
+        function displayMessage(data) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'mb-2';
+            
+            const time = new Date(data.timestamp).toLocaleTimeString('it-IT', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageEl.innerHTML = `
+                <div class="d-flex">
+                    <strong class="me-2">${data.username}:</strong>
+                    <span>${data.message}</span>
+                    <small class="text-muted ms-auto">${time}</small>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function displaySystemMessage(message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'mb-2 text-center';
+            messageEl.innerHTML = `<small class="text-muted fst-italic">${message}</small>`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function updateActiveCount(count) {
+            document.getElementById('chat-active-count').textContent = `${count} online`;
+        }
+        
+        function showTypingIndicator(username) {
+            const indicator = document.getElementById('typing-indicator');
+            indicator.textContent = `${username} sta scrivendo...`;
+            indicator.style.display = 'block';
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Chat input typing event
+        let typingTimer;
+        document.getElementById('chat-input')?.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            if (currentLeagueId) {
+                socket.emit('typing', { league_id: currentLeagueId });
+            }
+        });
+        
+        // Enter key to send message
+        document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChat();
+        });
     </script>
+    
+    <!-- SocketIO Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
 </body>
 </html>

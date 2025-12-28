@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ t.title }}</title>
+  
+  <!-- Prevent aggressive caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
+  <!-- PWA Support -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FantaCalcio AI">
+  <link rel="apple-touch-icon" href="/static/images/icon-192.png">
+  <meta name="description" content="Assistente AI per Fantacalcio - Consigli per asta, formazioni e strategie Serie A">
+  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <!-- SocketIO Client for Real-Time Updates -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
@@ -1403,6 +1418,9 @@
         <div style="display: flex; align-items: center; gap: 2px;">
           <button onclick="openPlayerComparison()" class="header-btn" style="padding: 6px 8px; font-size: 14px;" title="Confronta Giocatori">⚖️</button>
           <button onclick="openModal('analyticsModal')" class="header-btn" style="padding: 6px 8px; font-size: 14px;" title="Statistiche">📊</button>
+          <button onclick="openAITeamBuilder()" class="header-btn" style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 6px 8px; font-size: 14px; color: white;" title="AI Team Builder">🧠</button>
+          <button onclick="openMLPredictor()" class="header-btn" style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 6px 8px; font-size: 14px; color: white;" title="ML Predictions">🔮</button>
+          <button onclick="openMatchTracker()" class="header-btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 6px 8px; font-size: 14px; color: white;" title="Live Matches">⚡</button>
           <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" style="padding: 6px 8px;" title="Cambia Tema">
             <i class="fas fa-moon" style="font-size: 14px;"></i>
           </button>
@@ -1477,6 +1495,9 @@
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
         <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
         <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
+        <button class="quick-action-btn" onclick="openAITeamBuilder()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">🧠 AI Team Builder</button>
+        <button class="quick-action-btn" onclick="openMLPredictor()" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; font-weight: 600;">🔮 ML Predictions</button>
+        <button class="quick-action-btn" onclick="openMatchTracker()" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; font-weight: 600;">⚡ Live Matches</button>
       </div>
     </div>
 
@@ -1538,6 +1559,9 @@
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Parma')">📈 Acquisti Parma</button>
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Como')">📈 Acquisti Como</button>
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Venezia')">📈 Acquisti Venezia</button>
+        <button class="quick-action-btn" onclick="openAITeamBuilder()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">🧠 AI Team Builder</button>
+        <button class="quick-action-btn" onclick="openMLPredictor()" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; font-weight: 600;">🔮 ML Predictions</button>
+        <button class="quick-action-btn" onclick="openMatchTracker()" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; font-weight: 600;">⚡ Live Matches</button>
         <button class="quick-action-btn" onclick="askQuickQuestionMantra('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
         <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
         <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
@@ -1576,6 +1600,9 @@
         <button class="quick-action-btn" onclick="askQuickQuestionDraft('Sleeper picks per draft?')">💎 Sleeper Picks</button>
         <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
         <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
+        <button class="quick-action-btn" onclick="openAITeamBuilder()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">🧠 AI Team Builder</button>
+        <button class="quick-action-btn" onclick="openMLPredictor()" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; font-weight: 600;">🔮 ML Predictions</button>
+        <button class="quick-action-btn" onclick="openMatchTracker()" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; font-weight: 600;">⚡ Live Matches</button>
       </div>
     </div>
 
@@ -1632,6 +1659,9 @@
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Cagliari')">📈 Acquisti Cagliari</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Parma')">📈 Acquisti Parma</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Como')">📈 Acquisti Como</button>
+        <button class="quick-action-btn" onclick="openAITeamBuilder()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">🧠 AI Team Builder</button>
+        <button class="quick-action-btn" onclick="openMLPredictor()" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; font-weight: 600;">🔮 ML Predictions</button>
+        <button class="quick-action-btn" onclick="openMatchTracker()" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; font-weight: 600;">⚡ Live Matches</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Venezia')">📈 Acquisti Venezia</button>
         <button class="quick-action-btn" onclick="askQuickQuestionSuper('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
         <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
@@ -2956,6 +2986,218 @@
         document.getElementById('player2Input').value = '';
         document.getElementById('comparisonResults').innerHTML = '';
     }
+    
+    // ========== NEW AI FEATURES FUNCTIONS ==========
+    // VERSION: 2024-12-27-v2 - Updated with null-safe checks
+    console.log('🔧 JavaScript Version: 2024-12-27-v2 - AI Features with null-safe checks loaded');
+    
+    function openAITeamBuilder() {
+        const budget = prompt('Inserisci il budget totale (crediti):', '500');
+        if (!budget) return;
+        
+        const formation = prompt('Inserisci la formazione (es: 3-5-2, 4-4-2, 4-3-3):', '3-5-2');
+        if (!formation) return;
+        
+        showToast('🧠 AI sta ottimizzando la tua squadra...', 'info');
+        
+        fetch('/api/team-builder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                budget: parseFloat(budget),
+                formation: formation,
+                constraints: {}
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Team builder response:', data);
+            if (data.error) {
+                showToast('❌ ' + data.error, 'error');
+            } else {
+                displayTeamBuilderResults(data);
+            }
+        })
+        .catch(error => {
+            showToast('❌ Errore nella costruzione del team', 'error');
+            console.error('Team builder error:', error);
+        });
+    }
+    
+    function displayTeamBuilderResults(data) {
+        console.log('Displaying team results:', data);
+        
+        let html = `<div style="background: #1a2332; padding: 20px; border-radius: 12px; margin: 20px 0; color: #e5e7eb;">`;
+        html += `<h3 style="color: #a78bfa; margin-bottom: 15px; font-size: 18px;">🧠 Team Ottimizzato AI</h3>`;
+        html += `<p style="color: #d1d5db; margin: 8px 0;"><strong style="color: #f3f4f6;">Budget usato:</strong> €${(data.total_cost || 0).toFixed(1)} / €${(data.remaining_budget || 0).toFixed(1)} rimasti</p>`;
+        html += `<p style="color: #d1d5db; margin: 8px 0;"><strong style="color: #f3f4f6;">Fantamedia media:</strong> ${(data.avg_fantamedia || 0).toFixed(2)}</p>`;
+        
+        if (data.formation_breakdown) {
+            html += `<p style="color: #d1d5db; margin: 8px 0;"><strong style="color: #f3f4f6;">Formazione:</strong> ${data.formation_breakdown.D || 0}-${data.formation_breakdown.C || 0}-${data.formation_breakdown.A || 0}</p>`;
+        }
+        
+        html += `<p style="color: #d1d5db; margin: 8px 0;"><strong style="color: #f3f4f6;">Fitness Score:</strong> ${(data.fitness_score || 0).toFixed(2)}</p>`;
+        html += `<h4 style="margin-top: 20px; color: #34d399; font-size: 16px;">Rosa (${data.team ? data.team.length : 0} giocatori):</h4>`;
+        
+        if (data.team && Array.isArray(data.team)) {
+            data.team.forEach(player => {
+                html += `<div style="background: rgba(52,211,153,0.15); padding: 12px; margin: 8px 0; border-radius: 8px; border-left: 3px solid #34d399;">`;
+                html += `<strong style="color: #f3f4f6; font-size: 15px;">${player.name || 'Unknown'}</strong> <span style="color: #a78bfa;">(${player.role || '?'})</span> - <span style="color: #60a5fa;">${player.team || 'N/A'}</span><br>`;
+                html += `<span style="color: #d1d5db; font-size: 13px;">Fantamedia: ${(player.fantamedia || 0).toFixed(1)} | Prezzo: €${player.price || 0} | Value: ${(player.value_score || 0).toFixed(2)}</span>`;
+                html += `</div>`;
+            });
+        }
+        
+        if (data.recommendations && data.recommendations.length > 0) {
+            html += `<h4 style="margin-top: 20px; color: #fbbf24; font-size: 16px;">💡 Raccomandazioni:</h4>`;
+            data.recommendations.forEach(rec => {
+                html += `<p style="background: rgba(251,191,36,0.15); padding: 10px; border-radius: 6px; margin: 5px 0; color: #fde68a; border-left: 3px solid #fbbf24;">${rec}</p>`;
+            });
+        }
+        
+        html += `</div>`;
+        
+        // Display in chat - use the correct container ID
+        const chatContainer = document.getElementById('chatContainer');
+        if (!chatContainer) {
+            console.error('Chat container not found!');
+            showToast('❌ Errore: chat container non trovato', 'error');
+            return;
+        }
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant-message';
+        messageDiv.innerHTML = html;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function openMLPredictor() {
+        const playerName = prompt('Inserisci il nome del giocatore per le predizioni ML:');
+        if (!playerName) return;
+        
+        showToast('🔮 ML sta analizzando le performance...', 'info');
+        
+        // Mock features for demo - in real scenario, fetch from player data
+        fetch('/api/predictions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                player_features: {
+                    fantamedia_last_5: 6.5,
+                    fantamedia_season: 6.8,
+                    appearances: 20,
+                    goals_last_5: 2,
+                    assists_last_5: 1,
+                    opponent_difficulty: 3,  // 1-5 scale
+                    home_away: 1,  // 1=home, 0=away
+                    role: 'A'  // P, D, C, A
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('ML Predictions response:', data);
+            if (data.error) {
+                showToast('❌ ' + data.message || data.error, 'error');
+            } else {
+                displayMLPrediction(playerName, data);
+            }
+        })
+        .catch(error => {
+            showToast('❌ Predizione ML non disponibile', 'error');
+            console.error('ML Predictor error:', error);
+        });
+    }
+    
+    function displayMLPrediction(playerName, data) {
+        let html = `<div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 20px; border-radius: 12px; margin: 20px 0; color: white;">`;
+        html += `<h3 style="margin-bottom: 15px;">🔮 Predizione ML: ${playerName}</h3>`;
+        html += `<p><strong>Fantamedia predetta:</strong> ${(data.predicted_fantamedia || 0).toFixed(2)}</p>`;
+        html += `<p><strong>Confidenza:</strong> ${((data.confidence || 0) * 100).toFixed(1)}%</p>`;
+        
+        if (data.confidence_interval) {
+            html += `<p><strong>Range:</strong> ${data.confidence_interval.lower.toFixed(2)} - ${data.confidence_interval.upper.toFixed(2)}</p>`;
+        }
+        
+        if (data.explanation) {
+            html += `<p style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">${data.explanation}</p>`;
+        }
+        
+        if (data.note) {
+            html += `<p style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;">ℹ️ ${data.note}</p>`;
+        }
+        
+        html += `</div>`;
+        
+        const chatContainer = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant-message';
+        messageDiv.innerHTML = html;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function openMatchTracker() {
+        showToast('⚡ Caricamento partite live...', 'info');
+        
+        fetch('/api/match-tracker/active')
+        .then(response => response.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                displayActiveMatches(data.matches);
+            } else {
+                showToast('📅 Nessuna partita live al momento', 'info');
+            }
+        })
+        .catch(error => {
+            showToast('❌ Errore nel caricamento delle partite', 'error');
+            console.error('Match tracker error:', error);
+        });
+    }
+    
+    function displayActiveMatches(matches) {
+        let html = `<div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; border-radius: 12px; margin: 20px 0; color: white;">`;
+        html += `<h3 style="margin-bottom: 15px;">⚡ Partite Live (${matches.length})</h3>`;
+        
+        matches.forEach(match => {
+            html += `<div style="background: rgba(255,255,255,0.2); padding: 12px; margin: 10px 0; border-radius: 8px;">`;
+            html += `<strong>${match.home_team} vs ${match.away_team}</strong><br>`;
+            html += `Minuto: ${match.minute}' | Stato: ${match.status}`;
+            if (match.score) {
+                html += `<br>Punteggio: ${match.score.home} - ${match.score.away}`;
+            }
+            html += `</div>`;
+        });
+        
+        html += `</div>`;
+        
+        const chatContainer = document.getElementById('chatContainerClassic');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant-message';
+        messageDiv.innerHTML = html;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
   </script>
+  
+  <!-- PWA Installation Script -->
+  <script src="/static/js/pwa.js"></script>
+  
+  <!-- PWA Install Button -->
+  <button id="pwa-install-btn" style="display:none;">
+    <i class="fas fa-download"></i> Installa App
+  </button>
+  
+  <!-- Connection Status Bar -->
+  <div id="connection-status" class="connection-status" style="display:none;"></div>
+  
 </body>
 </html>

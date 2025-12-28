@@ -1,0 +1,106 @@
+# Docker ignore file
+# Exclude files from Docker build context
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.eggs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment files (add via docker-compose)
+.env
+.env.*
+!.env.docker
+!.env.example
+
+# Database files (use volumes)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+corrections.db
+fantacalcio.db
+
+# Backups
+*.sql
+*.bak
+*.backup
+database_*.sql
+database_*.json
+*backup*.json
+
+# ChromaDB (use volumes)
+chroma_db_backup_*
+
+# Cache directories
+cache/
+.cache/
+
+# Logs
+*.log
+logs/
+
+# Documentation drafts
+*.draft.md
+TODO.md
+NOTES.md
+
+# Replit specific
+.replit
+.breakpoints
+replit.nix
+.local/
+
+# Large data files
+repo_snapshot.*.json
+*.part*.json
+
+# Test files
+test_*.py
+*_test.py
+.pytest_cache/
+
+# Poetry
+poetry.lock
+
+# Node modules (if any)
+node_modules/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
