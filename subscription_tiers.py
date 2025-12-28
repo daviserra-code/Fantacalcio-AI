@@ -83,6 +83,10 @@ def get_user_tier() -> dict:
     if not current_user.is_authenticated:
         return SubscriptionTier.FREE
     
+    # Grant Elite access to admin users
+    if hasattr(current_user, 'is_admin') and current_user.is_admin:
+        return SubscriptionTier.ELITE
+    
     if current_user.is_pro:
         # For testing/admin: if email is admin, grant Elite access
         if hasattr(current_user, 'email') and current_user.email == 'admin@fantacalcio.ai':
