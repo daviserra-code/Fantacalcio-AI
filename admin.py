@@ -91,10 +91,10 @@ def create_user():
         new_user = User(
             username=data['username'],
             email=data['email'],
-            password_hash=generate_password_hash(data['password']),
             is_admin=data.get('is_admin', False),
             is_active=data.get('is_active', True)
         )
+        new_user.set_password(data['password'])
         
         db.session.add(new_user)
         db.session.commit()
