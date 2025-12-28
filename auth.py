@@ -3,14 +3,14 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, current_user, login_required
 from urllib.parse import urlparse
-from app import db, limiter
+from app import db  # , limiter
 from models import User
 from device_detector import DeviceDetector
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@limiter.limit("10 per minute")  # Prevent brute force attacks
+# @limiter.limit("10 per minute")  # Prevent brute force attacks
 def login():
     """Login form and processing"""
     if current_user.is_authenticated:
@@ -62,7 +62,7 @@ def login():
     return render_template('auth/login.html')
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
-@limiter.limit("5 per hour")  # Prevent spam registrations
+# @limiter.limit("5 per hour")  # Prevent spam registrations
 def register():
     """Registration form and processing"""
     if current_user.is_authenticated:
