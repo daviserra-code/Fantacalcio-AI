@@ -132,6 +132,55 @@ def update_user_admin(user_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@admin_bp.route('/admin/api/user/<int:user_id>/edit', methods=['POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    """Edit user details"""
+    from flask import request, jsonify
+    from models import User
+    logger.info(f"Edit user {user_id}")
+    
+    try:
+        data = request.get_json()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        # Check if username is being changed and if it already exists
+        if data.get('username') and data['username'] != user.username:
+            existing = User.query.filter_by(username=data['username']).first()
+            if existing:
+                return jsonify({'success': False, 'message': 'Username already exists'}), 400
+            user.username = data['username']
+        
+        # Check if email is being changed and if it already exists
+        if data.get('email') and data['email'] != user.email:
+            existing = User.query.filter_by(email=data['email']).first()
+            if existing:
+                return jsonify({'success': False, 'message': 'Email already exists'}), 400
+            user.email = data['email']
+        
+        # Update optional fields
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        
+        # Update password if provided
+        if data.get('password'):
+            user.set_password(data['password'])
+        
+        db.session.commit()
+        logger.info(f"User {user.username} updated successfully")
+        
+        return jsonify({'success': True, 'message': 'User updated successfully'})
+    except Exception as e:
+        logger.error(f"Error editing user: {e}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @admin_bp.route('/admin/api/user/<int:user_id>/active', methods=['POST'])
 @login_required
 @admin_required
