@@ -1047,7 +1047,7 @@ def api_active_matches():
 
 @app.route('/api/match-tracker/demo')
 def api_demo_matches():
-    """Get demo/mock matches for testing (admin only)"""
+    """Get demo/mock matches for testing"""
     from match_tracker_enhanced import get_match_tracker
     import random
     
@@ -1070,14 +1070,30 @@ def api_demo_matches():
         if match_id not in tracker.active_matches:
             tracker.start_match(match_id, home, away)
             
-            # Add some demo score
-            tracker.active_matches[match_id]['score'] = {
+            # Add some demo score and data
+            match = tracker.active_matches[match_id]
+            match['score'] = {
                 'home': random.randint(0, 3),
                 'away': random.randint(0, 2)
             }
-            tracker.active_matches[match_id]['minute'] = random.randint(20, 80)
+            match['minute'] = random.randint(20, 80)
+            match['status'] = 'live'
         
-        demo_matches.append(tracker.get_match_summary(match_id))
+        # Get summary and ensure it exists
+        summary = tracker.get_match_summary(match_id)
+        if summary:
+            demo_matches.append(summary)
+        else:
+            # Fallback to basic match info
+            match = tracker.active_matches[match_id]
+            demo_matches.append({
+                'match_id': match_id,
+                'home_team': home,
+                'away_team': away,
+                'score': match['score'],
+                'minute': match['minute'],
+                'status': 'live'
+            })
     
     return jsonify({
         'matches': demo_matches,
