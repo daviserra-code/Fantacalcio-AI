@@ -1029,18 +1029,25 @@ def api_active_matches():
         
         # Check if it's likely matchday time
         is_matchday = False
+        matchday_message = 'Nessuna partita live al momento'
+        
         if day == 4 and hour >= 20:  # Friday evening
             is_matchday = True
+            matchday_message = 'Orario tipico per partite del venerdì (20:45)'
         elif day == 5:  # Saturday
             is_matchday = True
+            matchday_message = 'Orario tipico per partite del sabato'
         elif day == 6:  # Sunday
             is_matchday = True
+            matchday_message = 'Orario tipico per partite della domenica'
             
         return jsonify({
             'matches': [],
-            'message': 'Nessuna partita live al momento',
+            'message': matchday_message,
             'is_matchday': is_matchday,
-            'next_check': 'Controlla durante i weekend per le partite di Serie A'
+            'demo_available': True,
+            'note': 'API gratuite non supportano Serie A in tempo reale. Usa la modalità demo per testare la funzionalità.',
+            'next_check': 'Le partite di Serie A si giocano principalmente nei weekend: Ven 20:45, Sab/Dom 12:30, 15:00, 18:00, 20:45'
         })
     
     return jsonify({'matches': matches})

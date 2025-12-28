@@ -3174,18 +3174,20 @@
             } else {
                 // Show informative message with demo option
                 let message = data.message || 'Nessuna partita live al momento';
+                let note = data.note || '';
                 let infoHtml = `
                     <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; margin: 20px; color: white; text-align: center;">
                         <h3 style="margin-bottom: 15px;">📅 ${message}</h3>
+                        ${note ? `<p style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin: 15px 0;"><strong>ℹ️ Nota:</strong> ${note}</p>` : ''}
                         <p style="opacity: 0.9; margin: 10px 0;">Le partite di Serie A si giocano principalmente nei weekend:</p>
                         <ul style="text-align: left; display: inline-block; margin: 10px 0;">
                             <li>Venerdì: 20:45</li>
                             <li>Sabato: 12:30, 15:00, 18:00, 20:45</li>
                             <li>Domenica: 12:30, 15:00, 18:00, 20:45</li>
                         </ul>
-                        <p style="margin: 15px 0;">Per testare la funzionalità:</p>
-                        <button onclick="loadDemoMatches()" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
-                            🎮 Carica Partite Demo
+                        <p style="margin: 15px 0;"><strong>🎮 Prova la funzionalità con partite simulate:</strong></p>
+                        <button onclick="loadDemoMatches()" style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px;">
+                            ⚡ Carica Partite Demo
                         </button>
                     </div>
                 `;
