@@ -1,6 +1,6 @@
 # live_matches_service.py
 """
-Service to fetch real live Serie A matches from football-data.org API
+Service to fetch real live Serie A matches from API-Football (RapidAPI)
 """
 import os
 import logging
@@ -12,13 +12,13 @@ from cache_manager import CacheManager
 LOG = logging.getLogger("live_matches_service")
 
 class LiveMatchesService:
-    """Fetch real-time Serie A match data"""
+    """Fetch real-time Serie A match data from API-Football"""
     
     def __init__(self):
-        # football-data.org API (free tier: 10 requests/minute)
-        self.api_key = os.getenv("FOOTBALL_DATA_API_KEY", "")
-        self.base_url = "https://api.football-data.org/v4"
-        self.serie_a_id = "SA"  # Serie A competition code
+        # API-Football via RapidAPI (free tier: 100 requests/day)
+        self.api_key = os.getenv("RAPIDAPI_KEY", "")
+        self.base_url = "https://api-football-v1.p.rapidapi.com/v3"
+        self.serie_a_id = "135"  # Serie A league ID in API-Football
         self.cache = CacheManager()
         
     def get_todays_matches(self) -> List[Dict]:
@@ -31,31 +31,36 @@ class LiveMatchesService:
             return cached
             
         try:
-            headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
+            if not self.api_key:
+                LOG.error("RAPIDAPI_KEY not set")
+                return []
+                
+            headers = {
+                "X-RapidAPI-Key": self.api_key,
+                "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com"
+            }
             
             # Get matches for today
             today = datetime.now().date()
-            url = f"{self.base_url}/competitions/{self.serie_a_id}/matches"
+            url = f"{self.base_url}/fixtures"
             params = {
-                "dateFrom": today.isoformat(),
-                "dateTo": today.isoformat()
+                "league": self.serie_a_id,
+                "season": datetime.now().year,
+                "date": today.isoformat()
             }
             
             response = requests.get(url, headers=headers, params=params, timeout=10)
             
             if response.status_code == 200:
                 data = response.json()
-                matches = data.get("matches", [])
+                fixtures = data.get("response", [])
                 
                 # Transform to our format
                 formatted_matches = []
-                for match in matches:
-                    # Only include matches that are currently live or about to start
-                    status = match.get("status")
-                    if status in ["IN_PLAY", "PAUSED", "SCHEDULED"]:
-                        formatted = self._format_match(match)
-                        if formatted:
-                            formatted_matches.append(formatted)
+                for fixture in fixtures:
+                    formatted = self._format_match(fixture)
+                    if formatted:
+                        formatted_matches.append(formatted)
                 
                 # Cache for 5 minutes
                 self.cache.set(cache_key, formatted_matches, ttl=300)
@@ -75,7 +80,7 @@ class LiveMatchesService:
     def get_live_matches(self) -> List[Dict]:
         """Get only currently live Serie A matches"""
         all_matches = self.get_todays_matches()
-        return [m for m in all_matches if m['status'] in ['IN_PLAY', 'PAUSED']]
+        return [m for m in all_matches if m['status'] in ['IN_PLAY', 'PAUSED', 'LIVE', '1H', '2H', 'HT']]
     
     def get_match_details(self, match_id: str) -> Optional[Dict]:
         """Get detailed information about a specific match"""
@@ -85,18 +90,26 @@ class LiveMatchesService:
             return cached
             
         try:
-            headers = {"X-Auth-Token": self.api_key} if self.api_key else {}
-            url = f"{self.base_url}/matches/{match_id}"
+            if not self.api_key:
+                return None
+                
+            headers = {
+                "X-RapidAPI-Key": self.api_key,
+                "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com"
+            }
+            url = f"{self.base_url}/fixtures"
+            params = {"id": match_id}
             
-            response = requests.get(url, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, params=params, timeout=10)
             
             if response.status_code == 200:
-                match = response.json()
-                formatted = self._format_match(match)
-                
-                # Cache for 1 minute (live data changes frequently)
-                self.cache.set(cache_key, formatted, ttl=60)
-                return formatted
+                data = response.json()
+                fixtures = data.get("response", [])
+                if fixtures:
+                    formatted = self._format_match(fixtures[0])
+                    # Cache for 1 minute (live data changes frequently)
+                    self.cache.set(cache_key, formatted, ttl=60)
+                    return formatted
             else:
                 LOG.error(f"Error fetching match {match_id}: {response.status_code}")
                 return None
@@ -105,39 +118,53 @@ class LiveMatchesService:
             LOG.error(f"Error fetching match details: {e}")
             return None
     
-    def _format_match(self, match: Dict) -> Dict:
-        """Transform API match data to our format"""
+    def _format_match(self, fixture: Dict) -> Dict:
+        """Transform API-Football fixture data to our format"""
         try:
-            home_team = match.get("homeTeam", {})
-            away_team = match.get("awayTeam", {})
-            score = match.get("score", {})
-            fulltime = score.get("fullTime", {})
+            teams = fixture.get("teams", {})
+            fixture_info = fixture.get("fixture", {})
+            goals = fixture.get("goals", {})
+            league = fixture.get("league", {})
             
-            # Map status
+            home_team = teams.get("home", {})
+            away_team = teams.get("away", {})
+            
+            # Map status - API-Football uses different status codes
+            status = fixture_info.get("status", {}).get("short", "NS")
             status_map = {
-                "IN_PLAY": "live",
-                "PAUSED": "live",
-                "SCHEDULED": "scheduled",
-                "FINISHED": "finished",
-                "POSTPONED": "postponed",
-                "CANCELLED": "cancelled"
+                "1H": "IN_PLAY",
+                "HT": "PAUSED", 
+                "2H": "IN_PLAY",
+                "ET": "IN_PLAY",
+                "P": "PAUSED",
+                "LIVE": "IN_PLAY",
+                "FT": "FINISHED",
+                "AET": "FINISHED",
+                "PEN": "FINISHED",
+                "PST": "POSTPONED",
+                "CANC": "CANCELLED",
+                "ABD": "CANCELLED",
+                "NS": "SCHEDULED",
+                "TBD": "SCHEDULED"
             }
             
+            mapped_status = status_map.get(status, "SCHEDULED")
+            
             return {
-                "match_id": str(match.get("id")),
-                "home_team": home_team.get("name", home_team.get("shortName", "Home")),
-                "away_team": away_team.get("name", away_team.get("shortName", "Away")),
-                "home_team_short": home_team.get("tla", "HOM"),
-                "away_team_short": away_team.get("tla", "AWA"),
+                "match_id": str(fixture_info.get("id")),
+                "home_team": home_team.get("name", "Home"),
+                "away_team": away_team.get("name", "Away"),
+                "home_team_short": home_team.get("name", "HOM")[:3].upper(),
+                "away_team_short": away_team.get("name", "AWA")[:3].upper(),
                 "score": {
-                    "home": fulltime.get("home") or 0,
-                    "away": fulltime.get("away") or 0
+                    "home": goals.get("home") or 0,
+                    "away": goals.get("away") or 0
                 },
-                "status": status_map.get(match.get("status"), "unknown"),
-                "minute": match.get("minute"),
-                "kickoff": match.get("utcDate"),
-                "venue": match.get("venue"),
-                "competition": "Serie A"
+                "status": mapped_status,
+                "minute": fixture_info.get("status", {}).get("elapsed"),
+                "kickoff": fixture_info.get("date"),
+                "venue": fixture_info.get("venue", {}).get("name"),
+                "competition": league.get("name", "Serie A")
             }
         except Exception as e:
             LOG.error(f"Error formatting match: {e}")
