@@ -1104,6 +1104,12 @@ def api_demo_matches():
 def api_match_summary(match_id):
     """Get match summary and current stats"""
     from match_tracker_enhanced import get_match_tracker
+    import random
+    
+    # Handle demo request
+    if match_id == "demo":
+        return api_demo_matches()
+    
     tracker = get_match_tracker()
     summary = tracker.get_match_summary(match_id)
     return jsonify(summary or {'error': 'Match not found'}), 200 if summary else 404
