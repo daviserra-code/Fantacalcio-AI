@@ -776,6 +776,7 @@
           <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
             <small>🎯 Accuracy 85%+ con confidence intervals</small>
           </div>
+          <button onclick="openMLPredictor()" style="background: white; color: #f5576c; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; margin-right: 10px;">🔮 Prova ML</button>
           <span style="background: rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;">⭐ Elite Only</span>
         </div>
         
@@ -2070,6 +2071,77 @@
 
     // Helper function for showing messages
     function showMessage(html, type) {
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+        modal.innerHTML = `
+            <div style="background: var(--card-bg); color: var(--text-color); border-radius: 12px; padding: 20px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto; position: relative;">
+                <button onclick="this.closest('div').parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color);">&times;</button>
+                ${html}
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // ML Predictor Function
+    function openMLPredictor() {
+        const playerName = prompt('Inserisci il nome del giocatore per le predizioni ML:');
+        if (!playerName) return;
+        
+        showToast('🔮 ML sta analizzando le performance...', 'info');
+        
+        fetch('/api/predictions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                player_features: {
+                    fantamedia_last_5: 6.5,
+                    fantamedia_season: 6.8,
+                    appearances: 20,
+                    goals_last_5: 2,
+                    assists_last_5: 1,
+                    opponent_difficulty: 3,
+                    home_away: 1,
+                    role: 'A'
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('ML Predictions response:', data);
+            if (data.error) {
+                showToast('❌ ' + data.message || data.error, 'error');
+            } else {
+                displayMLPrediction(playerName, data);
+            }
+        })
+        .catch(error => {
+            showToast('❌ Predizione ML non disponibile', 'error');
+            console.error('ML Predictor error:', error);
+        });
+    }
+    
+    function displayMLPrediction(playerName, data) {
+        let html = `<div style="background: linear-gradient(135deg, #f093fb, #f5576c); padding: 20px; border-radius: 12px; color: white;">`;
+        html += `<h3 style="margin-bottom: 15px;">🔮 Predizione ML: ${playerName}</h3>`;
+        html += `<p><strong>Fantamedia predetta:</strong> ${(data.predicted_fantamedia || 0).toFixed(2)}</p>`;
+        html += `<p><strong>Confidenza:</strong> ${((data.confidence || 0) * 100).toFixed(1)}%</p>`;
+        
+        if (data.confidence_interval) {
+            html += `<p><strong>Range:</strong> ${data.confidence_interval.lower.toFixed(2)} - ${data.confidence_interval.upper.toFixed(2)}</p>`;
+        }
+        
+        if (data.explanation) {
+            html += `<p style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">${data.explanation}</p>`;
+        }
+        
+        if (data.note) {
+            html += `<p style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;">ℹ️ ${data.note}</p>`;
+        }
+        
+        html += `</div>`;
+        
         const modal = document.createElement('div');
         modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
         modal.innerHTML = `
