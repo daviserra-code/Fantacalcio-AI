@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricerca Giocatori Avanzata - FantaCalcio AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #adb5bd;
+            --border-color: #dee2e6;
+            --navbar-bg: linear-gradient(45deg, #667eea, #764ba2);
+            --hover-bg: #f8f9fa;
+            --table-stripe: #f8f9fa;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1d23;
+            --bg-secondary: #252930;
+            --bg-card: #2d3139;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --text-muted: #6c757d;
+            --border-color: #495057;
+            --navbar-bg: linear-gradient(45deg, #4a5568, #5b4a78);
+            --hover-bg: #353a45;
+            --table-stripe: #252930;
+        }
+        
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .navbar-custom {
+            background: var(--navbar-bg);
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card-header {
+            background-color: var(--bg-secondary) !important;
+            border-color: var(--border-color);
+            color: var(--text-primary) !important;
+        }
+        
+        .form-control, .form-select {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-secondary);
+            border-color: #667eea;
+            color: var(--text-primary);
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        .quick-filter-btn {
+            margin: 5px;
+        }
+        
+        .role-badge-P { background-color: #0d6efd; color: white; }
+        .role-badge-D { background-color: #198754; color: white; }
+        .role-badge-C { background-color: #0dcaf0; color: #000; }
+        .role-badge-A { background-color: #dc3545; color: white; }
+        
+        .efficiency-high { color: #198754; font-weight: bold; }
+        .efficiency-medium { color: #fd7e14; font-weight: bold; }
+        .efficiency-low { color: #dc3545; }
+        
+        .player-row:hover {
+            background-color: var(--hover-bg);
+            cursor: pointer;
+        }
+        
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: var(--table-stripe);
+        }
+        
+        .table {
+            --bs-table-bg: var(--bg-card);
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-color);
+        }
+        
+        .table-hover tbody tr:hover {
+            --bs-table-hover-bg: var(--hover-bg);
+            --bs-table-hover-color: var(--text-primary);
+        }
+        
+        .table-dark {
+            --bs-table-bg: var(--bg-secondary);
+            --bs-table-color: var(--text-primary);
+        }
+        
+        .player-row {
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .theme-toggle i {
+            font-size: 24px;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .quick-filter-btn {
+                width: 100%;
+                margin: 3px 0;
+            }
+            
+            .theme-toggle {
+                bottom: 15px;
+                right: 15px;
+                width: 48px;
+                height: 48px;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-futbol me-2"></i>FantaCalcio AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/players/search">
+                            <i class="fas fa-search me-1"></i>Ricerca Giocatori
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/players/compare">
+                            <i class="fas fa-balance-scale me-1"></i>Confronta
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">
+                            <i class="fas fa-user me-1"></i>Profilo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Esci
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-search me-2"></i>Ricerca Avanzata Giocatori</h2>
+                <p class="text-muted">Trova i giocatori perfetti per la tua squadra usando filtri avanzati</p>
+            </div>
+        </div>
+        
+        <!-- Quick Filters -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Filtri Rapidi
+                </h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-sm btn-outline-success quick-filter-btn" onclick="applyQuickFilter('best_value_defenders')">
+                    <i class="fas fa-shield-alt"></i> Difensori Miglior Rapporto Q/P
+                </button>
+                <button class="btn btn-sm btn-outline-danger quick-filter-btn" onclick="applyQuickFilter('under21_forwards')">
+                    <i class="fas fa-running"></i> Attaccanti Under 21
+                </button>
+                <button class="btn btn-sm btn-outline-info quick-filter-btn" onclick="applyQuickFilter('budget_midfielders')">
+                    <i class="fas fa-coins"></i> Centrocampisti Budget (&lt;€15)
+                </button>
+                <button class="btn btn-sm btn-outline-warning quick-filter-btn" onclick="applyQuickFilter('premium_players')">
+                    <i class="fas fa-star"></i> Giocatori Premium
+                </button>
+                <button class="btn btn-sm btn-outline-primary quick-filter-btn" onclick="applyQuickFilter('top_goalkeepers')">
+                    <i class="fas fa-hand-paper"></i> Portieri Top
+                </button>
+                <button class="btn btn-sm btn-outline-secondary quick-filter-btn" onclick="applyQuickFilter('bargain_hunters')">
+                    <i class="fas fa-tag"></i> Affari (&lt;€10)
+                </button>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Filtri Avanzati
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Search by name -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Cerca per Nome/Squadra:</label>
+                        <input type="text" id="searchText" class="form-control" placeholder="Inserisci nome giocatore o squadra...">
+                    </div>
+                    
+                    <!-- Role selection -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ruolo:</label>
+                        <div>
+                            <input type="checkbox" class="btn-check" id="role_all" checked>
+                            <label class="btn btn-sm btn-outline-secondary" for="role_all">Tutti</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_P" value="P">
+                            <label class="btn btn-sm btn-outline-primary" for="role_P">P (Portieri)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_D" value="D">
+                            <label class="btn btn-sm btn-outline-success" for="role_D">D (Difensori)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_C" value="C">
+                            <label class="btn btn-sm btn-outline-info" for="role_C">C (Centrocampisti)</label>
+                            
+                            <input type="checkbox" class="btn-check role-filter" id="role_A" value="A">
+                            <label class="btn btn-sm btn-outline-danger" for="role_A">A (Attaccanti)</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Team selection -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Squadre (Tieni premuto Ctrl per selezioni multiple):</label>
+                        <select id="teamSelect" class="form-select" multiple size="6">
+                            <option value="Atalanta">Atalanta</option>
+                            <option value="Bologna">Bologna</option>
+                            <option value="Cagliari">Cagliari</option>
+                            <option value="Como">Como</option>
+                            <option value="Empoli">Empoli</option>
+                            <option value="Fiorentina">Fiorentina</option>
+                            <option value="Genoa">Genoa</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Juventus">Juventus</option>
+                            <option value="Lazio">Lazio</option>
+                            <option value="Lecce">Lecce</option>
+                            <option value="Milan">Milan</option>
+                            <option value="Monza">Monza</option>
+                            <option value="Napoli">Napoli</option>
+                            <option value="Parma">Parma</option>
+                            <option value="Roma">Roma</option>
+                            <option value="Torino">Torino</option>
+                            <option value="Udinese">Udinese</option>
+                            <option value="Venezia">Venezia</option>
+                            <option value="Verona">Verona</option>
+                        </select>
+                        <small class="text-muted">Lascia vuoto per includere tutte le squadre</small>
+                    </div>
+                    
+                    <!-- Ranges -->
+                    <div class="col-md-6">
+                        <!-- Price range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fascia di Prezzo: <span id="priceRangeLabel" class="text-primary">€0 - €100</span></label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label small">Min: €<span id="priceMinLabel">0</span></label>
+                                    <input type="range" class="form-range" id="priceMin" min="0" max="100" value="0">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Max: €<span id="priceMaxLabel">100</span></label>
+                                    <input type="range" class="form-range" id="priceMax" min="0" max="100" value="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Fantamedia range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fantamedia Minima: <span id="fantamediaLabel" class="text-success">0</span></label>
+                            <input type="range" class="form-range" id="fantamediaMin" min="0" max="35" value="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="under21Check">
+                            <label class="form-check-label" for="under21Check">
+                                <strong>Solo giocatori Under 21</strong> <span class="badge bg-info">U21</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check form-check-inline ms-3">
+                            <label class="form-check-label" for="appearancesMin">
+                                <strong>Presenze Minime:</strong>
+                            </label>
+                            <input type="number" class="form-control form-control-sm d-inline-block ms-2" id="appearancesMin" 
+                                   min="0" max="38" value="0" style="width: 70px;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary" onclick="searchPlayers()">
+                        <i class="fas fa-search me-2"></i>Cerca
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetFilters()">
+                        <i class="fas fa-redo me-2"></i>Resetta Filtri
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div id="results" class="card">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Risultati 
+                        <span id="resultCount" class="badge bg-primary">0</span>
+                        <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                    </h5>
+                    <button id="compareBtn" class="btn btn-success btn-sm" onclick="compareSelected()" disabled>
+                        <i class="fas fa-balance-scale me-2"></i>Confronta Selezionati (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="playersList">
+                    <p class="text-muted text-center">Usa i filtri sopra per cercare giocatori</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambia tema">
+        <i class="fas fa-moon" id="themeIcon"></i>
+    </button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update icon
+            const icon = document.getElementById('themeIcon');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        
+        // Load saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('themeIcon');
+            icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        });
+        
+        // Update range labels
+        document.getElementById('priceMin').addEventListener('input', updatePriceLabels);
+        document.getElementById('priceMax').addEventListener('input', updatePriceLabels);
+        document.getElementById('fantamediaMin').addEventListener('input', updateFantamediaLabel);
+        
+        // Handle "All" role checkbox
+        document.getElementById('role_all').addEventListener('change', function() {
+            if (this.checked) {
+                document.querySelectorAll('.role-filter').forEach(cb => cb.checked = false);
+            }
+        });
+        
+        document.querySelectorAll('.role-filter').forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('role_all').checked = false;
+                }
+            });
+        });
+        
+        function updatePriceLabels() {
+            const min = document.getElementById('priceMin').value;
+            const max = document.getElementById('priceMax').value;
+            document.getElementById('priceMinLabel').textContent = min;
+            document.getElementById('priceMaxLabel').textContent = max;
+            document.getElementById('priceRangeLabel').textContent = `€${min} - €${max}`;
+        }
+        
+        function updateFantamediaLabel() {
+            const val = document.getElementById('fantamediaMin').value;
+            document.getElementById('fantamediaLabel').textContent = val;
+        }
+        
+        function searchPlayers() {
+            // Show loading spinner
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            
+            // Gather selected roles
+            const selectedRoles = Array.from(document.querySelectorAll('.role-filter:checked')).map(cb => cb.value);
+            
+            // Gather filters
+            const filters = {
+                search: document.getElementById('searchText').value,
+                roles: selectedRoles,
+                teams: Array.from(document.getElementById('teamSelect').selectedOptions).map(opt => opt.value),
+                price_min: parseInt(document.getElementById('priceMin').value),
+                price_max: parseInt(document.getElementById('priceMax').value),
+                fantamedia_min: parseInt(document.getElementById('fantamediaMin').value),
+                under21: document.getElementById('under21Check').checked,
+                appearances_min: parseInt(document.getElementById('appearancesMin').value) || 0
+            };
+            
+            // Make API call
+            fetch('/api/players/search/advanced', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(filters)
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                displayResults(data);
+            })
+            .catch(err => {
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                console.error('Errore ricerca:', err);
+                alert('Errore durante la ricerca. Riprova.');
+            });
+        }
+        
+        function displayResults(data) {
+            const list = document.getElementById('playersList');
+            const countBadge = document.getElementById('resultCount');
+            
+            if (!data.success) {
+                list.innerHTML = `<div class="alert alert-danger">Errore: ${data.error}</div>`;
+                countBadge.textContent = '0';
+                return;
+            }
+            
+            countBadge.textContent = data.count;
+            
+            if (data.count === 0) {
+                list.innerHTML = '<p class="text-muted text-center"><i class="fas fa-search me-2"></i>Nessun giocatore trovato. Prova a modificare i filtri.</p>';
+                return;
+            }
+            
+            let html = `<p class="text-muted small">Visualizzati ${data.showing} di ${data.count} risultati <span class="text-info">(Seleziona fino a 4 giocatori per confrontarli)</span></p>`;
+            html += '<div class="table-responsive"><table class="table table-hover"><thead class="table-dark"><tr>';
+            html += '<th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th><th>Nome</th><th>Ruolo</th><th>Squadra</th><th>Prezzo</th><th>Fantamedia</th><th>Efficienza</th><th>Presenze</th>';
+            html += '</tr></thead><tbody>';
+            
+            data.players.forEach(player => {
+                const efficiencyClass = player.efficiency > 60 ? 'efficiency-high' : player.efficiency > 40 ? 'efficiency-medium' : 'efficiency-low';
+                const roleBadgeClass = `role-badge-${player.role}`;
+                
+                html += `<tr class="player-row">
+                    <td><input type="checkbox" class="player-checkbox" value="${player.name}" onchange="updateCompareButton()"></td>
+                    <td><strong>${player.name}</strong></td>
+                    <td><span class="badge ${roleBadgeClass}">${player.role}</span></td>
+                    <td>${player.team || 'N/A'}</td>
+                    <td>€${player.price || 0}</td>
+                    <td><strong>${player.fantamedia || 0}</strong></td>
+                    <td class="${efficiencyClass}">${player.efficiency}</td>
+                    <td>${player.appearances || 0}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            list.innerHTML = html;
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchText').value = '';
+            document.querySelectorAll('.role-filter').forEach(cb => cb.checked = false);
+            document.getElementById('role_all').checked = true;
+            document.getElementById('teamSelect').selectedIndex = -1;
+            document.getElementById('priceMin').value = 0;
+            document.getElementById('priceMax').value = 100;
+            document.getElementById('fantamediaMin').value = 0;
+            document.getElementById('under21Check').checked = false;
+            document.getElementById('appearancesMin').value = 0;
+            updatePriceLabels();
+            updateFantamediaLabel();
+            
+            // Clear results
+            document.getElementById('playersList').innerHTML = '<p class="text-muted text-center">Usa i filtri sopra per cercare giocatori</p>';
+            document.getElementById('resultCount').textContent = '0';
+        }
+        
+        function applyQuickFilter(filterName) {
+            // Show loading
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            
+            fetch(`/api/players/quick-filters/${filterName}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    displayResults(data);
+                })
+                .catch(err => {
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    console.error('Errore filtro rapido:', err);
+                    alert('Errore nell\'applicazione del filtro. Riprova.');
+                });
+        }
+        
+        // Player comparison functions
+        function updateCompareButton() {
+            const checkboxes = document.querySelectorAll('.player-checkbox:checked');
+            const count = checkboxes.length;
+            const btn = document.getElementById('compareBtn');
+            const countSpan = document.getElementById('selectedCount');
+            
+            countSpan.textContent = count;
+            btn.disabled = count < 2 || count > 4;
+            
+            // Disable unchecked if max reached
+            if (count >= 4) {
+                document.querySelectorAll('.player-checkbox:not(:checked)').forEach(cb => {
+                    cb.disabled = true;
+                });
+            } else {
+                document.querySelectorAll('.player-checkbox').forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        }
+        
+        function toggleSelectAll(checkbox) {
+            const playerCheckboxes = document.querySelectorAll('.player-checkbox');
+            const count = playerCheckboxes.length;
+            
+            if (checkbox.checked && count > 4) {
+                alert('Puoi confrontare massimo 4 giocatori!');
+                checkbox.checked = false;
+                return;
+            }
+            
+            playerCheckboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+            });
+            updateCompareButton();
+        }
+        
+        function compareSelected() {
+            const checkboxes = document.querySelectorAll('.player-checkbox:checked');
+            const players = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (players.length < 2) {
+                alert('Seleziona almeno 2 giocatori!');
+                return;
+            }
+            
+            if (players.length > 4) {
+                alert('Puoi confrontare massimo 4 giocatori!');
+                return;
+            }
+            
+            // Build URL with query params
+            const params = players.map(p => `players=${encodeURIComponent(p)}`).join('&');
+            window.location.href = `/players/compare?${params}`;
+        }
+        
+        // Initialize labels
+        updatePriceLabels();
+        updateFantamediaLabel();
+    </script>
+</body>
+</html>

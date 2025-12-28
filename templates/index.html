@@ -1393,6 +1393,11 @@
             <a href="#" onclick="switchTab('league-rules', this); return false;" class="header-btn" style="padding: 6px 10px; font-size: 12px;">
               <i class="fas fa-cog"></i> Leghe
             </a>
+            {% if user.is_admin %}
+              <a href="/admin" class="header-btn" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24);color:#fff;border-color:#ff6b6b;font-weight:600;padding:6px 10px;font-size:12px;">
+                <i class="fas fa-shield-alt"></i> Admin
+              </a>
+            {% endif %}
             {% if not user.is_pro %}
               <a href="/upgrade" class="header-btn" style="background:linear-gradient(135deg,#ffd700,#ffed4e);color:#333;border-color:#ffd700;font-weight:600;padding:6px 10px;font-size:12px;">
                 <i class="fas fa-crown"></i> PRO
@@ -1493,6 +1498,7 @@
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Juventus')">📈 Acquisti Juventus</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Napoli')">📈 Acquisti Napoli</button>
         <button class="quick-action-btn" onclick="askQuickQuestion('Ultimi acquisti Genoa')">📈 Acquisti Genoa</button>
+        <a href="/league-system" class="quick-action-btn" style="text-decoration:none;">🏆 Le Mie Leghe</a>
         <button class="quick-action-btn" onclick="showMobileAIInsights()">🤖 AI Insights</button>
         <button class="quick-action-btn" onclick="showRealTimeInfo()">📊 Real-time Updates</button>
         <button class="quick-action-btn" onclick="openAITeamBuilder()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; font-weight: 600;">🧠 AI Team Builder</button>
@@ -3201,3 +3207,4 @@
   
 </body>
 </html>
+
