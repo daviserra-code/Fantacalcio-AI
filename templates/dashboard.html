@@ -54,6 +54,10 @@
                         {% if not is_pro %}
                             <li><a class="dropdown-item text-warning" href="/upgrade"><i class="fas fa-crown me-2"></i>Upgrade a Pro</a></li>
                         {% endif %}
+                        {% if user.is_admin %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/admin"><i class="fas fa-shield-alt me-2"></i>Admin Panel</a></li>
+                        {% endif %}
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                     </ul>

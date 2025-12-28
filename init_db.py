@@ -112,7 +112,8 @@ def init_database(create_admin=False):
                         email='admin@fantacalcio.local',
                         first_name='Admin',
                         last_name='User',
-                        is_active=True
+                        is_active=True,
+                        is_admin=True
                     )
                     admin.set_password('admin123')  # Change this in production!
                     
