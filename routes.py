@@ -995,9 +995,94 @@ def api_predictions_batch():
 def api_active_matches():
     """Get currently active matches"""
     from match_tracker_enhanced import get_match_tracker
+    from live_matches_service import get_live_matches_service
+    from datetime import datetime
+    
     tracker = get_match_tracker()
-    matches = tracker.get_active_matches()
+    service = get_live_matches_service()
+    
+    # Try to fetch real live matches
+    try:
+        live_matches = service.get_live_matches()
+        
+        # Sync to tracker
+        if live_matches:
+            service.sync_to_tracker(tracker)
+        
+        # Get tracked matches
+        matches = tracker.get_active_matches()
+        
+        # If no tracked matches but we have live matches from API, use those
+        if not matches and live_matches:
+            matches = live_matches
+            
+    except Exception as e:
+        app.logger.error(f"Error fetching live matches: {e}")
+        matches = tracker.get_active_matches()
+    
+    # If still no matches, check if it's matchday and provide info
+    if not matches:
+        # Serie A typically plays Friday 20:45, Saturday/Sunday 12:30, 15:00, 18:00, 20:45
+        now = datetime.now()
+        day = now.weekday()  # 0=Monday, 6=Sunday
+        hour = now.hour
+        
+        # Check if it's likely matchday time
+        is_matchday = False
+        if day == 4 and hour >= 20:  # Friday evening
+            is_matchday = True
+        elif day == 5:  # Saturday
+            is_matchday = True
+        elif day == 6:  # Sunday
+            is_matchday = True
+            
+        return jsonify({
+            'matches': [],
+            'message': 'Nessuna partita live al momento',
+            'is_matchday': is_matchday,
+            'next_check': 'Controlla durante i weekend per le partite di Serie A'
+        })
+    
     return jsonify({'matches': matches})
+
+@app.route('/api/match-tracker/demo')
+def api_demo_matches():
+    """Get demo/mock matches for testing (admin only)"""
+    from match_tracker_enhanced import get_match_tracker
+    import random
+    
+    # Create some realistic demo matches
+    demo_teams = [
+        ("Inter", "Milan"),
+        ("Juventus", "Napoli"),
+        ("Roma", "Lazio"),
+        ("Atalanta", "Fiorentina"),
+        ("Bologna", "Torino")
+    ]
+    
+    tracker = get_match_tracker()
+    demo_matches = []
+    
+    for idx, (home, away) in enumerate(demo_teams[:2]):  # Only 2 demo matches
+        match_id = f"demo_{idx+1}"
+        
+        # Start tracking if not already
+        if match_id not in tracker.active_matches:
+            tracker.start_match(match_id, home, away)
+            
+            # Add some demo score
+            tracker.active_matches[match_id]['score'] = {
+                'home': random.randint(0, 3),
+                'away': random.randint(0, 2)
+            }
+            tracker.active_matches[match_id]['minute'] = random.randint(20, 80)
+        
+        demo_matches.append(tracker.get_match_summary(match_id))
+    
+    return jsonify({
+        'matches': demo_matches,
+        'note': 'Partite demo per test - non sono partite reali'
+    })
 
 @app.route('/api/match-tracker/<match_id>')
 def api_match_summary(match_id):

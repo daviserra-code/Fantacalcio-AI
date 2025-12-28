@@ -3159,7 +3159,24 @@
             if (data.matches && data.matches.length > 0) {
                 displayActiveMatches(data.matches);
             } else {
-                showToast('📅 Nessuna partita live al momento', 'info');
+                // Show informative message with demo option
+                let message = data.message || 'Nessuna partita live al momento';
+                let infoHtml = `
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 12px; margin: 20px; color: white; text-align: center;">
+                        <h3 style="margin-bottom: 15px;">📅 ${message}</h3>
+                        <p style="opacity: 0.9; margin: 10px 0;">Le partite di Serie A si giocano principalmente nei weekend:</p>
+                        <ul style="text-align: left; display: inline-block; margin: 10px 0;">
+                            <li>Venerdì: 20:45</li>
+                            <li>Sabato: 12:30, 15:00, 18:00, 20:45</li>
+                            <li>Domenica: 12:30, 15:00, 18:00, 20:45</li>
+                        </ul>
+                        <p style="margin: 15px 0;">Per testare la funzionalità:</p>
+                        <button onclick="loadDemoMatches()" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                            🎮 Carica Partite Demo
+                        </button>
+                    </div>
+                `;
+                showMessage(infoHtml, 'html');
             }
         })
         .catch(error => {
@@ -3168,16 +3185,52 @@
         });
     }
     
-    function displayActiveMatches(matches) {
+    function loadDemoMatches() {
+        showToast('🎮 Caricamento partite demo...', 'info');
+        
+        fetch('/api/match-tracker/demo')
+        .then(response => response.json())
+        .then(data => {
+            if (data.matches && data.matches.length > 0) {
+                displayActiveMatches(data.matches, true);
+            } else {
+                showToast('❌ Errore nel caricamento demo', 'error');
+            }
+        })
+        .catch(error => {
+            showToast('❌ Errore nel caricamento demo', 'error');
+            console.error('Demo matches error:', error);
+        });
+    }
+    
+    function displayActiveMatches(matches, isDemo = false) {
         let html = `<div style="background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; border-radius: 12px; margin: 20px 0; color: white;">`;
-        html += `<h3 style="margin-bottom: 15px;">⚡ Partite Live (${matches.length})</h3>`;
+        html += `<h3 style="margin-bottom: 15px;">⚡ Partite Live (${matches.length})`;
+        if (isDemo) {
+            html += ` <span style="background: rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 4px; font-size: 12px;">DEMO</span>`;
+        }
+        html += `</h3>`;
         
         matches.forEach(match => {
             html += `<div style="background: rgba(255,255,255,0.2); padding: 12px; margin: 10px 0; border-radius: 8px;">`;
             html += `<strong>${match.home_team} vs ${match.away_team}</strong><br>`;
-            html += `Minuto: ${match.minute}' | Stato: ${match.status}`;
+            
+            if (match.minute) {
+                html += `⏱️ Minuto: ${match.minute}' | `;
+            }
+            html += `Status: ${match.status}`;
             if (match.score) {
-                html += `<br>Punteggio: ${match.score.home} - ${match.score.away}`;
+                html += `<br>⚽ Punteggio: ${match.score.home} - ${match.score.away}`;
+            }
+            
+            // Show top performers if available
+            if (match.top_performers && match.top_performers.length > 0) {
+                html += `<br><small style="opacity: 0.9;">🌟 Top: `;
+                html += match.top_performers.slice(0, 3).map(p => 
+                    `${p.name} (${p.points}pts)`
+                ).join(', ');
+                html += `</small>`;
+            }
             }
             html += `</div>`;
         });
